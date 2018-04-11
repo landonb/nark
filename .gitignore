@@ -36,11 +36,12 @@ kmncms/static_root/*
 *.log.*
 pip-log.txt
 
-# Unit test / coverage reports
+# Unit test files / coverage reports
 .cache
 .coverage
 .tox
 htmlcov
+.pytest_cache/
 
 # Translations
 *.mo
@@ -56,3 +57,10 @@ node_modules
 # Sphinx
 docs/_build
 !docs/_static/.gitkeep
+# 2018-04-11: (lb): After `make docs`:
+docs/hamster_lib.backends.rst
+docs/hamster_lib.backends.sqlalchemy.rst
+docs/hamster_lib.helpers.rst
+docs/hamster_lib.rst
+docs/modules.rst
+
