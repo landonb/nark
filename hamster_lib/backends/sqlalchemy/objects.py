@@ -168,6 +168,9 @@ categories = Table(
     Column('name', Unicode(DEFAULT_STRING_LENGTH), unique=True)
 )
 
+# (lb): This code uses SQLAlchemy Classical Mappings, and not Declarative Mappings.
+#   http://docs.sqlalchemy.org/en/latest/orm/mapping_styles.html
+
 mapper(AlchemyCategory, categories, properties={
     'pk': categories.c.id,
 })
@@ -199,8 +202,12 @@ mapper(AlchemyTag, tags, properties={
 facts = Table(
     'facts', metadata,
     Column('id', Integer, primary_key=True),
-    Column('start', DateTime),
-    Column('end', DateTime),
+    # NOTE/2018-04-22: Old Timey Hamster uses SQLite 'timestamp' data type.
+    # In ProjectHamster Hamster, the data type shows as DATETIME. The type
+    # is more of a suggestion in SQLite, which stores both types as strings,
+    # and the strings are your typical Hamster time, "YYYY-MM-DD HH:MM:SS".
+    Column('start_time', DateTime),
+    Column('end_time', DateTime),
     Column('activity_id', Integer, ForeignKey(activities.c.id)),
     Column('description', Unicode(500)),
 )
@@ -209,6 +216,12 @@ mapper(AlchemyFact, facts, properties={
     'pk': facts.c.id,
     'activity': relationship(AlchemyActivity, backref='facts'),
     'tags': relationship(AlchemyTag, backref='facts', secondary=lambda: facttags),
+    # 2018-04-22: (lb): I'm not sure if there's a migration script or not,
+    # but I could not find one, and for some reason ProjectHamster renamed
+    # the facts' start and end columns to start_time and end_time, respectively.
+    # Undo that using SQLAlchemy column name (re)mappings.
+    'start': facts.c.start_time,
+    'end': facts.c.end_time,
 })
 
 facttags = Table(

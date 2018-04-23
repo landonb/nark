@@ -332,6 +332,8 @@ class XMLWriter(ReportWriter):
         Once the child is prepared append it to ``fact_list``.
         """
         fact = self.document.createElement("fact")
+
+        # MAYBE/2018-04-22: (lb): Should this be start, or start_time? end, or end_time?
         fact.setAttribute('start', fact_tuple.start)
         fact.setAttribute('end', fact_tuple.end)
         fact.setAttribute('activity', fact_tuple.activity)
