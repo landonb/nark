@@ -215,7 +215,7 @@ facts = Table(
 mapper(AlchemyFact, facts, properties={
     'pk': facts.c.id,
     'activity': relationship(AlchemyActivity, backref='facts'),
-    'tags': relationship(AlchemyTag, backref='facts', secondary=lambda: facttags),
+    'tags': relationship(AlchemyTag, backref='facts', secondary=lambda: fact_tags),
     # 2018-04-22: (lb): I'm not sure if there's a migration script or not,
     # but I could not find one, and for some reason ProjectHamster renamed
     # the facts' start and end columns to start_time and end_time, respectively.
@@ -224,8 +224,11 @@ mapper(AlchemyFact, facts, properties={
     'end': facts.c.end_time,
 })
 
-facttags = Table(
-    'facttags', metadata,
+# 2018-04-22: (lb): ProjectHamster renamed fact_tags to facttags. But
+# that term isn't used in the code other than in this Table mapping
+# (which no other code uses; though maybe SQLAlchemy uses it internally?).
+fact_tags = Table(
+    'fact_tags', metadata,
     Column('fact_id', Integer, ForeignKey(facts.c.id)),
     Column('tag_id', Integer, ForeignKey(tags.c.id)),
 )
