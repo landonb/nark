@@ -127,8 +127,12 @@ class ReportWriter(object):
 
 
 @python_2_unicode_compatible
-class TSVWriter(ReportWriter):
-    def __init__(self, path):
+class PlaintextWriter(ReportWriter):
+    # HINT: For list of dialects:
+    #   >>> import csv
+    #   >>> csv.list_dialects()
+    #   ['excel-tab', 'excel', 'unix']
+    def __init__(self, path, dialect):
         """
         Initialize a new instance.
 
@@ -137,7 +141,7 @@ class TSVWriter(ReportWriter):
         In that case ``self.file`` will be openend in binary mode and ready to accept
         those encoded headings.
         """
-        super(TSVWriter, self).__init__(path)
+        super(PlaintextWriter, self).__init__(path)
         self.csv_writer = csv.writer(self.file, dialect='excel-tab')
         headers = (
             _("start time"),
@@ -199,6 +203,18 @@ class TSVWriter(ReportWriter):
                 data = data.encode('utf-8')
             results.append(data)
         self.csv_writer.writerow(results)
+
+
+@python_2_unicode_compatible
+class CSVWriter(PlaintextWriter):
+    def __init__(self, path):
+        super(CSVWriter, self).__init__(path, dialect='excel')
+
+
+@python_2_unicode_compatible
+class TSVWriter(PlaintextWriter):
+    def __init__(self, path):
+        super(TSVWriter, self).__init__(path, dialect='excel-tab')
 
 
 @python_2_unicode_compatible
