@@ -153,13 +153,14 @@ def extract_time_info(text):
     datetime_pattern = '(?P<datetime>\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?)'
 
     start = re.match(
-        '^({}|{}|{}|{}) (?P<rest>.+)'.format(
+        '^({}|{}|{}|{})( (?P<rest>.*))?$'.format(
             relative_pattern, datetime_pattern, date_pattern, time_pattern,
         ),
         text,
     )
     if start:
         start_groups = start.groupdict()
+        # Ignoring: start_groups['seconds']
         if start_groups['relative']:
             result['offset'] = datetime.timedelta(minutes=abs(int(start_groups['relative'])))
         else:
@@ -171,7 +172,7 @@ def extract_time_info(text):
 
         if rest:
             end = re.match(
-                '^- ({}|{}|{}) (?P<rest>.+)'.format(
+                '^- ({}|{}|{})( (?P<rest>.*))?$'.format(
                     datetime_pattern, date_pattern, time_pattern,
                 ),
                 rest,

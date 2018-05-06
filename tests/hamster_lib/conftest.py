@@ -165,6 +165,12 @@ def current_fact(fact_factory):
     # valid fact. If we want to be more accurate we need to work with clear
     # expectations.
     '12:00-14:00 foo@bar',
+    # Test seconds (they get truncated).
+    '12:00:11 - 14:00:59 baz@bat',
+    # Test just start and end, no activity, category, tags, nor description.
+    '12:00:11 - 13:01',
+    # Test just a start time.
+    '13:01:22',
 ])
 def valid_raw_fact_parametrized(request):
     """Return various invalid ``raw fact`` strings."""
@@ -175,6 +181,7 @@ def valid_raw_fact_parametrized(request):
     '',
     '14:00 - 12:00 foo@bar',
     '12:00 - 14:00 @bar',
+    '12:00:11 - 11:00:59 foo@bar',
 ])
 def invalid_raw_fact_parametrized(request):
     """Return various invalid ``raw fact`` strings."""

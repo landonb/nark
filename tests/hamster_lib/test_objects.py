@@ -290,7 +290,12 @@ class TestFact(object):
         assert fact.description == description_valid_parametrized
         assert fact.start == start_end_datetimes[0]
         assert fact.end == start_end_datetimes[1]
-        assert fact.tags == tag_list_valid_parametrized
+        # FIXME/2018-05-05: (lb): Another broken test to EXPLAIN.
+        #assert fact.tags == tag_list_valid_parametrized
+        names = list(tag_list_valid_parametrized)
+        tags = set([Tag(pk=None, name=name) for name in names])
+        tags = sorted(list(tags), key=attrgetter('name'))
+        assert fact.tags_sorted == tags
 
     def test_create_from_raw_fact_valid(self, valid_raw_fact_parametrized):
         """Make sure that a valid raw fact creates a proper Fact."""
@@ -518,43 +523,47 @@ class TestFact(object):
         assert hash(fact_factory()) != hash(fact_factory())
 
     def test__str__(self, fact):
-        expectation = '{start} to {end} {activity}@{category}, {description}'.format(
+        expectation = '{start} to {end} {activity}@{category}{tags}, {description}'.format(
             start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
             end=fact.end.strftime('%Y-%m-%d %H:%M:%S'),
             activity=fact.activity.name,
             category=fact.category.name,
-            description=fact.description
+            tags=fact.tagnames(),
+            description=fact.description,
         )
         assert text(fact) == expectation
 
     def test__str__no_end(self, fact):
         fact.end = None
-        expectation = '{start} {activity}@{category}, {description}'.format(
+        expectation = '{start} {activity}@{category}{tags}, {description}'.format(
             start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
             activity=fact.activity.name,
             category=fact.category.name,
-            description=fact.description
+            tags=fact.tagnames(),
+            description=fact.description,
         )
         assert text(fact) == expectation
 
     def test__str__no_start_no_end(self, fact):
         fact.start = None
         fact.end = None
-        expectation = '{activity}@{category}, {description}'.format(
+        expectation = '{activity}@{category}{tags}, {description}'.format(
             activity=fact.activity.name,
             category=fact.category.name,
-            description=fact.description
+            tags=fact.tagnames(),
+            description=fact.description,
         )
         assert text(fact) == expectation
 
     def test__repr__(self, fact):
         """Make sure our debugging representation matches our expectations."""
-        expectation = '{start} to {end} {activity}@{category}, {description}'.format(
+        expectation = '{start} to {end} {activity}@{category}{tags}, {description}'.format(
             start=repr(fact.start.strftime('%Y-%m-%d %H:%M:%S')),
             end=repr(fact.end.strftime('%Y-%m-%d %H:%M:%S')),
             activity=repr(fact.activity.name),
             category=repr(fact.category.name),
-            description=repr(fact.description)
+            tags=fact.tagnames(repr),
+            description=repr(fact.description),
         )
         result = repr(fact)
         assert isinstance(result, str)
@@ -565,11 +574,12 @@ class TestFact(object):
         result = repr(fact)
         assert isinstance(result, str)
         fact.end = None
-        expectation = '{start} {activity}@{category}, {description}'.format(
+        expectation = '{start} {activity}@{category}{tags}, {description}'.format(
             start=repr(fact.start.strftime('%Y-%m-%d %H:%M:%S')),
             activity=repr(fact.activity.name),
             category=repr(fact.category.name),
-            description=repr(fact.description)
+            tags=fact.tagnames(repr),
+            description=repr(fact.description),
         )
         result = repr(fact)
         assert isinstance(result, str)
@@ -579,11 +589,24 @@ class TestFact(object):
         """Test that facts without timeinfo are represented properly."""
         fact.start = None
         fact.end = None
-        expectation = '{activity}@{category}, {description}'.format(
+        expectation = '{activity}@{category}{tags}, {description}'.format(
             activity=repr(fact.activity.name),
             category=repr(fact.category.name),
-            description=repr(fact.description)
+            tags=fact.tagnames(repr),
+            description=repr(fact.description),
         )
         result = repr(fact)
         assert isinstance(result, str)
         assert result == expectation
+
+    def test__str__no_tags(self, fact):
+        fact.tags = []
+        expectation = '{start} to {end} {activity}@{category}, {description}'.format(
+            start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
+            end=fact.end.strftime('%Y-%m-%d %H:%M:%S'),
+            activity=fact.activity.name,
+            category=fact.category.name,
+            description=fact.description,
+        )
+        assert text(fact) == expectation
+
