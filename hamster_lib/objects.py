@@ -525,11 +525,27 @@ class Fact(object):
             ValueError: If a unrecognized format specifier is received.
         """
         seconds = int(self.delta.total_seconds())
+        # MAYBE/2018-05-05: (lb): scientificsteve rounds instead of floors.
+        # I'm not sure this is correct. The user only commented in the commit,
+        #   "Round the minutes instead of flooring." But they did not bother to
+        #   edit the docstring above, which explicitly says that time is rounded
+        #   down!
+        # So I'm making a note of this -- because I incorporated the tags feature
+        #   from scientificsteve's PR -- but I did not incorporate the rounding
+        #   change. For one, I am not sure what uses this function, so I don't
+        #   feel confident changing it.
+        # See:
+        #   SHA 369050067485636475cd38d2cc8f38aaf58a3932
         if format == '%M':
             result = text_type(int(seconds / 60))
+            # From scientificsteve's PR:
+            #  result = text_type(int(round(seconds / 60.)))
         elif format == '%H:%M':
             result = '{hours:02d}:{minutes:02d}'.format(hours=int(seconds / 3600),
                 minutes=int((seconds % 3600) / 60))
+            # From scientificsteve's PR:
+            #  result = '{hours:02d}:{minutes:02d}'.format(hours=int(round(seconds / 3600.)),
+            #      minutes=int(round((seconds % 3600.) / 60.)))
         else:
             raise ValueError(_("Got invalid format argument."))
         return result
