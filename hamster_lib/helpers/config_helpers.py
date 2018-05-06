@@ -61,6 +61,7 @@ import os
 import appdirs
 import hamster_lib
 from configparser import SafeConfigParser
+from six import string_types
 from six import text_type
 
 
@@ -152,7 +153,7 @@ def get_config_path(appdirs=DEFAULT_APPDIRS, file_name=DEFAULT_CONFIG_FILENAME):
     Returns:
         str: Fully qualified path (dir & filename) where we expect the config file.
     """
-    if isinstance(appdirs, (str, unicode)):
+    if isinstance(appdirs, string_types):
         appdirs = HamsterAppDirs(appdirs)
     return os.path.join(appdirs.user_config_dir, file_name)
 
