@@ -362,3 +362,9 @@ def validate_start_end_range(range_tuple):
         raise ValueError(_("Start after end!"))
 
     return range_tuple
+
+
+def truncate_to_whole_seconds(time):
+    time_fmt = '%Y-%m-%d %H:%M'
+    return datetime.datetime.strptime(time.strftime(time_fmt), time_fmt)
+

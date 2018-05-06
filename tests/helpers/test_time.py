@@ -314,3 +314,15 @@ class TestValidateStartEndRange(object):
         """Make sure that ranges with start > end fail validation."""
         with pytest.raises(ValueError):
             time_helpers.validate_start_end_range(range)
+
+class TestTruncateToWholeSeconds(object):
+    """Unit tests for truncate-to-whole-seconds function."""
+
+    @pytest.mark.parametrize('time', (
+        (datetime.datetime(2016, 12, 1, 12, 30, 55, 666), datetime.datetime(2016, 12, 1, 12, 30)),
+    ))
+    def test_valid_ranges(self, time):
+        """Make sure that ranges with end > start pass validation."""
+        result = time_helpers.truncate_to_whole_seconds(time[0])
+        assert result == time[1]
+
