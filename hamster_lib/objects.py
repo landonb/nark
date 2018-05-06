@@ -435,7 +435,11 @@ class Fact(object):
 
         description = extracted_components['description']
 
-        return cls(activity, start, end=end, description=description)
+        tags = extracted_components['tags']
+
+        return cls(
+            activity, start, end=end, description=description, tags=tags,
+        )
 
     @property
     def start(self):
