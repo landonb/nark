@@ -367,9 +367,20 @@ class Fact(object):
         self.start = start
         self.end = end
         self.description = description
-        self.tags = set()
+        # AUDIT/2018-05-05: From a scientificsteve branch (but no PR:
+        # he had a PR against the CLI, and then I found his branch with
+        # corresponding changes to the LIB that were not PR'ed!). The
+        # original code uses a set of strings; so I'm a little nervous
+        # changing to a list of Tags....
+        #
+        #   self.tags = set()
+        #   if tags:
+        #       self.tags = set(tags)
+        #
+        self.tags = []
         if tags:
-            self.tags = set(tags)
+            tags = set(tags)
+            self.tags = [Tag(name=tagname) for tagname in tags]
 
     @classmethod
     def create_from_raw_fact(cls, raw_fact, config=None):

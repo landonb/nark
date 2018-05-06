@@ -131,11 +131,45 @@ def parse_raw_fact(raw_fact):
             category, description = category.strip(), description.strip()
         return (category.strip(), description)
 
+    def hashtag_split(string):
+        """
+        Return a list of terms marked with a hashtag.
+        """
+        result = string.split('#')
+        result = [x.strip() for x in result]
+        result = [x.strip() for x in result if x != '']
+        return result
+
     time_info, rest = time_helpers.extract_time_info(raw_fact)
     activity_name, back = at_split(rest)
 
+    tags = []
+
     if back:
-        category_name, description = comma_split(back)
+        # AUDIT/2018-05-05: (lb): This is from scientificsteve's tags feature.
+        #   I found other issues with the code, so beware this code.
+        #   Here's the original code:
+        #
+        #       category_name, description = comma_split(back)
+        #
+        #   And following is scientificsteve's.
+        #
+        # FIXME/2018-05-05: (lb): I think you can call comma_split first,
+        #   and then only check for hashtags in the first part, not the
+        #   whole string! Otherwise, a string like "foo@bar, blah blah #blah"
+        #   will have category_name == "foo@bar, blah blah" !!!
+        #
+# FIXME/2018-05-05: (lb): This code is wrong; tags feature not stable.
+        #
+        hashtag_pos = back.find('#')
+        if hashtag_pos >= 0:
+            category_name = back[:hashtag_pos].strip()
+            back = back[hashtag_pos:]
+            tag_string, description = comma_split(back)
+            tags = hashtag_split(tag_string)
+        else:
+            category_name, description = comma_split(back)
+
     else:
         category_name, description = None, None
 
@@ -144,4 +178,5 @@ def parse_raw_fact(raw_fact):
         'category': category_name,
         'activity': activity_name,
         'description': description,
+        'tags': tags,
     }
