@@ -294,7 +294,7 @@ class TestParseTime(object):
 
 
 class TestValidateStartEndRange(object):
-    "Unittests for validation function."""
+    """Unittests for validation function."""
 
     @pytest.mark.parametrize('range', (
         (datetime.datetime(2016, 12, 1, 12, 30), datetime.datetime(2016, 12, 1, 12, 45)),

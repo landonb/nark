@@ -403,8 +403,11 @@ class CategoryManager(storage.BaseCategoryManager):
         # or even spamming the logs with the enrire list. Instead we just state
         # that we return something.
         self.store.logger.debug(_("Returning list of all categories."))
-        return [alchemy_category for alchemy_category in (
-            self.store.session.query(AlchemyCategory).order_by(AlchemyCategory.name).all())]
+        return [
+            alchemy_category for alchemy_category in (
+                self.store.session.query(AlchemyCategory).order_by(AlchemyCategory.name).all()
+            )
+        ]
 
 
 @python_2_unicode_compatible
@@ -920,8 +923,11 @@ class TagManager(storage.BaseTagManager):
         # or even spamming the logs with the enrire list. Instead we just state
         # that we return something.
         self.store.logger.debug(_("Returning list of all tags."))
-        return [alchemy_tag for alchemy_tag in (
-            self.store.session.query(AlchemyTag).order_by(AlchemyTag.name).all())]
+        return [
+            alchemy_tag for alchemy_tag in (
+                self.store.session.query(AlchemyTag).order_by(AlchemyTag.name).all()
+            )
+        ]
 
 
 @python_2_unicode_compatible

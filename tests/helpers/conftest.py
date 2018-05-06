@@ -148,7 +148,7 @@ def config_file(backend_config, appdirs):
         'category': 'bar',
         'description': 'palimpalum',
     }),
-    # Missing whitespace around ``-`` will prevent timeinfo from beeing parsed.
+    # Missing whitespace around ``-`` will prevent timeinfo from being parsed.
     ('12:00-14:14 foo@bar, palimpalum', {
         'timeinfo': TimeFrame(None, None, None, None, None),
         'activity': '12:00-14:14 foo',

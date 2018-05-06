@@ -152,8 +152,12 @@ def extract_time_info(text):
     date_pattern = '(?P<date>\d{4}-\d{2}-\d{2})'
     datetime_pattern = '(?P<datetime>\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?)'
 
-    start = re.match('^({}|{}|{}|{}) (?P<rest>.+)'.format(relative_pattern, datetime_pattern,
-        date_pattern, time_pattern), text)
+    start = re.match(
+        '^({}|{}|{}|{}) (?P<rest>.+)'.format(
+            relative_pattern, datetime_pattern, date_pattern, time_pattern,
+        ),
+        text,
+    )
     if start:
         start_groups = start.groupdict()
         if start_groups['relative']:
@@ -162,11 +166,16 @@ def extract_time_info(text):
             date, time = date_time_from_groupdict(start_groups)
             result['start_date'] = date
             result['start_time'] = time
+
         rest = start_groups['rest']
 
         if rest:
-            end = re.match('^- ({}|{}|{}) (?P<rest>.+)'.format(datetime_pattern, date_pattern,
-                time_pattern), rest)
+            end = re.match(
+                '^- ({}|{}|{}) (?P<rest>.+)'.format(
+                    datetime_pattern, date_pattern, time_pattern,
+                ),
+                rest,
+            )
         else:
             end = None
 

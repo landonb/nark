@@ -277,9 +277,14 @@ class TestFact(object):
     def test_fact_init_valid(self, activity, start_end_datetimes, pk_valid_parametrized,
             description_valid_parametrized, tag_list_valid_parametrized):
         """Make sure valid values instaniate a Fact."""
-
-        fact = Fact(activity, start_end_datetimes[0], start_end_datetimes[1],
-            pk_valid_parametrized, description_valid_parametrized, tag_list_valid_parametrized)
+        fact = Fact(
+            activity,
+            start_end_datetimes[0],
+            start_end_datetimes[1],
+            pk_valid_parametrized,
+            description_valid_parametrized,
+            tag_list_valid_parametrized,
+        )
         assert fact.activity == activity
         assert fact.pk == pk_valid_parametrized
         assert fact.description == description_valid_parametrized
