@@ -578,7 +578,33 @@ class Fact(object):
     @property
     def category(self):
         """For convenience only."""
+        # (lb): Whose convenience? If this DRYs code, it's for that, too. =)
         return self.activity.category
+
+    @property
+    def tags_sorted(self):
+        # MAYBE: (lb): Which version of sorted is preferred?
+        #
+        # Test, e.g., 10K iterations:
+        #
+        #   return sorted(self.tags, key=lambda tag: tag.name)
+        #
+        # vs.
+        #
+        #   return sorted(list(self.tags), key=attrgetter('name'))
+        #
+        # Not that we'd ever have that many tags. I'm just curious.
+        return sorted(list(self.tags), key=attrgetter('name'))
+
+    def tagnames(self, fmttr=lambda x: x):
+        # NOTE: Return string includes leading space if nonempty!
+        tagnames = ''
+        if self.tags:
+            ordered_tagnames = [
+                fmttr('#{}'.format(tag.name)) for tag in self.tags_sorted
+            ]
+            tagnames = ' {}'.format(' '.join(ordered_tagnames))
+        return tagnames
 
     def get_serialized_string(self):
         """
@@ -634,10 +660,7 @@ class Fact(object):
                 result = '{}'.format(fact.activity.name)
             return result
 
-        tags = ''
-        if self.tags:
-            ordered_tags = sorted(list(self.tags), key=attrgetter('name'))
-            tags = ' {}'.format(' '.join(['#{}'.format(tag.name) for tag in ordered_tags]))
+        tags = self.tagnames()
 
         description = ''
         if self.description:
@@ -666,9 +689,19 @@ class Fact(object):
         pk = self.pk
         if not include_pk:
             pk = False
-        return FactTuple(pk, self.activity.as_tuple(include_pk=include_pk), self.start,
-            self.end, self.description,
-            frozenset([tag.as_tuple(include_pk=include_pk) for tag in self.tags]))
+
+        ordered_tags = [
+            tag.as_tuple(include_pk=include_pk) for tag in self.tags_sorted
+        ]
+
+        return FactTuple(
+            pk,
+            self.activity.as_tuple(include_pk=include_pk),
+            self.start,
+            self.end,
+            self.description,
+            frozenset(ordered_tags),
+        )
 
     def equal_fields(self, other):
         """
@@ -698,53 +731,35 @@ class Fact(object):
         return hash(self.as_tuple())
 
     def __str__(self):
-        result = text_type(self.activity.name)
-
-        if self.category:
-            result += "@%s" % text_type(self.category.name)
-
-        if self.description or self.tags:
-            # [FIXME]
-            # Workaround until we address tags!
-            result += ', {}'.format(text_type(self.description) or '')
-            # result += "%s, %s" % (" ".join(["#%s" % tag for tag in self.tags]),
-            #                    self.description or "")
-
-        if self.start:
-            start = self.start.strftime("%Y-%m-%d %H:%M:%S")
-
-        if self.end:
-            end = self.end.strftime("%Y-%m-%d %H:%M:%S")
-
-        if self.start and self.end:
-            result = '{} to {} {}'.format(start, end, result)
-        elif self.start and not self.end:
-            result = '{} {}'.format(start, result)
-
-        return text_type(result)
+        return self.friendly_str(text_type)
 
     def __repr__(self):
-        result = repr(self.activity.name)
+        return self.friendly_str(repr)
+
+    def friendly_str(self, fmttr):
+        result = fmttr(self.activity.name)
 
         if self.category:
-            result += "@%s" % repr(self.category.name)
+            result += "@%s" % fmttr(self.category.name)
 
-        if self.description or self.tags:
-            # [FIXME]
-            # Workaround until we address tags!
-            result += ', {}'.format(repr(self.description) or '')
-            # result += "%s, %s" % (" ".join(["#%s" % tag for tag in self.tags]),
-            #                    self.description or "")
+        result += self.tagnames(fmttr)
+
+        if self.description:
+            result += ', {}'.format(fmttr(self.description) or '')
 
         if self.start:
-            start = repr(self.start.strftime("%Y-%m-%d %H:%M:%S"))
+            start = fmttr(self.start.strftime("%Y-%m-%d %H:%M:%S"))
 
         if self.end:
-            end = repr(self.end.strftime("%Y-%m-%d %H:%M:%S"))
+            end = fmttr(self.end.strftime("%Y-%m-%d %H:%M:%S"))
 
         if self.start and self.end:
             result = '{} to {} {}'.format(start, end, result)
         elif self.start and not self.end:
             result = '{} {}'.format(start, result)
 
-        return str(result)
+        if fmttr != repr:
+            return fmttr(result)
+        else:
+            return str(result)
+

@@ -24,6 +24,8 @@ This module provides several convenience and intermediate functions to perform c
 
 
 import pickle
+import re
+from six.moves import filter
 
 from hamster_lib.helpers import time as time_helpers
 
@@ -135,10 +137,17 @@ def parse_raw_fact(raw_fact):
         """
         Return a list of terms marked with a hashtag.
         """
-        result = string.split('#')
-        result = [x.strip() for x in result]
-        result = [x.strip() for x in result if x != '']
-        return result
+        # Only split on hashtags at start of line, or preceded by a space.
+        hashtags = re.split(r'((?<=^)|\s+)#', string)
+        # Strip whitespace.
+        hashtags = [x.strip() for x in hashtags]
+        # Remove empty strings (the first element is generally empty string).
+        hashtags = list(filter(None, hashtags))
+        # Remove surrounding 'quotes' or "quotes".
+        # MEH: (lb): I don't think we should handle quotes, seems tedious.
+        #  hashtags = [re.sub(r'''^(['"])(.*)\1$''', r'\2', x) for x in hashtags]
+
+        return hashtags
 
     time_info, rest = time_helpers.extract_time_info(raw_fact)
     activity_name, back = at_split(rest)
@@ -159,16 +168,14 @@ def parse_raw_fact(raw_fact):
         #   whole string! Otherwise, a string like "foo@bar, blah blah #blah"
         #   will have category_name == "foo@bar, blah blah" !!!
         #
-# FIXME/2018-05-05: (lb): This code is wrong; tags feature not stable.
-        #
-        hashtag_pos = back.find('#')
+        category_and_tags, description = comma_split(back)
+        hashtag_pos = category_and_tags.find('#')
         if hashtag_pos >= 0:
-            category_name = back[:hashtag_pos].strip()
-            back = back[hashtag_pos:]
-            tag_string, description = comma_split(back)
+            category_name = category_and_tags[:hashtag_pos].strip()
+            tag_string = category_and_tags[hashtag_pos:]
             tags = hashtag_split(tag_string)
         else:
-            category_name, description = comma_split(back)
+            category_name = category_and_tags
 
     else:
         category_name, description = None, None
