@@ -1031,6 +1031,15 @@ class FactManager(storage.BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
+        # Check for valid time range.
+        if fact.start >= fact.end:
+            message = _(
+                'Invalid time range of {!r}.'
+                ' The start is large or equal than the end.'.format(fact)
+            )
+            self.store.logger.error(message)
+            raise ValueError(message)
+
         if not self._timeframe_available_for_fact(fact):
             message = _("Our database already contains facts for this facts timewindow."
                         " There can ever only be one fact at any given point in time")
