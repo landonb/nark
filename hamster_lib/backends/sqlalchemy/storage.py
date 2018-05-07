@@ -699,7 +699,9 @@ class ActivityManager(storage.BaseActivityManager):
         if sort_by_category:
             query = query.join(AlchemyCategory).order_by(AlchemyCategory.name)
         query = query.order_by(AlchemyActivity.name)
-        self.store.logger.debug(_("Returning list of matches."))
+        self.store.logger.debug(
+            _('Returning list of matches') + ': {}'.format(str(query))
+        )
         return query.all()
 
 
