@@ -21,11 +21,13 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
+
 def formatter_basic():
     formatter = logging.Formatter(
         '[%(levelname)s] %(asctime)s %(name)s %(funcName)s:  %(message)s'
     )
     return formatter
+
 
 def setupHandler(handler, formatter, *loggers):
     handler.setFormatter(formatter)

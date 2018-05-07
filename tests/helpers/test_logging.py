@@ -4,8 +4,8 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-import pytest
 from hamster_lib.helpers import logging as logging_helpers
+
 
 class TestSetupHandler(object):
     def test_get_formatter_basic(self, mocker):

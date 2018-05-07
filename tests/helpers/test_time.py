@@ -315,6 +315,7 @@ class TestValidateStartEndRange(object):
         with pytest.raises(ValueError):
             time_helpers.validate_start_end_range(range)
 
+
 class TestTruncateToWholeSeconds(object):
     """Unit tests for truncate-to-whole-seconds function."""
 

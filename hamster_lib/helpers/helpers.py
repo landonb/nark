@@ -17,11 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-
 """
 This module provides several convenience and intermediate functions to perform common tasks.
 """
-
 
 import pickle
 import re
@@ -176,7 +174,6 @@ def parse_raw_fact(raw_fact):
             tags = hashtag_split(tag_string)
         else:
             category_name = category_and_tags
-
     else:
         category_name, description = None, None
 
@@ -187,3 +184,4 @@ def parse_raw_fact(raw_fact):
         'description': description,
         'tags': tags,
     }
+

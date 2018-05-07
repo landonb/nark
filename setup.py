@@ -17,11 +17,11 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'appdirs',
+    'configparser >= 3.5.0b2',
     'future',
-    'sqlalchemy',
     'icalendar',
     'six',
-    'configparser >= 3.5.0b2',
+    'sqlalchemy',
 ]
 
 setup(
