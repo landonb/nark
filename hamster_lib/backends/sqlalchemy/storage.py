@@ -664,7 +664,7 @@ class ActivityManager(storage.BaseActivityManager):
         self.store.logger.debug(_("Returning: {!r}.".format(result)))
         return result
 
-    def get_all(self, category=False, search_term=''):
+    def get_all(self, category=False, search_term='', sort_by_category=False):
         """
         Retrieve all matching activities stored in the backend.
 
@@ -696,6 +696,8 @@ class ActivityManager(storage.BaseActivityManager):
 
         if search_term:
             query = query.filter(AlchemyActivity.name.ilike('%{}%'.format(search_term)))
+        if sort_by_category:
+            query = query.join(AlchemyCategory).order_by(AlchemyCategory.name)
         query = query.order_by(AlchemyActivity.name)
         self.store.logger.debug(_("Returning list of matches."))
         return query.all()
