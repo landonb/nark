@@ -70,6 +70,7 @@ def configparser_instance(request):
     config.set('Backend', 'db_name', 'hamster')
     config.set('Backend', 'db_user', 'hamster')
     config.set('Backend', 'db_password', 'hamster')
+    config.set('Backend', 'sql_log_level', 'WARNING')
 
     expectation = {
         'store': text_type('sqlalchemy'),
@@ -83,6 +84,7 @@ def configparser_instance(request):
         'db_name': text_type('hamster'),
         'db_user': text_type('hamster'),
         'db_password': text_type('hamster'),
+        'sql_log_level': text_type('WARNING'),
     }
 
     return config, expectation

@@ -16,6 +16,7 @@ pairs::
         'db_path': ``sqlalchemy db path``,
         'tmpfile_name': filename; under which any 'ongoing fact' will be saved
         'fact_min_delta': integer; Amount of seconds under which fact creation will be prohibited.
+        'sql_log_level': string; Log level of SQLAlchemy logger: DEBUG, INFO, WARNING, ERROR, etc.
 
 ``hamsterlib.HamsterControl`` initializes the store and provides a general
 logger. Besides that ``HamsterControl.categories``,

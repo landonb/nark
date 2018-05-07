@@ -41,6 +41,7 @@ def base_config(tmpdir):
         'db_path': ':memory:',
         'tmpfile_path': os.path.join(tmpdir.mkdir('tmpfact').strpath, 'hamsterlib.fact'),
         'fact_min_delta': 60,
+        'sql_log_level': 'WARNING',
     }
 
 

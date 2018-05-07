@@ -34,24 +34,24 @@ Note:
         store: A ``string`` indicating which store (``hamster_lib.REGISTERED_BACKENDS``) to use.
         day_start: ``datetime.time`` that specifies the when to start a new day.
         fact_min_delta: ``int`` specifying minimal fact duration. Facts shorter than this will be
-        rejected.
+                        rejected.
         tmpfile_path: ``string`` indicating where the file representing the ongoing fact is to be
-        stored.
+                        stored.
         db_engine: ``string`` indicating which db-engine to use. Options depend on store choice.
         db_path: ``string`` indicating where to save the db file if the selected db option saves to
-        disk. Depends on store/engine choice.
+                        disk. Depends on store/engine choice.
         db_host: ``string`` indicating the host of the db server. Depends on store/engine choice.
         db_port: ``int`` indicating the port of the db server. Depends on store/engine choice.
         db_name: ``string`` indicating the db-name. Depends on store/engine choice.
         db_user: ``string`` indicating the username to access the db server. Depends on
-        store/engine choice.
+                        store/engine choice.
         db_password: ``string`` indicating the password to access the db server. Depends on
-        store/engine choice.
+                        store/engine choice.
+        sql_log_level: ``string`` indicating the SQLAlchemy logging logger log level.
 
     Please also note that a backend *config dict* does except ``None`` / ``empty`` values, its
     ``ConfigParser`` representation does not include those however!
 """
-
 
 from __future__ import absolute_import, unicode_literals
 
@@ -234,6 +234,7 @@ def get_default_backend_config(appdirs):
         'tmpfile_path': os.path.join(appdirs.user_data_dir, '{}.tmp'.format(appdirs.appname)),
         'db_engine': 'sqlite',
         'db_path': os.path.join(appdirs.user_data_dir, '{}.sqlite'.format(appdirs.appname)),
+        'sql_log_level': 'WARNING',
     }
 
 
@@ -288,6 +289,9 @@ def backend_config_to_configparser(config):
     def get_db_password():
         return text_type(config.get('db_password'))
 
+    def get_sql_log_level():
+        return text_type(config.get('sql_log_level'))
+
     cp_instance = SafeConfigParser()
     cp_instance.add_section('Backend')
     cp_instance.set('Backend', 'store', get_store())
@@ -301,6 +305,7 @@ def backend_config_to_configparser(config):
     cp_instance.set('Backend', 'db_name', get_db_name())
     cp_instance.set('Backend', 'db_user', get_db_user())
     cp_instance.set('Backend', 'db_password', get_db_password())
+    cp_instance.set('Backend', 'sql_log_level', get_sql_log_level())
 
     return cp_instance
 
@@ -368,6 +373,9 @@ def configparser_to_backend_config(cp_instance):
     def get_db_password():
         return text_type(cp_instance.get('Backend', 'db_password'))
 
+    def get_sql_log_level():
+        return text_type(cp_instance.get('Backend', 'sql_log_level'))
+
     result = {
         'store': get_store(),
         'day_start': get_day_start(),
@@ -380,5 +388,6 @@ def configparser_to_backend_config(cp_instance):
         'db_name': get_db_name(),
         'db_user': get_db_user(),
         'db_password': get_db_password(),
+        'sql_log_level': get_sql_log_level(),
     }
     return result
