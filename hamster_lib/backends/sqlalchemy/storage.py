@@ -696,7 +696,7 @@ class ActivityManager(storage.BaseActivityManager):
 
         if search_term:
             query = query.filter(AlchemyActivity.name.ilike('%{}%'.format(search_term)))
-        query.order_by(AlchemyActivity.name)
+        query = query.order_by(AlchemyActivity.name)
         self.store.logger.debug(_("Returning list of matches."))
         return query.all()
 
