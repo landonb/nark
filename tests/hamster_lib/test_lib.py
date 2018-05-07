@@ -39,3 +39,11 @@ class TestController:
         # [FIXME]
         # assert len(logger.handlers) == 1
         assert isinstance(logger.handlers[0], logging.NullHandler)
+
+    def test_sql_logger(self, controller):
+        """Make sure we recieve a logger that maches our expectations."""
+        logger = controller._sql_logger()
+        assert isinstance(logger, logging.Logger)
+        assert logger.name == 'hamster-sql.log'
+        assert isinstance(logger.handlers[0], logging.NullHandler)
+

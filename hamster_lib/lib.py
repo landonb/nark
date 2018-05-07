@@ -68,6 +68,7 @@ class HamsterControl(object):
         self.config = config
         self.lib_logger = self._get_logger()
         self.store = self._get_store()
+        self.sql_logger = self._sql_logger()
         # convinience attributes
         self.categories = self.store.categories
         self.activities = self.store.activities
@@ -106,3 +107,13 @@ class HamsterControl(object):
         lib_logger = logging.getLogger('hamster-lib.log')
         lib_logger.addHandler(logging.NullHandler())
         return lib_logger
+
+    def _sql_logger(self):
+        """
+        Setup and configure the SQLAlchemy database store logger.
+
+        As the docs suggest we setup just a pseudo handler. Any client that actually
+        wants to use logging needs to setup its required handlers itself.
+        """
+        return self.store.logger
+
