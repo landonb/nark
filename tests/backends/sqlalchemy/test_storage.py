@@ -182,7 +182,7 @@ class TestCategoryManager():
         for category in set_of_categories:
             assert category.as_hamster() in result
 
-    # Test convinience methods.
+    # Test convenience methods.
     def test_get_or_create_get(self, alchemy_store, alchemy_category_factory):
         """Test that if we pass a alchemy_category of existing name, we just return it."""
         assert alchemy_store.session.query(AlchemyCategory).count() == 0
@@ -555,7 +555,7 @@ class TestTagManager():
         for tag in set_of_tags:
             assert tag.as_hamster() in result
 
-    # Test convinience methods.
+    # Test convenience methods.
     def test_get_or_create_get(self, alchemy_store, alchemy_tag_factory):
         """Test that if we pass a alchemy_tag of existing name, we just return it."""
         assert alchemy_store.session.query(AlchemyTag).count() == 0

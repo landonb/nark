@@ -18,7 +18,7 @@
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""This module provides several time realted convinience functions."""
+"""This module provides several time-related convenience functions."""
 
 from __future__ import absolute_import, unicode_literals
 
@@ -38,7 +38,7 @@ def get_day_end(config):
         config (dict): Configdict. Needed to extract ``day_start``.
 
     Note:
-        This is merely a convinience funtion so we do not have to deduct this from ``day_start``
+        This is merely a convenience funtion so we do not have to deduct this from ``day_start``
         by hand all the time.
     """
     day_start_datetime = datetime.datetime.combine(datetime.date.today(), config['day_start'])

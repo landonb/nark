@@ -447,7 +447,7 @@ class BaseActivityManager(BaseManager):
             * Does exclude activities with ``deleted=True``.
         """
         # [FIXME]
-        # ``__get_category_activivty`` order by lower(activity.name),
+        # ``__get_category_activity`` order by lower(activity.name),
         # ``__get_activities```orders by most recent start date *and*
         # lower(activity.name).
         raise NotImplementedError
@@ -1009,5 +1009,5 @@ class BaseFactManager(BaseManager):
         self.store.logger.debug(_("Temporary fact stoped."))
 
     def _get_tmp_fact_path(self):
-        """Convinience function to assemble the tmpfile_path from config settings."""
+        """Convenience function to assemble the tmpfile_path from config settings."""
         return self.store.config['tmpfile_path']

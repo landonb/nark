@@ -195,7 +195,7 @@ class CategoryManager(storage.BaseCategoryManager):
             hamster_lib.Category or None: Category.
         """
 
-        message = _("Recieved {!r} and raw={}.".format(category, raw))
+        message = _("Received {!r} and raw={}.".format(category, raw))
         self.store.logger.debug(message)
 
         try:
@@ -225,7 +225,7 @@ class CategoryManager(storage.BaseCategoryManager):
                 be more apropiate.
         """
 
-        message = _("Recieved {!r} and raw={}.".format(category, raw))
+        message = _("Received {!r} and raw={}.".format(category, raw))
         self.store.logger.debug(message)
 
         if category.pk:
@@ -268,7 +268,7 @@ class CategoryManager(storage.BaseCategoryManager):
             KeyError: If no category with passed PK was found.
         """
 
-        message = _("Recieved {!r}.".format(category))
+        message = _("Received {!r}.".format(category))
         self.store.logger.debug(message)
 
         if not category.pk:
@@ -312,7 +312,7 @@ class CategoryManager(storage.BaseCategoryManager):
             ValueError: If category passed does not have an pk.
         """
 
-        message = _("Recieved {!r}.".format(category))
+        message = _("Received {!r}.".format(category))
         self.store.logger.debug(message)
 
         if not category.pk:
@@ -346,7 +346,7 @@ class CategoryManager(storage.BaseCategoryManager):
             We need this for now, as the service just provides pks, not names.
         """
 
-        message = _("Recieved PK: '{}'.".format(pk))
+        message = _("Received PK: '{}'.".format(pk))
         self.store.logger.debug(message)
 
         result = self.store.session.query(AlchemyCategory).get(pk)
@@ -375,7 +375,7 @@ class CategoryManager(storage.BaseCategoryManager):
 
         """
 
-        message = _("Recieved name: '{}', raw={}.".format(name, raw))
+        message = _("Received name: '{}', raw={}.".format(name, raw))
         self.store.logger.debug(message)
 
         name = text_type(name)
@@ -425,7 +425,7 @@ class ActivityManager(storage.BaseActivityManager):
             hamster_lib.Activity: Activity.
         """
 
-        message = _("Recieved {!r}, raw={}.".format(activity, raw))
+        message = _("Received {!r}, raw={}.".format(activity, raw))
         self.store.logger.debug(message)
 
         try:
@@ -451,7 +451,7 @@ class ActivityManager(storage.BaseActivityManager):
                 already present in the db.
         """
 
-        message = _("Recieved {!r}, raw={}.".format(activity, raw))
+        message = _("Received {!r}, raw={}.".format(activity, raw))
         self.store.logger.debug(message)
 
         if activity.pk:
@@ -506,7 +506,7 @@ class ActivityManager(storage.BaseActivityManager):
             KeyError: If the the passed activity.pk can not be found.
         """
 
-        message = _("Recieved {!r}.".format(activity))
+        message = _("Received {!r}.".format(activity))
         self.store.logger.debug(message)
 
         if not activity.pk:
@@ -537,8 +537,10 @@ class ActivityManager(storage.BaseActivityManager):
         try:
             self.store.session.commit()
         except IntegrityError as e:
-            message = _("There seems to already be an activity like this for the given category."
-                "Can not change this activities values. Original exception: {}".format(e))
+            message = _(
+                'There seems to already be an activity like this for the given category.'
+                " Cannot change this activity's values. Original exception: {}".format(e)
+            )
             self.store.logger.error(message)
             raise ValueError(message)
         result = alchemy_activity.as_hamster()
@@ -559,7 +561,7 @@ class ActivityManager(storage.BaseActivityManager):
             KeyError: If the given ``Activity`` can not be found in the database.
         """
 
-        message = _("Recieved {!r}.".format(activity))
+        message = _("Received {!r}.".format(activity))
         self.store.logger.debug(message)
 
         if not activity.pk:
@@ -596,7 +598,7 @@ class ActivityManager(storage.BaseActivityManager):
             KeyError: If no such pk was found.
         """
 
-        message = _("Recieved PK: '{}', raw={}.".format(pk, raw))
+        message = _("Received PK: '{}', raw={}.".format(pk, raw))
         self.store.logger.debug(message)
 
         result = self.store.session.query(AlchemyActivity).get(pk)
@@ -611,7 +613,7 @@ class ActivityManager(storage.BaseActivityManager):
 
     def get_by_composite(self, name, category, raw=False):
         """
-        Retrieve an activity by its name and category)
+        Retrieve an activity by its name and category.
 
         Args:
             name (str): The activities name.
@@ -631,7 +633,7 @@ class ActivityManager(storage.BaseActivityManager):
             of the underlying table.
         """
 
-        message = _("Recieved name: '{}' and {!r} with 'raw'={}.".format(name, category, raw))
+        message = _("Received name: '{}' and {!r} with 'raw'={}.".format(name, category, raw))
         self.store.logger.debug(message)
 
         name = str(name)
@@ -680,7 +682,7 @@ class ActivityManager(storage.BaseActivityManager):
                 is ordered by ``Activity.name``.
         """
 
-        message = _("Recieved '{!r}', 'search_term'={}.".format(category, search_term))
+        message = _("Received '{!r}', 'search_term'={}.".format(category, search_term))
         self.store.logger.debug(message)
 
         query = self.store.session.query(AlchemyActivity)
@@ -719,7 +721,7 @@ class TagManager(storage.BaseTagManager):
             hamster_lib.Tag or None: Tag.
         """
 
-        message = _("Recieved {!r} and raw={}.".format(tag, raw))
+        message = _("Received {!r} and raw={}.".format(tag, raw))
         self.store.logger.debug(message)
 
         try:
@@ -749,7 +751,7 @@ class TagManager(storage.BaseTagManager):
                 be more apropiate.
         """
 
-        message = _("Recieved {!r} and raw={}.".format(tag, raw))
+        message = _("Received {!r} and raw={}.".format(tag, raw))
         self.store.logger.debug(message)
 
         if tag.pk:
@@ -792,7 +794,7 @@ class TagManager(storage.BaseTagManager):
             KeyError: If no tag with passed PK was found.
         """
 
-        message = _("Recieved {!r}.".format(tag))
+        message = _("Received {!r}.".format(tag))
         self.store.logger.debug(message)
 
         if not tag.pk:
@@ -836,7 +838,7 @@ class TagManager(storage.BaseTagManager):
             ValueError: If tag passed does not have an pk.
         """
 
-        message = _("Recieved {!r}.".format(tag))
+        message = _("Received {!r}.".format(tag))
         self.store.logger.debug(message)
 
         if not tag.pk:
@@ -870,7 +872,7 @@ class TagManager(storage.BaseTagManager):
             We need this for now, as the service just provides pks, not names.
         """
 
-        message = _("Recieved PK: '{}'.".format(pk))
+        message = _("Received PK: '{}'.".format(pk))
         self.store.logger.debug(message)
 
         result = self.store.session.query(AlchemyTag).get(pk)
@@ -899,7 +901,7 @@ class TagManager(storage.BaseTagManager):
 
         """
 
-        message = _("Recieved name: '{}', raw={}.".format(name, raw))
+        message = _("Received name: '{}', raw={}.".format(name, raw))
         self.store.logger.debug(message)
 
         name = text_type(name)
@@ -1025,7 +1027,7 @@ class FactManager(storage.BaseFactManager):
             ValueError: If the timewindow is already occupied.
         """
 
-        self.store.logger.debug(_("Recieved '{!r}', 'raw'={}.".format(fact, raw)))
+        self.store.logger.debug(_("Received '{!r}', 'raw'={}.".format(fact, raw)))
 
         if not fact.pk:
             message = _(
@@ -1081,7 +1083,7 @@ class FactManager(storage.BaseFactManager):
             KeyError:If no fact with passed PK was found.
         """
 
-        self.store.logger.debug(_("Recieved '{!r}'.".format(fact)))
+        self.store.logger.debug(_("Received '{!r}'.".format(fact)))
 
         if not fact.pk:
             message = _(
@@ -1115,7 +1117,7 @@ class FactManager(storage.BaseFactManager):
             KeyError: If no Fact of given key was found.
         """
 
-        self.store.logger.debug(_("Recieved PK: {}', 'raw'={}.".format(pk, raw)))
+        self.store.logger.debug(_("Received PK: {}', 'raw'={}.".format(pk, raw)))
 
         result = self.store.session.query(AlchemyFact).get(pk)
         if not result:

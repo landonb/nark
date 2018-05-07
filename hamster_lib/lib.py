@@ -69,7 +69,7 @@ class HamsterControl(object):
         self.lib_logger = self._get_logger()
         self.store = self._get_store()
         self.sql_logger = self._sql_logger()
-        # convinience attributes
+        # convenience attributes
         self.categories = self.store.categories
         self.activities = self.store.activities
         self.facts = self.store.facts
