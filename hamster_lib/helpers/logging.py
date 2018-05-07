@@ -21,10 +21,18 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
+from colored import fg, bg, attr
+
 
 def formatter_basic():
     formatter = logging.Formatter(
-        '[%(levelname)s] %(asctime)s %(name)s %(funcName)s:  %(message)s'
+        '%s%s[%%(levelname)s]%s %s%%(asctime)s%s %s%%(name)s %%(funcName)s%s:  %s%s%%(message)s%s' %
+        (
+            attr('underlined'), fg('magenta'), attr('reset'),
+            fg('yellow'), attr('reset'),
+            fg('light_blue'), attr('reset'),
+            attr('bold'), fg('green'), attr('reset'),
+        )
     )
     return formatter
 

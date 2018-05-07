@@ -17,6 +17,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'appdirs',
+    'colored',
     'configparser >= 3.5.0b2',
     'future',
     'icalendar',
