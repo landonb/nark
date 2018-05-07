@@ -38,6 +38,7 @@ import pickle
 import hamster_lib
 from future.utils import python_2_unicode_compatible
 from hamster_lib import objects
+from hamster_lib.helpers import logging as logging_helpers
 from hamster_lib.helpers import time as time_helpers
 from hamster_lib.helpers import helpers
 
@@ -55,8 +56,7 @@ class BaseStore(object):
 
     def __init__(self, config):
         self.config = config
-        self.logger = logging.getLogger('hamster_lib.storage')
-        self.logger.addHandler(logging.NullHandler())
+        self.init_logger()
         self.categories = BaseCategoryManager(self)
         self.activities = BaseActivityManager(self)
         self.tags = BaseTagManager(self)
@@ -68,6 +68,32 @@ class BaseStore(object):
         we shut down gracefully.
         """
         raise NotImplementedError
+
+    def init_logger(self):
+        self.logger = logging.getLogger('hamster_lib.storage')
+        self.logger.addHandler(logging.NullHandler())
+
+        warn_name = False
+        try:
+            sql_log_level = self.config['sql_log_level']
+            try:
+                log_level = int(sql_log_level)
+            except ValueError:
+                log_level = logging.getLevelName(sql_log_level)
+        except KeyError:
+            log_level = logging.WARNING
+        try:
+            self.logger.setLevel(int(log_level))
+        except ValueError:
+            warn_name = True
+            log_level = logging.WARNING
+
+        stream_handler = logging.StreamHandler()
+        formatter = logging_helpers.formatter_basic()
+        formatter = logging_helpers.setupHandler(stream_handler, formatter, self.logger)
+
+        if warn_name:
+            self.logger.warning('Unknown sql_log_level specified: {}'.format(sql_log_level))
 
 
 @python_2_unicode_compatible
