@@ -29,7 +29,7 @@ from hamster_lib.helpers import time as time_helpers
 from hamster_lib.helpers.helpers import parse_raw_fact
 from six import text_type
 
-# Named tuples used  to 'serialize' our object instances.
+# Named tuples used to 'serialize' our object instances.
 CategoryTuple = namedtuple('CategoryTuple', ('pk', 'name'))
 TagTuple = namedtuple('TagTuple', ('pk', 'name'))
 ActivityTuple = namedtuple('ActivityTuple', ('pk', 'name', 'category', 'deleted'))

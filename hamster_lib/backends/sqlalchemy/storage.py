@@ -412,7 +412,6 @@ class CategoryManager(storage.BaseCategoryManager):
 
 @python_2_unicode_compatible
 class ActivityManager(storage.BaseActivityManager):
-
     def get_or_create(self, activity, raw=False):
         """
         Custom version of the default method in order to provide access to alchemy instances.
@@ -938,7 +937,6 @@ class TagManager(storage.BaseTagManager):
 
 @python_2_unicode_compatible
 class FactManager(storage.BaseFactManager):
-
     def _timeframe_available_for_fact(self, fact):
         """
         Determine if a timeframe given by the passed fact is already occupied.
@@ -955,7 +953,7 @@ class FactManager(storage.BaseFactManager):
             bool: ``True`` if the timeframe is available, ``False`` if not.
 
         Note:
-            If  the given fact is the only fact instance within the given timeframe
+            If the given fact is the only fact instance within the given timeframe
             the timeframe is considered available (for this fact)!
         """
         start, end = fact.start, fact.end
@@ -1135,16 +1133,20 @@ class FactManager(storage.BaseFactManager):
 
         ``get_all`` already took care of any normalization required.
 
-        If no timeframe is given, return all facts?
+        If no timeframe is given, return all facts.
 
         Args:
-            start (datetime.datetime, optional): Start of timeframe.
-            end (datetime.datetime, optional): End of timeframe.
-            search_term (text_type): Cases insensitive strings to match
-                ``Activity.name`` or ``Category.name``.
-            partial (bool): If ``False`` only facts which start *and* end
-                within the timeframe will be considered. If ``False`` facts
-                with either ``start``, ``end`` or both within the timeframe
+            start (datetime.datetime, optional):
+                Start of timeframe.
+            end (datetime.datetime, optional):
+                End of timeframe.
+            search_term (text_type):
+                Case-insensitive strings to match ``Activity.name`` or
+                ``Category.name``.
+            partial (bool):
+                If ``False`` only facts which start *and* end within the
+                timeframe will be considered. If ``False`` facts with
+                either ``start``, ``end`` or both within the timeframe
                 will be returned.
 
         Returns:
@@ -1157,9 +1159,6 @@ class FactManager(storage.BaseFactManager):
 
         def get_complete_overlaps(query, start, end):
             """Return all facts with start and end within the timeframe."""
-
-            # SQLAlchemy does not allow ``<=`` used with ``None`` values, so we have
-            # check for passed arguments first.
             if start:
                 query = query.filter(AlchemyFact.start >= start)
             if end:
@@ -1168,13 +1167,14 @@ class FactManager(storage.BaseFactManager):
 
         def get_partial_overlaps(query, start, end):
             """Return all facts where either start or end falls within the timeframe."""
-
-            # SQLAlchemy does not allow ``<=`` used with ``None`` values, so we have
-            # check for passed arguments first.
             if start and not end:
-                query = query.filter(or_(AlchemyFact.start >= start, AlchemyFact.end >= start))
+                query = query.filter(
+                    or_(AlchemyFact.start >= start, AlchemyFact.end >= start),
+                )
             elif not start and end:
-                query = query.filter(or_(AlchemyFact.start <= end, AlchemyFact.end <= end))
+                query = query.filter(
+                    or_(AlchemyFact.start <= end, AlchemyFact.end <= end),
+                )
             elif start and end:
                 query = query.filter(or_(
                     and_(AlchemyFact.start >= start, AlchemyFact.start <= end),
@@ -1189,7 +1189,7 @@ class FactManager(storage.BaseFactManager):
             Limit query to facts that match the search terms.
 
             Terms are matched against ``Category.name`` and ``Activity.name``.
-            The matching is not case sensitive.
+            The matching is not case-sensitive.
             """
             query = query.join(AlchemyActivity).join(AlchemyCategory).filter(
                 or_(AlchemyActivity.name.ilike('%{}%'.format(search_term)),

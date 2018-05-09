@@ -48,7 +48,7 @@ gettext.install('hamster-lib', **kwargs)
 @python_2_unicode_compatible
 class HamsterControl(object):
     """
-    All mandatory config options are set as part of the contoler setup.
+    All mandatory config options are set as part of the controller setup.
     Any client may overwrite those values. but we can always asume that the
     controller does have a value set.
 

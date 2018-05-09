@@ -24,7 +24,7 @@ hamster-lib
 A library for common timetracking functionality.
 
 ``hamster-lib`` aims to be a replacement for ``projecthamster``  backend
-library.  While we are not able to function as a  straight forward drop-in
+library.  While we are not able to function as a straight forward drop-in
 replacement we try very hard to stay as compatible as possible. As a
 consequence clients are able to switch to ``hamster-lib``  merely by changing
 some basic calls. Most of the semantics and return values will be as before.

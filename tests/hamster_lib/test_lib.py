@@ -11,7 +11,7 @@ from hamster_lib.storage import BaseStore
 class TestController:
     @pytest.mark.parametrize('storetype', ['sqlalchemy'])
     def test_get_store_valid(self, controller, storetype):
-        """Make sure  we recieve a valid ``store`` instance."""
+        """Make sure we recieve a valid ``store`` instance."""
         # [TODO]
         # Once we got backend registration up and running this should be
         # improved to check actual store type for that backend.

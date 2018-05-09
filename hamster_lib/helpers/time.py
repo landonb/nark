@@ -89,7 +89,7 @@ def extract_time_info(text):
     Args:
         text (text_type): Raw string containing encoded time(-span) information.
             Date/Time-combinations are expected in a ``YYYY-MM-DD hh:mm`` format.
-            Relative  times can be given with ``-minutes``.
+            Relative times can be given with ``-minutes``.
             Please note that either *relative* or *absolute* times will be considered.
             It is possible to either just specify a start date (as time, date,
             or datetime) or a timerange (start and end). If a timerange is given
@@ -146,7 +146,7 @@ def extract_time_info(text):
     }
     rest = None
 
-    # Individual patterns for time/date  substrings.
+    # Individual patterns for time/date substrings.
     relative_pattern = '(?P<relative>-\d+)'
     time_pattern = '(?P<time>\d{2}:\d{2}(?P<seconds>:\d{2})?)'
     date_pattern = '(?P<date>\d{4}-\d{2}-\d{2})'
@@ -239,7 +239,7 @@ def complete_timeframe(timeframe, config, partial=False):
             datetime.date: Either the original date or the default solution.
 
         Raises:
-            TypeError: If ``date``` is neither ``None`` nor  ``datetime.date`` instance.
+            TypeError: If ``date``` is neither ``None`` nor ``datetime.date`` instance.
 
         Note:
             Reference behavior taken from [hamster-cli](https://github.com/projecthamster/

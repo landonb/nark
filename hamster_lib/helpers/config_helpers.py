@@ -197,7 +197,7 @@ def load_config_file(appdirs=DEFAULT_APPDIRS, file_name=DEFAULT_CONFIG_FILENAME,
             config file that is created if no pre-existing one can be found.
 
     Returns:
-        SafeConfigParser: Config loaded from file, either from the the  pre-existing config
+        SafeConfigParser: Config loaded from file, either from the the pre-existing config
             file or the one created with fallback values.
     """
     if not fallback_config_instance:
