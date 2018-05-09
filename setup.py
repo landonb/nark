@@ -23,6 +23,7 @@ requirements = [
     'icalendar',
     'six',
     'sqlalchemy',
+    'sqlalchemy-migrate',
 ]
 
 setup(

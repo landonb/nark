@@ -25,6 +25,7 @@ from builtins import str
 
 from future.utils import python_2_unicode_compatible
 from hamster_lib import storage
+from migrate.versioning.api import db_version
 from six import text_type
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
@@ -92,6 +93,7 @@ class SQLAlchemyStore(storage.BaseStore):
             self.logger.debug(_("Instantiated session."))
         else:
             self.session = session
+        self.migrations = MigrationsManager(self)
         self.categories = CategoryManager(self)
         self.activities = ActivityManager(self)
         self.tags = TagManager(self)
@@ -180,6 +182,21 @@ class SQLAlchemyStore(storage.BaseStore):
                 engine=engine, user=user, password=password, host=host, port=port, name=name)
         return database_url
 
+
+@python_2_unicode_compatible
+class MigrationsManager(storage.BaseMigrationsManager):
+    def downgrade(self):
+        """Downgrade the database according to its migration version."""
+        raise 'FIXME!'
+
+    def upgrade(self):
+        """Upgrade the database according to its migration version."""
+        raise 'FIXME!'
+
+    def version(self):
+        """Returns the migration version of the database indicated by the config."""
+        url = self._get_db_url()
+        return db_version(url)
 
 @python_2_unicode_compatible
 class CategoryManager(storage.BaseCategoryManager):

@@ -105,6 +105,23 @@ class BaseManager(object):
 
 
 @python_2_unicode_compatible
+class BaseMigrationsManager(BaseManager):
+    """Base class defining the minimal API for a MigrationsManager implementation."""
+
+    def downgrade(self):
+        """Downgrade the database according to its migration version."""
+        raise NotImplementedError
+
+    def upgrade(self):
+        """Upgrade the database according to its migration version."""
+        raise NotImplementedError
+
+    def version(self):
+        """Returns the migration version of the database indicated by the config."""
+        raise NotImplementedError
+
+
+@python_2_unicode_compatible
 class BaseCategoryManager(BaseManager):
     """Base class defining the minimal API for a CategoryManager implementation."""
 
