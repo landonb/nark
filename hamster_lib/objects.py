@@ -459,6 +459,20 @@ class Fact(object):
     def end(self):
         return self._end
 
+    @property
+    def start_ftime(self):
+        try:
+            return self._start.strftime("%Y-%m-%d %H:%M:%S")
+        except AttributeError:
+            return ''
+
+    @property
+    def end_ftime(self):
+        try:
+            return self._end.strftime("%Y-%m-%d %H:%M:%S")
+        except AttributeError:
+            return ''
+
     @start.setter
     def start(self, start):
         """
@@ -590,10 +604,26 @@ class Fact(object):
         self._description = description
 
     @property
+    def activity_name(self):
+        """..."""
+        try:
+            return self.activity.name
+        except AttributeError:
+            return ''
+
+    @property
     def category(self):
         """For convenience only."""
         # (lb): Whose convenience? If this DRYs code, it's for that, too. =)
         return self.activity.category
+
+    @property
+    def category_name(self):
+        """..."""
+        try:
+            return self.activity.category.name
+        except AttributeError:
+            return ''
 
     @property
     def tags_sorted(self):
