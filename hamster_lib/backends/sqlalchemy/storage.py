@@ -77,27 +77,10 @@ class SQLAlchemyStore(storage.BaseStore):
             The ``session`` argument is mainly useful for tests.
         """
         super(SQLAlchemyStore, self).__init__(config)
-        # [TODO]
-        # It takes more deliberation to decide how to handle engine creation if
-        # we receive a session. Should be require the session to bring its own
-        # engine?
-        engine = create_engine(self._get_db_url())
-        self.logger.debug(_('Engine created.'))
-        objects.metadata.bind = engine
-        objects.metadata.create_all(engine)
-        self.logger.debug(_("Database tables created."))
-        if not session:
-            Session = sessionmaker(bind=engine)  # NOQA
-            self.logger.debug(_("Bound engine to session-object."))
-            self.session = Session()
-            self.logger.debug(_("Instantiated session."))
-        else:
-            self.session = session
-        self.migrations = MigrationsManager(self)
-        self.categories = CategoryManager(self)
-        self.activities = ActivityManager(self)
-        self.tags = TagManager(self)
-        self.facts = FactManager(self)
+        engine = self.create_storage_engine()
+        self.create_storage_tables(engine)
+        self.initiate_storage_session(session, engine)
+        self.create_item_managers()
 
     def cleanup(self):
         pass
@@ -181,6 +164,41 @@ class SQLAlchemyStore(storage.BaseStore):
             database_url = '{engine}://{user}:{password}@{host}{port}/{name}'.format(
                 engine=engine, user=user, password=password, host=host, port=port, name=name)
         return database_url
+
+    def create_storage_engine(self):
+        # [TODO]
+        # It takes more deliberation to decide how to handle engine creation
+        # if we receive a session. Should be require the session to bring
+        # its own engine?
+        engine = create_engine(self._get_db_url())
+        self.logger.debug(_('Engine created.'))
+        # NOTE: (lb): I succeeded at setting the ORM (Sqlite3) logger level,
+        # but it didn't log anything (I was hoping to see all statements).
+        #
+        #  import logging
+        #  engine.logger.setLevel(logging.DEBUG)
+        return engine
+
+    def create_storage_tables(self, engine):
+        objects.metadata.bind = engine
+        objects.metadata.create_all(engine)
+        self.logger.debug(_("Database tables created."))
+
+    def initiate_storage_session(self, session, engine):
+        if not session:
+            Session = sessionmaker(bind=engine)  # NOQA
+            self.logger.debug(_("Bound engine to session-object."))
+            self.session = Session()
+            self.logger.debug(_("Instantiated session."))
+        else:
+            self.session = session
+
+    def create_item_managers(self):
+        self.migrations = MigrationsManager(self)
+        self.categories = CategoryManager(self)
+        self.activities = ActivityManager(self)
+        self.tags = TagManager(self)
+        self.facts = FactManager(self)
 
 
 @python_2_unicode_compatible
