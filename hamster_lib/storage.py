@@ -1061,6 +1061,107 @@ class BaseFactManager(BaseManager):
         """Convenience function to assemble the tmpfile_path from config settings."""
         return self.store.config['tmpfile_path']
 
+    def starting_at(self, fact):
+        """
+        Return the fact starting at the moment in time indicated by fact.start.
+
+        Args:
+            fact (hamster_lib.Fact):
+                The Fact to reference, with its ``start`` set.
+
+        Returns:
+            hamster_lib.Fact: The found Fact, or None if none found.
+
+        Raises:
+            IntegrityError: If more than one Fact found at given time.
+        """
+        raise NotImplementedError
+
+    def ending_at(self, fact):
+        """
+        Return the fact ending at the moment in time indicated by fact.end.
+
+        Args:
+            fact (hamster_lib.Fact):
+                The Fact to reference, with its ``end`` set.
+
+        Returns:
+            hamster_lib.Fact: The found Fact, or None if none found.
+
+        Raises:
+            IntegrityError: If more than one Fact found at given time.
+        """
+        raise NotImplementedError
+
+    def antecedent(self, fact):
+        """
+        Return the Fact immediately preceding the indicated Fact.
+
+        Args:
+            fact (hamster_lib.Fact):
+                The Fact to reference, with its ``start`` set.
+
+        Returns:
+            hamster_lib.Fact: The antecedent Fact, or None if none found.
+
+        Raises:
+            ValueError: If neither ``start`` nor ``end`` is set on fact.
+        """
+        raise NotImplementedError
+
+    def subsequent(self, fact):
+        """
+        Return the Fact immediately following the indicated Fact.
+
+        Args:
+            fact (hamster_lib.Fact):
+                The Fact to reference, with its ``end`` set.
+
+        Returns:
+            hamster_lib.Fact: The subsequent Fact, or None if none found.
+
+        Raises:
+            ValueError: If neither ``start`` nor ``end`` is set on fact.
+        """
+        raise NotImplementedError
+
+    def strictly_during(self, start, end, result_limit=10):
+        """
+        Return the fact(s) strictly contained within a start and end time.
+
+        Args:
+            start (datetime.datetime):
+                Start datetime of facts to find.
+
+            end (datetime.datetime):
+                End datetime of facts to find.
+
+            result_limit (int):
+                Maximum number of facts to find, else raise OverflowError.
+
+        Returns:
+            list: List of ``hamster_lib.Facts`` instances.
+        """
+        raise NotImplementedError
+
+    def surrounding(self, fact_time):
+        """
+        Return the fact(s) at the given moment in time.
+        Note that this excludes a fact that starts or ends at this time.
+        (See antecedent and subsequent for finding those facts.)
+
+        Args:
+            fact_time (datetime.datetime):
+                Time of fact(s) to match.
+
+        Returns:
+            list: List of ``hamster_lib.Facts`` instances.
+
+        Raises:
+            IntegrityError: If more than one Fact found at given time.
+        """
+        raise NotImplementedError
+
 
 # ***
 # *** Helper functions.
