@@ -342,7 +342,15 @@ class Fact(object):
     # ``store.db.Storage``. Among it ``__get_facts()``.
     #
 
-    def __init__(self, activity, start, end=None, pk=None, description=None, tags=None):
+    def __init__(
+        self,
+        activity,
+        start,
+        end=None,
+        pk=None,
+        description=None,
+        tags=None,
+    ):
         """
         Initiate our new instance.
 
@@ -383,7 +391,9 @@ class Fact(object):
             self.tags = [Tag(name=tagname) for tagname in tags]
 
     @classmethod
-    def create_from_raw_fact(cls, raw_fact, config=None):
+    def create_from_raw_fact(
+        cls, raw_fact, config=None,
+    ):
         """
         Construct a new ``hamster_lib.Fact`` from a ``raw fact`` string.
 
@@ -427,7 +437,7 @@ class Fact(object):
         if activity_name:
             activity = Activity(activity_name)
         else:
-            raise ValueError(_("Unable to extract activity name"))
+            raise ValueError(_('Unable to extract activity name'))
 
         category_name = extracted_components['category']
         if category_name:

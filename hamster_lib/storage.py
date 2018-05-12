@@ -657,6 +657,7 @@ class BaseFactManager(BaseManager):
         self.store.logger.debug(_("Fact: '{}' has been received.".format(fact)))
 
         fact_min_delta = datetime.timedelta(seconds=int(self.store.config['fact_min_delta']))
+
         if fact.delta and (fact.delta < fact_min_delta):
             message = _(
                 "The passed facts delta is shorter than the mandatory value of {} seconds"
@@ -737,7 +738,12 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
-    def get_all(self, start=None, end=None, filter_term=''):
+    def get_all(
+        self,
+        start=None,
+        end=None,
+        filter_term='',
+    ):
         """
         Return all facts within a given timeframe (beginning of start_date
         end of end_date) that match given search terms.
@@ -815,9 +821,17 @@ class BaseFactManager(BaseManager):
             self.store.logger.debug(message)
             raise ValueError(message)
 
-        return self._get_all(start, end, filter_term)
+        return self._get_all(
+            start, end, filter_term,
+        )
 
-    def _get_all(self, start=None, end=None, search_terms='', partial=False):
+    def _get_all(
+        self,
+        start=None,
+        end=None,
+        search_terms='',
+        partial=False,
+    ):
         """
         Return a list of ``Facts`` matching given criteria.
 
@@ -855,7 +869,7 @@ class BaseFactManager(BaseManager):
         today = datetime.date.today()
         return self.get_all(
             datetime.datetime.combine(today, self.store.config['day_start']),
-            time_helpers.end_day_to_datetime(today, self.store.config)
+            time_helpers.end_day_to_datetime(today, self.store.config),
         )
 
     def _start_tmp_fact(self, fact):

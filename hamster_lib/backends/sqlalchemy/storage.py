@@ -401,7 +401,6 @@ class CategoryManager(storage.BaseCategoryManager):
             name (str): Unique name of the category.
             raw (bool): Wether to return the AlchemyCategory instead.
 
-
         Returns:
             hamster_lib.Category: Category of given name.
 
@@ -438,11 +437,10 @@ class CategoryManager(storage.BaseCategoryManager):
         # or even spamming the logs with the enrire list. Instead we just state
         # that we return something.
         self.store.logger.debug(_("Returning list of all categories."))
-        return [
-            alchemy_category for alchemy_category in (
-                self.store.session.query(AlchemyCategory).order_by(AlchemyCategory.name).all()
-            )
-        ]
+        query = self.store.session.query(AlchemyCategory)
+        query = query.order_by(AlchemyCategory.name)
+        categories = query.all()
+        return categories
 
 
 @python_2_unicode_compatible
@@ -667,7 +665,9 @@ class ActivityManager(storage.BaseActivityManager):
             of the underlying table.
         """
 
-        message = _("Received name: '{}' and {!r} with 'raw'={}.".format(name, category, raw))
+        message = _(
+            "Received name: '{}' and {!r} with 'raw'={}.".format(name, category, raw)
+        )
         self.store.logger.debug(message)
 
         name = str(name)
@@ -677,8 +677,9 @@ class ActivityManager(storage.BaseActivityManager):
                 alchemy_category = self.store.categories.get_by_name(category, raw=True)
             except KeyError:
                 message = _(
-                    "The category passed ({}) does not exist in the backend. Consequently no"
-                    " related activity can be returned.".format(category)
+                    'The category passed ({}) does not exist in the backend. '
+                    'Consequently no related activity can be returned.'
+                    .format(category)
                 )
                 self.store.logger.error(message)
                 raise KeyError(message)
@@ -686,8 +687,9 @@ class ActivityManager(storage.BaseActivityManager):
             alchemy_category = None
 
         try:
-            result = self.store.session.query(AlchemyActivity).filter_by(name=name).filter_by(
-                category=alchemy_category).one()
+            query = self.store.session.query(AlchemyActivity)
+            query = query.filter_by(name=name).filter_by(category=alchemy_category)
+            result = query.one()
         except NoResultFound:
             message = _(
                 "No activity of given combination (name: {name}, category: {category})"
@@ -1162,7 +1164,13 @@ class FactManager(storage.BaseFactManager):
         self.store.logger.debug(_("Returning {!r}.".format(result)))
         return result
 
-    def _get_all(self, start=None, end=None, search_term='', partial=False):
+    def _get_all(
+        self,
+        start=None,
+        end=None,
+        search_term='',
+        partial=False,
+    ):
         """
         Return all facts within a given timeframe that match given search terms.
 
@@ -1200,13 +1208,18 @@ class FactManager(storage.BaseFactManager):
                 query = query.filter(AlchemyFact.end <= end)
             return query
 
+        # NOTE: (lb): Nothing calls get_partial_overlaps except tests.
         def get_partial_overlaps(query, start, end):
             """Return all facts where either start or end falls within the timeframe."""
             if start and not end:
+                # (lb): Checking AlchemyFact.end >= start is sorta redundant,
+                # because AlchemyFact.start >= start should guarantee that.
                 query = query.filter(
                     or_(AlchemyFact.start >= start, AlchemyFact.end >= start),
                 )
             elif not start and end:
+                # (lb): Checking AlchemyFact.start <= end is sorta redundant,
+                # because AlchemyFact.end <= end should guarantee that.
                 query = query.filter(
                     or_(AlchemyFact.start <= end, AlchemyFact.end <= end),
                 )
