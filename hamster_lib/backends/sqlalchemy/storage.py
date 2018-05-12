@@ -266,7 +266,7 @@ class CategoryManager(storage.BaseCategoryManager):
         self.store.logger.debug(_("'{!r}' added.".format(alchemy_category)))
 
         if not raw:
-            alchemy_category = alchemy_category.as_hamster()
+            alchemy_category = alchemy_category.as_hamster(self.store)
         return alchemy_category
 
     def _update(self, category):
@@ -312,7 +312,7 @@ class CategoryManager(storage.BaseCategoryManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        return alchemy_category.as_hamster()
+        return alchemy_category.as_hamster(self.store)
 
     def remove(self, category):
         """
@@ -373,7 +373,7 @@ class CategoryManager(storage.BaseCategoryManager):
             raise KeyError(message)
         message = _("Returning {!r}.".format(result))
         self.store.logger.debug(message)
-        return result.as_hamster()
+        return result.as_hamster(self.store)
 
     def get_by_name(self, name, raw=False):
         """
@@ -404,7 +404,7 @@ class CategoryManager(storage.BaseCategoryManager):
             raise KeyError(message)
 
         if not raw:
-            result = result.as_hamster()
+            result = result.as_hamster(self.store)
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
@@ -502,7 +502,7 @@ class ActivityManager(storage.BaseActivityManager):
         self.store.session.commit()
         result = alchemy_activity
         if not raw:
-            result = alchemy_activity.as_hamster()
+            result = alchemy_activity.as_hamster(self.store)
         self.store.logger.debug(_("Returning {!r}.").format(result))
         return result
 
@@ -559,7 +559,7 @@ class ActivityManager(storage.BaseActivityManager):
             )
             self.store.logger.error(message)
             raise ValueError(message)
-        result = alchemy_activity.as_hamster()
+        result = alchemy_activity.as_hamster(self.store)
         self.store.logger.debug(_("Returning: {!r}.".format(result)))
         return result
 
@@ -623,7 +623,7 @@ class ActivityManager(storage.BaseActivityManager):
             self.store.logger.error(message)
             raise KeyError(message)
         if not raw:
-            result = result.as_hamster()
+            result = result.as_hamster(self.store)
         self.store.logger.debug(_("Returning: {!r}.".format(result)))
         return result
 
@@ -678,7 +678,7 @@ class ActivityManager(storage.BaseActivityManager):
             self.store.logger.error(message)
             raise KeyError(message)
         if not raw:
-            result = result.as_hamster()
+            result = result.as_hamster(self.store)
         self.store.logger.debug(_("Returning: {!r}.".format(result)))
         return result
 
@@ -791,7 +791,7 @@ class TagManager(storage.BaseTagManager):
         self.store.logger.debug(_("'{!r}' added.".format(alchemy_tag)))
 
         if not raw:
-            alchemy_tag = alchemy_tag.as_hamster()
+            alchemy_tag = alchemy_tag.as_hamster(self.store)
         return alchemy_tag
 
     def _update(self, tag):
@@ -837,7 +837,7 @@ class TagManager(storage.BaseTagManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        return alchemy_tag.as_hamster()
+        return alchemy_tag.as_hamster(self.store)
 
     def remove(self, tag):
         """
@@ -898,7 +898,7 @@ class TagManager(storage.BaseTagManager):
             raise KeyError(message)
         message = _("Returning {!r}.".format(result))
         self.store.logger.debug(message)
-        return result.as_hamster()
+        return result.as_hamster(self.store)
 
     def get_by_name(self, name, raw=False):
         """
@@ -929,7 +929,7 @@ class TagManager(storage.BaseTagManager):
             raise KeyError(message)
 
         if not raw:
-            result = result.as_hamster()
+            result = result.as_hamster(self.store)
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
@@ -1140,7 +1140,7 @@ class FactManager(storage.BaseFactManager):
             self.store.logger.error(message)
             raise KeyError(message)
         if not raw:
-            result = result.as_hamster()
+            result = result.as_hamster(self.store)
         self.store.logger.debug(_("Returning {!r}.".format(result)))
         return result
 
@@ -1231,7 +1231,5 @@ class FactManager(storage.BaseFactManager):
         if search_term:
             query = filter_search_term(query, search_term)
 
-        # [FIXME]
-        # Depending on scale, this could be a problem.
-        self.store.logger.debug(_("Returning list of results."))
-        return [fact.as_hamster() for fact in query.all()]
+        self.store.logger.debug(_('query: {}'.format(str(query))))
+        return [fact.as_hamster(self.store) for fact in query.all()]

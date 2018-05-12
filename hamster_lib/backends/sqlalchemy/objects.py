@@ -64,7 +64,7 @@ class AlchemyCategory(Category):
         self.pk = pk
         self.name = name
 
-    def as_hamster(self):
+    def as_hamster(self, store):
         """Provide an convenient way to return it as a ``hamster_lib.Category`` instance."""
         return Category(
             pk=self.pk,
@@ -91,17 +91,30 @@ class AlchemyActivity(Activity):
         self.category = category
         self.deleted = deleted
 
-    def as_hamster(self):
+    def as_hamster(self, store):
         """Provide an convenient way to return it as a ``hamster_lib.Activity`` instance."""
         if self.category:
-            category = self.category.as_hamster()
+            category = self.category.as_hamster(store)
         else:
             category = None
+        activity_name = self.name
+        # Play nice with "corrupt" databases (lacking integrity):
+        # Allow nameless items, rather than raising ValueError.
+        # User can easily discover problem through CLI, and they can fix it.
+        # `hamster list activities ''` to find nameless activities and their IDs.
+        # Then, `hamster edit activity #24 newname@newcategory`.
+        if not activity_name:
+            if self.deleted:
+                activity_name = '<unnamed>'
+                store.logger.warn(_('Activity in database has no name: {}').format(self))
+            # else, let Activity() raise ValueError; at least for now.
+            # MAYBE: else, if this is an issue, add a migration option to
+            #              fix nameless activities. Or something.
         return Activity(
             pk=self.pk,
-            name=self.name,
+            name=activity_name,
             category=category,
-            deleted=self.deleted
+            deleted=self.deleted,
         )
 
 
@@ -118,11 +131,11 @@ class AlchemyTag(Tag):
         self.pk = pk
         self.name = name
 
-    def as_hamster(self):
+    def as_hamster(self, store):
         """Provide an convenient way to return it as a ``hamster_lib.Tag`` instance."""
         return Tag(
             pk=self.pk,
-            name=self.name
+            name=self.name,
         )
 
 
@@ -139,7 +152,6 @@ class AlchemyFact(Fact):
         Raises:
             TypeError: If ``fact`` is not an ``Fact`` instance.
         """
-
         self.pk = pk
         self.activity = activity
         self.start = start
@@ -148,15 +160,15 @@ class AlchemyFact(Fact):
         # Tags can only be assigned after the fact has been created.
         self.tags = list()
 
-    def as_hamster(self):
+    def as_hamster(self, store):
         """Provide an convenient way to return it as a ``hamster_lib.Fact`` instance."""
         return Fact(
             pk=self.pk,
-            activity=self.activity.as_hamster(),
+            activity=self.activity.as_hamster(store),
             start=self.start,
             end=self.end,
             description=self.description,
-            tags=set([tag.as_hamster() for tag in self.tags]),
+            tags=set([tag.as_hamster(store) for tag in self.tags]),
         )
 
 
@@ -232,3 +244,4 @@ fact_tags = Table(
     Column('fact_id', Integer, ForeignKey(facts.c.id)),
     Column('tag_id', Integer, ForeignKey(tags.c.id)),
 )
+
