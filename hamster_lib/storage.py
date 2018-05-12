@@ -30,6 +30,7 @@ Note:
 
 from __future__ import absolute_import, unicode_literals
 
+import copy
 import datetime
 import logging
 import os
@@ -1060,6 +1061,157 @@ class BaseFactManager(BaseManager):
     def _get_tmp_fact_path(self):
         """Convenience function to assemble the tmpfile_path from config settings."""
         return self.store.config['tmpfile_path']
+
+    # FIXME/2018-05-12: (lb): insert_forcefully does not respect tmp_fact!
+    def insert_forcefully(self, fact):
+        """
+        Insert the possibly open-ended Fact into the set of logical
+        (chronological) Facts, possibly changing the time frames of,
+        or removing, other Facts.
+
+        Args:
+            fact (hamster_lib.Fact):
+                The Fact to insert, with either or both ``start`` and ``end`` set.
+
+        Returns:
+            list: List of ``Facts``, ordered by ``start``.
+
+        Raises:
+            ValueError: If start or end time is not specified and cannot be
+                deduced by other Facts in the system.
+        """
+        # Steps:
+        #   Find fact overlapping start.
+        #   Find fact overlapping end.
+        #   Find facts wholly contained between start and end.
+        #   Return unique set of facts indicating edits and deletions.
+
+        def _insert_forcefully(facts, fact):
+            conflicts = []
+            conflicts += find_conflict(facts, fact, 'start')
+            conflicts += find_conflict(facts, fact, 'end')
+            if fact.start and fact.end:
+                conflicts += facts.strictly_during(fact.start, fact.end)
+            resolve_overlapping(fact, conflicts)
+            return conflicts
+
+        def find_conflict(facts, fact, ref_time):
+            conflicts = []
+            find_edge = False
+            fact_time = getattr(fact, ref_time)
+            if fact_time:  # fact.start or fact.end
+                conflicts = facts.surrounding(fact_time)
+                conflicts = [(fact, copy.deepcopy(fact)) for fact in conflicts]
+                if not conflicts:
+                    find_edge = True
+            else:
+                find_edge = True
+            if find_edge:
+                conflicts = inspect_time_boundary(facts, fact, ref_time)
+            return conflicts
+
+        def inspect_time_boundary(facts, fact, ref_time):
+            conflict = None
+            if ref_time == 'start':
+                if fact.start is None:
+                    set_start_per_antecedent(facts, fact)
+                else:
+                    conflict = facts.starting_at(fact)
+            else:
+                assert ref_time == 'end'
+                if fact.end is None:
+                    set_end_per_subsequent(facts, fact)
+                else:
+                    conflict = facts.ending_at(fact)
+            conflicts = [(conflict, copy.deepcopy(conflict))] if conflict else []
+            return conflicts
+
+        # FIXME/2018-05-12: (lb): insert_forcefully does not respect tmp_fact!
+        #   if 'hamster-to', and tmp fact, then start now, and end tmp_fact.
+        #   if 'hamster-from', and tmp fact, then either close tmp at now,
+        #     or at from time, or complain (add to conflicts) if overlapped.
+        def set_start_per_antecedent(facts, fact):
+            assert fact.start is None
+            # Find a Fact with start < fact.end.
+            ref_fact = facts.antecedent(fact)
+            if not ref_fact:
+                raise ValueError(_(
+                    'Please specify `start` for fact being added before time existed.'
+                ))
+            # Because we called surrounding and got nothing,
+            # we know that found_fact.end < fact.end,
+            # so we can set fact.start accordingly.
+            assert ref_fact.end < fact.end
+            fact.start = ref_fact.end
+
+        def set_end_per_subsequent(facts, fact):
+            assert fact.end is None
+            ref_fact = facts.subsequent(fact)
+            if not ref_fact:
+                # FIXME/MAYBE: (lb): Probably want to set to 'now' automatically?
+                raise ValueError(_(
+                    'Please specify `end` for fact being added after time existed.'
+                ))
+            assert ref_fact.start > fact.start
+            fact.end = ref_fact.start
+
+        def resolve_overlapping(fact, conflicts):
+            seen = set()
+            resolved = []
+            for conflict, original in conflicts:
+                assert conflict.pk > 0
+                if conflict.pk in seen:
+                    next
+                seen.add(conflict.pk)
+                resolved += resolve_fact_conflict(fact, conflict)
+            return resolved
+
+        def resolve_fact_conflict(fact, conflict):
+            resolved = []
+            if fact.start <= conflict.start:
+                resolve_fact_starts_before(fact, conflict, resolved)
+            elif fact.end >= conflict.end:
+                resolve_fact_ends_after(fact, conflict, resolved)
+            else:
+                # The new fact is contained *within* the conflict!
+                resolve_fact_is_inside(fact, conflict, resolved)
+            return resolved
+
+        def resolve_fact_starts_before(fact, conflict, resolved):
+            if fact.end >= conflict.end:
+                conflict.deleted = True
+                conflict.dirty_reasons.add('deleted')
+            else:
+                assert conflict.start < fact.end
+                conflict.start = fact.end
+                conflict.dirty_reasons.add('start')
+            resolved.append(conflict)
+
+        def resolve_fact_ends_after(fact, conflict, resolved):
+            assert fact.start < conflict.end
+            conflict.end = fact.start
+            conflict.dirty_reasons.add('end')
+            resolved.append(conflict)
+
+        def resolve_fact_is_inside(fact, conflict, resolved):
+            resolve_fact_split_prior(fact, conflict, resolved)
+            resolve_fact_split_after(fact, conflict, resolved)
+
+        def resolve_fact_split_prior(fact, conflict, resolved):
+            lconflict = copy.deepcopy(conflict)
+            lconflict.end = fact.start
+            lconflict.dirty_reasons.add('end')
+            resolved.append(lconflict)
+
+        def resolve_fact_split_after(fact, conflict, resolved):
+            rconflict = copy.deepcopy(conflict)
+            rconflict.start = fact.end
+            rconflict.dirty_reasons.add('start')
+            resolved.append(rconflict)
+
+        # The actual insert_forcefully function.
+
+        return _insert_forcefully(self, fact)
 
     def starting_at(self, fact):
         """
