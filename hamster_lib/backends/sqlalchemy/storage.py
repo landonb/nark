@@ -27,7 +27,7 @@ from future.utils import python_2_unicode_compatible
 from hamster_lib import storage
 from migrate.versioning.api import db_version
 from six import text_type
-from sqlalchemy import create_engine
+from sqlalchemy import asc, desc, create_engine, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
@@ -425,7 +425,7 @@ class CategoryManager(storage.BaseCategoryManager):
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
-    def get_all(self):
+    def get_all(self, **kwargs):
         """
         Get all categories.
 
@@ -439,6 +439,7 @@ class CategoryManager(storage.BaseCategoryManager):
         self.store.logger.debug(_("Returning list of all categories."))
         query = self.store.session.query(AlchemyCategory)
         query = query.order_by(AlchemyCategory.name)
+        query = _query_apply_limit_offset(query, **kwargs)
         categories = query.all()
         return categories
 
@@ -702,45 +703,153 @@ class ActivityManager(storage.BaseActivityManager):
         self.store.logger.debug(_("Returning: {!r}.".format(result)))
         return result
 
-    def get_all(self, category=False, search_term='', sort_by_category=False):
+    def get_all(self, *args, sort_col='', **kwargs):
+        """Get all activities."""
+        if not sort_col:
+            sort_col = 'name'
+        return self._get_all(*args, include_usage=False, sort_col=sort_col, **kwargs)
+
+    def get_all_by_usage(self, *args, sort_col='', **kwargs):
+        if not sort_col:
+            sort_col = 'usage'
+        return self._get_all(*args, include_usage=True, sort_col=sort_col, **kwargs)
+
+    def _get_all(
+        self,
+        include_usage=True,
+        search_term='',
+        category=False,
+        sort_col='',
+        sort_order='',
+        # kwargs: limit, offset
+        **kwargs
+    ):
         """
+        FIXME: Update this docstring.
+
         Retrieve all matching activities stored in the backend.
 
         Args:
+            include_usage (int, optional): If true, include count of Facts that reference
+                each Activity.
             category (hamster_lib.Category, optional): Limit activities to this category.
                 Defaults to ``False``. If ``category=None`` only activities without a
                 category will be considered.
-            search_term (str, optional): Limit activities to those matching this string a substring
+            search_term (str, optional): Limit activities to those matching a substring
                 in their name. Defaults to ``empty string``.
+            sort_col (str, optional): Which columns to sort by. Defaults to 'activity'.
+                Choices: 'activity, 'category', 'start', 'usage'.
+                Note that 'start' and 'usage' only apply if include_usage.
+            asc (bool, optional): Whether to search the results in ascending order.
+            desc (bool, optional): Whether to search the results in descending order.
+            limit (int, optional): Query "limit".
+            offset (int, optional): Query "offset".
 
         Returns:
-            list: List of ``hamster_lib.Activity`` instances matching constrains. This list
-                is ordered by ``Activity.name``.
+            list: List of ``hamster_lib.Activity`` instances matching constrains.
+                The list is ordered by ``Activity.name``.
         """
 
         message = _("Received '{!r}', 'search_term'={}.".format(category, search_term))
         self.store.logger.debug(message)
 
-        query = self.store.session.query(AlchemyActivity)
+        query, count_col = self._get_all_query(include_usage)
 
-        if category is not False:
-            if category:
-                alchemy_category = self.store.session.query(AlchemyCategory).get(category.pk)
-            else:
-                alchemy_category = None
-            query = query.filter_by(category=alchemy_category)
+        query = self._get_all_filter_by_category(query, category)
+
+        query = self._get_all_filter_by_search_term(query, search_term)
+
+        query = self._get_all_group_by(query, include_usage)
+
+        query = self._get_all_order_by(query, sort_col, sort_order, include_usage, count_col)
+
+        query = _query_apply_limit_offset(query, **kwargs)
+
+        query = self._get_all_with_entities(query, count_col)
+
+        self.store.logger.debug(_('Query') + ': {}'.format(str(query)))
+
+        results = query.all()
+
+        return results
+
+    def _get_all_query(self, include_usage):
+        if not include_usage:
+            count_col = None
+            query = self.store.session.query(AlchemyActivity)
         else:
-            pass
+            count_col = func.count(AlchemyActivity.pk).label('uses')
+            query = self.store.session.query(AlchemyFact, count_col)
+            query = query.join(AlchemyFact.activity)
+            # NOTE: (lb): SQLAlchemy will lazy load category if/when caller
+            #       references it. (I tried using query.options(joinedload(...))
+            #       but that route was a mess; and I don't know SQLAlchemy well.)
+        # SQLAlchemy automatically lazy-loads activity.category if we
+        # reference it after executing the query, so we don't need to
+        # join, except that we want to sort by category.name, so we do.
+        query = query.join(AlchemyCategory)
+        return query, count_col
 
-        if search_term:
-            query = query.filter(AlchemyActivity.name.ilike('%{}%'.format(search_term)))
-        if sort_by_category:
-            query = query.join(AlchemyCategory).order_by(AlchemyCategory.name)
-        query = query.order_by(AlchemyActivity.name)
-        self.store.logger.debug(
-            _('Returning list of matches') + ': {}'.format(str(query))
+    def _get_all_filter_by_category(self, query, category):
+        if category is False:
+            return query
+        if category:
+            category_query = self.store.session.query(AlchemyCategory)
+            alchemy_category = category_query.get(category.pk)
+        else:
+            alchemy_category = None
+        query = query.filter_by(category=alchemy_category)
+        return query
+
+    def _get_all_filter_by_search_term(self, query, search_term):
+        if not search_term:
+            return query
+        query = query.filter(
+            AlchemyActivity.name.ilike('%{}%'.format(search_term))
         )
-        return query.all()
+        return query
+
+    def _get_all_group_by(self, query, include_usage):
+        if not include_usage:
+            return query
+        query = query.group_by(AlchemyActivity.pk)
+        return query
+
+    def _get_all_order_by(self, query, sort_col, sort_order, include_usage, count_col):
+        direction = desc if sort_order == 'desc' else asc
+        if sort_col == 'category':
+            query = query.order_by(direction(AlchemyCategory.name))
+            query = query.order_by(direction(AlchemyActivity.name))
+        elif sort_col == 'start':
+            assert include_usage
+            direction = desc if not sort_order else direction
+            query = query.order_by(direction(AlchemyFact.start))
+        elif sort_col == 'usage':
+            assert include_usage and count_col is not None
+            direction = desc if not sort_order else direction
+            query = query.order_by(direction(count_col))
+        else:
+            assert sort_col in ('', 'name', 'activity', 'tag', 'fact')
+            query = query.order_by(direction(AlchemyActivity.name))
+            query = query.order_by(direction(AlchemyCategory.name))
+        return query
+
+    def _get_all_with_entities(self, query, count_col):
+        if count_col is None:
+            return query
+        # (lb): Get tricky with it. The query now SELECTs all Fact columns,
+        #  and it JOINs and GROUPs BY activities to produce the counts. But
+        #  the Fact is meaningless after the group-by; we want the Activity
+        #  instead. So use with_entities trickery to tell SQLAlchemy which
+        #  columns we really want -- it'll transform the query so that the
+        #  SELECT fetches all the Activity columns; but the JOIN and GROUP BY
+        #  remain the same! (I'm not quite sure how it works, but it does.)
+        # And as an aside, because of the 1-to-many relationship, the
+        #  Activity table does not reference Fact, so, e.g., this wouldn't
+        #  work, or at least I assume not, but maybe SQLAlchemy would figure
+        #  it out: self.store.session.query(AlchemyActivity).join(AlchemyFact).
+        query = query.with_entities(AlchemyActivity, count_col)
+        return query
 
 
 @python_2_unicode_compatible
@@ -953,23 +1062,95 @@ class TagManager(storage.BaseTagManager):
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
-    def get_all(self):
+    def get_all(self, *args, sort_col='', **kwargs):
+        """Get all tags."""
+        if not sort_col:
+            sort_col = 'name'
+        return self._get_all(*args, include_usage=False, sort_col=sort_col, **kwargs)
+
+    def get_all_by_usage(self, *args, sort_col='', **kwargs):
+        if not sort_col:
+            sort_col = 'usage'
+        return self._get_all(*args, include_usage=True, sort_col=sort_col, **kwargs)
+
+    def _get_all(
+        self,
+        include_usage=True,
+        search_term='',
+        sort_col='',
+        sort_order='',
+        **kwargs
+    ):
         """
-        Get all tags.
+        Get all tags, with filtering and sorting options.
 
         Returns:
-            list: List of all Categories present in the database, ordered by lower(name).
+            list: List of all Tags present in the database,
+                  ordered by lower(name), or most recently
+                  used; possibly filtered by a search term.
         """
 
-        # We avoid the costs of always computing the length of the returned list
-        # or even spamming the logs with the enrire list. Instead we just state
-        # that we return something.
-        self.store.logger.debug(_("Returning list of all tags."))
-        return [
-            alchemy_tag for alchemy_tag in (
-                self.store.session.query(AlchemyTag).order_by(AlchemyTag.name).all()
-            )
-        ]
+        query, count_col = self._get_all_query(include_usage)
+
+        # FIXME/MIGATIONS: (lb): Add column: Fact.deleted.
+        #condition = and_(condition, not AlchemyFact.deleted)
+        #query = query.filter(condition)
+
+        query = self._get_all_group_by(query, include_usage)
+
+        query = self._get_all_order_by(query, sort_col, sort_order, include_usage, count_col)
+
+        query = _query_apply_limit_offset(query, **kwargs)
+
+        query = self._get_all_with_entities(query, count_col)
+
+        self.store.logger.debug(_('query: {}'.format(str(query))))
+
+        results = query.all()
+
+        return results
+
+    def _get_all_query(self, include_usage):
+        if not include_usage:
+            count_col = None
+            query = self.store.session.query(AlchemyTag)
+        else:
+            count_col = func.count(AlchemyTag.pk).label('uses')
+            query = self.store.session.query(AlchemyTag, count_col)
+            query = query.join(objects.fact_tags)
+            query = query.join(AlchemyFact)
+        return query, count_col
+
+
+    def _get_all_group_by(self, query, include_usage):
+        if not include_usage:
+            return query
+        query = query.group_by(AlchemyTag.pk)
+        return query
+
+    def _get_all_order_by(self, query, sort_col, sort_order, include_usage, count_col):
+        direction = desc if sort_order == 'desc' else asc
+        if sort_col == 'start':
+            assert include_usage
+            direction = desc if not sort_order else direction
+            query = query.order_by(direction(AlchemyFact.start))
+        elif sort_col == 'usage':
+            assert include_usage and count_col is not None
+            direction = desc if not sort_order else direction
+            query = query.order_by(direction(count_col))
+        else:
+            # Meh. Rather than make a custom --order for each command,
+            # just using the same big list. So 'activity', 'category',
+            # etc., are acceptable here, if not simply ignored.
+            assert sort_col in ('', 'name', 'activity', 'category', 'tag', 'fact')
+            query = query.order_by(direction(AlchemyTag.name))
+        return query
+
+    def _get_all_with_entities(self, query, count_col):
+        if count_col is None:
+            return query
+        query = query.with_entities(AlchemyTag, count_col)
+        return query
 
 
 @python_2_unicode_compatible
@@ -1170,6 +1351,8 @@ class FactManager(storage.BaseFactManager):
         end=None,
         search_term='',
         partial=False,
+        order='desc',
+        **kwargs
     ):
         """
         Return all facts within a given timeframe that match given search terms.
@@ -1262,5 +1445,47 @@ class FactManager(storage.BaseFactManager):
         if search_term:
             query = filter_search_term(query, search_term)
 
+        if order == 'desc':
+            query = query.order_by(desc(AlchemyFact.start))
+        elif order == 'asc':
+            query = query.order_by(asc(AlchemyFact.start))
+        query = _query_apply_limit_offset(query, **kwargs)
+
         self.store.logger.debug(_('query: {}'.format(str(query))))
         return [fact.as_hamster(self.store) for fact in query.all()]
+
+
+# ***
+# *** Helper functions.
+# ***
+
+
+def _query_apply_limit_offset(query, **kwargs):
+    """
+    Applies 'limit' and 'offset' to the database fetch query
+
+    On applies 'limit' if specified; and only applies 'offset' if specified.
+
+    Args:
+        query (???): Query (e.g., return from self.store.session.query(...))
+
+        kwargs (keyword arguments):
+            limit (int|str, optional): Limit to apply to the query.
+
+            offset (int|str, optional): Offset to apply to the query.
+
+    Returns:
+        list: The query passed in, modified with limit and/or offset, maybe.
+    """
+    try:
+        if kwargs['limit']:
+            query = query.limit(kwargs['limit'])
+    except KeyError:
+        pass
+    try:
+        if kwargs['offset']:
+            query = query.offset(kwargs['offset'])
+    except KeyError:
+        pass
+    return query
+

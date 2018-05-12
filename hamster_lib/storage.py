@@ -280,7 +280,7 @@ class BaseCategoryManager(BaseManager):
         """
         raise NotImplementedError
 
-    def get_all(self):
+    def get_all(self, **kwargs):
         """
         Return a list of all categories.
 
@@ -440,7 +440,7 @@ class BaseActivityManager(BaseManager):
 
         raise NotImplementedError
 
-    def get_all(self, category=False, search_term=''):
+    def get_all(self, category=False, search_term='', sort_by_column='', **kwargs):
         """
         Return all matching activities.
 
@@ -467,6 +467,12 @@ class BaseActivityManager(BaseManager):
         # ``__get_category_activity`` order by lower(activity.name),
         # ``__get_activities```orders by most recent start date *and*
         # lower(activity.name).
+        raise NotImplementedError
+
+    def get_all_by_usage(self, category=False, search_term='', sort_by_column='', **kwargs):
+        """
+        Similar to get_all(), but include count of Facts that reference each Activity.
+        """
         raise NotImplementedError
 
 
@@ -624,12 +630,20 @@ class BaseTagManager(BaseManager):
         """
         raise NotImplementedError
 
-    def get_all(self):
+    def get_all(
+        self,
+        search_term='',
+        sort_by_name=False,
+        sort_by_use=False,
+        **kwargs
+    ):
         """
-        Return a list of all tags.
+        Get all tags, with filtering and sorting options.
 
         Returns:
-            list: List of ``Tags``, ordered by ``lower(name)``.
+            list: List of all Tags present in the database,
+                  ordered by lower(name), or most recently
+                  used; possibly filtered by a search term.
         """
         raise NotImplementedError
 
@@ -743,6 +757,8 @@ class BaseFactManager(BaseManager):
         start=None,
         end=None,
         filter_term='',
+        order='desc',
+        **kwargs
     ):
         """
         Return all facts within a given timeframe (beginning of start_date
@@ -822,7 +838,7 @@ class BaseFactManager(BaseManager):
             raise ValueError(message)
 
         return self._get_all(
-            start, end, filter_term,
+            start, end, filter_term, order=order, limit=limit, offset=offset,
         )
 
     def _get_all(
@@ -831,6 +847,8 @@ class BaseFactManager(BaseManager):
         end=None,
         search_terms='',
         partial=False,
+        order='desc',
+        **kwargs
     ):
         """
         Return a list of ``Facts`` matching given criteria.
@@ -1042,3 +1060,29 @@ class BaseFactManager(BaseManager):
     def _get_tmp_fact_path(self):
         """Convenience function to assemble the tmpfile_path from config settings."""
         return self.store.config['tmpfile_path']
+
+
+# ***
+# *** Helper functions.
+# ***
+
+
+def _query_apply_limit_offset(query, **kwargs):
+    """
+    Applies 'limit' and 'offset' to the database fetch query
+
+    On applies 'limit' if specified; and only applies 'offset' if specified.
+
+    Args:
+        query (???): Query (e.g., return from self.store.session.query(...))
+
+        kwargs (keyword arguments):
+            limit (int|str, optional): Limit to apply to the query.
+
+            offset (int|str, optional): Offset to apply to the query.
+
+    Returns:
+        list: The query passed in, modified with limit and/or offset, maybe.
+    """
+    raise NotImplementedError
+
