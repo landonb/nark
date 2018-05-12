@@ -455,6 +455,10 @@ class Fact(object):
     def start(self):
         return self._start
 
+    @property
+    def end(self):
+        return self._end
+
     @start.setter
     def start(self, start):
         """
@@ -478,10 +482,6 @@ class Fact(object):
             start = None
         self._start = start
 
-    @property
-    def end(self):
-        return self._end
-
     @end.setter
     def end(self, end):
         """
@@ -504,21 +504,6 @@ class Fact(object):
         else:
             end = None
         self._end = end
-
-    @property
-    def description(self):
-        return self._description
-
-    @description.setter
-    def description(self, description):
-        """"
-        Normalize all descriptions that evaluate to ``False``. Store everything else as string.
-        """
-        if description:
-            description = text_type(description)
-        else:
-            description = None
-        self._description = description
 
     @property
     def delta(self):
@@ -588,6 +573,21 @@ class Fact(object):
             *legacy hamster*.
         """
         return self.start.date()
+
+    @property
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, description):
+        """"
+        Normalize all descriptions that evaluate to ``False``. Store everything else as string.
+        """
+        if description:
+            description = text_type(description)
+        else:
+            description = None
+        self._description = description
 
     @property
     def category(self):
