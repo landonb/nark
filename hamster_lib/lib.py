@@ -73,6 +73,7 @@ class HamsterControl(object):
         self.migrations = self.store.migrations
         self.categories = self.store.categories
         self.activities = self.store.activities
+        self.tags = self.store.tags
         self.facts = self.store.facts
 
     def update_config(self, config):
