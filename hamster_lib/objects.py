@@ -807,3 +807,32 @@ class Fact(object):
         else:
             return str(result)
 
+    def friendly_diff(self, other, fmttr=text_type):
+        result = ''
+        result += self.diff_other(other, 'start', 'start_ftime')
+        result += self.diff_other(other, 'end', 'end_ftime')
+        result += self.diff_other(other, 'activity', 'activity_name')
+        result += self.diff_other(other, 'category', 'category_name')
+        result += self.diff_other(other, 'tags', 'tags_sorted')
+        result += self.diff_other(other, 'description', 'description')
+        return result
+
+    def diff_other(self, other, name, prop):
+        prefix = '  '
+        self_val = getattr(self, prop)
+        other_val = getattr(other, prop)
+        if self_val != other_val:
+            self_val = '{}{}{}'.format(
+                fg('spring_green_3a'), self_val, attr('reset'),
+            )
+            other_val = ' => {}{}{}{}{}'.format(
+                attr('bold'), attr('underlined'), fg('light_salmon_3b'), other_val, attr('reset'),
+            )
+        else:
+            other_val = ''
+        attr_diff = '{}{:.<19} : {}{}\n'.format(
+            prefix, name, self_val, other_val,
+        )
+        return attr_diff
+
+
