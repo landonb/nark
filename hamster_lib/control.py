@@ -28,12 +28,15 @@ from collections import namedtuple
 
 from future.utils import python_2_unicode_compatible
 
+
 BackendRegistryEntry = namedtuple('BackendRegistryEntry', ('verbose_name', 'store_class'))
+
 
 REGISTERED_BACKENDS = {
     'sqlalchemy': BackendRegistryEntry('SQLAlchemy',
         'hamster_lib.backends.sqlalchemy.SQLAlchemyStore'),
 }
+
 
 # See: https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#gettext
 # [FIXME]

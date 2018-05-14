@@ -39,6 +39,7 @@ from future.utils import python_2_unicode_compatible
 from icalendar import Calendar, Event
 from six import text_type
 
+
 FactTuple = namedtuple('FactTuple', ('start', 'end', 'activity', 'category',
     'description', 'duration'))
 

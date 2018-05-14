@@ -12,7 +12,7 @@ configuration information. Right now, all that is needed are the following key/v
 pairs::
 
     'work_dir': ``path``; Where to store any temporary data
-    'store': 'sqlalchemy'; refer to ``hamsterlib.lib.REGISTERED_BACKENDS``
+    'store': 'sqlalchemy'; refer to ``hamsterlib.control.REGISTERED_BACKENDS``
     'db_path': ``sqlalchemy db path``,
     'tmpfile_name': filename; under which any 'ongoing fact' will be saved
     'fact_min_delta': integer; Amount of seconds under which fact creation will be prohibited.

@@ -8,7 +8,7 @@ import datetime
 
 import faker as faker_
 import pytest
-from hamster_lib.lib import HamsterControl
+from hamster_lib.control import HamsterControl
 from hamster_lib.storage import BaseStore
 from pytest_factoryboy import register
 

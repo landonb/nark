@@ -59,10 +59,11 @@ import datetime
 import os
 
 import appdirs
-import hamster_lib
 from configparser import SafeConfigParser
 from six import string_types
 from six import text_type
+
+from ..control import REGISTERED_BACKENDS
 
 
 class HamsterAppDirs(appdirs.AppDirs):
@@ -331,7 +332,7 @@ def configparser_to_backend_config(cp_instance):
         # [TODO]
         # This should be deligated to a dedicated validation function!
         store = cp_instance.get('Backend', 'store')
-        if store not in hamster_lib.REGISTERED_BACKENDS.keys():
+        if store not in REGISTERED_BACKENDS.keys():
             raise ValueError(_("Unrecognized store option."))
         return store
 
