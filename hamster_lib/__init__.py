@@ -20,6 +20,9 @@
 """hamster-lib provides generic time tracking functionality."""
 
 from .control import REGISTERED_BACKENDS, HamsterControl  # NOQA
-from .objects import Activity, Category, Fact, Tag  # NOQA
+from .items.activity import Activity
+from .items.category import Category
+from .items.fact import Fact
+from .items.tag import Tag
 
 __version__ = '0.13.2'

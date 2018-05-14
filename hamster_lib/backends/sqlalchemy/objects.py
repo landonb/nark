@@ -39,14 +39,19 @@ Note:
     here.
 """
 
-
 from __future__ import unicode_literals
 
 from future.utils import python_2_unicode_compatible
-from hamster_lib import Activity, Category, Fact, Tag
-from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer,
-                        MetaData, Table, Unicode, UniqueConstraint)
+from sqlalchemy import (
+    Boolean, Column, DateTime, ForeignKey, Integer, MetaData, Table, Unicode, UniqueConstraint,
+)
 from sqlalchemy.orm import mapper, relationship
+
+from ...items.activity import Activity
+from ...items.category import Category
+from ...items.fact import Fact
+from ...items.tag import Tag
+
 
 DEFAULT_STRING_LENGTH = 254
 
