@@ -1,7 +1,5 @@
 # -*- encoding: utf-8 -*-
 
-# Copyright (C) 2015-2016 Eric Goller <eric.goller@ninjaduck.solutions>
-
 # This file is part of 'hamster-lib'.
 #
 # 'hamster-lib' is free software: you can redistribute it and/or modify
@@ -17,9 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Submodule providing a SQLAlchemy storage backend for ``hamster-lib``."""
+from __future__ import unicode_literals
 
-from .objects import (AlchemyActivity, AlchemyCategory, AlchemyFact,  # NOQA
-                      AlchemyTag)
-from .storage import SQLAlchemyStore  # NOQA
+from future.utils import python_2_unicode_compatible
+from migrate.versioning.api import db_version
+
+from ....managers.migrate import BaseMigrationsManager
+
+
+@python_2_unicode_compatible
+class MigrationsManager(BaseMigrationsManager):
+    def downgrade(self):
+        """Downgrade the database according to its migration version."""
+        raise 'FIXME!'
+
+    def upgrade(self):
+        """Upgrade the database according to its migration version."""
+        raise 'FIXME!'
+
+    def version(self):
+        """Returns the migration version of the database indicated by the config."""
+        url = self._get_db_url()
+        return db_version(url)
 
