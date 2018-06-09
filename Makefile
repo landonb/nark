@@ -75,13 +75,17 @@ lint:
 
 test:
 	@echo "Use the PYTEST_ADDOPTS environment variable to add extra command line options."
-	py.test tests/
+	py.test $(TEST_ARGS) tests/
 
 test-all:
 	tox
 
+test-one:
+	# You can obviously also: TEST_ARGS=-x make test
+	py.test $(TEST_ARGS) -x tests/
+
 coverage:
-	coverage run -m pytest tests
+	coverage run -m pytest $(TEST_ARGS) tests
 	coverage report
 
 coverage-html: coverage
@@ -98,7 +102,6 @@ docs:
 
 isort:
 	isort --recursive setup.py hamster_lib/ tests/
-
 
 servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
