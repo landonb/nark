@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -29,18 +29,20 @@ from .managers.fact import BaseFactManager
 from .managers.tag import BaseTagManager
 
 
-__all__ = ['BaseStore',]
+__all__ = ['BaseStore', ]
 
 
 @python_2_unicode_compatible
 class BaseStore(object):
     """
-    A controller store provides unified interfaces to interact with our stored entities.
+    A controller store defines the interface to interact with stored entities,
+    regardless of the backend being used.
 
-    ``self.logger`` provides a dedicated logger instance for any storage related logging.
-    If you want to make use of it, just setup and attach your handlers and you are ready to go.
-    Be advised though, ``self.logger`` will be very verbose as on ``debug`` it will log any
-    method call and often even their returned instances.
+    ``self.logger`` provides a dedicated logger instance for any storage
+    related logging. If you want to make use of it, just setup and attach your
+    handlers and you are ready to go. Be advised though, ``self.logger`` will
+    be very verbose as on ``debug`` it will log any method call and often even
+    their returned instances.
     """
 
     def __init__(self, config):
@@ -79,7 +81,9 @@ class BaseStore(object):
 
         stream_handler = logging.StreamHandler()
         formatter = logging_helpers.formatter_basic()
-        formatter = logging_helpers.setupHandler(stream_handler, formatter, self.logger)
+        formatter = logging_helpers.setupHandler(
+            stream_handler, formatter, self.logger,
+        )
 
         if warn_name:
             self.logger.warning('Unknown sql_log_level specified: {}'.format(sql_log_level))

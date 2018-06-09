@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
+from future.utils import python_2_unicode_compatible
 
 from collections import namedtuple
-
-from future.utils import python_2_unicode_compatible
 from six import text_type
 
 

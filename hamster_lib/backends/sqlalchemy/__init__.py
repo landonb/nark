@@ -1,6 +1,4 @@
-# -*- encoding: utf-8 -*-
-
-# Copyright (C) 2015-2016 Eric Goller <eric.goller@ninjaduck.solutions>
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -19,7 +17,9 @@
 
 """Submodule providing a SQLAlchemy storage backend for ``hamster-lib``."""
 
-from .objects import (AlchemyActivity, AlchemyCategory, AlchemyFact,  # NOQA
-                      AlchemyTag)
-from .storage import SQLAlchemyStore  # NOQA
+# Export classes from here for other application to more easily import.
+from .objects import (  # noqa: F401
+    AlchemyActivity, AlchemyCategory, AlchemyFact, AlchemyTag,
+)
+from .storage import SQLAlchemyStore  # noqa: F401
 

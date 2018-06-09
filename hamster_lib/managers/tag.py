@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -16,7 +16,6 @@
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-
 from future.utils import python_2_unicode_compatible
 
 from . import BaseManager
@@ -57,6 +56,8 @@ class BaseTagManager(BaseManager):
             result = self._add(tag)
         return result
 
+    # ***
+
     def get_or_create(self, tag):
         """
         Check if we already got a tag with that name, if not create one.
@@ -91,6 +92,8 @@ class BaseTagManager(BaseManager):
             tag = None
         return tag
 
+    # ***
+
     def _add(self, tag):
         """
         Add a ``Tag`` to our backend.
@@ -109,6 +112,8 @@ class BaseTagManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
     def _update(self, tag):
         """
         Update a ``Tags`` values in our backend.
@@ -126,6 +131,8 @@ class BaseTagManager(BaseManager):
             ValueError: If tag passed does not have a PK.
         """
         raise NotImplementedError
+
+    # ***
 
     def remove(self, tag):
         """
@@ -146,6 +153,8 @@ class BaseTagManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
     def get(self, pk):
         """
         Get an ``Tag`` by its primary key.
@@ -162,6 +171,8 @@ class BaseTagManager(BaseManager):
 
         raise NotImplementedError
 
+    # ***
+
     def get_by_name(self, name):
         """
         Look up a tag by its name.
@@ -176,6 +187,8 @@ class BaseTagManager(BaseManager):
             KeyError: If no ``Tag`` with this name was found by the backend.
         """
         raise NotImplementedError
+
+    # ***
 
     def get_all(
         self,

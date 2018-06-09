@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -37,8 +37,8 @@ class BaseFactManager(BaseManager):
         """
         Save a Fact to our selected backend.
 
-        Unlike the private ``_add`` and ``_update`` methods, ``save`` enforces that
-        the config given ``fact_min_delta`` is enforced.
+        Unlike the private ``_add`` and ``_update`` methods, ``save``
+        requires that the config given ``fact_min_delta`` is enforced.
 
         Args:
             fact (hamster_lib.Fact): Fact to be saved. Needs to be complete otherwise
@@ -48,7 +48,8 @@ class BaseFactManager(BaseManager):
             hamster_lib.Fact: Saved Fact.
 
         Raises:
-            ValueError: If ``fact.delta`` is smaller than ``self.store.config['fact_min_delta']``-
+            ValueError: If ``fact.delta`` is smaller than
+              ``self.store.config['fact_min_delta']``
         """
         self.store.logger.debug(_("Fact: '{}' has been received.".format(fact)))
 
@@ -81,10 +82,12 @@ class BaseFactManager(BaseManager):
             hamster_lib.Fact: Added ``Fact``.
 
         Raises:
-            ValueError: If the passed fact has a PK assigned. New facts should not have one.
-            ValueError: If the timewindow is already occupied.
+            ValueError: If passed fact has a PK. New facts should not have one.
+            ValueError: If timewindow is already occupied.
         """
         raise NotImplementedError
+
+    # ***
 
     def _update(self, fact):
         """
@@ -126,6 +129,10 @@ class BaseFactManager(BaseManager):
         Args:
             pk (int): Primary key of the ``Fact to be retrieved``.
 
+            deleted (boolean, optional): False to restrict to non-deleted
+                Facts; True to find only those marked deleted; None to find
+                all.
+
         Returns:
             hamster_lib.Fact: The ``Fact`` corresponding to the primary key.
 
@@ -133,6 +140,8 @@ class BaseFactManager(BaseManager):
             KeyError: If primary key not found in the backend.
         """
         raise NotImplementedError
+
+    # ***
 
     def get_all(
         self,
@@ -146,26 +155,34 @@ class BaseFactManager(BaseManager):
         Return all facts within a given timeframe (beginning of start_date
         end of end_date) that match given search terms.
 
+        # FIXME/2018-06-11: (lb): Update args help... this is stale:
+
         Args:
-            start_date (datetime.datetime, optional): Consider only Facts starting at or after
-                this date. Alternatively you can also pass a ``datetime.datetime`` object
-                in which case its own time will be considered instead of the default ``day_start``
-                or a ``datetime.time`` which will be considered as today.
+            start_date (datetime.datetime, optional): Consider only Facts
+                starting at or after this date. If a time is not specified,
+                "00:00:00" is used; otherwise the time of the object is used.
                 Defaults to ``None``.
-            end_date (datetime.datetime, optional): Consider only Facts ending before or at
-                this date. Alternatively you can also pass a ``datetime.datetime`` object
-                in which case its own time will be considered instead of the default ``day_start``
-                or a ``datetime.time`` which will be considered as today.
-                Defaults to ``None``.
-            filter_term (str, optional): Only consider ``Facts`` with this string as part of their
-                associated ``Activity.name``
+
+            end_date (datetime.datetime, optional): Consider only Facts ending
+                before or at this date. If not time is specified, "00:00:00"
+                is used. Defaults to ``None``.
+
+            filter_term (str, optional): Only consider ``Facts`` with this
+                string as part of their associated ``Activity.name``
+
+            deleted (boolean, optional): False to restrict to non-deleted
+                Facts; True to find only those marked deleted; None to find
+                all.
+
+            order (string, optional): 'asc' or 'desc'; re: Fact.start.
 
         Returns:
             list: List of ``Facts`` matching given specifications.
 
         Raises:
-            TypeError: If ``start`` or ``end`` are not ``datetime.date``, ``datetime.time`` or
-                ``datetime.datetime`` objects.
+            TypeError: If ``start`` or ``end`` are not ``datetime.date``,
+                ``datetime.time`` or ``datetime.datetime`` objects.
+
             ValueError: If ``end`` is before ``start``.
 
         Note:
@@ -192,8 +209,8 @@ class BaseFactManager(BaseManager):
                 start = datetime.datetime.combine(datetime.date.today(), start)
             else:
                 message = _(
-                    "You need to pass either a datetime.date, datetime.time or datetime.datetime"
-                    " object."
+                    'You need to pass either a datetime.date, datetime.time'
+                    ' or datetime.datetime object.'
                 )
                 self.store.logger.debug(message)
                 raise TypeError(message)
@@ -209,8 +226,8 @@ class BaseFactManager(BaseManager):
                 end = datetime.datetime.combine(datetime.date.today(), end)
             else:
                 message = _(
-                    "You need to pass either a datetime.date, datetime.time or datetime.datetime"
-                    " object."
+                    'You need to pass either a datetime.date, datetime.time'
+                    ' or datetime.datetime object.'
                 )
                 raise TypeError(message)
 
@@ -236,14 +253,18 @@ class BaseFactManager(BaseManager):
         Return a list of ``Facts`` matching given criteria.
 
         Args:
-            start_date (datetime.datetime, optional): Consider only Facts starting at or after
-                this datetime. Defaults to ``None``.
+            start_date (datetime.datetime, optional): Consider only Facts
+                starting at or after this datetime. Defaults to ``None``.
             end_date (datetime.datetime): Consider only Facts ending before or at
                 this datetime. Defaults to ``None``.
             search_term (text_type): Cases insensitive strings to match
                 ``Activity.name`` or ``Category.name``.
+            deleted (boolean, optional): False to restrict to non-deleted
+                Facts; True to find only those marked deleted; None to find
+                all.
             partial (bool): If ``False`` only facts which start *and* end
                 within the timeframe will be considered.
+            order (string, optional): 'asc' or 'desc', 'natch.
 
         Returns:
             list: List of ``Facts`` matching given specifications.
@@ -254,6 +275,8 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
     def get_today(self):
         """
         Return all facts for today, while respecting ``day_start``.
@@ -262,7 +285,8 @@ class BaseFactManager(BaseManager):
             list: List of ``Fact`` instances.
 
         Note:
-            * This does only return proper facts and does not include any existing 'ongoing fact'.
+            * This does only return proper facts and does not include any
+              existing 'ongoing fact'.
         """
         self.store.logger.debug(_("Returning today's facts"))
 
@@ -401,7 +425,8 @@ class BaseFactManager(BaseManager):
         Provide a way to retrieve any existing 'ongoing fact'.
 
         Returns:
-            hamster_lib.Fact: An instance representing our current 'ongoing fact'.capitalize
+            hamster_lib.Fact: An instance representing our current
+                <ongoing fact>.
 
         Raises:
             KeyError: If no ongoing fact is present.
@@ -417,7 +442,7 @@ class BaseFactManager(BaseManager):
 
     def cancel_tmp_fact(self):
         """
-        Provide a way to stop an 'ongoing fact' without saving it in the backend.
+        Delete the current, ongoing, endless Fact. (Really just mark it deleted.)
 
         Returns:
             None: If everything worked as expected.
@@ -425,11 +450,7 @@ class BaseFactManager(BaseManager):
         Raises:
             KeyError: If no ongoing fact is present.
         """
-        # [TODO]
-        # Maybe it would be useful to return the canceled fact instead. So it
-        # would be available to clients. Otherwise they may be tempted to look
-        # it up before canceling. which would result in two retrievals.
-        self.store.logger.debug(_("Trying to cancel 'ongoing fact'."))
+        self.store.logger.debug(_("Cancelling 'ongoing fact'."))
 
         fact = helpers._load_tmp_fact(self._get_tmp_fact_path())
         if not fact:
@@ -461,13 +482,13 @@ class BaseFactManager(BaseManager):
             ValueError: If start or end time is not specified and cannot be
                 deduced by other Facts in the system.
         """
-        # Steps:
-        #   Find fact overlapping start.
-        #   Find fact overlapping end.
-        #   Find facts wholly contained between start and end.
-        #   Return unique set of facts indicating edits and deletions.
-
         def _insert_forcefully(facts, fact):
+            # Steps:
+            #   Find fact overlapping start.
+            #   Find fact overlapping end.
+            #   Find facts wholly contained between start and end.
+            #   Return unique set of facts indicating edits and deletions.
+
             conflicts = []
             conflicts += find_conflict(facts, fact, 'start')
             conflicts += find_conflict(facts, fact, 'end')
@@ -610,6 +631,8 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
     def ending_at(self, fact):
         """
         Return the fact ending at the moment in time indicated by fact.end.
@@ -658,6 +681,8 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
     def strictly_during(self, start, end, result_limit=10):
         """
         Return the fact(s) strictly contained within a start and end time.
@@ -676,6 +701,8 @@ class BaseFactManager(BaseManager):
             list: List of ``hamster_lib.Facts`` instances.
         """
         raise NotImplementedError
+
+    # ***
 
     def surrounding(self, fact_time):
         """

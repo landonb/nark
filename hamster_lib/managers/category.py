@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -16,7 +16,6 @@
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-
 from future.utils import python_2_unicode_compatible
 
 from . import BaseManager
@@ -39,7 +38,8 @@ class BaseCategoryManager(BaseManager):
             hamster_lib.Category: Saved Category
 
         Raises:
-            TypeError: If the ``category`` parameter is not a valid ``Category`` instance.
+            TypeError: If the ``category`` parameter is not a valid
+                ``Category`` instance.
         """
 
         if not isinstance(category, Category):
@@ -56,6 +56,8 @@ class BaseCategoryManager(BaseManager):
         else:
             result = self._add(category)
         return result
+
+    # ***
 
     def get_or_create(self, category):
         """
@@ -91,6 +93,8 @@ class BaseCategoryManager(BaseManager):
             category = None
         return category
 
+    # ***
+
     def _add(self, category):
         """
         Add a ``Category`` to our backend.
@@ -102,16 +106,18 @@ class BaseCategoryManager(BaseManager):
             hamster_lib.Category: Newly created ``Category`` instance.
 
         Raises:
-            ValueError: When the category name was already present! It is supposed to be
-            unique.
-            ValueError: If category passed already got an PK. Indicating that update would
-                be more appropriate.
+            ValueError: When the category name was already present!
+                It is supposed to be unique.
+            ValueError: If category passed already got an PK.
+                Indicating that update would be more appropriate.
 
         Note:
             * Legacy version stored the proper name as well as a ``lower(name)`` version
             in a dedicated field named ``search_name``.
         """
         raise NotImplementedError
+
+    # ***
 
     def _update(self, category):
         """
@@ -130,6 +136,8 @@ class BaseCategoryManager(BaseManager):
             ValueError: If category passed does not have a PK.
         """
         raise NotImplementedError
+
+    # ***
 
     def remove(self, category):
         """
@@ -151,6 +159,8 @@ class BaseCategoryManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
     def get(self, pk):
         """
         Get an ``Category`` by its primary key.
@@ -162,10 +172,13 @@ class BaseCategoryManager(BaseManager):
             hamster_lib.Category: ``Category`` with given primary key.
 
         Raises:
-            KeyError: If no ``Category`` with this primary key can be found by the backend.
+            KeyError: If no ``Category`` with this primary key can be found
+                by the backend.
         """
 
         raise NotImplementedError
+
+    # ***
 
     def get_by_name(self, name):
         """

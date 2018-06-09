@@ -15,7 +15,7 @@ Python 2 and 3 compability
 
 .. class:: compact
 
-* Declare encoding in first line: ``-*- encoding: utf-8 -*-``
+* Declare encoding in first line: ``-*- coding: utf-8 -*-``
 * Use *absolute_import* and *unicode_literals* from the ``__future__`` package.
 * Use *six.text_type* to cast a unicode string under python 2 and 3.
 

@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -33,7 +33,8 @@ from ....managers.tag import BaseTagManager
 class TagManager(BaseTagManager):
     def get_or_create(self, tag, raw=False):
         """
-        Custom version of the default method in order to provide access to alchemy instances.
+        Custom version of the default method in order to provide access to
+        alchemy instances.
 
         Args:
             tag (hamster_lib.Tag): Tag we want.
@@ -69,8 +70,8 @@ class TagManager(BaseTagManager):
 
         Raises:
             ValueError: If the name to be added is already present in the db.
-            ValueError: If tag passed already got an PK. Indicating that update would
-                be more apropiate.
+            ValueError: If tag passed already got an PK. Indicating that update
+                would be more apropiate.
         """
 
         message = _("Received {!r} and raw={}.".format(tag, raw))
@@ -78,19 +79,24 @@ class TagManager(BaseTagManager):
 
         if tag.pk:
             message = _(
-                "The tag ('{!r}') you are trying to add already has an PK."
-                " Are you sure you do not want to ``_update`` instead?".format(tag)
+                "The tag ('{!r}') being added already has a PK."
+                " Perhaps you want to ``_update`` instead?".format(tag)
             )
             self.store.logger.error(message)
             raise ValueError(message)
-        alchemy_tag = AlchemyTag(pk=None, name=tag.name)
+        alchemy_tag = AlchemyTag(
+            pk=None,
+            name=tag.name,
+            deleted=tag.deleted,
+            hidden=tag.hidden,
+        )
         self.store.session.add(alchemy_tag)
         try:
             self.store.session.commit()
         except IntegrityError as e:
             message = _(
-                "An error occured! Are you sure the tag.name is not already present in our"
-                " database? Here is the full original exception: '{}'.".format(e)
+                "An error occured! Are you sure that tag.name "
+                "is not already present? Error: '{}'.".format(e)
             )
             self.store.logger.error(message)
             raise ValueError(message)
@@ -121,8 +127,8 @@ class TagManager(BaseTagManager):
 
         if not tag.pk:
             message = _(
-                "The tag passed ('{!r}') does not seem to havea PK. We don't know"
-                "which entry to modify.".format(tag)
+                "The tag passed ('{!r}') does not seem to havea PK. "
+                "We don't know which entry to modify.".format(tag)
             )
             self.store.logger.error(message)
             raise ValueError(message)
@@ -137,8 +143,8 @@ class TagManager(BaseTagManager):
             self.store.session.commit()
         except IntegrityError as e:
             message = _(
-                "An error occured! Are you sure the tag.name is not already present in our"
-                " database? Here is the full original exception: '{}'.".format(e)
+                "An error occured! Are you sure that tag.name is not "
+                "already present in the database? Error: '{}'.".format(e)
             )
             self.store.logger.error(message)
             raise ValueError(message)
@@ -213,7 +219,6 @@ class TagManager(BaseTagManager):
         Args:
             name (str): Unique name of the tag.
             raw (bool): Wether to return the AlchemyTag instead.
-
 
         Returns:
             hamster_lib.Tag: Tag of given name.

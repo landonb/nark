@@ -1,6 +1,4 @@
-# -*- encoding: utf-8 -*-
-
-# Copyright (C) 2015-2016 Eric Goller <eric.goller@ninjaduck.solutions>
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster_lib'.
 #

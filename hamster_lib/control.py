@@ -1,6 +1,4 @@
-# -*- encoding: utf-8 -*-
-
-# Copyright (C) 2015-2016 Eric Goller <eric.goller@ninjaduck.solutions>
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -17,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
+from future.utils import python_2_unicode_compatible
 
 import gettext
 import importlib
@@ -26,22 +24,25 @@ import logging
 import sys
 from collections import namedtuple
 
-from future.utils import python_2_unicode_compatible
 
-
-BackendRegistryEntry = namedtuple('BackendRegistryEntry', ('verbose_name', 'store_class'))
+BackendRegistryEntry = namedtuple(
+    'BackendRegistryEntry', ('verbose_name', 'store_class'),
+)
 
 
 REGISTERED_BACKENDS = {
-    'sqlalchemy': BackendRegistryEntry('SQLAlchemy',
-        'hamster_lib.backends.sqlalchemy.SQLAlchemyStore'),
+    'sqlalchemy': BackendRegistryEntry(
+        'SQLAlchemy',
+        'hamster_lib.backends.sqlalchemy.SQLAlchemyStore',
+    ),
 }
 
 
 # See: https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#gettext
 # [FIXME]
-# Is this correct? http://www.wefearchange.org/2012/06/the-right-way-to-internationalize-your.html
-# seems to user ``sys.version_info.major > 3``
+# Is this correct?
+#   http://www.wefearchange.org/2012/06/the-right-way-to-internationalize-your.html
+# seems to use ``sys.version_info.major > 3``
 kwargs = {}
 if sys.version_info.major < 3:
     kwargs['unicode'] = True
@@ -88,8 +89,8 @@ class HamsterControl(object):
         """
         Setup the store used by this controller.
 
-        This method is in charge off figuring out the store type, its instantiation
-        as well as all additional configuration.
+        This method is in charge off figuring out the store type, its
+        instantiation as well as all additional configuration.
         """
 
         backend = REGISTERED_BACKENDS.get(self.config['store'])
@@ -105,8 +106,9 @@ class HamsterControl(object):
         """
         Setup and configure the main logger.
 
-        As the docs suggest we setup just a pseudo handler. Any client that actually
-        wants to use logging needs to setup its required handlers itself.
+        As the docs suggest we setup just a pseudo handler. Any client that
+        actually wants to use logging needs to setup its required handlers
+        itself.
         """
 
         lib_logger = logging.getLogger('hamster-lib.log')
@@ -117,8 +119,9 @@ class HamsterControl(object):
         """
         Setup and configure the SQLAlchemy database store logger.
 
-        As the docs suggest we setup just a pseudo handler. Any client that actually
-        wants to use logging needs to setup its required handlers itself.
+        As the docs suggest we setup just a pseudo handler. Any client that
+        actually wants to use logging needs to setup its required handlers
+        itself.
         """
         return self.store.logger
 

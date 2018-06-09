@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -34,7 +34,8 @@ from ....managers.activity import BaseActivityManager
 class ActivityManager(BaseActivityManager):
     def get_or_create(self, activity, raw=False):
         """
-        Custom version of the default method in order to provide access to alchemy instances.
+        Custom version of the default method in order to provide access to
+        Alchemy instances.
 
         Args:
             activity (hamster_lib.Activity): Activity we want.
@@ -83,6 +84,7 @@ class ActivityManager(BaseActivityManager):
 
         try:
             self.get_by_composite(activity.name, activity.category)
+            # FIXME/2018-06-08: (lb): DRY: See "Our database already" elsewhere.
             message = _("Our database already contains the passed name/category.name"
                         "combination.")
             self.store.logger.error(message)
@@ -137,6 +139,7 @@ class ActivityManager(BaseActivityManager):
 
         try:
             self.get_by_composite(activity.name, activity.category)
+            # FIXME/2018-06-08: (lb): DRY: See "Our database already" elsewhere.
             message = _("Our database already contains the passed name/category.name"
                         "combination.")
             self.store.logger.error(message)
@@ -150,8 +153,9 @@ class ActivityManager(BaseActivityManager):
             self.store.logger.error(message)
             raise KeyError(message)
         alchemy_activity.name = activity.name
-        alchemy_activity.category = self.store.categories.get_or_create(activity.category,
-            raw=True)
+        alchemy_activity.category = self.store.categories.get_or_create(
+            activity.category, raw=True,
+        )
         alchemy_activity.deleted = activity.deleted
         try:
             self.store.session.commit()
@@ -184,7 +188,9 @@ class ActivityManager(BaseActivityManager):
         self.store.logger.debug(message)
 
         if not activity.pk:
-            message = _("The activity you passed does not have a PK. Please provide one.")
+            message = _(
+                "The activity you passed does not have a PK. Please provide one."
+            )
             self.store.logger.error(message)
             raise ValueError(message)
 
@@ -236,7 +242,8 @@ class ActivityManager(BaseActivityManager):
 
         Args:
             name (str): The activities name.
-            category (hamster_lib.Category or None): The activities category. May be None.
+            category (hamster_lib.Category or None): The activities category.
+                May be None.
             raw (bool): Return the AlchemyActivity instead.
 
         Returns:
@@ -318,16 +325,20 @@ class ActivityManager(BaseActivityManager):
         Args:
             include_usage (int, optional): If true, include count of Facts that reference
                 each Activity.
-            category (hamster_lib.Category, optional): Limit activities to this category.
-                Defaults to ``False``. If ``category=None`` only activities without a
-                category will be considered.
             search_term (str, optional): Limit activities to those matching a substring
                 in their name. Defaults to ``empty string``.
+            category (hamster_lib.Category or str, optional): Limit activities to this
+                category. Defaults to ``False``. If ``category=None`` only activities
+                without a category will be considered.
+            activity (hamster_lib.Activity, optional): Limit activities to this activity.
+                Defaults to ``False``. If ``activity=None`` only activities with a
+                matching name will be considered.
             sort_col (str, optional): Which columns to sort by. Defaults to 'activity'.
                 Choices: 'activity, 'category', 'start', 'usage'.
                 Note that 'start' and 'usage' only apply if include_usage.
-            asc (bool, optional): Whether to search the results in ascending order.
-            desc (bool, optional): Whether to search the results in descending order.
+            sort_order (str, optional): One of:
+                'asc': Whether to search the results in ascending order.
+                'desc': Whether to search the results in descending order.
             limit (int, optional): Query "limit".
             offset (int, optional): Query "offset".
 

@@ -1,7 +1,5 @@
 # - coding: utf-8 -
 
-# Copyright (C) 2015-2016 Eric Goller <eric.goller@ninjaduck.solutions>
-
 # This file is part of 'hamster-lib'.
 #
 # 'hamster-lib' is free software: you can redistribute it and/or modify
@@ -17,17 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-
 """
 Module to provide generic reporting capabilities for easy adaption by clients.
 
-The basic idea is to provide ``Writer`` classes that take care of the bulk of the setup
-upon instantiation so all the client needs to do is to call ``write_report`` with a list
-of ``FactTuples`` as arguments.
+The basic idea is to provide ``Writer`` classes that take care of the bulk
+of the setup upon instantiation so all the client needs to do is to call
+``write_report`` with a list of ``FactTuples`` as arguments.
 """
 
-
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import csv
 import datetime
@@ -51,13 +47,13 @@ class ReportWriter(object):
         Initiate new instance and open an output file like object.
 
         Note:
-            If you need added bells and wristels (like heading etc.) this would probably
-            the method to extend.
+            If you need added bells and wristels (like heading etc.) this would
+            probably the method to extend.
 
         Args:
-            path: File like object to be opened. This is where all output will be directed to.
-            datetime_format (str): String specifying how datetime information is to be
-                rendered in the output.
+            path: File like object to be opened. This is where all output
+              will be directed to. datetime_format (str): String specifying how
+              datetime information is to be rendered in the output.
         """
         self.datetime_format = datetime_format
         # No matter through what loops we jump, at the end of the day py27
@@ -76,10 +72,10 @@ class ReportWriter(object):
 
     def write_report(self, facts):
         """
-        Write facts to file output and make sure the file like object is closed at the end.
+        Write facts to output file and close the file like object.
 
         Args:
-            facts (Iterable): Iterable of ``hamster_lib.Fact`` instances to be exported.
+            facts (Iterable): Iterable of ``hamster_lib.Fact`` instances to export.
 
         Returns:
             None: If everything worked as expected.
@@ -195,8 +191,9 @@ class PlaintextWriter(ReportWriter):
         """
         Write a single fact.
 
-        On python 2 we need to make sure we encode our data accordingly so we can feed it to our
-        file object which in this case needs to be opened in binary mode.
+        On python 2 we need to make sure we encode our data accordingly so we
+        can feed it to our file object which in this case needs to be opened in
+        binary mode.
         """
         results = []
         for value in fact_tuple:
@@ -223,12 +220,13 @@ class CSVWriter(PlaintextWriter):
             #   coverage there is -- and I'm impressed! Project Hamster is so
             #   very well covered, it's laudatory!).
             #
-            #dialect='excel',
+            #  dialect='excel',
             #
-            # EXPLAIN/2018-05-05: (lb): What did scientificsteve use '%M' and not '%H:%M'?
+            # EXPLAIN/2018-05-05: (lb): What did scientificsteve use '%M'
+            #   and not '%H:%M'?
             duration_fmt='%M',
-            # EXPLAIN/2018-05-05: (lb): The delimiter is the default; not sure about quoting.
-            #   In any case: how if this different than the default dialect='excel'?
+            # EXPLAIN/2018-05-05: (lb): ',' is also the default delimiter.
+            #   How if this different than the default dialect='excel'?
             #   It's probably not....
             delimiter=str(','),
             quoting=csv.QUOTE_MINIMAL,
@@ -253,9 +251,9 @@ class ICALWriter(ReportWriter):
         Initiate new instance and open an output file like object.
 
         Args:
-            path: File like object to be opend. This is where all output will be directed to.
-            datetime_format (str): String specifying how datetime information is to be
-                rendered in the output.
+            path: File like object to be opend. This is where all output
+                will be directed to. datetime_format (str): String specifying
+                how datetime information is to be rendered in the output.
         """
         self.datetime_format = datetime_format
         self.file = open(path, 'wb')
@@ -265,12 +263,12 @@ class ICALWriter(ReportWriter):
         """
         Convert a ``Fact`` to its normalized tuple.
 
-        This is where all type conversion for ``Fact`` attributes to strings as well
-        as any normalization happens.
+        This is where all type conversion for ``Fact`` attributes to strings as
+            well as any normalization happens.
 
         Note:
-            Because different writers may require different types, we need to so this
-            individualy.
+            Because different writers may require different types, we need to
+                so this individualy.
 
         Args:
             fact (hamster_lib.Fact): Fact to be converted.
@@ -396,3 +394,4 @@ class XMLWriter(ReportWriter):
         self.document.appendChild(self.fact_list)
         self.file.write(self.document.toxml(encoding='utf-8'))
         return super(XMLWriter, self)._close()
+

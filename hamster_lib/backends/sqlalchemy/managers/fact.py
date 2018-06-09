@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -74,7 +74,9 @@ class FactManager(BaseFactManager):
             hamster_lib.Fact: Fact as stored in the database
 
         Raises:
-            ValueError: If the passed fact has a PK assigned. New facts should not have one.
+            ValueError: If the passed fact has a PK assigned.
+                New facts should not have one.
+
             ValueError: If the timewindow is already occupied.
         """
 
@@ -102,13 +104,17 @@ class FactManager(BaseFactManager):
         self.store.logger.debug(_("Added {!r}.".format(alchemy_fact)))
         return alchemy_fact
 
+    # ***
+
     def _update(self, fact, raw=False):
         """
         Update and existing fact with new values.
 
         Args:
             fact (hamster_lib.fact): Fact instance holding updated values.
+
             raw (bool): If ``True`` return ``AlchemyFact`` instead.
+              ANSWER: (lb): "instead" of what? raw is not used by Fact...
 
         Returns:
             hamster_lib.fact: Updated Fact
@@ -172,7 +178,8 @@ class FactManager(BaseFactManager):
 
         Raises:
             ValueError: If fact passed does not have an pk.
-            KeyError:If no fact with passed PK was found.
+
+            KeyError: If no fact with passed PK was found.
         """
 
         self.store.logger.debug(_("Received '{!r}'.".format(fact)))
@@ -187,12 +194,12 @@ class FactManager(BaseFactManager):
 
         alchemy_fact = self.store.session.query(AlchemyFact).get(fact.pk)
         if not alchemy_fact:
-            message = _("No fact with given pk was found!")
+            message = _('No fact with given pk was found!')
             self.store.logger.error(message)
             raise KeyError(message)
         self.store.session.delete(alchemy_fact)
         self.store.session.commit()
-        self.store.logger.debug(_("{!r} has been removed.".format(fact)))
+        self.store.logger.debug(_('{!r} has been removed.'.format(fact)))
         return True
 
     def get(self, pk, raw=False):
@@ -217,9 +224,12 @@ class FactManager(BaseFactManager):
             self.store.logger.error(message)
             raise KeyError(message)
         if not raw:
+            # Explain: Why is as_hamster optionable, when act/cat/tag do it always?
             result = result.as_hamster(self.store)
         self.store.logger.debug(_("Returning {!r}.".format(result)))
         return result
+
+    # ***
 
     def _get_all(
         self,
@@ -369,6 +379,8 @@ class FactManager(BaseFactManager):
         found_fact = found.as_hamster(self.store) if found else None
         return found_fact
 
+    # ***
+
     def ending_at(self, fact):
         """
         Return the fact ending at the moment in time indicated by fact.end.
@@ -478,6 +490,8 @@ class FactManager(BaseFactManager):
         found_fact = found.as_hamster(self.store) if found else None
         return found_fact
 
+    # ***
+
     def strictly_during(self, start, end, result_limit=1000):
         """
         Return the fact(s) strictly contained within a start and end time.
@@ -523,6 +537,8 @@ class FactManager(BaseFactManager):
         facts = query.all()
         found_facts = [fact.as_hamster(self.store) for fact in facts]
         return found_facts
+
+    # ***
 
     def surrounding(self, fact_time):
         """

@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-'''Hamster LIB storage object managers.'''
+"""Hamster LIB storage object managers."""
 
 
 __all__ = ['SQLAlchemyStore']

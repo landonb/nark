@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -16,20 +16,19 @@
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Module containing base classes intended to be inherited from when implementing storage backends.
+Base classes for implementing storage backends.
 
 Note:
     * This is propably going to be replaced by a ``ABC``-bases solution.
-    * Basic sanity checks could be done here then. This would mean we just need to test
-        them once and our actual backends focus on the CRUD implementation.
+    * Basic sanity checks could be done here then. This would mean we just need
+      to test them once and our actual backends focus on the CRUD implementation.
 """
 
 from __future__ import absolute_import, unicode_literals
-
 from future.utils import python_2_unicode_compatible
 
 
-__all__ = ['BaseManager',]
+__all__ = ['BaseManager', ]
 
 
 @python_2_unicode_compatible

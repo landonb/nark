@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -16,7 +16,6 @@
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-
 from future.utils import python_2_unicode_compatible
 
 from . import BaseManager
@@ -46,9 +45,12 @@ class BaseActivityManager(BaseManager):
             result = self._add(activity)
         return result
 
+    # ***
+
     def get_or_create(self, activity):
         """
-        Convenience method to either get an activity matching the specs or create a new one.
+        Convenience method to either get an activity matching the specs
+            or create a new one.
 
         Args:
             activity (hamster_lib.Activity): The activity we want.
@@ -60,9 +62,16 @@ class BaseActivityManager(BaseManager):
         try:
             activity = self.get_by_composite(activity.name, activity.category)
         except KeyError:
-            activity = self.save(Activity(activity.name, category=activity.category,
-                deleted=activity.deleted))
+            activity = self.save(
+                Activity(
+                    activity.name,
+                    category=activity.category,
+                    deleted=activity.deleted,
+                )
+            )
         return activity
+
+    # ***
 
     def _add(self, activity):
         """
@@ -80,14 +89,17 @@ class BaseActivityManager(BaseManager):
                 already present in the db.
 
         Note:
-            According to ``storage.db.Storage.__add_activity``: when adding a new activity
-            with a new category, this category does not get created but instead this
-            activity.category=None. This makes sense as categories passed are just ids, we
-            however can pass full category objects. At the same time, this approach allows
-            to add arbitrary category.id as activity.category without checking their existence.
-            this may lead to db anomalies.
+            According to ``storage.db.Storage.__add_activity``: when adding
+            a new activity with a new category, this category does not get
+            created but instead this activity.category=None. This makes sense
+            as categories passed are just ids, we however can pass full
+            category objects. At the same time, this approach allows to add
+            arbitrary category.id as activity.category without checking their
+            existence. This may lead to db anomalies.
         """
         raise NotImplementedError
+
+    # ***
 
     def _update(self, activity):
         """
@@ -111,6 +123,8 @@ class BaseActivityManager(BaseManager):
         """
 
         raise NotImplementedError
+
+    # ***
 
     def remove(self, activity):
         """
@@ -136,6 +150,8 @@ class BaseActivityManager(BaseManager):
 
         raise NotImplementedError
 
+    # ***
+
     def get(self, pk):
         """
         Return an activity based on its primary key.
@@ -151,6 +167,8 @@ class BaseActivityManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
     def get_by_composite(self, name, category):
         """
         Lookup for unique 'name/category.name'-composite key.
@@ -159,7 +177,9 @@ class BaseActivityManager(BaseManager):
 
         Args:
             name (str): Name of the ``Activities`` in question.
-            category (hamster_lib.Category or None): ``Category`` of the activities. May be None.
+
+            category (hamster_lib.Category or None): ``Category`` of the activities.
+                May be None.
 
         Returns:
             hamster_lib.Activity: The corresponding activity
@@ -185,8 +205,8 @@ class BaseActivityManager(BaseManager):
                 a substring in their name. Defaults to ``empty string``.
 
         Returns:
-            list: List of ``hamster_lib.Activity`` instances matching constrains. This list
-                is ordered by ``Activity.name``.
+            list: List of ``hamster_lib.Activity`` instances matching constrains.
+                This list is ordered by ``Activity.name``.
 
         Note:
             * This method combines legacy ``storage.db.__get_activities`` and

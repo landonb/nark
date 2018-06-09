@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -33,11 +33,6 @@ FactTuple = namedtuple('FactTuple', ('pk', 'activity', 'start', 'end', 'descript
 @python_2_unicode_compatible
 class Fact(object):
     """Storage agnostic class for facts."""
-    # [TODO]
-    # There is some weird black magic still to be integrated from
-    # ``store.db.Storage``. Among it ``__get_facts()``.
-    #
-
     def __init__(
         self,
         activity,
@@ -52,20 +47,26 @@ class Fact(object):
 
         Args:
             activity (hamster_lib.Activity): Activity associated with this fact.
+
             start (datetime.datetime): Start datetime of this fact.
-            end (datetime.datetime, optional): End datetime of this fact. Defaults to ``None``.
-            pk (optional): Primary key used by the backend to identify this instance. Defaults
-                to ``None``.
-            description (str, optional): Additional information relevant to this singular fact.
+
+            end (datetime.datetime, optional): End datetime of this fact.
                 Defaults to ``None``.
-            tags (Iterable, optional): Iterable of ``strings`` identifying *tags*. Defaults to
-                ``None``.
 
-        Note:
-            * For ``start`` and ``end``: Seconds will be stored, but are ignored for all
-            intends and purposes.
+            pk (optional): Primary key used by the backend to identify this instance.
+                Defaults to ``None``.
+
+            description (str, optional): Additional information relevant to this
+                singular fact. Defaults to ``None``.
+
+            tags (Iterable, optional): Iterable of ``strings`` identifying *tags*.
+                Defaults to ``None``.
+
+            deleted (bool, optional): True if fact was deleted/edited/split.
+
+            split_from (hamster_lib.Fact.id, optional): ID of deleted fact this
+                fact succeeds.
         """
-
         self.pk = pk
         self.activity = activity
         self.start = start

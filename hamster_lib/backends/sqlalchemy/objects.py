@@ -1,6 +1,4 @@
-# -*- encoding: utf-8 -*-
-
-# Copyright (C) 2015-2016 Eric Goller <eric.goller@ninjaduck.solutions>
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -17,33 +15,44 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-
 """
 This module provides the database layout.
 
-We inherit from our hamster objects in order to use the custom methods, making instance
-comparisons so much easier.
+We inherit from our hamster objects in order to use the custom
+methods, making instance comparisons so much easier.
 
-The reason we are not mapping our native hamster objects directly is that this seems
-to break the flexible plugable backend architecture as SQLAlchemy establishes the mapping
-right away. This may be avoidable and should be investigates later on.
+The reason we are not mapping our native hamster objects directly is
+that this seems to break the flexible plugable backend architecture
+as SQLAlchemy establishes the mapping right away. This may be
+avoidable and should be investigates later on.
 
-If those classes are instantiated manually any nested related instance needs to be added
-manually.
+If those classes are instantiated manually any nested related
+instance needs to be added manually.
 
 Note:
-    Our dedicated SQLAlchemy objects do not perform any general data validation
-    as not to duplicate code. This is expected to be handled by the generic
-    ``hamster_lib`` objects.
-    If need for backend specific validation should arise, it could of cause be added
-    here.
+
+    Our dedicated SQLAlchemy objects do not perform any general data
+    validation as not to duplicate code. This is expected to be
+    handled by the generic ``hamster_lib`` objects.
+
+    If need for backend specific validation should arise, it could of
+    cause be added here.
 """
 
-from __future__ import unicode_literals
-
+from __future__ import absolute_import, unicode_literals
 from future.utils import python_2_unicode_compatible
+
 from sqlalchemy import (
-    Boolean, Column, DateTime, ForeignKey, Integer, MetaData, Table, Unicode, UniqueConstraint,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    MetaData,
+    Table,
+    Unicode,
+    UnicodeText,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import mapper, relationship
 
@@ -70,7 +79,7 @@ class AlchemyCategory(Category):
         self.name = name
 
     def as_hamster(self, store):
-        """Provide an convenient way to return it as a ``hamster_lib.Category`` instance."""
+        """Return store object as a real ``hamster_lib.Category`` instance."""
         return Category(
             pk=self.pk,
             name=self.name
@@ -84,8 +93,8 @@ class AlchemyActivity(Activity):
         Initiate a new instance.
 
         Args:
-            activity (hamster_lib.Activity): An activity that is to be represented
-                as a backend instance.
+            activity (hamster_lib.Activity): An activity that is to be
+                represented as a backend instance.
 
         Raises:
             TypeError: If ``activity`` is not an ``Activity`` instance.
@@ -97,17 +106,19 @@ class AlchemyActivity(Activity):
         self.deleted = deleted
 
     def as_hamster(self, store):
-        """Provide an convenient way to return it as a ``hamster_lib.Activity`` instance."""
+        """Return new ``hamster_lib.Activity`` representation of SQLAlchemy instance."""
         if self.category:
             category = self.category.as_hamster(store)
         else:
             category = None
         activity_name = self.name
         # Play nice with "corrupt" databases (lacking integrity):
-        # Allow nameless items, rather than raising ValueError.
+        #   Allow nameless items, rather than raising ValueError.
         # User can easily discover problem through CLI, and they can fix it.
-        # `hamster list activities ''` to find nameless activities and their IDs.
-        # Then, `hamster edit activity #24 newname@newcategory`.
+        # Try this to find nameless activities and their IDs:
+        #   hamster list activities ''
+        # Then, e.g.,
+        #   hamster edit activity #24 newname@newcategory
         if not activity_name:
             if self.deleted:
                 activity_name = '<unnamed>'
@@ -157,6 +168,7 @@ class AlchemyFact(Fact):
         Raises:
             TypeError: If ``fact`` is not an ``Fact`` instance.
         """
+        # FIXME/2018-05-15: (lb): DRY: Any reason this doesn't called super()?
         self.pk = pk
         self.activity = activity
         self.start = start
@@ -233,10 +245,11 @@ mapper(AlchemyFact, facts, properties={
     'pk': facts.c.id,
     'activity': relationship(AlchemyActivity, backref='facts'),
     'tags': relationship(AlchemyTag, backref='facts', secondary=lambda: fact_tags),
+
     # 2018-04-22: (lb): I'm not sure if there's a migration script or not,
     # but I could not find one, and for some reason ProjectHamster renamed
     # the facts' start and end columns to start_time and end_time, respectively.
-    # Undo that using SQLAlchemy column name (re)mappings.
+    # FIXME: (lb): Remove this comment (and newlines) after verifying it's eh-okay.
     'start': facts.c.start_time,
     'end': facts.c.end_time,
 })

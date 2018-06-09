@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -16,7 +16,6 @@
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-
 from future.utils import python_2_unicode_compatible
 
 from . import BaseManager

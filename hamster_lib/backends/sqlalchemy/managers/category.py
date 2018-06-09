@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -31,7 +31,8 @@ from ....managers.category import BaseCategoryManager
 class CategoryManager(BaseCategoryManager):
     def get_or_create(self, category, raw=False):
         """
-        Custom version of the default method in order to provide access to alchemy instances.
+        Custom version of the default method in order to provide access
+        to alchemy instances.
 
         Args:
             category (hamster_lib.Category): Category we want.
@@ -54,9 +55,9 @@ class CategoryManager(BaseCategoryManager):
         """
         Add a new category to the database.
 
-        This method should not be used by any client code. Call ``save`` to make
-        the decission wether to modify an existing entry or to add a new one is
-        done correctly..
+        This method should not be used by any client code. Call ``save`` to
+        make the decission wether to modify an existing entry or to add a new
+        one is done correctly.
 
         Args:
             category (hamster_lib.Category): Hamster Category instance.
@@ -67,8 +68,8 @@ class CategoryManager(BaseCategoryManager):
 
         Raises:
             ValueError: If the name to be added is already present in the db.
-            ValueError: If category passed already got an PK. Indicating that update would
-                be more apropiate.
+            ValueError: If category passed already got an PK. Indicating that
+                update would be more apropiate.
         """
 
         message = _("Received {!r} and raw={}.".format(category, raw))
@@ -87,8 +88,8 @@ class CategoryManager(BaseCategoryManager):
             self.store.session.commit()
         except IntegrityError as e:
             message = _(
-                "An error occured! Are you sure the category.name is not already present in our"
-                " database? Here is the full original exception: '{}'.".format(e)
+                "An error occured! Is category.name already present in the database?"
+                " / Error: '{}'.".format(e)
             )
             self.store.logger.error(message)
             raise ValueError(message)
@@ -135,8 +136,8 @@ class CategoryManager(BaseCategoryManager):
             self.store.session.commit()
         except IntegrityError as e:
             message = _(
-                "An error occured! Are you sure the category.name is not already present in our"
-                " database? Here is the full original exception: '{}'.".format(e)
+                "An error occured! Is category.name already present in the database?"
+                " / Error: '{}'.".format(e)
             )
             self.store.logger.error(message)
             raise ValueError(message)
@@ -210,7 +211,7 @@ class CategoryManager(BaseCategoryManager):
 
         Args:
             name (str): Unique name of the category.
-            raw (bool): Wether to return the AlchemyCategory instead.
+            raw (bool): Whether to return the AlchemyCategory instead.
 
         Returns:
             hamster_lib.Category: Category of given name.
@@ -238,10 +239,11 @@ class CategoryManager(BaseCategoryManager):
 
     def get_all(self, **kwargs):
         """
-        Get all categories.
+        Get all Categories, possibly filtered by related Activity, and possible sorted.
 
         Returns:
-            list: List of all Categories present in the database, ordered by lower(name).
+            list: List of all Categories present in the database, ordered
+            by lower(name) or however caller asked that they be ordered.
         """
 
         # We avoid the costs of always computing the length of the returned list

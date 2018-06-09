@@ -14,9 +14,9 @@ pairs::
     'work_dir': ``path``; Where to store any temporary data
     'store': 'sqlalchemy'; refer to ``hamsterlib.control.REGISTERED_BACKENDS``
     'db_path': ``sqlalchemy db path``,
-    'tmpfile_name': filename; under which any 'ongoing fact' will be saved
     'fact_min_delta': integer; Amount of seconds under which fact creation will be prohibited.
-    'sql_log_level': string; Log level of SQLAlchemy logger: DEBUG, INFO, WARNING, ERROR, etc.
+    'sql_log_level': string; SQLAlchemy logger level: DEBUG, INFO, WARNING, ERROR, etc.
+    'tmpfile_name': filename; under which any 'ongoing fact' will be saved
 
 ``hamsterlib.HamsterControl`` initializes the store and provides a general
 logger. Besides that ``HamsterControl.categories``,
@@ -25,7 +25,7 @@ interfaces to communicate with the storage backend.
 
 The second cornerstone are the dedicated classes ``Category``, ``Activity`` and
 ``Fact`` which, for convenience, can be imported right from ``hamsterlib``. In
-particular ``Fact.create_from_raw_fact`` might be of interest They provide
+particular ``Fact.create_from_factoid`` might be of interest They provide
 easy and consistent facilities to create, store and manage data relevant to
 your time tracking needs. Of particular interest is
 ``hamsterlib.Fact.create_from_raw`` which allows you to pass a ``raw_fact``

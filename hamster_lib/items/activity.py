@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 from collections import namedtuple
 
@@ -24,7 +24,10 @@ from six import text_type
 
 from .category import Category
 
-ActivityTuple = namedtuple('ActivityTuple', ('pk', 'name', 'category', 'deleted'))
+
+ActivityTuple = namedtuple(
+    'ActivityTuple', ('pk', 'name', 'category', 'deleted', 'hidden'),
+)
 
 
 @python_2_unicode_compatible
@@ -37,8 +40,11 @@ class Activity(object):
 
         Args:
             name (str): This is the name of the activity. May contain whitespace!
+
             pk: The unique primary key used by the backend.
+
             category (Category): ``Category`` instance associated with this ``Activity``.
+
             deleted (bool): True if this ``Activity`` has been marked as deleted.
 
         Note:
@@ -60,15 +66,13 @@ class Activity(object):
 
     @name.setter
     def name(self, name):
-        if not name:
-            # Catching ``None``
-            raise ValueError(_("You need to specify a name."))
         self._name = text_type(name)
 
     @classmethod
     def create_from_composite(cls, name, category_name, deleted=False):
         """
-        Convenience method that allows creating a new instance providing the 'natural key'.
+        Convenience method that allows creating a new instance providing
+            the 'natural key'.
 
         Args:
             name (str): This activities name.
@@ -80,8 +84,8 @@ class Activity(object):
 
         Note:
             * Should future iterations extend ``Category`` this may turn problematic.
-            * This method does not allow to specify a primary key as it is intended only
-              for new instances, not ones retrieved by the backend.
+            * This method does not allow to specify a primary key as it is intended
+              only for new instances, not ones retrieved by the backend.
 
         """
         category = Category(category_name)
@@ -92,8 +96,8 @@ class Activity(object):
         Provide a tuple representation of this activities relevant 'fields'.
 
         Args:
-            include_pk (bool): Whether to include the instances pk or not. Note that if
-            ``False`` ``tuple.pk = False``!
+            include_pk (bool): Whether to include the instances pk or not.
+                Note that if ``False`` ``tuple.pk = False``!
 
         Returns:
             ActivityTuple: Representing this activities values.
@@ -105,11 +109,17 @@ class Activity(object):
             category = self.category.as_tuple(include_pk=include_pk)
         else:
             category = None
-        return ActivityTuple(pk=pk, name=self.name, category=category, deleted=self.deleted)
+        return ActivityTuple(
+            pk=pk,
+            name=self.name,
+            category=category,
+            deleted=self.deleted,
+        )
 
     def equal_fields(self, other):
         """
-        Compare this instances fields with another activity. This excludes comparing the PK.
+        Compare this instances fields with another activity.
+            This excludes comparing the PK.
 
         Args:
             other (Activity): Activity to compare this instance with.
@@ -118,9 +128,9 @@ class Activity(object):
             bool: ``True`` if all fields but ``pk`` are equal, ``False`` if not.
 
         Note:
-            This is particularly useful if you want to compare a new ``Activity`` instance
-            with a freshly created backend instance. As the latter will probably have a
-            primary key assigned now and so ``__eq__`` would fail.
+            This is particularly useful if you want to compare a new ``Activity``
+            instance with a freshly created backend instance. As the latter will
+            probably have a primary key assigned now and so ``__eq__`` would fail.
         """
         return self.as_tuple(include_pk=False) == other.as_tuple(include_pk=False)
 
@@ -147,6 +157,9 @@ class Activity(object):
             string = '[{pk}] {name}'.format(pk=repr(self.pk), name=repr(self.name))
         else:
             string = '[{pk}] {name} ({category})'.format(
-                pk=repr(self.pk), name=repr(self.name), category=repr(self.category.name))
+                pk=repr(self.pk),
+                name=repr(self.name),
+                category=repr(self.category.name),
+            )
         return str(string)
 

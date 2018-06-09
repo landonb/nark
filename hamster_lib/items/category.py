@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 from collections import namedtuple
 
@@ -71,7 +71,8 @@ class Category(object):
 
     def equal_fields(self, other):
         """
-        Compare this instances fields with another category. This excludes comparing the PK.
+        Compare this instances fields with another category.
+        This excludes comparing the PK.
 
         Args:
             other (Category): Category to compare this instance with.
@@ -80,9 +81,10 @@ class Category(object):
             bool: ``True`` if all fields but ``pk`` are equal, ``False`` if not.
 
         Note:
-            This is particularly useful if you want to compare a new ``Category`` instance
-            with a freshly created backend instance. As the latter will probably have a
-            primary key assigned now and so ``__eq__`` would fail.
+            This is particularly useful if you want to compare a new
+            ``Category`` instance with a freshly created backend instance. As
+            the latter will probably have a primary key assigned now and so
+            ``__eq__`` would fail.
         """
         if other:
             other = other.as_tuple(include_pk=False)

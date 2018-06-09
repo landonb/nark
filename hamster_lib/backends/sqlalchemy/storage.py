@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # This file is part of 'hamster-lib'.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-'''Hamster LIB object store.'''
+"""Hamster LIB object store."""
 
 from __future__ import absolute_import, unicode_literals
 from future.utils import python_2_unicode_compatible
@@ -42,25 +42,27 @@ class SQLAlchemyStore(BaseStore):
     """
     SQLAlchemy based backend.
 
-    Unfortunately despite using SQLAlchemy some database specific settings can not
-    be avoided (autoincrement, indexes etc).
-    Some of those issues will not be relevant in later versions as we may get rid
-    of Category and Activity ids entirely, just using their natural/composite keys
-    as primary keys.
+    Unfortunately despite using SQLAlchemy some database specific settings can
+    not be avoided (autoincrement, indexes etc).
 
-    However, for now we just support sqlite until the basic framework is up and running.
-    It should take only minor but delayable effort to broaden the applicability to
-    postgres, mysql and the likes.
+    Some of those issues will not be relevant in later versions as we
+    may get rid of Category and Activity ids entirely, just using their
+    natural/composite keys as primary keys.
 
-    The main takeaway right now is, that their is no actual guarantee that in a
-    distributed environment no race condition occur and we may end up with duplicate
-    Category/Activity entries. No backend code will be able to prevent this by virtue of
-    this being a DB issue.
-    Furthermore, we will try hard to avoid placing more than one fact in a given time
-    window. However, there can be no guarantee that in a distributed environment this
-    will always work out. As a consequence, we make sure that all our single object
-    data retrieval methods return only one item or throw an error alerting us about the
-    inconsistency.
+    However, for now we just support sqlite until the basic framework is up
+    and running. It should take only minor but delayable effort to broaden the
+    applicability to postgres, mysql and the likes.
+
+    The main takeaway right now is, that their is no actual guarantee that
+    in a distributed environment no race condition occur and we may end up
+    with duplicate Category/Activity entries. No backend code will be able to
+    prevent this by virtue of this being a DB issue.
+
+    Furthermore, we will try hard to avoid placing more than one fact in a
+    given time window. However, there can be no guarantee that in a distributed
+    environment this will always work out. As a consequence, we make sure that
+    all our single object data retrieval methods return only one item or throw
+    an error alerting us about the inconsistency.
     """
 
     def __init__(self, config, session=None):
@@ -87,7 +89,8 @@ class SQLAlchemyStore(BaseStore):
 
     def _get_db_url(self):
         """
-        Create a ``database_url`` from ``config`` suitable to be consumed by ``create_engine``
+        Create a ``database_url`` from ``config`` suitable to be consumed
+        by ``create_engine``
 
         Our config may include:
             * ''db_engine``; Engine to be used.
@@ -97,8 +100,8 @@ class SQLAlchemyStore(BaseStore):
             * ``db_user``; Database user to be used for connection.
             * ``db_password``; Database user passwort to authenticate user.
 
-        If ``db_engine='sqlite'`` you need to provide ``db_path`` as well. For any other engine
-        ``db_host`` and ``db_name`` are mandatory.
+        If ``db_engine='sqlite'`` you need to provide ``db_path`` as well.
+        For any other engine ``db_host`` and ``db_name`` are mandatory.
 
         Note:
             * `SQLAlchemy docs <http://docs.sqlalchemy.org/en/latest/core/engines.html>`_
@@ -107,8 +110,8 @@ class SQLAlchemyStore(BaseStore):
             str: ``database_url`` suitable to be consumed by ``create_engine``.
 
         Raises:
-            ValueError: If a required config key/value pair is not present for the choosen
-                ``db_engine``.
+            ValueError: If a required config key/value pair is not present for
+                the choosen ``db_engine``.
         """
         # [FIXME]
         # Contemplate if there are security implications that warrant sanitizing
@@ -143,26 +146,47 @@ class SQLAlchemyStore(BaseStore):
             database_url = '{engine}:///{path}'.format(engine=engine, path=path)
         else:
             if not host:
-                message = _("No 'db_host' found in config! Engines other than sqlite require one.")
+                message = _(
+                    "No 'db_host' found in config!"
+                    " Engines other than sqlite require one."
+                )
                 self.logger.error(message)
                 raise ValueError(message)
             if not name:
-                message = _("No 'db_name' found in config! Engines other than sqlite require one.")
+                message = _(
+                    "No 'db_name' found in config!"
+                    " Engines other than sqlite require one."
+                )
                 self.logger.error(message)
                 raise ValueError(message)
             if not user:
-                message = _("No 'db_user' found in config! Engines other than sqlite require one.")
+                message = _(
+                    "No 'db_user' found in config!"
+                    " Engines other than sqlite require one."
+                )
                 self.logger.error(message)
                 raise ValueError(message)
             if not password:
-                message = _("No 'db_password' found in config! Engines other than"
-                            " sqlite require one.")
+                message = _(
+                    "No 'db_password' found in config!"
+                    " Engines other than sqlite require one."
+                )
                 self.logger.error(message)
                 raise ValueError(message)
             if port:
                 port = ':{}'.format(port)
-            database_url = '{engine}://{user}:{password}@{host}{port}/{name}'.format(
-                engine=engine, user=user, password=password, host=host, port=port, name=name)
+            database_url = (
+                '{engine}://{user}:{password}@{host}{port}/{name}'
+                .format(
+                    engine=engine,
+                    user=user,
+                    password=password,
+                    host=host,
+                    port=port,
+                    name=name,
+                )
+            )
+        self.logger.debug(_('database_url: {}'.format(database_url)))
         return database_url
 
     def create_storage_engine(self):

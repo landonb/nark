@@ -18,47 +18,60 @@
 """
 Provide functions that provide common config related functionality.
 
-This module provide easy to use convenience functions to handle common configuration
-related tasks. Clients can use those to provide consistent behaviour and focus on
-their specific requirements instead.
+This module provide easy to use convenience functions to handle common
+configuration related tasks. Clients can use those to provide consistent
+behaviour and focus on their specific requirements instead.
 
-The easiest way to make use of those helpers is to call ``load_config_file`` (which will also
-handle creating a new one if none exists) and ``write_config_file``.
+The easiest way to make use of those helpers is to call ``load_config_file``
+(which will also handle creating a new one if none exists) and
+``write_config_file``.
 
 Clients may use ``backend_config_to_configparser`` and its counter part
-``configparser_to_backend_config`` to delegate conversion between a backend config dict and a
-``ConfigParser`` instance.
+``configparser_to_backend_config`` to delegate conversion between a backend
+config dict and a ``ConfigParser`` instance.
 
 Note:
     Backend config key/value information:
-        store: A ``string`` indicating which store (``hamster_lib.REGISTERED_BACKENDS``) to use.
-        day_start: ``datetime.time`` that specifies the when to start a new day.
-        fact_min_delta: ``int`` specifying minimal fact duration. Facts shorter than this will be
-                        rejected.
-        tmpfile_path: ``string`` indicating where the file representing the ongoing fact is to be
-                        stored.
-        db_engine: ``string`` indicating which db-engine to use. Options depend on store choice.
-        db_path: ``string`` indicating where to save the db file if the selected db option saves to
-                        disk. Depends on store/engine choice.
-        db_host: ``string`` indicating the host of the db server. Depends on store/engine choice.
-        db_port: ``int`` indicating the port of the db server. Depends on store/engine choice.
+        store: A ``string`` indicating which store to use.
+            See: ``hamster_lib.REGISTERED_BACKENDS``
+
+        day_start: ``datetime.time`` cna be used to specify default start time.
+            (Weird Legacy Hamster feature; now disabled by default.)
+
+        fact_min_delta: ``int`` specifying minimal fact duration. Facts shorter
+            than this will be rejected.
+
+        db_engine: ``string`` indicating which db-engine to use.
+            Options depend on store choice.
+
+        db_path: ``string`` indicating where to save the db file if the
+            selected db option saves to disk. Depends on store/engine choice.
+
+        db_host: ``string`` indicating the host of the db server.
+            Depends on store/engine choice.
+
+        db_port: ``int`` indicating the port of the db server.
+            Depends on store/engine choice.
+
         db_name: ``string`` indicating the db-name. Depends on store/engine choice.
-        db_user: ``string`` indicating the username to access the db server. Depends on
-                        store/engine choice.
-        db_password: ``string`` indicating the password to access the db server. Depends on
-                        store/engine choice.
+
+        db_user: ``string`` indicating the username to access the db server.
+            Depends on store/engine choice.
+
+        db_password: ``string`` indicating the password to access the db server.
+            Depends on store/engine choice.
+
         sql_log_level: ``string`` indicating the SQLAlchemy logging logger log level.
 
-    Please also note that a backend *config dict* does except ``None`` / ``empty`` values, its
-    ``ConfigParser`` representation does not include those however!
+    Please also note that a backend *config dict* does except ``None`` / ``empty``
+    values, its ``ConfigParser`` representation does not include those however!
 """
 
 from __future__ import absolute_import, unicode_literals
 
+import appdirs
 import datetime
 import os
-
-import appdirs
 from configparser import SafeConfigParser
 from six import string_types
 from six import text_type
@@ -77,8 +90,12 @@ class HamsterAppDirs(appdirs.AppDirs):
     @property
     def user_data_dir(self):
         """Return ``user_data_dir``."""
-        directory = appdirs.user_data_dir(self.appname, self.appauthor,
-                             version=self.version, roaming=self.roaming)
+        directory = appdirs.user_data_dir(
+            self.appname,
+            self.appauthor,
+            version=self.version,
+            roaming=self.roaming,
+        )
         if self.create:
             self._ensure_directory_exists(directory)
         return directory
@@ -86,8 +103,12 @@ class HamsterAppDirs(appdirs.AppDirs):
     @property
     def site_data_dir(self):
         """Return ``site_data_dir``."""
-        directory = appdirs.site_data_dir(self.appname, self.appauthor,
-                             version=self.version, multipath=self.multipath)
+        directory = appdirs.site_data_dir(
+            self.appname,
+            self.appauthor,
+            version=self.version,
+            multipath=self.multipath,
+        )
         if self.create:
             self._ensure_directory_exists(directory)
         return directory
@@ -95,8 +116,12 @@ class HamsterAppDirs(appdirs.AppDirs):
     @property
     def user_config_dir(self):
         """Return ``user_config_dir``."""
-        directory = appdirs.user_config_dir(self.appname, self.appauthor,
-                               version=self.version, roaming=self.roaming)
+        directory = appdirs.user_config_dir(
+            self.appname,
+            self.appauthor,
+            version=self.version,
+            roaming=self.roaming,
+        )
         if self.create:
             self._ensure_directory_exists(directory)
         return directory
@@ -104,8 +129,12 @@ class HamsterAppDirs(appdirs.AppDirs):
     @property
     def site_config_dir(self):
         """Return ``site_config_dir``."""
-        directory = appdirs.site_config_dir(self.appname, self.appauthor,
-                             version=self.version, multipath=self.multipath)
+        directory = appdirs.site_config_dir(
+            self.appname,
+            self.appauthor,
+            version=self.version,
+            multipath=self.multipath,
+        )
         if self.create:
             self._ensure_directory_exists(directory)
         return directory
@@ -113,8 +142,9 @@ class HamsterAppDirs(appdirs.AppDirs):
     @property
     def user_cache_dir(self):
         """Return ``user_cache_dir``."""
-        directory = appdirs.user_cache_dir(self.appname, self.appauthor,
-                              version=self.version)
+        directory = appdirs.user_cache_dir(
+            self.appname, self.appauthor, version=self.version,
+        )
         if self.create:
             self._ensure_directory_exists(directory)
         return directory
@@ -122,8 +152,9 @@ class HamsterAppDirs(appdirs.AppDirs):
     @property
     def user_log_dir(self):
         """Return ``user_log_dir``."""
-        directory = appdirs.user_log_dir(self.appname, self.appauthor,
-                            version=self.version)
+        directory = appdirs.user_log_dir(
+            self.appname, self.appauthor, version=self.version,
+        )
         if self.create:
             self._ensure_directory_exists(directory)
         return directory
@@ -159,15 +190,18 @@ def get_config_path(appdirs=DEFAULT_APPDIRS, file_name=DEFAULT_CONFIG_FILENAME):
     return os.path.join(appdirs.user_config_dir, file_name)
 
 
-def write_config_file(config_instance, appdirs=DEFAULT_APPDIRS,
-        file_name=DEFAULT_CONFIG_FILENAME):
+def write_config_file(
+    config_instance,
+    appdirs=DEFAULT_APPDIRS,
+    file_name=DEFAULT_CONFIG_FILENAME,
+):
     """
     Write a ConfigParser instance to file at the correct location.
 
     Args:
         config_instance: Config instance to safe to file.
-        appdirs (HamsterAppDirs, optional): ``HamsterAppDirs`` instance storing app/user specific
-            path information.
+        appdirs (HamsterAppDirs, optional): ``HamsterAppDirs`` instance storing
+            app/user specific path information.
         file_name (text_type, optional): Name of the config file. Defaults to
         ``DEFAULT_CONFIG_FILENAME``.
 
@@ -181,25 +215,30 @@ def write_config_file(config_instance, appdirs=DEFAULT_APPDIRS,
     return config_instance
 
 
-def load_config_file(appdirs=DEFAULT_APPDIRS, file_name=DEFAULT_CONFIG_FILENAME,
-        fallback_config_instance=None):
+def load_config_file(
+    appdirs=DEFAULT_APPDIRS,
+    file_name=DEFAULT_CONFIG_FILENAME,
+    fallback_config_instance=None,
+):
     """
     Retrieve config information from file at default location.
 
-    If no config file is found a new one will be created either with ``fallback_config_instance``
-    as content or if none is provided with the result of ``get_default_backend_config``.
+    If no config file is found a new one will be created either with
+        ``fallback_config_instance`` as content or if none is provided
+        with the result of ``get_default_backend_config``.
 
     Args:
-        appdirs (HamsterAppDirs, optional): ``HamsterAppDirs`` instance storing app/user specific
-            path information.
-        file_name (text_type, optional): Name of the config file. Defaults to
-        ``DEFAULT_CONFIG_FILENAME``.
-        fallback_config_instance (ConfigParser): Backend config that is to be used to populate the
-            config file that is created if no pre-existing one can be found.
+        appdirs (HamsterAppDirs, optional): ``HamsterAppDirs`` instance
+            storing app/user specific path information.
+        file_name (text_type, optional): Name of the config file.
+            Defaults to ``DEFAULT_CONFIG_FILENAME``.
+        fallback_config_instance (ConfigParser): Backend config that is
+            to be used to populate the config file that is created if no
+            pre-existing one can be found.
 
     Returns:
-        SafeConfigParser: Config loaded from file, either from the the pre-existing config
-            file or the one created with fallback values.
+        SafeConfigParser: Config loaded from file, either from the the
+            pre-existing config file or the one created with fallback values.
     """
     if not fallback_config_instance:
         fallback_config_instance = backend_config_to_configparser(
@@ -220,7 +259,8 @@ def get_default_backend_config(appdirs):
     Return a default config dictionary.
 
     Args:
-        appdirs (HamsterAppDirs): ``HamsterAppDirs`` instance encapsulating the apps details.
+        appdirs (HamsterAppDirs): ``HamsterAppDirs`` instance encapsulating
+            the apps details.
 
     Returns:
         dict: Dictionary with a default configuration.
@@ -323,10 +363,10 @@ def configparser_to_backend_config(cp_instance):
     This functions main purpose is to ensure config dict values are properly typed.
 
     Note:
-        This can be used with any ``ConfigParser`` backend instance not just the default one
-        in order to extract its config.
-        If a key is not found in ``cp_instance`` the resulting dict will have ``None``
-        assigned to this dict key.
+        This can be used with any ``ConfigParser`` backend instance not just
+          the default one in order to extract its config.
+        If a key is not found in ``cp_instance`` the resulting dict will have
+          ``None`` assigned to this dict key.
     """
     def get_store():
         # [TODO]
@@ -342,8 +382,8 @@ def configparser_to_backend_config(cp_instance):
                 'day_start'), '%H:%M:%S').time()
         except ValueError:
             raise ValueError(_(
-                "We encountered an error when parsing configs 'day_start'"
-                " value! Aborting ..."
+                "We encountered an error when parsing config's 'day_start' value!"
+                " Aborting ..."
             ))
         return day_start
 
