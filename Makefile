@@ -117,3 +117,14 @@ dist: clean
 
 install: clean
 	python setup.py install
+
+CLOC := $(shell command -v cloc 2> /dev/null)
+
+cloc:
+ifndef CLOC
+	$(error "Please install cloc from: https://github.com/AlDanial/cloc")
+endif
+	@cloc --exclude-dir=.git,_build,hamster_cli.egg-info,.pytest_cache .
+
+# vim:tw=0:ts=2:sw=2:noet:ft=make:
+
