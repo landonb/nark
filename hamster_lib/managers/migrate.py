@@ -37,5 +37,9 @@ class BaseMigrationsManager(BaseManager):
         """Returns the migration version of the database indicated by the config."""
         raise NotImplementedError
 
+    def latest_version(self):
+        """Returns the latest version of the database as used by the application."""
+        raise NotImplementedError
+
 
 
