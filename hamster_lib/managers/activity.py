@@ -24,7 +24,14 @@ from ..items.activity import Activity
 
 @python_2_unicode_compatible
 class BaseActivityManager(BaseManager):
-    """Base class defining the minimal API for a ActivityManager implementation."""
+    """
+    Base class defining the minimal API for a ActivityManager implementation.
+    """
+    def __init__(self, *args, **kwargs):
+        super(BaseActivityManager, self).__init__(*args, **kwargs)
+
+    # ***
+
     def save(self, activity):
         """
         Save a ``Activity`` to the backend.
@@ -39,6 +46,9 @@ class BaseActivityManager(BaseManager):
         """
 
         self.store.logger.debug(_("'{}' has been received.".format(activity)))
+        if not activity.name:
+            # Catching ``None``
+            raise ValueError(_("You need to specify an Activity.name."))
         if activity.pk or activity.pk == 0:
             result = self._update(activity)
         else:
@@ -193,7 +203,21 @@ class BaseActivityManager(BaseManager):
 
         raise NotImplementedError
 
-    def get_all(self, category=False, search_term='', sort_by_column='', **kwargs):
+    # ***
+
+    def get_all(
+        self,
+        include_usage=True,
+        deleted=False,
+        hidden=False,
+        search_term='',
+        category=False,
+        activity=False,
+        sort_col='',
+        sort_order='',
+        limit='',
+        offset='',
+    ):
         """
         Return all matching activities.
 
@@ -222,7 +246,20 @@ class BaseActivityManager(BaseManager):
         # lower(activity.name).
         raise NotImplementedError
 
-    def get_all_by_usage(self, category=False, search_term='', sort_by_column='', **kwargs):
+    # ***
+
+    def get_all_by_usage(
+        self,
+        deleted=False,
+        hidden=False,
+        search_term='',
+        category=False,
+        activity=False,
+        sort_col='',
+        sort_order='',
+        limit='',
+        offset='',
+    ):
         """
         Similar to get_all(), but include count of Facts that reference each Activity.
         """

@@ -24,7 +24,14 @@ from ..items.category import Category
 
 @python_2_unicode_compatible
 class BaseCategoryManager(BaseManager):
-    """Base class defining the minimal API for a CategoryManager implementation."""
+    """
+    Base class defining the minimal API for a CategoryManager implementation.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(BaseCategoryManager, self).__init__(*args, **kwargs)
+
+    # ***
 
     def save(self, category):
         """
@@ -195,7 +202,20 @@ class BaseCategoryManager(BaseManager):
         """
         raise NotImplementedError
 
-    def get_all(self, **kwargs):
+    # ***
+
+    def get_all(
+        self,
+        include_usage=True,
+        deleted=False,
+        hidden=False,
+        search_term='',
+        activity=False,
+        sort_col='',
+        sort_order='',
+        limit='',
+        offset='',
+    ):
         """
         Return a list of all categories.
 

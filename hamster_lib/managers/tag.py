@@ -24,7 +24,14 @@ from ..items.tag import Tag
 
 @python_2_unicode_compatible
 class BaseTagManager(BaseManager):
-    """Base class defining the minimal API for a TagManager implementation."""
+    """
+    Base class defining the minimal API for a TagManager implementation.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(BaseTagManager, self).__init__(*args, **kwargs)
+
+    # ***
 
     def save(self, tag):
         """
@@ -192,10 +199,16 @@ class BaseTagManager(BaseManager):
 
     def get_all(
         self,
+        include_usage=True,
+        deleted=False,
+        hidden=False,
         search_term='',
-        sort_by_name=False,
-        sort_by_use=False,
-        **kwargs
+        activity=False,
+        category=False,
+        sort_col='',
+        sort_order='',
+        limit='',
+        offset='',
     ):
         """
         Get all tags, with filtering and sorting options.

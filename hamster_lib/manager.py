@@ -18,7 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import logging
-
+from datetime import datetime
 from future.utils import python_2_unicode_compatible
 
 from .helpers import logging as logging_helpers
@@ -52,6 +52,7 @@ class BaseStore(object):
         self.activities = BaseActivityManager(self)
         self.tags = BaseTagManager(self)
         self.facts = BaseFactManager(self)
+        self._now = None
 
     def cleanup(self):
         """
@@ -64,20 +65,14 @@ class BaseStore(object):
         self.logger = logging.getLogger('hamster_lib.storage')
         self.logger.addHandler(logging.NullHandler())
 
-        warn_name = False
-        try:
-            sql_log_level = self.config['sql_log_level']
-            try:
-                log_level = int(sql_log_level)
-            except ValueError:
-                log_level = logging.getLevelName(sql_log_level)
-        except KeyError:
-            log_level = logging.WARNING
+        sql_log_level = self.config['sql_log_level']
+        log_level, warn_name = logging_helpers.resolve_log_level(sql_log_level)
+
         try:
             self.logger.setLevel(int(log_level))
         except ValueError:
             warn_name = True
-            log_level = logging.WARNING
+            self.logger.setLevel(logging.WARNING)
 
         stream_handler = logging.StreamHandler()
         formatter = logging_helpers.formatter_basic()
@@ -86,5 +81,28 @@ class BaseStore(object):
         )
 
         if warn_name:
-            self.logger.warning('Unknown sql_log_level specified: {}'.format(sql_log_level))
+            self.logger.warning(
+                _('Unknown Backend.sql_log_level specified: {}')
+                .format(sql_log_level)
+            )
+
+    @property
+    def now(self):
+        # Use the same 'now' for all items that need it. 'Now' is considered
+        # the run of the whole command, and not different points within it.
+        # (lb): It probably doesn't matter either way what we do, but I'd
+        # like all facts that use now to reflect the same moment in time,
+        # rather than being microseconds apart from one another.
+        # (lb): Also, we use @property to convey to the caller that this
+        # is not a function; i.e., the value is static, not re-calculated.
+        if self._now is None:
+            self._now = self._now_tz_aware()
+        return self._now
+
+    def _now_tz_aware(self):
+        if self.config['tz_aware']:
+            # FIXME/2018-05-23: (lb): Tests use utcnow(). Should they honor tz_aware?
+            return datetime.utcnow()
+        else:
+            return datetime.now()
 

@@ -15,17 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
+from future.utils import python_2_unicode_compatible
 
 from builtins import str
-
-from future.utils import python_2_unicode_compatible
 from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import NoResultFound
 
-from . import query_apply_limit_offset
-from ..objects import AlchemyFact, AlchemyTag, fact_tags
+from . import query_apply_limit_offset, query_apply_true_or_not
+from ..objects import (
+    AlchemyActivity, AlchemyCategory, AlchemyFact, AlchemyTag, fact_tags,
+)
 from ....managers.tag import BaseTagManager
 
 
@@ -179,11 +181,11 @@ class TagManager(BaseTagManager):
             self.store.logger.error(message)
             raise KeyError(message)
         self.store.session.delete(alchemy_tag)
+        self.store.session.commit()
         message = _("{!r} successfully deleted.".format(tag))
         self.store.logger.debug(message)
-        self.store.session.commit()
 
-    def get(self, pk):
+    def get(self, pk, deleted=None):
         """
         Return a tag based on their pk.
 
@@ -203,7 +205,16 @@ class TagManager(BaseTagManager):
         message = _("Received PK: '{}'.".format(pk))
         self.store.logger.debug(message)
 
-        result = self.store.session.query(AlchemyTag).get(pk)
+        if deleted is None:
+            result = self.store.session.query(AlchemyTag).get(pk)
+        else:
+            query = self.store.session.query(AlchemyTag)
+            query = query.filter(AlchemyTag.pk == pk)
+            query = query_apply_true_or_not(query, AlchemyTag.deleted, deleted)
+            results = query.all()
+            assert(len(results) <= 1)
+            result = results[0] if results else None
+
         if not result:
             message = _("No tag with 'pk: {}' was found!".format(pk))
             self.store.logger.error(message)
@@ -244,23 +255,30 @@ class TagManager(BaseTagManager):
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
-    def get_all(self, *args, sort_col='', **kwargs):
+    def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
         """Get all tags."""
-        if not sort_col:
-            sort_col = 'name'
-        return self._get_all(*args, include_usage=False, sort_col=sort_col, **kwargs)
+        kwargs['include_usage'] = include_usage
+        kwargs['sort_col'] = sort_col
+        return self._get_all(*args, **kwargs)
 
-    def get_all_by_usage(self, *args, sort_col='', **kwargs):
-        if not sort_col:
-            sort_col = 'usage'
-        return self._get_all(*args, include_usage=True, sort_col=sort_col, **kwargs)
+    def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
+        assert(not args)
+        kwargs['include_usage'] = True
+        kwargs['sort_col'] = sort_col
+        return self._get_all(*args, **kwargs)
 
     def _get_all(
         self,
         include_usage=True,
+        # FIXME/2018-06-09: (lb): Implement deleted/hidden.
+        deleted=False,
+        hidden=False,
         search_term='',
+        activity=False,
+        category=False,
         sort_col='',
         sort_order='',
+        # kwargs: limit, offset
         **kwargs
     ):
         """
@@ -272,65 +290,136 @@ class TagManager(BaseTagManager):
                   used; possibly filtered by a search term.
         """
 
-        query, count_col = self._get_all_query(include_usage)
+        def _get_all_tags():
+            message = _('usage: {} / term: {} / col: {} / order: {}'.format(
+                include_usage, search_term, sort_col, sort_order,
+            ))
+            self.store.logger.debug(message)
 
-        # FIXME/MIGATIONS: (lb): Add column: Fact.deleted.
-        #condition = and_(condition, not AlchemyFact.deleted)
-        #query = query.filter(condition)
+            query, agg_cols = _get_all_start_query()
 
-        query = self._get_all_group_by(query, include_usage)
+            query = _get_all_filter_by_activity(query)
 
-        query = self._get_all_order_by(query, sort_col, sort_order, include_usage, count_col)
+            query = _get_all_filter_by_category(query)
 
-        query = query_apply_limit_offset(query, **kwargs)
+            query = _get_all_filter_by_search_term(query)
 
-        query = self._get_all_with_entities(query, count_col)
+            # FIXME/MIGRATIONS: (lb): Add column: Fact.deleted.
+            #  condition = and_(condition, not AlchemyFact.deleted)
+            #  query = query.filter(condition)
 
-        self.store.logger.debug(_('query: {}'.format(str(query))))
+            query = _get_all_group_by(query, agg_cols)
 
-        results = query.all()
+            query = _get_all_order_by(query, *agg_cols)
 
-        return results
+            query = query_apply_limit_offset(query, **kwargs)
 
-    def _get_all_query(self, include_usage):
-        if not include_usage:
-            count_col = None
-            query = self.store.session.query(AlchemyTag)
-        else:
-            count_col = func.count(AlchemyTag.pk).label('uses')
-            query = self.store.session.query(AlchemyTag, count_col)
-            query = query.join(fact_tags)
-            query = query.join(AlchemyFact)
-        return query, count_col
+            query = _get_all_with_entities(query, agg_cols)
 
+            self.store.logger.debug(_('query: {}'.format(str(query))))
 
-    def _get_all_group_by(self, query, include_usage):
-        if not include_usage:
+            results = query.all()
+
+            return results
+
+        def _get_all_start_query():
+            agg_cols = []
+            if not include_usage:
+                query = self.store.session.query(AlchemyTag)
+            else:
+                count_col = func.count(AlchemyTag.pk).label('uses')
+                agg_cols.append(count_col)
+
+                time_col = func.sum(
+                    func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
+                ).label('span')
+                agg_cols.append(time_col)
+
+                query = self.store.session.query(AlchemyTag, count_col, time_col)
+                query = query.join(fact_tags)
+                query = query.join(AlchemyFact)
+
+            return query, agg_cols
+
+        def _get_all_filter_by_activity(query):
+            if activity is False:
+                return query
+            query = query.join(AlchemyActivity)
+            if activity:
+                if activity.pk:
+                    query = query.filter(AlchemyActivity.pk == activity.pk)
+                else:
+                    query = query.filter(
+                        func.lower(AlchemyActivity.name) == func.lower(activity.name)
+                    )
+            else:
+                query = query.filter(AlchemyFact.activity == None)  # noqa: E711
             return query
-        query = query.group_by(AlchemyTag.pk)
-        return query
 
-    def _get_all_order_by(self, query, sort_col, sort_order, include_usage, count_col):
-        direction = desc if sort_order == 'desc' else asc
-        if sort_col == 'start':
-            assert include_usage
-            direction = desc if not sort_order else direction
-            query = query.order_by(direction(AlchemyFact.start))
-        elif sort_col == 'usage':
-            assert include_usage and count_col is not None
-            direction = desc if not sort_order else direction
-            query = query.order_by(direction(count_col))
-        else:
-            # Meh. Rather than make a custom --order for each command,
-            # just using the same big list. So 'activity', 'category',
-            # etc., are acceptable here, if not simply ignored.
-            assert sort_col in ('', 'name', 'activity', 'category', 'tag', 'fact')
-            query = query.order_by(direction(AlchemyTag.name))
-        return query
-
-    def _get_all_with_entities(self, query, count_col):
-        if count_col is None:
+        def _get_all_filter_by_category(query):
+            if category is False:
+                return query
+            query = query.join(AlchemyActivity).join(AlchemyCategory)
+            if category:
+                if category.pk:
+                    query = query.filter(AlchemyCategory.pk == category.pk)
+                else:
+                    query = query.filter(
+                        func.lower(AlchemyCategory.name) == func.lower(category.name)
+                    )
+            else:
+                query = query.filter(AlchemyFact.category == None)  # noqa: E711
             return query
-        query = query.with_entities(AlchemyTag, count_col)
-        return query
+
+        def _get_all_filter_by_search_term(query):
+            if not search_term:
+                return query
+            query = query.filter(
+                AlchemyTag.name.ilike('%{}%'.format(search_term))
+            )
+            return query
+
+        def _get_all_group_by(query, agg_cols):
+            if not agg_cols:
+                return query
+            query = query.group_by(AlchemyTag.pk)
+            return query
+
+        def _get_all_order_by(query, count_col=None, time_col=None):
+            direction = desc if sort_order == 'desc' else asc
+            if sort_col == 'start':
+                assert include_usage
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(AlchemyFact.start))
+            elif sort_col == 'usage':
+                assert include_usage and count_col is not None
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(count_col), direction(time_col))
+            elif sort_col == 'time':
+                assert include_usage and time_col is not None
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(time_col), direction(count_col))
+            elif sort_col == 'activity':
+                query = query.order_by(direction(AlchemyActivity.name))
+                query = query.order_by(direction(AlchemyCategory.name))
+            elif sort_col == 'category':
+                query = query.order_by(direction(AlchemyCategory.name))
+                query = query.order_by(direction(AlchemyActivity.name))
+            else:
+                # Meh. Rather than make a custom --order for each command,
+                # just using the same big list. So 'activity', 'category',
+                # etc., are acceptable here, if not simply ignored.
+                assert sort_col in ('', 'name', 'tag', 'fact')
+                query = query.order_by(direction(AlchemyTag.name))
+            return query
+
+        def _get_all_with_entities(query, agg_cols):
+            if not agg_cols:
+                return query
+            query = query.with_entities(AlchemyTag, *agg_cols)
+            return query
+
+        # ***
+
+        return _get_all_tags()
 

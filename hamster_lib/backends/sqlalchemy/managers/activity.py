@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
+from future.utils import python_2_unicode_compatible
 
 from builtins import str
-
-from future.utils import python_2_unicode_compatible
 from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import query_apply_limit_offset
+from . import query_apply_limit_offset, query_apply_true_or_not
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 from ....managers.activity import BaseActivityManager
 
@@ -92,14 +91,24 @@ class ActivityManager(BaseActivityManager):
         except KeyError:
             pass
 
-        alchemy_activity = AlchemyActivity(None, activity.name, None,
-            activity.deleted)
+        alchemy_activity = AlchemyActivity(
+            pk=None,
+            name=activity.name,
+            category=None,
+            deleted=activity.deleted,
+            hidden=activity.hidden,
+        )
         if activity.category:
             try:
                 category = self.store.categories.get_by_name(
                     activity.category.name, raw=True)
             except KeyError:
-                category = AlchemyCategory(None, activity.category.name)
+                category = AlchemyCategory(
+                    pk=None,
+                    name=activity.category.name,
+                    deleted=activity.category.deleted,
+                    hidden=activity.category.hidden,
+                )
         else:
             category = None
         alchemy_activity.category = category
@@ -208,7 +217,7 @@ class ActivityManager(BaseActivityManager):
         self.store.logger.debug(_("Deleted {!r}.".format(activity)))
         return True
 
-    def get(self, pk, raw=False):
+    def get(self, pk, deleted=None, raw=False):
         """
         Query for an Activity with given key.
 
@@ -226,7 +235,16 @@ class ActivityManager(BaseActivityManager):
         message = _("Received PK: '{}', raw={}.".format(pk, raw))
         self.store.logger.debug(message)
 
-        result = self.store.session.query(AlchemyActivity).get(pk)
+        if deleted is None:
+            result = self.store.session.query(AlchemyActivity).get(pk)
+        else:
+            query = self.store.session.query(AlchemyActivity)
+            query = query.filter(AlchemyActivity.pk == pk)
+            query = query_apply_true_or_not(query, AlchemyActivity.deleted, deleted)
+            results = query.all()
+            assert(len(results) <= 1)
+            result = results[0] if results else None
+
         if not result:
             message = _("No Activity with 'pk: {}' was found!".format(pk))
             self.store.logger.error(message)
@@ -296,22 +314,27 @@ class ActivityManager(BaseActivityManager):
         self.store.logger.debug(_("Returning: {!r}.".format(result)))
         return result
 
-    def get_all(self, *args, sort_col='', **kwargs):
+    def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
         """Get all activities."""
-        if not sort_col:
-            sort_col = 'name'
-        return self._get_all(*args, include_usage=False, sort_col=sort_col, **kwargs)
+        kwargs['include_usage'] = include_usage
+        kwargs['sort_col'] = sort_col
+        return self._get_all(*args, **kwargs)
 
-    def get_all_by_usage(self, *args, sort_col='', **kwargs):
-        if not sort_col:
-            sort_col = 'usage'
-        return self._get_all(*args, include_usage=True, sort_col=sort_col, **kwargs)
+    def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
+        assert(not args)
+        kwargs['include_usage'] = True
+        kwargs['sort_col'] = sort_col
+        return self._get_all(*args, **kwargs)
 
     def _get_all(
         self,
         include_usage=True,
+        # FIXME/2018-06-09: (lb): Implement deleted/hidden.
+        deleted=False,
+        hidden=False,
         search_term='',
         category=False,
+        activity=False,
         sort_col='',
         sort_order='',
         # kwargs: limit, offset
@@ -347,104 +370,158 @@ class ActivityManager(BaseActivityManager):
                 The list is ordered by ``Activity.name``.
         """
 
-        message = _("Received '{!r}', 'search_term'={}.".format(category, search_term))
-        self.store.logger.debug(message)
+        def _get_all_activities():
+            message = (
+                _('usage: {} / term: {} / cat.: {} / act.: {} / col: {} / order: {}')
+                .format(
+                    include_usage, search_term, category, activity, sort_col, sort_order,
+                )
+            )
+            self.store.logger.debug(message)
 
-        query, count_col = self._get_all_query(include_usage)
+            query, agg_cols = _get_all_start_query()
 
-        query = self._get_all_filter_by_category(query, category)
+            query = _get_all_filter_by_category(query)
 
-        query = self._get_all_filter_by_search_term(query, search_term)
+            query = _get_all_filter_by_activity(query)
 
-        query = self._get_all_group_by(query, include_usage)
+            query = _get_all_filter_by_search_term(query)
 
-        query = self._get_all_order_by(query, sort_col, sort_order, include_usage, count_col)
+            query = _get_all_order_by(query, *agg_cols)
 
-        query = query_apply_limit_offset(query, **kwargs)
+            query = _get_all_group_by(query, agg_cols)
 
-        query = self._get_all_with_entities(query, count_col)
+            query = query_apply_limit_offset(query, **kwargs)
 
-        self.store.logger.debug(_('Query') + ': {}'.format(str(query)))
+            query = _get_all_with_entities(query, agg_cols)
 
-        results = query.all()
+            self.store.logger.debug(_('Query') + ': {}'.format(str(query)))
 
-        return results
+            results = query.all()
 
-    def _get_all_query(self, include_usage):
-        if not include_usage:
-            count_col = None
-            query = self.store.session.query(AlchemyActivity)
-        else:
-            count_col = func.count(AlchemyActivity.pk).label('uses')
-            query = self.store.session.query(AlchemyFact, count_col)
-            query = query.join(AlchemyFact.activity)
-            # NOTE: (lb): SQLAlchemy will lazy load category if/when caller
-            #       references it. (I tried using query.options(joinedload(...))
-            #       but that route was a mess; and I don't know SQLAlchemy well.)
-        # SQLAlchemy automatically lazy-loads activity.category if we
-        # reference it after executing the query, so we don't need to
-        # join, except that we want to sort by category.name, so we do.
-        query = query.join(AlchemyCategory)
-        return query, count_col
+            return results
 
-    def _get_all_filter_by_category(self, query, category):
-        if category is False:
+        def _get_all_start_query():
+            agg_cols = []
+            if not include_usage:
+                query = self.store.session.query(AlchemyActivity)
+            else:
+                count_col = func.count(AlchemyActivity.pk).label('uses')
+                agg_cols.append(count_col)
+
+                time_col = func.sum(
+                    func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
+                ).label('span')
+                agg_cols.append(time_col)
+
+                query = self.store.session.query(AlchemyFact, count_col, time_col)
+                query = query.join(AlchemyFact.activity)
+                # NOTE: (lb): SQLAlchemy will lazy load category if/when caller
+                #       references it. (I tried using query.options(joinedload(...))
+                #       but that route was a mess; and I don't know SQLAlchemy well.)
+
+            # SQLAlchemy automatically lazy-loads activity.category if we
+            # reference it after executing the query, so we don't need to
+            # join, except that we want to sort by category.name, so we do.
+            query = query.join(AlchemyCategory)
+
+            return query, agg_cols
+
+        def _get_all_filter_by_category(query):
+            if category is False:
+                return query
+    # FIXME/2018-05-15 22:30: (lb): MRU activities by category: GLOB:
+    #   do fuzzy search on name rather than PK, if special query,
+    #     e.g., ``if '*' in category.name: ...``
+            if category:
+                category_name = None
+                if isinstance(category, text_type):
+                    category_name = category
+                elif not category.pk:
+                    category_name = category.name
+
+                if not category_name:
+                    query = query.filter(AlchemyCategory.pk == category.pk)
+                else:
+                    query = query.filter(
+                        func.lower(AlchemyCategory.name) == func.lower(category_name)
+                    )
+            else:
+                query = query.filter(AlchemyActivity.category == None)  # noqa: E711
             return query
-        if category:
-            category_query = self.store.session.query(AlchemyCategory)
-            alchemy_category = category_query.get(category.pk)
-        else:
-            alchemy_category = None
-        query = query.filter_by(category=alchemy_category)
-        return query
 
-    def _get_all_filter_by_search_term(self, query, search_term):
-        if not search_term:
+        def _get_all_filter_by_activity(query):
+            if activity is False:
+                return query
+            if activity:
+                if activity.pk:
+                    query = query.filter(AlchemyActivity.pk == activity.pk)
+                else:
+                    query = query.filter(
+                        func.lower(AlchemyActivity.name) == func.lower(activity.name)
+                    )
+            else:
+                query = query.filter(AlchemyFact.activity == None)  # noqa: E711
             return query
-        query = query.filter(
-            AlchemyActivity.name.ilike('%{}%'.format(search_term))
-        )
-        return query
 
-    def _get_all_group_by(self, query, include_usage):
-        if not include_usage:
+        def _get_all_filter_by_search_term(query):
+            if not search_term:
+                return query
+            query = query.filter(
+                AlchemyActivity.name.ilike('%{}%'.format(search_term))
+            )
             return query
-        query = query.group_by(AlchemyActivity.pk)
-        return query
 
-    def _get_all_order_by(self, query, sort_col, sort_order, include_usage, count_col):
-        direction = desc if sort_order == 'desc' else asc
-        if sort_col == 'category':
-            query = query.order_by(direction(AlchemyCategory.name))
-            query = query.order_by(direction(AlchemyActivity.name))
-        elif sort_col == 'start':
-            assert include_usage
-            direction = desc if not sort_order else direction
-            query = query.order_by(direction(AlchemyFact.start))
-        elif sort_col == 'usage':
-            assert include_usage and count_col is not None
-            direction = desc if not sort_order else direction
-            query = query.order_by(direction(count_col))
-        else:
-            assert sort_col in ('', 'name', 'activity', 'tag', 'fact')
-            query = query.order_by(direction(AlchemyActivity.name))
-            query = query.order_by(direction(AlchemyCategory.name))
-        return query
-
-    def _get_all_with_entities(self, query, count_col):
-        if count_col is None:
+        def _get_all_order_by(query, count_col=None, time_col=None):
+            direction = desc if sort_order == 'desc' else asc
+            if sort_col == 'start':
+                assert include_usage
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(AlchemyFact.start))
+            elif sort_col == 'usage':
+                assert include_usage and count_col is not None
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(count_col), direction(time_col))
+            elif sort_col == 'time':
+                assert include_usage and time_col is not None
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(time_col), direction(count_col))
+            elif sort_col == 'activity':
+                query = query.order_by(direction(AlchemyActivity.name))
+                query = query.order_by(direction(AlchemyCategory.name))
+            elif sort_col == 'category':
+                query = query.order_by(direction(AlchemyCategory.name))
+                query = query.order_by(direction(AlchemyActivity.name))
+            else:
+                assert sort_col in ('', 'name', 'tag', 'fact')
+                query = query.order_by(direction(AlchemyActivity.name))
+                query = query.order_by(direction(AlchemyCategory.name))
             return query
-        # (lb): Get tricky with it. The query now SELECTs all Fact columns,
-        #  and it JOINs and GROUPs BY activities to produce the counts. But
-        #  the Fact is meaningless after the group-by; we want the Activity
-        #  instead. So use with_entities trickery to tell SQLAlchemy which
-        #  columns we really want -- it'll transform the query so that the
-        #  SELECT fetches all the Activity columns; but the JOIN and GROUP BY
-        #  remain the same! (I'm not quite sure how it works, but it does.)
-        # And as an aside, because of the 1-to-many relationship, the
-        #  Activity table does not reference Fact, so, e.g., this wouldn't
-        #  work, or at least I assume not, but maybe SQLAlchemy would figure
-        #  it out: self.store.session.query(AlchemyActivity).join(AlchemyFact).
-        query = query.with_entities(AlchemyActivity, count_col)
-        return query
+
+        def _get_all_group_by(query, agg_cols):
+            if not agg_cols:
+                return query
+            query = query.group_by(AlchemyActivity.pk)
+            return query
+
+        def _get_all_with_entities(query, agg_cols):
+            if not agg_cols:
+                return query
+            # (lb): Get tricky with it. The query now SELECTs all Fact columns,
+            #  and it JOINs and GROUPs BY activities to produce the counts. But
+            #  the Fact is meaningless after the group-by; we want the Activity
+            #  instead. So use with_entities trickery to tell SQLAlchemy which
+            #  columns we really want -- it'll transform the query so that the
+            #  SELECT fetches all the Activity columns; but the JOIN and GROUP BY
+            #  remain the same! (I'm not quite sure how it works, but it does.)
+            # And as an aside, because of the 1-to-many relationship, the
+            #  Activity table does not reference Fact, so, e.g., this wouldn't
+            #  work, or at least I assume not, but maybe SQLAlchemy would figure
+            #  it out: self.store.session.query(AlchemyActivity).join(AlchemyFact).
+            query = query.with_entities(AlchemyActivity, *agg_cols)
+            return query
+
+        # ***
+
+        return _get_all_activities()
 

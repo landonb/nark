@@ -17,8 +17,10 @@
 
 """Hamster LIB storage object managers."""
 
+from __future__ import absolute_import, unicode_literals
 
-__all__ = ['SQLAlchemyStore']
+
+__all__ = ['query_apply_limit_offset', 'query_apply_true_or_not']
 
 
 # ***
@@ -53,5 +55,11 @@ def query_apply_limit_offset(query, **kwargs):
             query = query.offset(kwargs['offset'])
     except KeyError:
         pass
+    return query
+
+
+def query_apply_true_or_not(query, column, condition, **kwargs):
+    if condition is not None:
+        return query.filter(column == condition)
     return query
 
