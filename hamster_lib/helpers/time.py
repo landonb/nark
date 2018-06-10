@@ -38,7 +38,10 @@ def get_day_end(config):
         This is merely a convenience funtion so we do not have to deduct
         this from ``day_start`` by hand all the time.
     """
-    day_start_datetime = datetime.datetime.combine(datetime.date.today(), config['day_start'])
+    day_start = config['day_start'] or '00:00'
+    day_start_datetime = datetime.datetime.combine(
+        datetime.date.today(), day_start,
+    )
     day_end_datetime = day_start_datetime - datetime.timedelta(seconds=1)
     return day_end_datetime.time()
 
@@ -67,8 +70,7 @@ def end_day_to_datetime(end_day, config):
         An alternative implementation for the similar problem in legacy hamster:
             ``hamster.storage.db.Storage.__get_todays_facts``.
     """
-
-    day_start_time = config['day_start']
+    day_start_time = config['day_start'] or '00:00'
     day_end_time = get_day_end(config)
 
     if day_start_time == datetime.time(0, 0, 0):

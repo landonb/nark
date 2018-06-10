@@ -270,12 +270,14 @@ def get_default_backend_config(appdirs):
     """
     return {
         'store': 'sqlalchemy',
-        'day_start': datetime.time(5, 30, 0),
-        'fact_min_delta': 1,
-        'tmpfile_path': os.path.join(appdirs.user_data_dir, '{}.tmp'.format(appdirs.appname)),
+        'day_start': '',
+        'fact_min_delta': 0,
         'db_engine': 'sqlite',
-        'db_path': os.path.join(appdirs.user_data_dir, '{}.sqlite'.format(appdirs.appname)),
-        'sql_log_level': 'WARNING',
+        'db_path': os.path.join(
+            appdirs.user_data_dir,
+            '{}.sqlite'.format(appdirs.appname),
+        ),
+        'sql_log_level': 'CRITICAL',
     }
 
 
@@ -299,15 +301,12 @@ def backend_config_to_configparser(config):
 
     def get_day_start():
         day_start = config.get('day_start')
-        if day_start:
-            day_start = day_start.strftime('%H:%M:%S')
-        return day_start
+        if not day_start:
+            return ''
+        return day_start.strftime('%H:%M:%S')
 
     def get_fact_min_delta():
         return text_type(config.get('fact_min_delta'))
-
-    def get_tmpfile_path():
-        return text_type(config.get('tmpfile_path'))
 
     def get_db_engine():
         return text_type(config.get('db_engine'))
@@ -338,7 +337,6 @@ def backend_config_to_configparser(config):
     cp_instance.set('Backend', 'store', get_store())
     cp_instance.set('Backend', 'day_start', get_day_start())
     cp_instance.set('Backend', 'fact_min_delta', get_fact_min_delta())
-    cp_instance.set('Backend', 'tmpfile_path', get_tmpfile_path())
     cp_instance.set('Backend', 'db_engine', get_db_engine())
     cp_instance.set('Backend', 'db_path', get_db_path())
     cp_instance.set('Backend', 'db_host', get_db_host())
@@ -377,9 +375,11 @@ def configparser_to_backend_config(cp_instance):
         return store
 
     def get_day_start():
+        day_start = cp_instance.get('Backend', 'day_start')
+        if not day_start:
+            return ''
         try:
-            day_start = datetime.datetime.strptime(cp_instance.get('Backend',
-                'day_start'), '%H:%M:%S').time()
+            day_start = datetime.datetime.strptime(day_start, '%H:%M:%S').time()
         except ValueError:
             raise ValueError(_(
                 "We encountered an error when parsing config's 'day_start' value!"
@@ -389,9 +389,6 @@ def configparser_to_backend_config(cp_instance):
 
     def get_fact_min_delta():
         return cp_instance.getint('Backend', 'fact_min_delta')
-
-    def get_tmpfile_path():
-        return cp_instance.get('Backend', 'tmpfile_path')
 
     def get_db_engine():
         return text_type(cp_instance.get('Backend', 'db_engine'))
@@ -421,7 +418,6 @@ def configparser_to_backend_config(cp_instance):
         'store': get_store(),
         'day_start': get_day_start(),
         'fact_min_delta': get_fact_min_delta(),
-        'tmpfile_path': get_tmpfile_path(),
         'db_engine': get_db_engine(),
         'db_path': get_db_path(),
         'db_host': get_db_host(),
