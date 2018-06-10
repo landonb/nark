@@ -60,6 +60,19 @@ def formatter_basic_color():
     return formatter
 
 
+def resolve_log_level(level):
+    error = False
+    try:
+        try:
+            log_level = int(level)
+        except ValueError:
+            log_level = logging.getLevelName(level)
+    except KeyError:
+        error = True
+        log_level = logging.WARNING
+    return log_level, error
+
+
 def setupHandler(handler, formatter, *loggers):
     handler.setFormatter(formatter)
     for logger in loggers:
