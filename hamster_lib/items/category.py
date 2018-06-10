@@ -23,14 +23,16 @@ from future.utils import python_2_unicode_compatible
 from six import text_type
 
 
-CategoryTuple = namedtuple('CategoryTuple', ('pk', 'name'))
+CategoryTuple = namedtuple(
+    'CategoryTuple', ('pk', 'name', 'deleted', 'hidden'),
+)
 
 
 @python_2_unicode_compatible
 class Category(object):
     """Storage agnostic class for categories."""
 
-    def __init__(self, name, pk=None):
+    def __init__(self, name, pk=None, deleted=False, hidden=False):
         """
         Initialize this instance.
 
@@ -41,6 +43,8 @@ class Category(object):
 
         self.pk = pk
         self.name = name
+        self.deleted = bool(deleted)
+        self.hidden = bool(hidden)
 
     @property
     def name(self):
@@ -67,7 +71,10 @@ class Category(object):
         pk = self.pk
         if not include_pk:
             pk = False
-        return CategoryTuple(pk=pk, name=self.name)
+        cat_tup = CategoryTuple(
+            pk=pk, name=self.name, deleted=self.deleted, hidden=self.hidden,
+        )
+        return cat_tup
 
     def equal_fields(self, other):
         """

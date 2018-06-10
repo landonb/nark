@@ -67,7 +67,7 @@ DEFAULT_STRING_LENGTH = 254
 
 @python_2_unicode_compatible
 class AlchemyCategory(Category):
-    def __init__(self, pk, name):
+    def __init__(self, pk, name, deleted, hidden):
         """
         Initiate a new SQLAlchemy category instance.
 
@@ -77,18 +77,22 @@ class AlchemyCategory(Category):
 
         self.pk = pk
         self.name = name
+        self.deleted = deleted
+        self.hidden = hidden
 
     def as_hamster(self, store):
         """Return store object as a real ``hamster_lib.Category`` instance."""
         return Category(
             pk=self.pk,
-            name=self.name
+            name=self.name,
+            deleted=self.deleted,
+            hidden=self.hidden,
         )
 
 
 @python_2_unicode_compatible
 class AlchemyActivity(Activity):
-    def __init__(self, pk, name, category, deleted):
+    def __init__(self, pk, name, category, deleted, hidden):
         """
         Initiate a new instance.
 
@@ -104,6 +108,7 @@ class AlchemyActivity(Activity):
         self.name = name
         self.category = category
         self.deleted = deleted
+        self.hidden = hidden
 
     def as_hamster(self, store):
         """Return new ``hamster_lib.Activity`` representation of SQLAlchemy instance."""
@@ -131,12 +136,13 @@ class AlchemyActivity(Activity):
             name=activity_name,
             category=category,
             deleted=self.deleted,
+            hidden=self.hidden,
         )
 
 
 @python_2_unicode_compatible
 class AlchemyTag(Tag):
-    def __init__(self, pk, name):
+    def __init__(self, pk, name, deleted, hidden):
         """
         Initiate a new SQLAlchemy tag instance.
 
@@ -146,18 +152,22 @@ class AlchemyTag(Tag):
 
         self.pk = pk
         self.name = name
+        self.deleted = deleted
+        self.hidden = hidden
 
     def as_hamster(self, store):
         """Provide an convenient way to return it as a ``hamster_lib.Tag`` instance."""
         return Tag(
             pk=self.pk,
             name=self.name,
+            deleted=self.deleted,
+            hidden=self.hidden,
         )
 
 
 @python_2_unicode_compatible
 class AlchemyFact(Fact):
-    def __init__(self, pk, activity, start, end, description):
+    def __init__(self, pk, activity, start, end, description, deleted, split_from):
         """
         Initiate a new instance.
 
@@ -170,6 +180,8 @@ class AlchemyFact(Fact):
         """
         # FIXME/2018-05-15: (lb): DRY: Any reason this doesn't called super()?
         self.pk = pk
+        self.deleted = deleted
+        self.split_from = split_from
         self.activity = activity
         self.start = start
         self.end = end
@@ -181,6 +193,8 @@ class AlchemyFact(Fact):
         """Provide an convenient way to return it as a ``hamster_lib.Fact`` instance."""
         return Fact(
             pk=self.pk,
+            deleted=self.deleted,
+            split_from=self.split_from,
             activity=self.activity.as_hamster(store),
             start=self.start,
             end=self.end,
@@ -194,7 +208,12 @@ metadata = MetaData()
 categories = Table(
     'categories', metadata,
     Column('id', Integer, primary_key=True),
-    Column('name', Unicode(DEFAULT_STRING_LENGTH), unique=True)
+
+    # FIXME/2018-05-20: (lb): Why the hard limit? And why isn't it documented?
+    Column('name', Unicode(DEFAULT_STRING_LENGTH), unique=True),
+
+    Column('deleted', Boolean),
+    Column('hidden', Boolean),
 )
 
 # (lb): This code uses SQLAlchemy Classical Mappings, and not Declarative Mappings.
@@ -207,10 +226,15 @@ mapper(AlchemyCategory, categories, properties={
 activities = Table(
     'activities', metadata,
     Column('id', Integer, primary_key=True),
+
+    # FIXME/2018-05-20: (lb): Why the hard limit? And why isn't it documented?
+    # And why isn't this DEFAULT_STRING_LENGTH instead of 500?
     Column('name', Unicode(500)),
+
     Column('deleted', Boolean),
+    Column('hidden', Boolean),
     Column('category_id', Integer, ForeignKey(categories.c.id)),
-    UniqueConstraint('name', 'category_id')
+    UniqueConstraint('name', 'category_id'),
 )
 
 mapper(AlchemyActivity, activities, properties={
@@ -221,7 +245,12 @@ mapper(AlchemyActivity, activities, properties={
 tags = Table(
     'tags', metadata,
     Column('id', Integer, primary_key=True),
-    Column('name', Unicode(DEFAULT_STRING_LENGTH), unique=True)
+
+    # FIXME/2018-05-20: (lb): Why the hard limit? And why isn't it documented?
+    Column('name', Unicode(DEFAULT_STRING_LENGTH), unique=True),
+
+    Column('deleted', Boolean),
+    Column('hidden', Boolean),
 )
 
 mapper(AlchemyTag, tags, properties={
@@ -231,6 +260,9 @@ mapper(AlchemyTag, tags, properties={
 facts = Table(
     'facts', metadata,
     Column('id', Integer, primary_key=True),
+    Column('deleted', Boolean),
+    Column('split_from_id', Integer, ForeignKey('facts.id'), nullable=True),
+    # SKIP: Column('hidden', Boolean),
     # NOTE/2018-04-22: Old Timey Hamster uses SQLite 'timestamp' data type.
     # In ProjectHamster Hamster, the data type shows as DATETIME. The type
     # is more of a suggestion in SQLite, which stores both types as strings,
@@ -252,6 +284,10 @@ mapper(AlchemyFact, facts, properties={
     # FIXME: (lb): Remove this comment (and newlines) after verifying it's eh-okay.
     'start': facts.c.start_time,
     'end': facts.c.end_time,
+
+    'split_from': relationship(
+        lambda: AlchemyFact, remote_side=facts.c.id, backref='sub_facts',
+    )
 })
 
 # 2018-04-22: (lb): ProjectHamster renamed fact_tags to facttags. But

@@ -26,8 +26,19 @@ from hamster_lib.helpers import time as time_helpers
 from hamster_lib.helpers.helpers import parse_raw_fact
 from six import text_type
 
-
-FactTuple = namedtuple('FactTuple', ('pk', 'activity', 'start', 'end', 'description', 'tags'))
+FactTuple = namedtuple(
+    'FactTuple',
+    (
+        'pk',
+        'activity',
+        'start',
+        'end',
+        'description',
+        'tags',
+        'deleted',
+        'split_from',
+    ),
+)
 
 
 @python_2_unicode_compatible
@@ -41,6 +52,8 @@ class Fact(object):
         pk=None,
         description=None,
         tags=None,
+        deleted=False,
+        split_from=None,
     ):
         """
         Initiate our new instance.

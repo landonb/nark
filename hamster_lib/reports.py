@@ -36,8 +36,18 @@ from icalendar import Calendar, Event
 from six import text_type
 
 
-FactTuple = namedtuple('FactTuple', ('start', 'end', 'activity', 'category',
-    'description', 'duration'))
+FactTuple = namedtuple(
+    'FactTuple',
+    (
+        'start',
+        'end',
+        'duration',
+        'activity',
+        'category',
+        'description',
+        'deleted',
+    )
+)
 
 
 @python_2_unicode_compatible
@@ -181,10 +191,11 @@ class PlaintextWriter(ReportWriter):
         return FactTuple(
             start=fact.start.strftime(self.datetime_format),
             end=fact.end.strftime(self.datetime_format),
-            activity=fact.activity.name,
             duration=fact.get_string_delta(self.duration_fmt),
+            activity=fact.activity.name,
             category=text_type(category),
             description=description,
+            deleted=fact.deleted,
         )
 
     def _write_fact(self, fact_tuple):
@@ -287,10 +298,11 @@ class ICALWriter(ReportWriter):
         return FactTuple(
             start=fact.start,
             end=fact.end,
-            activity=text_type(fact.activity.name),
             duration=None,
+            activity=text_type(fact.activity.name),
             category=text_type(category),
             description=text_type(description),
+            deleted=fact.deleted,
         )
 
     def _write_fact(self, fact_tuple):
@@ -361,10 +373,11 @@ class XMLWriter(ReportWriter):
         return FactTuple(
             start=fact.start.strftime(self.datetime_format),
             end=fact.end.strftime(self.datetime_format),
-            activity=text_type(fact.activity.name),
             duration=fact.get_string_delta(format='%M'),
+            activity=text_type(fact.activity.name),
             category=text_type(category),
             description=text_type(description),
+            deleted=text_type(fact.deleted),
         )
 
     def _write_fact(self, fact_tuple):

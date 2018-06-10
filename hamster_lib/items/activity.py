@@ -34,7 +34,7 @@ ActivityTuple = namedtuple(
 class Activity(object):
     """Storage agnostic class for activities."""
 
-    def __init__(self, name, pk=None, category=None, deleted=False):
+    def __init__(self, name, pk=None, category=None, deleted=False, hidden=False):
         """
         Initialize this instance.
 
@@ -59,6 +59,7 @@ class Activity(object):
         self.name = name
         self.category = category
         self.deleted = bool(deleted)
+        self.hidden = bool(hidden)
 
     @property
     def name(self):
@@ -114,6 +115,7 @@ class Activity(object):
             name=self.name,
             category=category,
             deleted=self.deleted,
+            hidden=self.hidden,
         )
 
     def equal_fields(self, other):

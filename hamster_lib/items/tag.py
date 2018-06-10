@@ -22,14 +22,16 @@ from collections import namedtuple
 from six import text_type
 
 
-TagTuple = namedtuple('TagTuple', ('pk', 'name'))
+TagTuple = namedtuple(
+    'TagTuple', ('pk', 'name', 'deleted', 'hidden'),
+)
 
 
 @python_2_unicode_compatible
 class Tag(object):
     """Storage agnostic class for tags."""
 
-    def __init__(self, name, pk=None):
+    def __init__(self, name, pk=None, deleted=False, hidden=False):
         """
         Initialize this instance.
 
@@ -40,6 +42,8 @@ class Tag(object):
 
         self.pk = pk
         self.name = name
+        self.deleted = bool(deleted)
+        self.hidden = bool(hidden)
 
     @property
     def name(self):
@@ -66,7 +70,10 @@ class Tag(object):
         pk = self.pk
         if not include_pk:
             pk = False
-        return TagTuple(pk=pk, name=self.name)
+        tag_tup = TagTuple(
+            pk=pk, name=self.name, deleted=self.deleted, hidden=self.hidden
+        )
+        return tag_tup
 
     def equal_fields(self, other):
         """
