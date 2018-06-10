@@ -20,11 +20,20 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
-import re
-from collections import namedtuple
+import math
+import pytz
+from six import text_type
 
-TimeFrame = namedtuple('Timeframe', ('start_date', 'start_time',
-    'end_date', 'end_time', 'offset'))
+
+__all__ = [
+    'get_day_end',
+    'end_day_to_datetime',
+    'validate_start_end_range',
+    'must_be_datetime_or_relative',
+    'isoformat',
+    'isoformat_tzinfo',
+    'isoformat_tzless',
+]
 
 
 def get_day_end(config):
@@ -81,7 +90,7 @@ def end_day_to_datetime(end_day, config):
     return end
 
 
-def extract_time_info(text):
+def validate_start_end_range(range_tuple):
     """
     Perform basic sanity checks on a timeframe.
 
@@ -98,276 +107,102 @@ def extract_time_info(text):
         ``timeframes`` may be incomplete, e.g., end might not be set.
     """
 
-    # [TODO] Add a list of supported formats.
-
-    def get_time(time, seconds=None):
-        """Convert a times string representation to datetime.time instance."""
-        if time is None:
-            return time
-
-        if seconds:
-            time_format = '%H:%M:%S'
-        else:
-            time_format = '%H:%M'
-
-        return datetime.datetime.strptime(time.strip(), time_format).time()
-
-    def get_date(date):
-        """Convert a dates string representation to datetime.date instance."""
-        if date:
-            date = datetime.datetime.strptime(date.strip(), "%Y-%m-%d").date()
-        return date
-
-    def date_time_from_groupdict(groupdict):
-        """Return a date/time tuple by introspecting a passed dict."""
-        if groupdict['datetime']:
-            dt = parse_time(groupdict['datetime'])
-            time = dt.time()
-            date = dt.date()
-        else:
-            date = get_date(groupdict.get('date'))
-            time = get_time(groupdict.get('time'), groupdict.get('seconds'))
-        return (date, time)
-
-    # Baseline/default values.
-    result = {
-        'start_date': None,
-        'start_time': None,
-        'end_date': None,
-        'end_time': None,
-        'offset': None
-    }
-    rest = None
-
-    # Individual patterns for time/date substrings.
-    relative_pattern = '(?P<relative>-\d+)'
-    time_pattern = '(?P<time>\d{2}:\d{2}(?P<seconds>:\d{2})?)'
-    date_pattern = '(?P<date>\d{4}-\d{2}-\d{2})'
-    datetime_pattern = '(?P<datetime>\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?)'
-
-    start = re.match(
-        '^({}|{}|{}|{})( (?P<rest>.*))?$'.format(
-            relative_pattern, datetime_pattern, date_pattern, time_pattern,
-        ),
-        text,
-    )
-    if start:
-        start_groups = start.groupdict()
-        # Ignoring: start_groups['seconds']
-        if start_groups['relative']:
-            result['offset'] = datetime.timedelta(minutes=abs(int(start_groups['relative'])))
-        else:
-            date, time = date_time_from_groupdict(start_groups)
-            result['start_date'] = date
-            result['start_time'] = time
-
-        rest = start_groups['rest']
-
-        if rest:
-            end = re.match(
-                '^- ({}|{}|{})( (?P<rest>.*))?$'.format(
-                    datetime_pattern, date_pattern, time_pattern,
-                ),
-                rest,
-            )
-        else:
-            end = None
-
-        if end and not start_groups['relative']:
-            end_groups = end.groupdict()
-            date, time = date_time_from_groupdict(end_groups)
-            result['end_date'] = date
-            result['end_time'] = time
-            rest = end_groups['rest']
-
-    result = TimeFrame(result['start_date'], result['start_time'], result['end_date'],
-        result['end_time'], result['offset'])
-
-    # Consider the whole string as 'rest' if no time/date info was extracted
-    if not rest:
-        rest = text
-    return (result, rest.strip())
-
-
-def complete_timeframe(timeframe, config, partial=False):
-    """
-    Apply fallback strategy to incomplete timeframes.
-
-    Our fallback strategy is as follows:
-        * Missing start-date: Fallback to ``today``.
-        * Missing start-time: Fallback to ``store.config['day_start']``.
-        * Missing end-date: Fallback to ``today`` for ``day_start='00:00`,
-          ``tomorrow`` otherwise.
-          See ``hamster_lib.helpers.end_day_to_datetime`` for details and
-          explanations.
-        * Missing end-time: 1 second before ``store.config['day_start']``.
-
-    Args:
-        timeframe (TimeFrame): ``TimeFrame`` instance incorporating all
-            available information available about the timespan. Any missing info
-            will be completed per fallback strategy.
-        config (dict): A config-dict providing settings relevant to determine
-            fallback values.
-        partial (bool, optional): If true, we will only complete start/end times if there
-            is at least either date or time information present. Defaults to
-            ``False``.
-
-    Returns:
-        tuple: ``(start, end)`` tuple. Where ``start`` and ``end`` are full
-        ``datetime.datetime`` instances.
-
-    Raises:
-        TypeError: If any of the ``timeframe`` values is of inappropriate
-            datetime type.
-    """
-
-    def complete_start_date(date):
-        """
-        Assign ``today`` if ``date=None``, else ensure its a ``datetime.date`` instance.
-
-        Args:
-            date (datetime.date): Startdate information.
-
-        Returns:
-            datetime.date: Either the original date or the default solution.
-
-        Raises:
-            TypeError: If ``date``` is neither ``None`` nor ``datetime.date`` instance.
-
-        Note:
-            Reference behavior taken from [hamster-cli](https://github.com/projecthamster/
-            hamster/blob/master/src/hamster-cli#L368).
-        """
-
-        if not date:
-            date = datetime.date.today()
-        else:
-            if not isinstance(date, datetime.date):
-                raise TypeError(_(
-                    "Expected datetime.date instance, got {type} instead.".format(
-                        type=type(date))
-                ))
-        return date
-
-    def complete_start_time(time, day_start):
-        """Assign ``day_start`` if no start-time is given."""
-        if not time:
-            time = day_start
-        else:
-            if not isinstance(time, datetime.time):
-                raise TypeError(_(
-                    "Expected datetime.time instance, got {type} instead.".format(
-                        type=type(time))
-                ))
-        return time
-
-    def complete_start(date, time, config):
-        return datetime.datetime.combine(
-            complete_start_date(timeframe.start_date),
-            complete_start_time(timeframe.start_time, config['day_start']),
-        )
-
-    def complete_end_date(date):
-        if not date:
-            date = datetime.date.today()
-        else:
-            if not isinstance(date, datetime.date):
-                raise TypeError(_(
-                    "Expected datetime.date instance, got {type} instead.".format(
-                        type=type(date))
-                ))
-        return date
-
-    def complete_end(date, time, config):
-        date = complete_end_date(date)
-        if time:
-            result = datetime.datetime.combine(date, time)
-        else:
-            result = end_day_to_datetime(date, config)
-        return result
-
-    start, end = None, None
-
-    if any((timeframe.offset, timeframe.start_time, timeframe.start_date)) or not partial:
-        if not timeframe.offset:
-            start = complete_start(timeframe.start_date, timeframe.start_time, config)
-        else:
-            start = datetime.datetime.now() - timeframe.offset
-
-    if any((timeframe.end_date, timeframe.end_time)) or not partial:
-        end = complete_end(timeframe.end_date, timeframe.end_time, config)
-
-    return (start, end)
-
-
-def parse_time(time):
-    """
-    Parse a date/time string and return a corresponding datetime object.
-
-    Args:
-        time (str): A ``string` of one of the following formats: ``%H:%M``, ``%Y-%m-%d`` or
-            ``%Y-%m-%d %H:%M``.
-
-    Returns:
-        datetime.datetime: Depending on input string either returns ``datetime.date``,
-            ``datetime.time`` or ``datetime.datetime``.
-
-    Raises:
-        ValueError: If ``time`` can not be matched against any of the accepted formats.
-
-    Note:
-        This parse just a singlular date, time or datetime representation.
-    """
-
-    length = len(time.strip().split())
-    if length == 1:
-        try:
-            result = datetime.datetime.strptime(time, '%H:%M:%S').time()
-        except ValueError:
-            try:
-                result = datetime.datetime.strptime(time, '%H:%M').time()
-            except ValueError:
-                result = datetime.datetime.strptime(time, '%Y-%m-%d').date()
-    elif length == 2:
-        try:
-            result = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            result = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M')
-    else:
-        raise ValueError(_(
-            "String does not seem to be in one of our supported time formats."
-        ))
-    return result
-
-
-def validate_start_end_range(range_tuple):
-    """
-    Perform basic sanity checks on a timeframe.
-
-    Args:
-        range_tuple (tuple): ``(start, end)`` tuple as returned by
-            ``complete_timeframe``.
-
-    Raises:
-        ValueError: If start > end.
-
-    Returns:
-        tuple: ``(start, end)`` tuple that passed validation.
-
-    Note:
-        ``timeframes`` may be incomplete, especially if ``complete_timeframe(partial=True)`` has
-        been used to construct them.
-    """
-
     start, end = range_tuple
 
-    if (start and end) and (start > end):
+    if (
+        isinstance(start, datetime.datetime)
+        and isinstance(end, datetime.datetime)
+        and start > end
+    ):
         raise ValueError(_("Start after end!"))
 
     return range_tuple
 
 
-def truncate_to_whole_seconds(time):
-    time_fmt = '%Y-%m-%d %H:%M'
-    return datetime.datetime.strptime(time.strftime(time_fmt), time_fmt)
+def must_be_datetime_or_relative(dt):
+    """FIXME: Document"""
+    if not dt or isinstance(dt, datetime.datetime) or isinstance(dt, text_type):
+        return dt
+    raise TypeError(_(
+        'Found {} rather than a datetime, string, or None, as expected.'
+        .format(type=type(dt))
+    ))
+
+
+def isoformat(dt, sep='T', timespec='auto', include_tz=False):
+    """
+    FIXME: Document
+
+    Based loosely on
+        datetime.isoformat(sep='T', timespec='auto')
+    in Python 3.6 (which added timespec).
+
+    The optional argument sep (default 'T') is a one-character separator,
+    placed between the date and time portions of the result.
+
+    The optional argument timespec specifies the number of additional components
+    of the time to include (the default is 'auto'). It can be one of the following:
+
+    'auto': Same as 'seconds' if microsecond is 0, same as 'microseconds' otherwise.
+    'hours': Include the hour in the two-digit HH format.
+    'minutes': Include hour and minute in HH:MM format.
+    'seconds': Include hour, minute, and second in HH:MM:SS format.
+    'milliseconds': Include full time, but truncate fractional second part
+        to milliseconds. HH:MM:SS.sss format.
+    'microseconds': Include full time in HH:MM:SS.mmmmmm format.
+
+    Note: Excluded time components are truncated, not rounded.
+
+    ValueError will be raised on an invalid timespec argument.
+
+    """
+    timecomp = _format_timespec(dt, timespec)
+
+    tzcomp = ''
+    if dt.tzinfo:
+        if include_tz:
+            tzcomp = '%z'
+        else:
+            dt = dt.astimezone(pytz.utc)
+    # else, a naive datetime, we'll just have to assume it's UTC!
+
+    return dt.strftime('%Y-%m-%d{}{}{}'.format(sep, timecomp, tzcomp))
+
+
+def _format_timespec(dt, timespec):
+    if timespec == 'auto':
+        if not dt.microsecond:
+            timespec = 'seconds'
+        else:
+            timespec = 'microseconds'
+
+    if timespec == 'hours':
+        return '%H'
+    elif timespec == 'minutes':
+        return '%H:%M'
+    elif timespec == 'seconds':
+        return '%H:%M:%S'
+    elif timespec == 'milliseconds':
+        msec = '{:03}'.format(math.floor(dt.microsecond / 1000))
+        return '%H:%M:%S.{}'.format(msec)
+    elif timespec == 'microseconds':
+        return '%H:%M:%S.%f'
+    else:
+        raise ValueError('Not a valid `timespec`: {}'.format(timespec))
+
+
+def isoformat_tzinfo(dt, sep='T', timespec='auto'):
+    """FIXME: Document"""
+    if isinstance(dt, datetime.datetime):
+        return isoformat(dt, sep=sep, timespec=timespec, include_tz=True)
+    else:
+        return dt
+
+
+def isoformat_tzless(dt, sep='T', timespec='auto'):
+    """FIXME: Document"""
+    if isinstance(dt, datetime.datetime):
+        return isoformat(dt, sep=sep, timespec=timespec, include_tz=False)
+    else:
+        return dt
 
