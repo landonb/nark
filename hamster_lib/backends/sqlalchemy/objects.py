@@ -270,7 +270,15 @@ facts = Table(
     Column('start_time', DateTime),
     Column('end_time', DateTime),
     Column('activity_id', Integer, ForeignKey(activities.c.id)),
-    Column('description', Unicode(500)),
+
+    # FIXME/2018-05-20: (lb): Why the hard limit? And why isn't it documented?
+    # ALSO: seriously, only 500 chars for "description"??
+    #    Column('description', Unicode(500)),
+    # [In SQLite the size is meaningless (you can store anything, any size)
+    #  but it probably matters in other databases]...
+    # FIXME/2018-06-09: (lb): Remove this comment after verifying against
+    #   another store, e.g., Postgres.
+    Column('description', UnicodeText()),
 )
 
 mapper(AlchemyFact, facts, properties={
