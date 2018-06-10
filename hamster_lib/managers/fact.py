@@ -16,23 +16,23 @@
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
+from future.utils import python_2_unicode_compatible
 
 import copy
 import datetime
-import os
-import pickle
-
-from future.utils import python_2_unicode_compatible
 
 from . import BaseManager
-from ..helpers import helpers
 from ..helpers import time as time_helpers
-from ..items.fact import Fact
 
 
 @python_2_unicode_compatible
 class BaseFactManager(BaseManager):
     """Base class defining the minimal API for a FactManager implementation."""
+    def __init__(self, *args, **kwargs):
+        super(BaseFactManager, self).__init__(*args, **kwargs)
+
+    # ***
+
     def save(self, fact):
         """
         Save a Fact to our selected backend.
@@ -51,25 +51,41 @@ class BaseFactManager(BaseManager):
             ValueError: If ``fact.delta`` is smaller than
               ``self.store.config['fact_min_delta']``
         """
-        self.store.logger.debug(_("Fact: '{}' has been received.".format(fact)))
+        def _save():
+            self.store.logger.debug(_("Fact: '{}' has been received.".format(fact)))
+            enforce_fact_min_delta()
+            return update_or_add()
 
-        fact_min_delta = datetime.timedelta(seconds=int(self.store.config['fact_min_delta']))
+        def update_or_add():
+            if fact.pk or fact.pk == 0:
+                result = self._update(fact)
+            else:
+                result = self._add(fact)
+            return result
 
-        if fact.delta and (fact.delta < fact_min_delta):
+        def enforce_fact_min_delta():
+            if not fact.end:
+                # The ongoing fact.
+                return
+
+            fact_min_delta = int(self.store.config['fact_min_delta'])
+            if not fact_min_delta:
+                return
+
+            min_delta = datetime.timedelta(seconds=fact_min_delta)
+            if fact.delta() >= min_delta:
+                return
+
             message = _(
-                "The passed facts delta is shorter than the mandatory value of {} seconds"
-                " specified in your config.".format(fact_min_delta)
+                "The Fact duration is shorter than the mandatory value of "
+                "{} seconds specified in your config.".format(fact_min_delta)
             )
             self.store.logger.error(message)
             raise ValueError(message)
 
-        if fact.pk or fact.pk == 0:
-            result = self._update(fact)
-        elif fact.end is None:
-            result = self._start_tmp_fact(fact)
-        else:
-            result = self._add(fact)
-        return result
+        return _save()
+
+    # ***
 
     def _add(self, fact):
         """
@@ -106,7 +122,9 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
-    def remove(self, fact):
+    # ***
+
+    def remove(self, fact, purge=False):
         """
         Remove a given ``Fact`` from the backend.
 
@@ -122,7 +140,9 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
-    def get(self, pk):
+    # ***
+
+    def get(self, pk, deleted=None):
         """
         Return a Fact by its primary key.
 
@@ -147,8 +167,6 @@ class BaseFactManager(BaseManager):
         self,
         start=None,
         end=None,
-        filter_term='',
-        order='desc',
         **kwargs
     ):
         """
@@ -186,25 +204,42 @@ class BaseFactManager(BaseManager):
             ValueError: If ``end`` is before ``start``.
 
         Note:
-            * This public function only provides some sanity checks and normalization. The actual
-                backend query is handled by ``_get_all``.
-            * ``search_term`` should be prefixable with ``not`` in order to invert matching.
-            * This does only return proper facts and does not include any existing 'ongoing fact'.
-            * This method will *NOT* return facts that start before and end after
-              (e.g. that span more than) the specified timeframe.
+            * This public function only provides some sanity checks and
+                normalization. The actual backend query is handled by ``_get_all``.
+            * ``search_term`` should be prefixable with ``not`` in order to
+                invert matching.
+            * This does only return proper facts and does not include any
+                existing 'ongoing fact'.
+            * This method will *NOT* return facts that start before and end
+                after (e.g. that span more than) the specified timeframe.
         """
-        self.store.logger.debug(_(
-            "Start: '{start}', end: {end} with filter: {filter} has been received.".format(
-                start=start, end=end, filter=filter_term)
-        ))
+        def _get_all_verify_start_end(start, end, **kwargs):
+            self.store.logger.debug(
+                _('start: {start} / end: {end}').format(
+                    start=start, end=end
+                )
+            )
+            start = _get_all_verify_start(start)
+            end = _get_all_verify_end(end)
+            if start and end and (end <= start):
+                message = _("End value cannot be earlier than start.")
+                self.store.logger.debug(message)
+                raise ValueError(message)
+            return self._get_all(start=start, end=end, **kwargs)
 
-        if start is not None:
+        def _get_all_verify_start(start):
+            if start is None:
+                return start
+
             if isinstance(start, datetime.datetime):
                 # isinstance(datetime.datetime, datetime.date) returns True,
                 # which is why we need to catch this case first.
                 pass
             elif isinstance(start, datetime.date):
-                start = datetime.datetime.combine(start, self.store.config['day_start'])
+                # The user specified a date, but not a time. Assume midnight.
+                self.store.logger.debug(_('Using midnight as start time!'))
+                day_start = '00:00:00'
+                start = datetime.datetime.combine(start, day_start)
             elif isinstance(start, datetime.time):
                 start = datetime.datetime.combine(datetime.date.today(), start)
             else:
@@ -214,8 +249,12 @@ class BaseFactManager(BaseManager):
                 )
                 self.store.logger.debug(message)
                 raise TypeError(message)
+            return start
 
-        if end is not None:
+        def _get_all_verify_end(end):
+            if end is None:
+                return end
+
             if isinstance(end, datetime.datetime):
                 # isinstance(datetime.datetime, datetime.date) returns True,
                 # which is why we need to except this case first.
@@ -230,24 +269,27 @@ class BaseFactManager(BaseManager):
                     ' or datetime.datetime object.'
                 )
                 raise TypeError(message)
+            return end
 
-        if start and end and (end <= start):
-            message = _("End value can not be earlier than start!")
-            self.store.logger.debug(message)
-            raise ValueError(message)
+        return _get_all_verify_start_end(start, end, **kwargs)
 
-        return self._get_all(
-            start, end, filter_term, order=order, limit=limit, offset=offset,
-        )
+    # ***
 
     def _get_all(
         self,
         start=None,
         end=None,
-        search_terms='',
+        endless=False,
         partial=False,
-        order='desc',
-        **kwargs
+        include_usage=True,
+        deleted=False,
+        search_term='',
+        activity=False,
+        category=False,
+        sort_col='',
+        sort_order='',
+        limit='',
+        offset='',
     ):
         """
         Return a list of ``Facts`` matching given criteria.
@@ -291,81 +333,13 @@ class BaseFactManager(BaseManager):
         self.store.logger.debug(_("Returning today's facts"))
 
         today = datetime.date.today()
-        return self.get_all(
-            datetime.datetime.combine(today, self.store.config['day_start']),
-            time_helpers.end_day_to_datetime(today, self.store.config),
-        )
+        start = datetime.datetime.combine(today, self.store.config['day_start'])
+        end = time_helpers.end_day_to_datetime(today, self.store.config)
+        return self.get_all(start=start, end=end)
 
-    def _start_tmp_fact(self, fact):
-        """
-        Store new ongoing fact in persistent tmp file
+    # ***
 
-        Args:
-            fact (hamster_lib.Fact): Fact to be stored.
-
-        Returns:
-            hamster_lib.Fact: Fact stored.
-
-        Raises:
-            ValueError: If we already have a ongoing fact running.
-            ValueError: If the fact passed does have an end and hence does not
-                qualify for an 'ongoing fact'.
-        """
-        self.store.logger.debug(_("Fact: '{}' has been received.".format(fact)))
-        if fact.end:
-            message = _("The passed fact has an end specified.")
-            self.store.logger.debug(message)
-            raise ValueError(message)
-
-        tmp_fact = helpers._load_tmp_fact(self._get_tmp_fact_path())
-        if tmp_fact:
-            message = _("Trying to start with ongoing fact already present.")
-            self.store.logger.debug(message)
-            raise ValueError(message)
-        else:
-            with open(self._get_tmp_fact_path(), 'wb') as fobj:
-                pickle.dump(fact, fobj)
-            self.store.logger.debug(_("New temporary fact started."))
-        return fact
-
-    def update_tmp_fact(self, fact):
-        """
-        Update an ongoing fact.
-
-        Args:
-            fact (hamster_lib.Fact): Fact with new values.
-
-        Returns:
-            fact (hamster_lib.Fact): The updated ``Fact`` instance.
-
-        Raises:
-            TypeError: If passed fact is not an instance of ``hamster_lib.Fact``.
-            ValueError: If passed fact already has an ``end`` value and hence is
-                not a valid *ongoing fact*.
-        """
-        if not isinstance(fact, Fact):
-            raise TypeError(_(
-                "Passed fact is not a proper instance of 'hamster_lib.Fact'."
-            ))
-
-        if fact.end:
-            raise ValueError(_(
-                "The passed fact seems to have an end and hence is an invalid"
-                " 'ongoing fact'."
-            ))
-        old_fact = self.get_tmp_fact()
-
-        for attribute in ('activity', 'start', 'description', 'tags'):
-            value = getattr(fact, attribute)
-            setattr(old_fact, attribute, value)
-
-        with open(self._get_tmp_fact_path(), 'wb') as fobj:
-            pickle.dump(old_fact, fobj)
-        self.store.logger.debug(_("Temporary fact updated."))
-
-        return old_fact
-
-    def stop_tmp_fact(self, end_hint=None):
+    def stop_current_fact(self, end_hint=None):
         """
         Stop current 'ongoing fact'.
 
@@ -390,8 +364,11 @@ class BaseFactManager(BaseManager):
         """
         self.store.logger.debug(_("Stopping 'ongoing fact'."))
 
-        if not ((end_hint is None) or isinstance(end_hint, datetime.datetime) or (
-                isinstance(end_hint, datetime.timedelta))):
+        if not (
+            (end_hint is None)
+            or isinstance(end_hint, datetime.datetime)
+            or isinstance(end_hint, datetime.timedelta)
+        ):
             raise TypeError(_(
                 "The 'end_hint' you passed needs to be either a"
                 "'datetime.datetime' or 'datetime.timedelta' instance."
@@ -401,26 +378,30 @@ class BaseFactManager(BaseManager):
             if isinstance(end_hint, datetime.datetime):
                 end = end_hint
             else:
-                end = datetime.datetime.now() + end_hint
+                end = self.store.now + end_hint
         else:
-            end = datetime.datetime.now()
+            end = self.store.now
 
-        fact = helpers._load_tmp_fact(self._get_tmp_fact_path())
+        fact = self.get_current_fact()
         if fact:
             if fact.start > end:
-                raise ValueError(_("The indicated 'end' value seem to be before its 'start'."))
+                raise ValueError(_(
+                    'Cannot end the Fact before it started.'
+                    ' Try editing the Fact instead.'
+                ))
             else:
                 fact.end = end
             result = self.save(fact)
-            os.remove(self._get_tmp_fact_path())
-            self.store.logger.debug(_("Temporary fact stopped."))
+            self.store.logger.debug(_("Current fact is now history!"))
         else:
             message = _("Trying to stop a non existing ongoing fact.")
             self.store.logger.debug(message)
             raise ValueError(message)
         return result
 
-    def get_tmp_fact(self):
+    # ***
+
+    def get_current_fact(self):
         """
         Provide a way to retrieve any existing 'ongoing fact'.
 
@@ -431,16 +412,38 @@ class BaseFactManager(BaseManager):
         Raises:
             KeyError: If no ongoing fact is present.
         """
-        self.store.logger.debug(_("Trying to get 'ongoing fact'."))
+        def _get_current_fact():
+            self.store.logger.debug(_("Looking for the 'ongoing fact'."))
+            # 2018-06-09: (lb): Ha! Why did I add endless arg when I had
+            # months ago written an endless() method? Because I forgot!!
+            #   facts = self.get_all(endless=True)
+            facts = self.endless()
+            ensure_one_or_fewer_ongoing(facts)
+            ensure_one_or_more_ongoing(facts)
+            return facts[0]
 
-        fact = helpers._load_tmp_fact(self._get_tmp_fact_path())
-        if not fact:
-            message = _("Tried to retrieve an 'ongoing fact' when there is none present.")
+        def ensure_one_or_fewer_ongoing(facts):
+            if len(facts) <= 1:
+                return
+            msg = '{} IDs: {}'.format(
+                _('More than 1 ongoing Fact found. Your database is whacked out!!'),
+                ', '.join([str(fact.pk) for fact in facts]),
+            )
+            self.store.logger.debug(msg)
+            raise Exception(msg)
+
+        def ensure_one_or_more_ongoing(facts):
+            if facts:
+                return
+            message = _("No ongoing Fact found.")
             self.store.logger.debug(message)
             raise KeyError(message)
-        return fact
 
-    def cancel_tmp_fact(self):
+        return _get_current_fact()
+
+    # ***
+
+    def cancel_current_fact(self, purge=False):
         """
         Delete the current, ongoing, endless Fact. (Really just mark it deleted.)
 
@@ -452,17 +455,14 @@ class BaseFactManager(BaseManager):
         """
         self.store.logger.debug(_("Cancelling 'ongoing fact'."))
 
-        fact = helpers._load_tmp_fact(self._get_tmp_fact_path())
+        fact = self.get_current_fact()
         if not fact:
             message = _("Trying to stop a non existing ongoing fact.")
             self.store.logger.debug(message)
             raise KeyError(message)
-        os.remove(self._get_tmp_fact_path())
-        self.store.logger.debug(_("Temporary fact stoped."))
+        self.remove(fact, purge)
 
-    def _get_tmp_fact_path(self):
-        """Convenience function to assemble the tmpfile_path from config settings."""
-        return self.store.config['tmpfile_path']
+    # ***
 
     # FIXME/2018-05-12: (lb): insert_forcefully does not respect tmp_fact!
     def insert_forcefully(self, fact):
@@ -490,25 +490,34 @@ class BaseFactManager(BaseManager):
             #   Return unique set of facts indicating edits and deletions.
 
             conflicts = []
-            conflicts += find_conflict(facts, fact, 'start')
-            conflicts += find_conflict(facts, fact, 'end')
-            if fact.start and fact.end:
-                conflicts += facts.strictly_during(fact.start, fact.end)
-            resolve_overlapping(fact, conflicts)
-            return conflicts
+            conflicts += find_conflict_at_edge(facts, fact, 'start')
+            conflicts += find_conflict_at_edge(facts, fact, 'end')
+            conflicts += find_conflicts_during(facts, fact)
 
-        def find_conflict(facts, fact, ref_time):
+            edited_conflicts = resolve_overlapping(fact, conflicts)
+
+            return edited_conflicts
+
+        # ***
+
+        def find_conflict_at_edge(facts, fact, ref_time):
             conflicts = []
             find_edge = False
             fact_time = getattr(fact, ref_time)
             if fact_time:  # fact.start or fact.end
                 conflicts = facts.surrounding(fact_time)
-                conflicts = [(fact, copy.deepcopy(fact)) for fact in conflicts]
-                if not conflicts:
+                if conflicts:
+                    if len(conflicts) != 1:
+                        self.store.logger.warning(_(
+                            "Found more than one Fact ({} total) at: '{}'"
+                            .format(len(conflicts), fact_time))
+                        )
+                else:
                     find_edge = True
             else:
                 find_edge = True
             if find_edge:
+                assert not conflicts
                 conflicts = inspect_time_boundary(facts, fact, ref_time)
             return conflicts
 
@@ -525,7 +534,7 @@ class BaseFactManager(BaseManager):
                     set_end_per_subsequent(facts, fact)
                 else:
                     conflict = facts.ending_at(fact)
-            conflicts = [(conflict, copy.deepcopy(conflict))] if conflict else []
+            conflicts = [conflict] if conflict else []
             return conflicts
 
         # FIXME/2018-05-12: (lb): insert_forcefully does not respect tmp_fact!
@@ -549,40 +558,65 @@ class BaseFactManager(BaseManager):
         def set_end_per_subsequent(facts, fact):
             assert fact.end is None
             ref_fact = facts.subsequent(fact)
-            if not ref_fact:
-                # FIXME/MAYBE: (lb): Probably want to set to 'now' automatically?
-                raise ValueError(_(
-                    'Please specify `end` for fact being added after time existed.'
-                ))
-            assert ref_fact.start > fact.start
-            fact.end = ref_fact.start
+            if ref_fact:
+                assert ref_fact.start > fact.start
+                fact.end = ref_fact.start
+            else:
+                # This is ongoing fact/current.
+                self.store.logger.debug(_("No end specified for Fact; assuming now."))
+                fact.end = self.store.now
+                # NOTE: for hamster-on, we'll start start, then end will be
+                #       a few micros later... but the caller knows to unset
+                #       this Fact's end later (see: leave_open).
+                #       (lb): I wrote this code and I can't quite remember
+                #       why we fact to do this. I think so comparing against
+                #       other Facts works....
+
+        # ***
+
+        def find_conflicts_during(facts, fact):
+            conflicts = []
+            if fact.start and fact.end:
+                found_facts = facts.strictly_during(fact.start, fact.end)
+                conflicts += found_facts
+            return conflicts
 
         def resolve_overlapping(fact, conflicts):
             seen = set()
             resolved = []
-            for conflict, original in conflicts:
+            for conflict in conflicts:
                 assert conflict.pk > 0
                 if conflict.pk in seen:
-                    next
+                    continue
                 seen.add(conflict.pk)
-                resolved += resolve_fact_conflict(fact, conflict)
+                original = copy.deepcopy(conflict)
+                edited_conflicts = resolve_fact_conflict(fact, conflict)
+                for edited in edited_conflicts:
+                    resolved.append((edited, original,))
+            assert len(resolved) >= len(conflicts)
             return resolved
 
         def resolve_fact_conflict(fact, conflict):
+            # If the conflict is contained within another Fact, that
+            # other Fact will be split in twain, so we may end up
+            # with more conflicts.
             resolved = []
             if fact.start <= conflict.start:
                 resolve_fact_starts_before(fact, conflict, resolved)
-            elif fact.end >= conflict.end:
+            elif conflict.end is None or fact.end >= conflict.end:
                 resolve_fact_ends_after(fact, conflict, resolved)
             else:
                 # The new fact is contained *within* the conflict!
                 resolve_fact_is_inside(fact, conflict, resolved)
-            return resolved
+            return cull_duplicates(resolved)
 
         def resolve_fact_starts_before(fact, conflict, resolved):
-            if fact.end >= conflict.end:
+            if fact.end <= conflict.start:
+                # Disparate facts.
+                return
+            elif fact.end >= conflict.end:
                 conflict.deleted = True
-                conflict.dirty_reasons.add('deleted')
+                conflict.dirty_reasons.add('deleted-starts_before')
             else:
                 assert conflict.start < fact.end
                 conflict.start = fact.end
@@ -590,9 +624,21 @@ class BaseFactManager(BaseManager):
             resolved.append(conflict)
 
         def resolve_fact_ends_after(fact, conflict, resolved):
-            assert fact.start < conflict.end
-            conflict.end = fact.start
-            conflict.dirty_reasons.add('end')
+            if conflict.end is not None and fact.start >= conflict.end:
+                # Disparate facts.
+                return
+            elif fact.start <= conflict.start:
+                conflict.deleted = True
+                conflict.dirty_reasons.add('deleted-ends_after')
+            else:
+                # (lb): Here's where we might stop an ongoing fact
+                # when adding a new fact.
+                assert conflict.end is None or conflict.end > fact.start
+                # A little hack: signal the caller if this is/was ongoing fact.
+                if conflict.end is None:
+                    conflict.dirty_reasons.add('stopped')
+                conflict.end = fact.start
+                conflict.dirty_reasons.add('end')
             resolved.append(conflict)
 
         def resolve_fact_is_inside(fact, conflict, resolved):
@@ -600,20 +646,37 @@ class BaseFactManager(BaseManager):
             resolve_fact_split_after(fact, conflict, resolved)
 
         def resolve_fact_split_prior(fact, conflict, resolved):
+            # Make a copy of the conflict, to not affect resolve_fact_split_after.
             lconflict = copy.deepcopy(conflict)
+            lconflict.split_from = conflict.pk
+            # Leave lconflict.pk set so the old fact is marked deleted.
             lconflict.end = fact.start
-            lconflict.dirty_reasons.add('end')
+            lconflict.dirty_reasons.add('lsplit')
             resolved.append(lconflict)
 
         def resolve_fact_split_after(fact, conflict, resolved):
             rconflict = copy.deepcopy(conflict)
+            rconflict.split_from = conflict.pk
+            rconflict.pk = None
             rconflict.start = fact.end
-            rconflict.dirty_reasons.add('start')
+            rconflict.dirty_reasons.add('rsplit')
             resolved.append(rconflict)
+
+        def cull_duplicates(resolved):
+            seen = set()
+            culled = []
+            for conflict in resolved:
+                if conflict in seen:
+                    continue
+                seen.add(conflict)
+                culled.append(conflict)
+            return culled
 
         # The actual insert_forcefully function.
 
         return _insert_forcefully(self, fact)
+
+    # ***
 
     def starting_at(self, fact):
         """
@@ -649,13 +712,18 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
-    def antecedent(self, fact):
+    # ***
+
+    def antecedent(self, fact=None, ref_time=None):
         """
         Return the Fact immediately preceding the indicated Fact.
 
         Args:
             fact (hamster_lib.Fact):
                 The Fact to reference, with its ``start`` set.
+
+            ref_time (datetime.datetime):
+                In lieu of fact, pass the datetime to reference.
 
         Returns:
             hamster_lib.Fact: The antecedent Fact, or None if none found.
@@ -665,13 +733,18 @@ class BaseFactManager(BaseManager):
         """
         raise NotImplementedError
 
-    def subsequent(self, fact):
+    # ***
+
+    def subsequent(self, fact=None, ref_time=None):
         """
         Return the Fact immediately following the indicated Fact.
 
         Args:
             fact (hamster_lib.Fact):
                 The Fact to reference, with its ``end`` set.
+
+            ref_time (datetime.datetime):
+                In lieu of fact, pass the datetime to reference.
 
         Returns:
             hamster_lib.Fact: The subsequent Fact, or None if none found.
@@ -719,6 +792,20 @@ class BaseFactManager(BaseManager):
 
         Raises:
             IntegrityError: If more than one Fact found at given time.
+        """
+        raise NotImplementedError
+
+    # ***
+
+    def endless(self):
+        """
+        Return any facts without a fact.start or fact.end.
+
+        Args:
+            <none>
+
+        Returns:
+            list: List of ``hamster_lib.Facts`` instances.
         """
         raise NotImplementedError
 
