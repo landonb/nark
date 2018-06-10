@@ -15,22 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
+from future.utils import python_2_unicode_compatible
 
 from builtins import str
-
-from future.utils import python_2_unicode_compatible
-from sqlalchemy import asc, desc
+from datetime import datetime
+from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import and_, or_
 
-from . import query_apply_limit_offset
+from . import query_apply_limit_offset, query_apply_true_or_not
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 from ....managers.fact import BaseFactManager
 
 
 @python_2_unicode_compatible
 class FactManager(BaseFactManager):
+    """
+    """
+    def __init__(self, *args, **kwargs):
+        super(FactManager, self).__init__(*args, **kwargs)
+
+    # ***
+
     def _timeframe_available_for_fact(self, fact):
         """
         Determine if a timeframe given by the passed fact is already occupied.
@@ -53,16 +60,30 @@ class FactManager(BaseFactManager):
         start, end = fact.start, fact.end
         query = self.store.session.query(AlchemyFact)
 
-        condition = and_(AlchemyFact.start < end, AlchemyFact.end > start)
+        condition = and_(AlchemyFact.end > start)
+        if end:
+            condition = and_(
+                AlchemyFact.end > start,
+                AlchemyFact.start < end
+            )
+        else:
+            condition = or_(
+                AlchemyFact.end > start,
+                AlchemyFact.end == None  # noqa: E711
+            )
 
         if fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
+
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
         query = query.filter(condition)
 
         return not bool(query.count())
 
-    def _add(self, fact, raw=False):
+    # ***
+
+    def _add(self, fact, raw=False, skip_commit=False):
         """
         Add a new fact to the database.
 
@@ -90,18 +111,31 @@ class FactManager(BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        if not self._timeframe_available_for_fact(fact):
-            message = _("Our database already contains facts for this facts timewindow."
-                        "There can ever only be one fact at any given point in time")
-            self.store.logger.error(message)
-            raise ValueError(message)
+        self.must_validate_datetimes(fact, endless_okay=True)
 
-        alchemy_fact = AlchemyFact(None, None, fact.start, fact.end, fact.description)
-        alchemy_fact.activity = self.store.activities.get_or_create(fact.activity, raw=True)
-        alchemy_fact.tags = [self.store.tags.get_or_create(tag, raw=True) for tag in fact.tags]
+        alchemy_fact = AlchemyFact(
+            pk=None,
+            activity=None,
+            start=fact.start,
+            end=fact.end,
+            description=fact.description,
+            deleted=fact.deleted,
+            split_from=fact.split_from,
+        )
+        get_or_create = self.store.activities.get_or_create
+        alchemy_fact.activity = get_or_create(fact.activity, raw=True)
+        tags = [self.store.tags.get_or_create(tag, raw=True) for tag in fact.tags]
+        alchemy_fact.tags = tags
+
         self.store.session.add(alchemy_fact)
-        self.store.session.commit()
-        self.store.logger.debug(_("Added {!r}.".format(alchemy_fact)))
+
+        if not skip_commit:
+            self.store.session.commit()
+            self.store.logger.debug(_("Added {!r}.".format(alchemy_fact)))
+
+        if not raw:
+            alchemy_fact = alchemy_fact.as_hamster(self.store)
+
         return alchemy_fact
 
     # ***
@@ -135,8 +169,64 @@ class FactManager(BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
+        self.must_validate_datetimes(fact)
+
+        alchemy_fact = self.store.session.query(AlchemyFact).get(fact.pk)
+        if not alchemy_fact:
+            message = _("No fact with PK: {} was found.".format(fact.pk))
+            self.store.logger.error(message)
+            raise KeyError(message)
+
+        if alchemy_fact.deleted:
+            message = _(
+                '{!r} is already marked deleted!'
+                ' One cannot edit such facts'.format(fact)
+            )
+            self.store.logger.error(message)
+            raise ValueError(message)
+
+        if not fact.deleted:
+            assert alchemy_fact.pk == fact.pk
+            fact.split_from = alchemy_fact
+            fact.pk = None
+            new_fact = self._add(fact, raw=True, skip_commit=True)
+            # NOTE: _add() calls:
+            #       self.store.session.commit()
+        else:
+            # (lb): else, fact is being deleted. Note that we _could_ check all
+            # the fact attrs against alchemy_fact to see if the user edited any
+            # fields (e.g., verify fact.description == alchemy_fact.description).
+            # But that use case seems unlikely; and tedious to code.
+            new_fact = alchemy_fact
+
+        alchemy_fact.deleted = True
+
+        self.store.session.commit()
+
+        self.store.logger.debug(_("Updated {!r}.".format(fact)))
+
+        if not raw:
+            new_fact = new_fact.as_hamster(self.store)
+
+        return new_fact
+
+    # ***
+
+    def must_validate_datetimes(self, fact, endless_okay=False):
+        if (
+            not isinstance(fact.start, datetime)
+            or (not endless_okay and not isinstance(fact.end, datetime))
+        ):
+            if not endless_okay:
+                msg = 'Expected two datetimes.'
+            else:
+                msg = 'Expected a start time.'
+            raise TypeError(
+                _('Invalid start and/or end for {!r}. {}').format(fact, msg)
+            )
+
         # Check for valid time range.
-        if fact.start >= fact.end:
+        if fact.end is not None and fact.start >= fact.end:
             message = _(
                 'Invalid time range of {!r}.'
                 ' The start is large or equal than the end.'.format(fact)
@@ -145,28 +235,16 @@ class FactManager(BaseFactManager):
             raise ValueError(message)
 
         if not self._timeframe_available_for_fact(fact):
-            message = _("Our database already contains facts for this facts timewindow."
-                        " There can ever only be one fact at any given point in time")
-            self.store.logger.error(message)
-            raise ValueError(message)
+            msg = _(
+                'One or more facts already exist '
+                'between the indicated start and end times. '
+            )
+            self.store.logger.error(msg)
+            raise ValueError(msg)
 
-        alchemy_fact = self.store.session.query(AlchemyFact).get(fact.pk)
-        if not alchemy_fact:
-            message = _("No fact with PK: {} was found.".format(fact.pk))
-            self.store.logger.error(message)
-            raise KeyError(message)
+    # ***
 
-        alchemy_fact.start = fact.start
-        alchemy_fact.end = fact.end
-        alchemy_fact.description = fact.description
-        alchemy_fact.activity = self.store.activities.get_or_create(fact.activity, raw=True)
-        tags = [self.store.tags.get_or_create(tag, raw=True) for tag in fact.tags]
-        alchemy_fact.tags = tags
-        self.store.session.commit()
-        self.store.logger.debug(_("{!r} has been updated.".format(fact)))
-        return fact
-
-    def remove(self, fact):
+    def remove(self, fact, purge=False):
         """
         Remove a fact from our internal backend.
 
@@ -197,17 +275,33 @@ class FactManager(BaseFactManager):
             message = _('No fact with given pk was found!')
             self.store.logger.error(message)
             raise KeyError(message)
-        self.store.session.delete(alchemy_fact)
+        if alchemy_fact.deleted:
+            message = _('The Fact is already marked deleted.')
+            self.store.logger.error(message)
+            # FIXME/2018-06-08: (lb): I think we need custom Exceptions...
+            raise Exception(message)
+        alchemy_fact.deleted = True
+        if purge:
+            self.store.session.delete(alchemy_fact)
         self.store.session.commit()
         self.store.logger.debug(_('{!r} has been removed.'.format(fact)))
         return True
 
-    def get(self, pk, raw=False):
+    # ***
+
+    def get(self, pk, deleted=None, raw=False):
         """
         Retrieve a fact based on its PK.
 
         Args:
-            pk: PK of the fact to be retrieved
+            pk (int): PK of the fact to be retrieved.
+
+            deleted (boolean, optional):
+                False to restrict to non-deleted Facts;
+                True to find only those marked deleted;
+                None to find all.
+
+            raw (bool): Return the AlchemyActivity instead.
 
         Returns:
             hamster_lib.Fact: Fact matching given PK
@@ -218,7 +312,16 @@ class FactManager(BaseFactManager):
 
         self.store.logger.debug(_("Received PK: {}', 'raw'={}.".format(pk, raw)))
 
-        result = self.store.session.query(AlchemyFact).get(pk)
+        if deleted is None:
+            result = self.store.session.query(AlchemyFact).get(pk)
+        else:
+            query = self.store.session.query(AlchemyFact)
+            query = query.filter(AlchemyFact.pk == pk)
+            query = query_apply_true_or_not(query, AlchemyFact.deleted, deleted)
+            results = query.all()
+            assert(len(results) <= 1)
+            result = results[0] if results else None
+
         if not result:
             message = _("No fact with given PK found.")
             self.store.logger.error(message)
@@ -235,9 +338,17 @@ class FactManager(BaseFactManager):
         self,
         start=None,
         end=None,
-        search_term='',
+        endless=False,
         partial=False,
-        order='desc',
+        include_usage=False,
+        # FIXME/2018-06-09: (lb): Implement deleted/hidden.
+        deleted=False,
+        search_term='',
+        activity=False,
+        category=False,
+        sort_col='',
+        sort_order='',
+        # kwargs: limit, offset
         **kwargs
     ):
         """
@@ -248,6 +359,9 @@ class FactManager(BaseFactManager):
         If no timeframe is given, return all facts.
 
         Args:
+            deleted (boolean, optional): False to restrict to non-deleted
+                Facts; True to find only those marked deleted; None to find
+                all.
             start (datetime.datetime, optional):
                 Start of timeframe.
             end (datetime.datetime, optional):
@@ -255,11 +369,15 @@ class FactManager(BaseFactManager):
             search_term (text_type):
                 Case-insensitive strings to match ``Activity.name`` or
                 ``Category.name``.
+            deleted (boolean, optional): False to restrict to non-deleted
+                Facts; True to find only those marked deleted; None to find
+                all.
             partial (bool):
                 If ``False`` only facts which start *and* end within the
                 timeframe will be considered. If ``False`` facts with
                 either ``start``, ``end`` or both within the timeframe
                 will be returned.
+            order (string, optional): 'asc' or 'desc'; re: Fact.start.
 
         Returns:
             list: List of ``hamster_lib.Facts`` instances.
@@ -269,16 +387,69 @@ class FactManager(BaseFactManager):
             (e.g. that span more than) the specified timeframe.
         """
 
-        def get_complete_overlaps(query, start, end):
-            """Return all facts with start and end within the timeframe."""
-            if start:
-                query = query.filter(AlchemyFact.start >= start)
-            if end:
-                query = query.filter(AlchemyFact.end <= end)
+        def _get_all_facts():
+            message = _('start: {} / end: {} / term: {} / col: {} / order: {}'.format(
+                start, end, search_term, sort_col, sort_order,
+            ))
+            self.store.logger.debug(message)
+
+            query, agg_cols = _get_all_start_query()
+
+            query = _get_all_filter_partial(query)
+
+            query = _get_all_filter_by_activity(query)
+
+            query = _get_all_filter_by_category(query)
+
+            query = _get_all_filter_by_search_term(query)
+
+            query = query_apply_true_or_not(query, AlchemyFact.deleted, deleted)
+
+            query = _get_all_order_by(query, *agg_cols)
+
+            query = query_apply_limit_offset(query, **kwargs)
+
+            query = _get_all_with_entities(query, agg_cols)
+
+            self.store.logger.debug(_('query: {}'.format(str(query))))
+
+            results = query.all()
+
+            if not agg_cols:
+                # results is a `list` of 'sqlalchemy.objects.AlchemyFact'.
+                # FIXME/EXPLAIN: (lb): Why don't we as_hamster in _get_all_tags,
+                #   or _get_all_categories, or  _get_all_activities ??
+                results = [fact.as_hamster(self.store) for fact in results]
+            # else, results is a `list` of `sqlalchemy.util._collections.result`,
+            # which are tuples: ('sqlalchemy.objects.AlchemyFact', *agg_cols).
+            # (lb): I'm guessing because with_entities()?
+
+            return results
+
+        def _get_all_start_query():
+            agg_cols = []
+            if not include_usage:
+                query = self.store.session.query(AlchemyFact)
+            else:
+                time_col = (
+                    func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
+                ).label('span')
+                agg_cols.append(time_col)
+
+                query = self.store.session.query(AlchemyFact, time_col)
+                query = query.join(AlchemyFact.activity)
+
+            return query, agg_cols
+
+        def _get_all_filter_partial(query):
+            if partial:
+                # NOTE: (lb): Nothing sets partial=True except tests.
+                query = _get_partial_overlaps(query, start, end)
+            else:
+                query = _get_complete_overlaps(query, start, end, endless=endless)
             return query
 
-        # NOTE: (lb): Nothing calls get_partial_overlaps except tests.
-        def get_partial_overlaps(query, start, end):
+        def _get_partial_overlaps(query, start, end):
             """Return all facts where either start or end falls within the timeframe."""
             if start and not end:
                 # (lb): Checking AlchemyFact.end >= start is sorta redundant,
@@ -301,6 +472,51 @@ class FactManager(BaseFactManager):
                 pass
             return query
 
+        def _get_complete_overlaps(query, start, end, endless=False):
+            """Return all facts with start and end within the timeframe."""
+            if start:
+                query = query.filter(AlchemyFact.start >= start)
+            if end:
+                query = query.filter(AlchemyFact.end <= end)
+            elif endless:
+                query = query.filter(AlchemyFact.end == None)  # noqa: E711
+            return query
+
+        def _get_all_filter_by_activity(query):
+            if activity is False:
+                return query
+            query = query.join(AlchemyActivity)
+            if activity:
+                if activity.pk:
+                    query = query.filter(AlchemyActivity.pk == activity.pk)
+                else:
+                    query = query.filter(
+                        func.lower(AlchemyActivity.name) == func.lower(activity.name)
+                    )
+            else:
+                query = query.filter(AlchemyFact.activity == None)  # noqa: E711
+            return query
+
+        def _get_all_filter_by_category(query):
+            if category is False:
+                return query
+            query = query.join(AlchemyActivity).join(AlchemyCategory)
+            if category:
+                if category.pk:
+                    query = query.filter(AlchemyCategory.pk == category.pk)
+                else:
+                    query = query.filter(
+                        func.lower(AlchemyCategory.name) == func.lower(category.name)
+                    )
+            else:
+                query = query.filter(AlchemyFact.category == None)  # noqa: E711
+            return query
+
+        def _get_all_filter_by_search_term(query):
+            if search_term:
+                query = filter_search_term(query, search_term)
+            return query
+
         def filter_search_term(query, term):
             """
             Limit query to facts that match the search terms.
@@ -308,6 +524,9 @@ class FactManager(BaseFactManager):
             Terms are matched against ``Category.name`` and ``Activity.name``.
             The matching is not case-sensitive.
             """
+            # FIXME/2018-06-09: (lb): Now with activity and category filters,
+            # search_term makes less sense. Unless we apply to all parts?
+            # E.g., match tags, and match description.
             query = query.join(AlchemyActivity).join(AlchemyCategory).filter(
                 or_(AlchemyActivity.name.ilike('%{}%'.format(search_term)),
                     AlchemyCategory.name.ilike('%{}%'.format(search_term))
@@ -315,30 +534,45 @@ class FactManager(BaseFactManager):
             )
             return query
 
-        self.store.logger.debug(_(
-            "Received start: '{}', end: '{}' and search_term='{}'.".format(
-                start, end, search_term)
-        ))
+        # FIXME/2018-06-09: (lb): DRY: Combing each manager's _get_all_order_by.
+        def _get_all_order_by(query, time_col=None):
+            direction = desc if sort_order == 'desc' else asc
+            if sort_col == 'start':
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(AlchemyFact.start))
+            elif sort_col == 'time':
+                assert include_usage and time_col is not None
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(time_col))
+            elif sort_col == 'activity':
+                query = query.order_by(direction(AlchemyActivity.name))
+                query = query.order_by(direction(AlchemyCategory.name))
+            elif sort_col == 'category':
+                query = query.order_by(direction(AlchemyCategory.name))
+                query = query.order_by(direction(AlchemyActivity.name))
+            else:
+                # Meh. Rather than make a custom --order for each command,
+                # just using the same big list. So 'activity', 'category',
+                # etc., are acceptable here, if not simply ignored.
+                assert sort_col in ('', 'name', 'tag', 'fact')
+                direction = desc if not sort_order else direction
+                query = query.order_by(direction(AlchemyFact.start))
+            return query
 
-        # [FIXME] Figure out against what to match search_terms
-        query = self.store.session.query(AlchemyFact)
+        def _get_all_with_entities(query, agg_cols):
+            if not agg_cols:
+                return query
+            # Throw in the count column, which act/cat/tag fetch, so we can
+            # use the same utility functions (that except a count column).
+            static_count = '1'
+            query = query.with_entities(AlchemyFact, static_count, *agg_cols)
+            return query
 
-        if partial:
-            query = get_partial_overlaps(query, start, end)
-        else:
-            query = get_complete_overlaps(query, start, end)
+        # ***
 
-        if search_term:
-            query = filter_search_term(query, search_term)
+        return _get_all_facts()
 
-        if order == 'desc':
-            query = query.order_by(desc(AlchemyFact.start))
-        elif order == 'asc':
-            query = query.order_by(asc(AlchemyFact.start))
-        query = query_apply_limit_offset(query, **kwargs)
-
-        self.store.logger.debug(_('query: {}'.format(str(query))))
-        return [fact.as_hamster(self.store) for fact in query.all()]
+    # ***
 
     def starting_at(self, fact):
         """
@@ -360,6 +594,8 @@ class FactManager(BaseFactManager):
             raise ValueError('No `start` for starting_at(fact).')
 
         condition = and_(AlchemyFact.start == fact.start)
+
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
         if fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
@@ -402,6 +638,8 @@ class FactManager(BaseFactManager):
 
         condition = and_(AlchemyFact.end == fact.end)
 
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
+
         if fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
 
@@ -420,13 +658,18 @@ class FactManager(BaseFactManager):
         found_fact = found.as_hamster(self.store) if found else None
         return found_fact
 
-    def antecedent(self, fact):
+    # ***
+
+    def antecedent(self, fact=None, ref_time=None):
         """
         Return the Fact immediately preceding the indicated Fact.
 
         Args:
             fact (hamster_lib.Fact):
                 The Fact to reference, with its ``start`` set.
+
+            ref_time (datetime.datetime):
+                In lieu of fact, pass the datetime to reference.
 
         Returns:
             hamster_lib.Fact: The antecedent Fact, or None if none found.
@@ -436,32 +679,44 @@ class FactManager(BaseFactManager):
         """
         query = self.store.session.query(AlchemyFact)
 
-        ref_time = fact.start
+        if fact is not None:
+            if fact.start and isinstance(fact.start, datetime):
+                ref_time = fact.start
+            elif fact.end and isinstance(fact.end, datetime):
+                ref_time = fact.end
         if ref_time is None:
-            ref_time = fact.end
-        if ref_time is None:
-            raise ValueError('No `start` or `end` for antecedent(fact).')
+            raise ValueError(_('No reference time for antecedent(fact).'))
 
         condition = and_(AlchemyFact.start < ref_time)
 
-        if fact.pk:
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
+
+        if fact is not None and fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
 
         query = query.filter(condition).order_by(desc(AlchemyFact.start)).limit(1)
 
-        self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
+        self.store.logger.debug(_(
+            'fact: {} / ref_time: {} / query: {}'
+            .format(fact, ref_time, str(query))
+        ))
 
         found = query.one_or_none()
         found_fact = found.as_hamster(self.store) if found else None
         return found_fact
 
-    def subsequent(self, fact):
+    # ***
+
+    def subsequent(self, fact=None, ref_time=None):
         """
         Return the Fact immediately following the indicated Fact.
 
         Args:
             fact (hamster_lib.Fact):
                 The Fact to reference, with its ``end`` set.
+
+            ref_time (datetime.datetime):
+                In lieu of fact, pass the datetime to reference.
 
         Returns:
             hamster_lib.Fact: The subsequent Fact, or None if none found.
@@ -471,20 +726,27 @@ class FactManager(BaseFactManager):
         """
         query = self.store.session.query(AlchemyFact)
 
-        ref_time = fact.end
+        if fact is not None:
+            if fact.end and isinstance(fact.end, datetime):
+                ref_time = fact.end
+            elif fact.start and isinstance(fact.start, datetime):
+                ref_time = fact.start
         if ref_time is None:
-            ref_time = fact.start
-        if ref_time is None:
-            raise ValueError(_('No `start` or `end` for subsequent(fact).'))
+            raise ValueError(_('No reference time for subsequent(fact).'))
 
         condition = and_(AlchemyFact.end > ref_time)
 
-        if fact.pk:
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
+
+        if fact is not None and fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
 
         query = query.filter(condition).order_by(asc(AlchemyFact.end)).limit(1)
 
-        self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
+        self.store.logger.debug(_(
+            'fact: {} / ref_time: {} / query: {}'
+            .format(fact, ref_time, str(query))
+        ))
 
         found = query.one_or_none()
         found_fact = found.as_hamster(self.store) if found else None
@@ -511,9 +773,11 @@ class FactManager(BaseFactManager):
         """
         query = self.store.session.query(AlchemyFact)
 
-        query = query.filter(
-            and_(AlchemyFact.start >= start, AlchemyFact.end <= end),
-        )
+        condition = and_(AlchemyFact.start >= start, AlchemyFact.end <= end)
+
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
+
+        query = query.filter(condition)
 
         self.store.logger.debug(_(
             'start: {} / end: {} / query: {}'
@@ -558,9 +822,15 @@ class FactManager(BaseFactManager):
         """
         query = self.store.session.query(AlchemyFact)
 
-        query = query.filter(
-            and_(AlchemyFact.start < fact_time, AlchemyFact.end > fact_time),
+        condition = and_(
+            AlchemyFact.start < fact_time,
+            # Find surrounding complete facts, or the ongoing fact.
+            or_(AlchemyFact.end > fact_time, AlchemyFact.end == None),  # noqa: E711
         )
+
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
+
+        query = query.filter(condition)
 
         self.store.logger.debug(_(
             'fact_time: {} / query: {}'.format(
@@ -574,6 +844,33 @@ class FactManager(BaseFactManager):
                 fact_time, n_facts
             )
             raise IntegrityError(message)
+
+        facts = query.all()
+        found_facts = [fact.as_hamster(self.store) for fact in facts]
+        return found_facts
+
+    # ***
+
+    def endless(self):
+        """
+        Return any facts without a fact.start or fact.end.
+
+        Args:
+            <none>
+
+        Returns:
+            list: List of ``hamster_lib.Facts`` instances.
+        """
+        query = self.store.session.query(AlchemyFact)
+
+        # NOTE: (lb): Use ==/!=, not `is`/`not`, b/c SQLAlchemy
+        #       overrides ==/!=, not `is`/`not`.
+        condition = or_(AlchemyFact.start == None, AlchemyFact.end == None)  # noqa: E711
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
+
+        query = query.filter(condition)
+
+        self.store.logger.debug(_('query: {}'.format(str(query))))
 
         facts = query.all()
         found_facts = [fact.as_hamster(self.store) for fact in facts]
