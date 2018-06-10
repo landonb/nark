@@ -20,18 +20,41 @@
 from __future__ import absolute_import, unicode_literals
 
 import logging
+from colored import fg, attr
 
-from colored import fg, bg, attr
+
+def formatter_basic(color=False):
+    if not color:
+        return formatter_basic_plain()
+    return formatter_basic_color()
 
 
-def formatter_basic():
+def formatter_basic_plain():
     formatter = logging.Formatter(
-        '%s%s[%%(levelname)s]%s %s%%(asctime)s%s %s%%(name)s %%(funcName)s%s:  %s%s%%(message)s%s' %
-        (
-            attr('underlined'), fg('magenta'), attr('reset'),
-            fg('yellow'), attr('reset'),
-            fg('light_blue'), attr('reset'),
-            attr('bold'), fg('green'), attr('reset'),
+        '[%(levelname)s] '
+        '%(asctime)s '
+        '%(name)s '
+        '%(funcName)s: '
+        '%(message)s'
+    )
+    return formatter
+
+
+def formatter_basic_color():
+    formatter = logging.Formatter(
+        '{grey_54}[{underlined}{magenta}%(levelname)s{reset}{grey_54}]{reset} '
+        '{yellow}%(asctime)s{reset} '
+        '{light_blue}%(name)s '
+        '%(funcName)s{reset}: '
+        '{bold}{green}%(message)s{reset}'.format(
+            grey_54=fg('grey_54'),
+            underlined=attr('underlined'),
+            magenta=fg('magenta'),
+            reset=attr('reset'),
+            yellow=fg('yellow'),
+            light_blue=fg('light_blue'),
+            bold=attr('bold'),
+            green=fg('green'),
         )
     )
     return formatter
