@@ -17,7 +17,7 @@ You can contribute in many ways:
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/hotoffthehamster/hamster-lib/issues.
+Report bugs at https://github.com/hotoffthehamster/nark/issues.
 
 If you are reporting a bug, please include:
 
@@ -42,7 +42,7 @@ Anything tagged with "feature" is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-Hamster can always use more-better docs, whether as part of the official
+``nark`` can always use more-better docs, whether as part of the official
 user or developer READMEs, in the code as docstrings, or even on the web
 as blog posts, articles, etc.
 
@@ -50,7 +50,7 @@ Submit Feedback
 ~~~~~~~~~~~~~~~
 
 The best way to send feedback is to file an issue at
-https://github.com/hotoffthehamster/hamster-lib/issues.
+https://github.com/hotoffthehamster/nark/issues.
 
 If you are proposing a feature:
 
@@ -63,79 +63,78 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up ``hamster-lib`` for local development.
+Ready to contribute? Here's how to set up ``nark`` for local development.
 
-.. FIXME: (lb): Correct this URL when published to develop:
-
-*Note:* You might find it helpful to also install ``hamster-cli``, so that you
-can develop Hamster using a CLI. Otherwise, you'll just be developing against
-the bare library. To setup both ``hamster-lib`` and ``hamster-cli``, follow
+*Note:* You might find it helpful to also install ``dob``, so that you
+can develop ``nark`` using a CLI. Otherwise, you'll just be developing against
+the bare library. To setup both ``nark`` and ``dob``, follow
 the `setup instructions for the CLI
-<https://github.com/hotoffthehamster/hamster-lib/blob/working/CONTRIBUTING.rst>`_.
+<https://github.com/hotoffthehamster/dob/blob/working/CONTRIBUTING.rst#get-started>`_.
 Otherwise, if you want just the bare library, continue reading!
 
-1. Fork the ``hamster-lib`` repo on GitHub.
+1. Fork the ``nark`` repo on GitHub.
 
-   * Visit `<https://github.com/hotoffthehamster/hamster-lib>`_ and click *Fork*.
+   * Visit `<https://github.com/hotoffthehamster/nark>`_ and click *Fork*.
 
 2. Clone your fork locally.
 
    Open a local terminal, change to a directory you'd like to develop from,
    and run the command::
 
-    $ git clone git@github.com:<your_login>/hamster-lib.git
+    $ git clone git@github.com:<your_login>/nark.git
 
-3. Install ``hamster-lib`` into a Python virtual instance, or ``virtualenv``.
+3. Install ``nark`` into a Python virtual instance, or ``virtualenv``.
 
    First, ensure that you have |virtualenvwrapper|_ installed.
 
    Next, set up a virtual environment for local development::
 
-    $ cd hamster-lib/
-    $ mkvirtualenv -a $(pwd) hamster-lib
+    $ cd nark/
+    $ mkvirtualenv -a $(pwd) nark
 
    *Note:* We use the ``-a`` option so that ``cdproject`` changes directories
-   to the ``hamster-lib/`` directory when we're in the virtual environment.
+   to the ``nark/`` directory when we're in the virtual environment.
 
    Next, set up your fork for local development::
 
-    (hamster) $ cdproject
-    (hamster) $ make develop
+    (nark) $ cdproject
+    (nark) $ make develop
 
    *Hint:* As usual, run ``workon`` to activate the virtual environment, and
    ``deactivate`` to leave it. E.g.,::
 
     # Load the Python virtual instance.
-    $ workon hamster
-    (hamster-lib) $
+    $ workon nark
+    (nark) $
 
     # Do your work.
-    (hamster-lib) $ ...
+    (nark) $ ...
 
     # Finish up.
-    (hamster-lib) $ deactivate
+    (nark) $ deactivate
+    $
 
-4. Before starting work on a new feature or bugfix, make sure your
+4. Before starting work on a new feature or bug fix, make sure your
    ``develop`` branch is up to date with the official branch::
 
-    (hamster-lib) $ cdproject
-    (hamster-lib) $ git remote add upstream git@github.com:hotoffthehamster/hamster-lib.git
-    (hamster-lib) $ git fetch upstream
-    (hamster-lib) $ git checkout develop
-    (hamster-lib) $ git rebase upstream/develop
-    (hamster-lib) $ git push origin HEAD
+    (nark) $ cdproject
+    (nark) $ git remote add upstream git@github.com:hotoffthehamster/nark.git
+    (nark) $ git fetch upstream
+    (nark) $ git checkout develop
+    (nark) $ git rebase upstream/develop
+    (nark) $ git push origin HEAD
 
 5. Create a branch for local development. If you are working on an
    known issue, reference the Issue number in the branch name, e.g.,::
 
-    (hamster-lib) $ git checkout -b feature/ISSUE-123-name-of-your-issue
+    (nark) $ git checkout -b feature/ISSUE-123-name-of-your-issue
 
    Now you can add and edit code in your local working directory.
 
 6. Do your work and make one or more sane, concise commits::
 
-    (hamster-lib) $ git add -p
-    (hamster-lib) $ git commit -m "<Category>: <Short description of changes.>
+    (nark) $ git add -p
+    (nark) $ git commit -m "<Category>: <Short description of changes.>
 
     - <Longer description, if necessary.>"
 
@@ -183,6 +182,8 @@ Otherwise, if you want just the bare library, continue reading!
 
      * ``i18n/l10n: Something about words.``
 
+     * ``Feedback: Fix something per PR feedback.``
+
      (You'll notice that this strategy is similar to
      `gitmoji <https://gitmoji.carloscuesta.me/>`__,
      but it's more concise, and less obtuse.)
@@ -190,20 +191,12 @@ Otherwise, if you want just the bare library, continue reading!
 7. Throughout development, run tests and the linter -- and definitely before
    you submit a Pull Request.
 
-   Hamster uses |flake8|_ for linting, |pytest|_ for unit testing,
+   ``nark`` uses |flake8|_ for linting, |pytest|_ for unit testing,
    and |tox|_ for verifying against the many versions of Python.
 
    You can run all of these tools with one command::
 
-    (hamster-lib) $ make test-all
-
-   .. FIXME: Verify that `test-all` runs flake8 and tox.
-
-   .. FIXME: I think this hint is not needed (either flake8 and tox
-   ..        are already installed, `make develop` finds them, not sure).
-
-   (*Hint:* To get ``flake8`` and ``tox``, just ``pip install`` them into
-   your ``virtualenv``.)
+    (nark) $ make test-all
 
    .. _rebase_and_squash:
 
@@ -224,7 +217,7 @@ Otherwise, if you want just the bare library, continue reading!
 
    For example, pretend that I have the following git history::
 
-    (hamster-lib) $ git log --oneline | head -3
+    (nark) $ git log --oneline | head -3
 
     b1c07a4 Regression: Fix some old bug.
     17d1e38 Feature: Add my new feature.
@@ -235,12 +228,12 @@ Otherwise, if you want just the bare library, continue reading!
 
    First, add the linting fix::
 
-    (hamster-lib) $ git add -A
-    (hamster-lib) $ git ci -m "Squash me!"
+    (nark) $ git add -A
+    (nark) $ git ci -m "Squash me!"
 
    Next, start a rebase::
 
-    (hamster-lib) $ git rebase -i 2e888c3
+    (nark) $ git rebase -i 2e888c3
 
    (*Note:* Use the SHA1 hash of the commit *after* the one you want squash into.)
 
@@ -278,27 +271,27 @@ Otherwise, if you want just the bare library, continue reading!
    bugfix works, and rebasing, and committing your changes, push them to
    the branch on your GitHub account::
 
-    (hamster-lib) $ git push origin feature/ISSUE-123-name-of-your-issue
+    (nark) $ git push origin feature/ISSUE-123-name-of-your-issue
 
    *Note:* If you pushed your work and then rebased, you may have to force-push::
 
-    (hamster-lib) $ git push origin feature/ISSUE-123-name-of-your-issue --force
+    (nark) $ git push origin feature/ISSUE-123-name-of-your-issue --force
 
    .. _rebase_atop_develop:
 
 10. Finally,
-    `submit a pull request <https://github.com/hotoffthehamster/hamster-lib/pulls>`_
+    `submit a pull request <https://github.com/hotoffthehamster/nark/pulls>`_
     through the GitHub website.
 
     *Important:* Please rebase your code against ``develop`` and resolve
     merge conflicts, so that the main project maintainer does not have
     to do so themselves. E.g.,::
 
-     (hamster-lib) $ git checkout feature/ISSUE-123-name-of-your-issue
-     (hamster-lib) $ git fetch upstream
-     (hamster-lib) $ git rebase upstream/develop
+     (nark) $ git checkout feature/ISSUE-123-name-of-your-issue
+     (nark) $ git fetch upstream
+     (nark) $ git rebase upstream/develop
      # Resolve any conflicts, then force-push.
-     (hamster-lib) $ git push origin HEAD --force
+     (nark) $ git push origin HEAD --force
      # And then open the Pull Request.
 
 .. |virtualenvwrapper| replace:: ``virtualenvwrapper``
@@ -353,25 +346,6 @@ Before you submit a pull request, check that it meets these guidelines:
 
    * 'nough said.
 
-.. FIXME: (lb): Determine which versions to support; update tox.ini; setup Travis-CI.
-..
-.. (As a matter of history:
-..
-..  hamster-lib orphan HEAD says:
-..
-..    3. The pull request should work for Python 2.7 and 3.4. Check `Travis
-..       <https://travis-ci.org/projecthamster/hamster-lib/builds/142418469>`.
-..       and make sure that the tests pass for all supported Python versions.
-..
-..  but orphaned hamster-cli says:
-..
-..    3. The pull request should work for Python 2.6, 2.7, 3.3, and 3.4, and
-..       for PyPy. Check https://travis-ci.org/elbenfreund/hamster-lib/pull_requests
-..       and make sure that the tests pass for all supported Python versions.
-..
-..  so we could see if hamster-lib runs on 2.6, 3.3, and PyPy.
-..  In the least, we should set up our own Travis-CI.)
-
 Debugging Tips
 --------------
 
@@ -388,8 +362,6 @@ If you want to run a particular ``tox`` environment, you can run
 ``tox`` with the ``envlist`` option::
 
     $ tox -e NAME_OR_ENVIRONMENT
-
-.. FIXME: (lb): Provide an example of what NAME_OR_ENVIRONMENT might be.
 
 If you'd like to break into a debugger when a test fails, run ``pytest``
 directly and have it start the interactive Python debugger on errors::
