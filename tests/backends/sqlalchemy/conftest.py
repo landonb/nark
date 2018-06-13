@@ -221,7 +221,7 @@ def set_of_alchemy_facts(start_datetime, alchemy_fact_factory):
     return result
 
 
-# Fallback hamster object and factory fixtures. Unless we know how factories
+# Fallback nark object and factory fixtures. Unless we know how factories
 # interact.
 @pytest.fixture
 def category_factory(request, name):

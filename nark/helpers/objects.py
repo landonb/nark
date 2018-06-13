@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This module provides Hamster raw fact parsing-related functions."""
+"""This module provides nark raw fact parsing-related functions."""
 
 from __future__ import absolute_import, unicode_literals
 

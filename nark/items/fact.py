@@ -501,7 +501,7 @@ class Fact(object):
             return act_cat
 
         def get_tags_string(fact):
-            # (lb): There are three ways to "shellify" a Hamster hashtag token:
+            # (lb): There are three ways to "shellify" a hashtag token:
             #         1.) "#quote" it;
             #         2.) \#delimit it; or
             #         3.) use the inoffensive @ symbol instead of #.
@@ -546,7 +546,7 @@ class Fact(object):
               2016-02-01 17:30 to 2016-02-01 18:10 making plans@world domination
               #tag 1 #tag 2, description
 
-          - Note that Hamster is very unassuming with whitespace. It can be
+          - Note that nark is very unassuming with whitespace. It can be
             used in the Activity and Category names, as well as in tags.
 
         Attention:

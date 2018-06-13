@@ -225,7 +225,7 @@ class CSVWriter(PlaintextWriter):
             #   I did not test dialect='excel'
             # MAYBE: (lb): Test dialect='excel' without remaining params.
             #   Or not. Depends how much you care about robustness in the
-            #   CLI, or if you just want the hamster-start command to work
+            #   CLI, or if you just want the dob-start command to work
             #   (that's all I'm really doing here! Except the perfectionist
             #   in me also wanted to make all tests work and to see how much
             #   coverage there is -- and I'm impressed! Project Hamster is so

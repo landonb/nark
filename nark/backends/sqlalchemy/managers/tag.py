@@ -64,7 +64,7 @@ class TagManager(BaseTagManager):
         done correctly..
 
         Args:
-            tag (nark.Tag): Hamster Tag instance.
+            tag (nark.Tag): nark Tag instance.
             raw (bool): Wether to return the AlchemyTag instead.
 
         Returns:

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""hamster-lib provides generic time tracking functionality."""
+"""nark provides generic time tracking functionality."""
 
 from __future__ import absolute_import, unicode_literals
 

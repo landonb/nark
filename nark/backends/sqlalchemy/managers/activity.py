@@ -59,10 +59,10 @@ class ActivityManager(BaseActivityManager):
         Add a new ``Activity`` instance to the databasse.
 
         Args:
-            activity (nark.Activity): Hamster activity
+            activity (nark.Activity): nark activity
 
         Returns:
-            nark.Activity: Hamster activity representation of stored instance.
+            nark.Activity: nark activity representation of stored instance.
 
         Raises:
             ValueError: If the passed activity has a PK.

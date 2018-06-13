@@ -26,7 +26,7 @@ ALTER TABLE fact_tags RENAME TO temp_fact_tags;
 
 /* NOTE: The CREATE TABLE statements is simply from a
         ``.schema`` command run against a new DB created
-        by simply running ``hamster -v``.
+        by simply running ``dob -v``.
 */
 
 /* Drop columns from categories:

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This module provides Hamster raw fact parsing-related functions."""
+"""This module provides nark raw fact parsing-related functions."""
 
 from __future__ import absolute_import, unicode_literals
 
@@ -71,7 +71,7 @@ TIME_HINT_MAP = {
 
 
 class ParserException(Exception):
-    """Raised if parser cannot decipher Hamster factoid string."""
+    """Raised if parser cannot decipher nark factoid string."""
     pass
 # FIXME/LINTING/2018-05-15: (lb): I bet this needs to be double-spaced!
 
@@ -284,7 +284,7 @@ class Parser(object):
         local_tz=None,  # Default to None, i.e., naive
     ):
         # The user can get here on an empty --ask, e.g.,
-        #   ``hamster on --ask``
+        #   ``nark on --ask``
         factoid = factoid or ('',)
 
         # Keep a flat copy of the args.
@@ -372,9 +372,9 @@ class Parser(object):
 
     def lstrip_datetimes_delimited(self):
         # If user wants to use friendly datetimes, they need to delimit, e.g.:
-        #   `hamster yesterday until today at 3 PM, act @ cat # tag 1, descrip`
+        #   `nark yesterday until today at 3 PM, act @ cat # tag 1, descrip`
         # Note that the special token 'now' could be considered okay:
-        #   `hamster yesterday at 3 PM until now act @ cat # tag 1 "descrip"`
+        #   `nark yesterday at 3 PM until now act @ cat # tag 1 "descrip"`
         # First look for the activity@category separator, '@'. This is a simple
         # find (index) because we insist that neither the datetime, nor the datetimes
         # sep, include the `@` symbol; and that @tags follow the activity@category.
@@ -512,7 +512,7 @@ class Parser(object):
             # Only split on hashtags preceded by a space,
             # because first part is still the category name.
             # (lb): Do not strip(), so that empty category works, e.g.,
-            #   `hamster on act@ @tag 1: Yee haw!
+            #   `nark on act@ @tag 1: Yee haw!
             #   NOPE: rest = cat_and_tags.strip()
             rest = cat_and_tags
             if Parser.RE_SPLIT_CAT_AND_TAGS.search(rest):

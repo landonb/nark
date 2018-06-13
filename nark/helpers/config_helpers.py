@@ -166,6 +166,9 @@ class NarkAppDirs(appdirs.AppDirs):
         return directory
 
 
+# FIXME: (lb): The CLI sets the appname when it calls get_config_path(), so
+#        this 'projecthamster' value is not used, but I'm wondering if we
+#        should rebrand it, either 'nark', or 'hotoffthehamster'...
 DEFAULT_APP_NAME = 'projecthamster'
 DEFAULT_APPDIRS = NarkAppDirs(DEFAULT_APP_NAME)
 DEFAULT_CONFIG_FILENAME = '{}.conf'.format(DEFAULT_APPDIRS.appname)

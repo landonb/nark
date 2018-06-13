@@ -18,10 +18,10 @@
 """
 This module provides the database layout.
 
-We inherit from our hamster objects in order to use the custom
+We inherit from our nark objects in order to use the custom
 methods, making instance comparisons so much easier.
 
-The reason we are not mapping our native hamster objects directly is
+The reason we are not mapping our native nark objects directly is
 that this seems to break the flexible plugable backend architecture
 as SQLAlchemy establishes the mapping right away. This may be
 avoidable and should be investigates later on.
@@ -121,9 +121,9 @@ class AlchemyActivity(Activity):
         #   Allow nameless items, rather than raising ValueError.
         # User can easily discover problem through CLI, and they can fix it.
         # Try this to find nameless activities and their IDs:
-        #   hamster list activities ''
+        #   dob list activities ''
         # Then, e.g.,
-        #   hamster edit activity #24 newname@newcategory
+        #   dob edit activity #24 newname@newcategory
         if not activity_name:
             if self.deleted:
                 activity_name = '<unnamed>'
@@ -266,7 +266,8 @@ facts = Table(
     # NOTE/2018-04-22: Old Timey Hamster uses SQLite 'timestamp' data type.
     # In ProjectHamster Hamster, the data type shows as DATETIME. The type
     # is more of a suggestion in SQLite, which stores both types as strings,
-    # and the strings are your typical Hamster time, "YYYY-MM-DD HH:MM:SS".
+    # and the strings are your typical datetime (iso8601 without the 'T',
+    # and with a timezone), "YYYY-MM-DD HH:MM:SS".
     Column('start_time', DateTime),
     Column('end_time', DateTime),
     Column('activity_id', Integer, ForeignKey(activities.c.id)),

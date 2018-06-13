@@ -538,8 +538,8 @@ class BaseFactManager(BaseManager):
             return conflicts
 
         # FIXME/2018-05-12: (lb): insert_forcefully does not respect tmp_fact!
-        #   if 'hamster-to', and tmp fact, then start now, and end tmp_fact.
-        #   if 'hamster-from', and tmp fact, then either close tmp at now,
+        #   if 'dob-to', and tmp fact, then start now, and end tmp_fact.
+        #   if 'dob-from', and tmp fact, then either close tmp at now,
         #     or at from time, or complain (add to conflicts) if overlapped.
         def set_start_per_antecedent(facts, fact):
             assert fact.start is None
@@ -565,7 +565,7 @@ class BaseFactManager(BaseManager):
                 # This is ongoing fact/current.
                 self.store.logger.debug(_("No end specified for Fact; assuming now."))
                 fact.end = self.store.now
-                # NOTE: for hamster-on, we'll start start, then end will be
+                # NOTE: for dob-on, we'll start start, then end will be
                 #       a few micros later... but the caller knows to unset
                 #       this Fact's end later (see: leave_open).
                 #       (lb): I wrote this code and I can't quite remember

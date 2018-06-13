@@ -199,7 +199,7 @@ class BaseActivityManager(BaseManager):
         """
         # [FIXME]
         # Handle resurrection. See legacy
-        # ``hamster.sorage.db.__get_activity_by_name``
+        # ``nark.storage.db.__get_activity_by_name``
 
         raise NotImplementedError
 
@@ -236,7 +236,7 @@ class BaseActivityManager(BaseManager):
             * This method combines legacy ``storage.db.__get_activities`` and
                 ``storage.db.____get_category_activities``.
             * Can search terms be prefixed with 'not'?
-            * Original implementation in ``hamster.storage.db.__get_activities`` returns
+            * Original implementation in ``nark.storage.db.__get_activities`` returns
                 activity names converted to lowercase!
             * Does exclude activities with ``deleted=True``.
         """

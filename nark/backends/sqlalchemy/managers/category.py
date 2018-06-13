@@ -61,7 +61,7 @@ class CategoryManager(BaseCategoryManager):
         one is done correctly.
 
         Args:
-            category (nark.Category): Hamster Category instance.
+            category (nark.Category): nark Category instance.
             raw (bool): Wether to return the AlchemyCategory instead.
 
         Returns:
