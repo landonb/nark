@@ -59,6 +59,6 @@ class TestController:
         """Make sure we recieve a logger that maches our expectations."""
         logger = controller._sql_logger()
         assert isinstance(logger, logging.Logger)
-        assert logger.name == 'hamster-sql.log'
+        assert logger.name == 'nark-sql.log'
         assert isinstance(logger.handlers[0], logging.NullHandler)
 
