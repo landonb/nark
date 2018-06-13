@@ -46,7 +46,7 @@ REGISTERED_BACKENDS = {
 kwargs = {}
 if sys.version_info.major < 3:
     kwargs['unicode'] = True
-gettext.install('hamster-lib', **kwargs)
+gettext.install('nark', **kwargs)
 
 
 @python_2_unicode_compatible
