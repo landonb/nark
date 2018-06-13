@@ -1,16 +1,33 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
+# This file is part of 'hamster-lib'.
+#
+# 'hamster-lib' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'hamster-lib' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 """Global fixtures."""
 
+from __future__ import absolute_import, unicode_literals
+
 import datetime
+import fauxfactory
 import os.path
 import pickle
-
-import fauxfactory
 import pytest
 from pytest_factoryboy import register
 
 from .hamster_lib import factories as lib_factories
+
 
 register(lib_factories.CategoryFactory)
 register(lib_factories.ActivityFactory)
@@ -18,17 +35,17 @@ register(lib_factories.TagFactory)
 register(lib_factories.FactFactory)
 
 
-# This fixture is used by ``test_helpers`` and ``test_storage``.
-@pytest.fixture
-def tmp_fact(base_config, fact_factory):
-    """Provide an existing 'ongoing fact'."""
-    # For reasons unknow ``fact.tags`` would be empty when using the ``fact``
-    # fixture.
-    fact = fact_factory()
-    fact.end = None
-    with open(base_config['tmpfile_path'], 'wb') as fobj:
-        pickle.dump(fact, fobj)
-    return fact
+## This fixture is used by ``test_helpers`` and ``test_storage``.
+#@pytest.fixture
+#def tmp_fact(base_config, fact_factory):
+#    """Provide an existing 'ongoing fact'."""
+#    # For reasons unknow ``fact.tags`` would be empty when using the ``fact``
+#    # fixture.
+#    fact = fact_factory()
+#    fact.end = None
+#    with open(base_config['tmpfile_path'], 'wb') as fobj:
+#        pickle.dump(fact, fobj)
+#    return fact
 
 
 @pytest.fixture
@@ -37,10 +54,11 @@ def base_config(tmpdir):
     return {
         'store': 'sqlalchemy',
         'day_start': datetime.time(hour=5, minute=30, second=0),
+        #'day_start': '',
+        'fact_min_delta': 60,
+        #'fact_min_delta': 0,
         'db_engine': 'sqlite',
         'db_path': ':memory:',
-        'tmpfile_path': os.path.join(tmpdir.mkdir('tmpfact').strpath, 'hamsterlib.fact'),
-        'fact_min_delta': 60,
         'sql_log_level': 'WARNING',
     }
 
@@ -50,7 +68,9 @@ def base_config(tmpdir):
 def start_end_datetimes_from_offset():
     """Generate start/end datetime tuple with given offset in minutes."""
     def generate(offset):
-        end = datetime.datetime.now()
+        # MAYBE: Use controller.store.now ?
+        #end = datetime.datetime.now()
+        end = datetime.datetime.utcnow()
         start = end - datetime.timedelta(minutes=offset)
         return (start, end)
     return generate
@@ -84,7 +104,9 @@ def start_datetime():
     """Provide an arbitrary datetime."""
     # [TODO]
     # Fixtures using this could propably be refactored using a cleaner way.
-    return datetime.datetime.now()
+    # MAYBE: Use controller.store.now ?
+    #return datetime.datetime.now()
+    return datetime.datetime.utcnow()
 
 
 @pytest.fixture

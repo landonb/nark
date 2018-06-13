@@ -1,12 +1,28 @@
-# -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
+
+# This file is part of 'hamster-lib'.
+#
+# 'hamster-lib' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'hamster-lib' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import, unicode_literals
 
 import datetime
 import os.path
 import pickle
-
 import pytest
 from freezegun import freeze_time
+
 from hamster_lib import Fact
 
 
@@ -216,6 +232,9 @@ class TestTagManager():
 
 
 class TestFactManager:
+
+
+# FIXME: Change to save-current...
     def test_save_tmp_fact(self, basestore, fact, mocker):
         """
         Make sure that passing a fact without end (aka 'ongoing fact') triggers the right method.
@@ -226,7 +245,8 @@ class TestFactManager:
         assert basestore.facts._start_tmp_fact.called
 
     def test_save_to_brief_fact(self, basestore, fact):
-        """Ensure that a fact with to small delta raises an exception."""
+        """Ensure that a fact with too small of a time delta raises an exception."""
+# FIXME/2018-06-08: (lb): I probably changed the behavior of this.
         delta = datetime.timedelta(seconds=(basestore.config['fact_min_delta'] - 1))
         fact.end = fact.start + delta
         with pytest.raises(ValueError):
@@ -303,25 +323,46 @@ class TestFactManager:
 
     @freeze_time('2015-10-03 14:45')
     def test_get_today(self, basestore, mocker):
-        """Make sure that method uses apropiate timeframe. E. g. it respects ``day_start``."""
+        """Make sure that method uses apropiate timeframe."""
         basestore.facts.get_all = mocker.MagicMock(return_value=[])
         result = basestore.facts.get_today()
         assert result == []
-        assert basestore.facts.get_all.call_args[0] == (datetime.datetime(2015, 10, 3, 5, 30, 0),
-            datetime.datetime(2015, 10, 4, 5, 29, 59))
+        assert (
+            basestore.facts.get_all.call_args[0] == (
+                datetime.datetime(2015, 10, 3, 5, 30, 0),
+                datetime.datetime(2015, 10, 4, 5, 29, 59),
+            )
 
     def test__get_all(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts._get_all()
 
-    def test_start_tmp_fact_new(self, basestore, fact):
-        """Make sure that a valid new fact creates persistent file with proper content."""
-        fact.end = None
-        basestore.facts._start_tmp_fact(fact)
-        with open(basestore.facts._get_tmp_fact_path(), 'rb') as fobj:
-            new_fact = pickle.load(fobj)
-            assert isinstance(new_fact, Fact)
-            assert new_fact == fact
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# FIXME: (lb): Remove tmp_fact_file stuff.
+#        Replace with start_ongoing_fact et al...
+    if True:
+        def test_start_tmp_fact_new(self, basestore, fact):
+            """Make sure that a valid new fact creates persistent file with proper content."""
+            fact.end = None
+            basestore.facts._start_tmp_fact(fact)
+# FIXME: (lb): get_tmp_fact is replaced with get_current_fact...
+#            with open(basestore.facts._get_tmp_fact_path(), 'rb') as fobj:
+#                new_fact = pickle.load(fobj)
+#                assert isinstance(new_fact, Fact)
+#                assert new_fact == fact
 
     def test_start_tmp_fact_existsing(self, basestore, fact, tmp_fact):
         """Make sure that starting an new 'ongoing fact' if we already got one throws error."""
@@ -344,6 +385,7 @@ class TestFactManager:
         datetime.datetime(2019, 2, 1, 19),
         datetime.datetime(2019, 2, 1, 17, 59),
     ))
+# FIXME: stop_tmp_fact => stop_current_fact
     def test_stop_tmp_fact(self, basestore, base_config, tmp_fact, fact, hint, mocker):
         """
         Make sure we can stop an 'ongoing fact' and that it will have an end set.
@@ -358,34 +400,44 @@ class TestFactManager:
             else:
                 expected_end = datetime.datetime(2019, 2, 1, 18) + hint
         else:
-            expected_end = datetime.datetime.now()
+            # MAYBE: Use controller.store.now ?
+            #expected_end = datetime.datetime.now()
+            expected_end = datetime.datetime.utcnow()
 
         basestore.facts._add = mocker.MagicMock()
+# FIXME: stop_tmp_fact => stop_current_fact
         basestore.facts.stop_tmp_fact(hint)
         assert basestore.facts._add.called
         fact_to_be_added = basestore.facts._add.call_args[0][0]
         assert fact_to_be_added.end == expected_end
         fact_to_be_added.end = None
         assert fact_to_be_added == tmp_fact
-        assert os.path.exists(basestore.facts._get_tmp_fact_path()) is False
+# FIXME: tmp_fact...
+#        assert os.path.exists(basestore.facts._get_tmp_fact_path()) is False
 
+# FIXME: stop_tmp_fact => stop_current_fact
     def test_stop_tmp_fact_invalid_offset_hint(self, basestore, tmp_fact):
         """Make sure that stopping with an offset hint that results in end>start raises error."""
-        offset = (datetime.datetime.now() - tmp_fact.start).total_seconds() + 100
+        # MAYBE: Use controller.store.now ?
+        #offset = (datetime.datetime.now() - tmp_fact.start).total_seconds() + 100
+        offset = (datetime.datetime.utcnow() - tmp_fact.start).total_seconds() + 100
         offset = datetime.timedelta(seconds=-1 * offset)
         with pytest.raises(ValueError):
             basestore.facts.stop_tmp_fact(offset)
 
+# FIXME: stop_tmp_fact => stop_current_fact
     def test_stop_tmp_fact_invalid_datetime_hint(self, basestore, tmp_fact):
         """Make sure that stopping with a datetime hint that results in end>start raises error."""
         with pytest.raises(ValueError):
             basestore.facts.stop_tmp_fact(tmp_fact.start - datetime.timedelta(minutes=30))
 
+# FIXME: stop_tmp_fact => stop_current_fact
     def test_stop_tmp_fact_invalid_hint_type(self, basestore, tmp_fact):
         """Make sure that passing an invalid hint type raises an error."""
         with pytest.raises(TypeError):
             basestore.facts.stop_tmp_fact(str())
 
+# FIXME: stop_tmp_fact => stop_current_fact
     def test_stop_tmp_fact_non_existing(self, basestore):
         """Make sure that trying to call stop when there is no 'ongoing fact' raises error."""
         with pytest.raises(ValueError):
@@ -401,38 +453,42 @@ class TestFactManager:
         with pytest.raises(KeyError):
             basestore.facts.get_tmp_fact()
 
-    def test_update_tmp_fact(self, basestore, tmp_fact, new_fact_values):
-        """Make sure the updated fact has the new values."""
-        updated_fact = Fact(**new_fact_values(tmp_fact))
-        result = basestore.facts.update_tmp_fact(updated_fact)
-        assert result == updated_fact
+#    def test_update_tmp_fact(self, basestore, tmp_fact, new_fact_values):
+#        """Make sure the updated fact has the new values."""
+#        updated_fact = Fact(**new_fact_values(tmp_fact))
+#        result = basestore.facts.update_tmp_fact(updated_fact)
+#        assert result == updated_fact
 
-    def test_update_tmp_fact_invalid_type(self, basestore):
-        """Make sure that passing a non-Fact instances raises a ``TypeError``."""
-        with pytest.raises(TypeError):
-            basestore.facts.update_tmp_fact(dict())
+#    def test_update_tmp_fact_invalid_type(self, basestore):
+#        """Make sure that passing a non-Fact instances raises a ``TypeError``."""
+#        with pytest.raises(TypeError):
+#            basestore.facts.update_tmp_fact(dict())
 
-    def test_update_tmp_fact_end(self, basestore, fact):
-        """Make sure updating with a fact that has ``Fact.end`` raises ``ValueError."""
-        fact.end = datetime.datetime.now()
-        with pytest.raises(ValueError):
-            basestore.facts.update_tmp_fact(fact)
+#    def test_update_tmp_fact_end(self, basestore, fact):
+#        """Make sure updating with a fact that has ``Fact.end`` raises ``ValueError."""
+#        # MAYBE: Use controller.store.now ?
+#        #fact.end = datetime.datetime.now()
+#        fact.end = datetime.datetime.utcnow()
+#        with pytest.raises(ValueError):
+#            basestore.facts.update_tmp_fact(fact)
 
+# FIXME/2018-06-08: Renamed/Reworked: cancel_tmp_fact => cancel_current_fact
     def test_cancel_tmp_fact(self, basestore, tmp_fact, fact):
         """Make sure we return the 'ongoing_fact'."""
         result = basestore.facts.cancel_tmp_fact()
         assert result is None
-        assert os.path.exists(basestore.facts._get_tmp_fact_path()) is False
+#        assert os.path.exists(basestore.facts._get_tmp_fact_path()) is False
 
+# FIXME/2018-06-08: Renamed/Reworked: cancel_tmp_fact => cancel_current_fact
     def test_cancel_tmp_fact_without_ongoing_fact(self, basestore):
         """Make sure that we raise a KeyError if ther is no 'ongoing fact'."""
         with pytest.raises(KeyError):
             basestore.facts.cancel_tmp_fact()
 
-    def test_get_tmp_fact_path(self, basestore):
-        """Make sure the returned path matches our expectation."""
-        # [TODO]
-        # Would be nice to avoid the code replication. However, we can not
-        # simply use fixed strings as path composition is platform dependent.
-        expectation = basestore.config['tmpfile_path']
-        assert basestore.facts._get_tmp_fact_path() == expectation
+#    def test_get_tmp_fact_path(self, basestore):
+#        """Make sure the returned path matches our expectation."""
+#        # [TODO]
+#        # Would be nice to avoid the code replication. However, we can not
+#        # simply use fixed strings as path composition is platform dependent.
+#        expectation = basestore.config['tmpfile_path']
+#        assert basestore.facts._get_tmp_fact_path() == expectation

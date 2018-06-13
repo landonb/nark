@@ -1,19 +1,34 @@
 # -*- coding: utf-8 -*-
 
+# This file is part of 'hamster-lib'.
+#
+# 'hamster-lib' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'hamster-lib' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
+
 """Fixtures needed to test helper submodule."""
 
 from __future__ import absolute_import, unicode_literals
 
 import codecs
 import datetime
-import os
-
 import fauxfactory
+import os
 import pytest
 from configparser import SafeConfigParser
-from hamster_lib.helpers import config_helpers
-from hamster_lib.helpers.time import TimeFrame
 from six import text_type
+
+from hamster_lib.helpers import config_helpers
+#from hamster_lib.helpers.time import TimeFrame
 
 
 @pytest.fixture
@@ -61,8 +76,9 @@ def configparser_instance(request):
     config.add_section('Backend')
     config.set('Backend', 'store', 'sqlalchemy')
     config.set('Backend', 'day_start', '05:00:00')
+    #config.set('Backend', 'day_start', '')
     config.set('Backend', 'fact_min_delta', '60')
-    config.set('Backend', 'tmpfile_path', '/tmp')
+    #config.set('Backend', 'fact_min_delta', '0')
     config.set('Backend', 'db_engine', 'sqlite')
     config.set('Backend', 'db_path', '/tmp/hamster.db')
     config.set('Backend', 'db_host', 'www.example.com')
@@ -74,9 +90,8 @@ def configparser_instance(request):
 
     expectation = {
         'store': text_type('sqlalchemy'),
-        'day_start': datetime.datetime.strptime('05:00:00', '%H:%M:%S').time(),
-        'fact_min_delta': 60,
-        'tmpfile_path': text_type('/tmp'),
+#        'day_start': datetime.datetime.strptime('05:00:00', '%H:%M:%S').time(),
+        'fact_min_delta': 0,
         'db_engine': text_type('sqlite'),
         'db_path': text_type('/tmp/hamster.db'),
         'db_host': text_type('www.example.com'),
@@ -107,19 +122,22 @@ def config_file(backend_config, appdirs):
 
 @pytest.fixture(params=[
     ('foobar', {
-        'timeinfo': TimeFrame(None, None, None, None, None),
+#        'timeinfo': TimeFrame(None, None, None, None, None),
+        'timeinfo': None,
         'activity': 'foobar',
         'category': None,
         'description': None,
     }),
     ('11:00 12:00 foo@bar', {
-        'timeinfo': TimeFrame(None, datetime.time(11), None, None, None),
+#        'timeinfo': TimeFrame(None, datetime.time(11), None, None, None),
+        'timeinfo': '11:00',
         'activity': '12:00 foo',
         'category': 'bar',
         'description': None,
     }),
     ('rumpelratz foo@bar', {
-        'timeinfo': TimeFrame(None, None, None, None, None),
+#        'timeinfo': TimeFrame(None, None, None, None, None),
+        'timeinfo': None,
         'start': None,
         'end': None,
         'activity': 'rumpelratz foo',
@@ -127,32 +145,37 @@ def config_file(backend_config, appdirs):
         'description': None,
     }),
     ('foo@bar', {
-        'timeinfo': TimeFrame(None, None, None, None, None),
+#        'timeinfo': TimeFrame(None, None, None, None, None),
+        'timeinfo': '',
         'activity': 'foo',
         'category': 'bar',
         'description': None,
     }),
     ('foo@bar, palimpalum', {
-        'timeinfo': TimeFrame(None, None, None, None, None),
+#        'timeinfo': TimeFrame(None, None, None, None, None),
+        'timeinfo': None,
         'activity': 'foo',
         'category': 'bar',
         'description': 'palimpalum',
     }),
     ('12:00 foo@bar, palimpalum', {
-        'timeinfo': TimeFrame(None, datetime.time(12), None, None, None),
+#        'timeinfo': TimeFrame(None, datetime.time(12), None, None, None),
+        'timeinfo': '12:00',
         'activity': 'foo',
         'category': 'bar',
         'description': 'palimpalum',
     }),
     ('12:00 - 14:14 foo@bar, palimpalum', {
-        'timeinfo': TimeFrame(None, datetime.time(12), None, datetime.time(14, 14), None),
+#        'timeinfo': TimeFrame(None, datetime.time(12), None, datetime.time(14, 14), None),
+        'timeinfo': '12:00 to 14:14',
         'activity': 'foo',
         'category': 'bar',
         'description': 'palimpalum',
     }),
     # Missing whitespace around ``-`` will prevent timeinfo from being parsed.
     ('12:00-14:14 foo@bar, palimpalum', {
-        'timeinfo': TimeFrame(None, None, None, None, None),
+#        'timeinfo': TimeFrame(None, None, None, None, None),
+        'timeinfo': '',
         'activity': '12:00-14:14 foo',
         'category': 'bar',
         'description': 'palimpalum',

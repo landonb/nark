@@ -1,15 +1,30 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
+# This file is part of 'hamster-lib'.
+#
+# 'hamster-lib' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'hamster-lib' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 """Factories providing randomized object instances."""
 
 from __future__ import unicode_literals
 
 import datetime
-
 import factory
 import fauxfactory
 from future.utils import python_2_unicode_compatible
-from hamster_lib import objects
+
+from hamster_lib.items import *
 
 
 @python_2_unicode_compatible
@@ -24,7 +39,7 @@ class CategoryFactory(factory.Factory):
     name = factory.LazyAttribute(lambda x: fauxfactory.gen_string('utf8'))
 
     class Meta:
-        model = objects.Category
+        model = Category
 
 
 @python_2_unicode_compatible
@@ -37,7 +52,7 @@ class ActivityFactory(factory.Factory):
     deleted = False
 
     class Meta:
-        model = objects.Activity
+        model = Activity
 
 
 @python_2_unicode_compatible
@@ -48,7 +63,7 @@ class TagFactory(factory.Factory):
     name = factory.Faker('word')
 
     class Meta:
-        model = objects.Tag
+        model = Tag
 
 
 @python_2_unicode_compatible
@@ -66,7 +81,7 @@ class FactFactory(factory.Factory):
     description = factory.Faker('paragraph')
 
     class Meta:
-        model = objects.Fact
+        model = Fact
 
     @factory.post_generation
     def tags(self, create, extracted, **kwargs):

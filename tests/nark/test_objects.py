@@ -1,17 +1,36 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
+# This file is part of 'hamster-lib'.
+#
+# 'hamster-lib' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'hamster-lib' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import, unicode_literals
 
 import copy
 import datetime
-from builtins import str as text
-from operator import attrgetter
-
 import faker as faker_
 import pytest
+from builtins import str as text
 from freezegun import freeze_time
-from hamster_lib import Activity, Category, Fact, Tag
+from operator import attrgetter
 from six import text_type
+
+
+# FIXME:
+from hamster_lib import Activity, Category, Fact, Tag
+
+
 
 faker = faker_.Faker()
 
@@ -297,16 +316,48 @@ class TestFact(object):
         tags = sorted(list(tags), key=attrgetter('name'))
         assert fact.tags_sorted == tags
 
-    def test_create_from_raw_fact_valid(self, valid_raw_fact_parametrized):
+    def test_create_from_factoid_valid(self, valid_raw_fact_parametrized):
         """Make sure that a valid raw fact creates a proper Fact."""
-        assert Fact.create_from_raw_fact(valid_raw_fact_parametrized)
+        assert Fact.create_from_factoid(valid_raw_fact_parametrized)
 
-    def test_create_from_raw_fact_invalid(self, invalid_raw_fact_parametrized):
+    def test_create_from_factoid_invalid(self, invalid_raw_fact_parametrized):
         """Make sure invalid string raises an exception."""
         with pytest.raises(ValueError):
-            Fact.create_from_raw_fact(invalid_raw_fact_parametrized)
+            Fact.create_from_factoid(invalid_raw_fact_parametrized)
 
-    @pytest.mark.parametrize(('raw_fact', 'expectations'), [
+    @pytest.mark.parametrize(
+        ('raw_fact', 'expectations'),
+        [
+            (
+                '-7 foo@bar, palimpalum',
+                {
+                    'start': datetime.datetime(2015, 5, 2, 18, 0, 0),
+                    'end': None,
+                    'activity': 'foo',
+                    'category': 'bar',
+                    'description': 'palimpalum',
+                },
+            ),
+        ]
+    )
+    @freeze_time('2015-05-02 18:07')
+    def test_create_from_factoid_with_delta(self, raw_fact, expectations):
+        fact = Fact.create_from_factoid(raw_fact)
+        assert fact.start == expectations['start']
+
+
+
+# FIXME: NEW
+    def test_create_from_factoid_valid(self, valid_factoid_parametrized):
+        """Make sure that a valid raw fact creates a proper Fact."""
+        assert Fact.create_from_factoid(valid_factoid_parametrized)
+
+    def test_create_from_factoid_invalid(self, invalid_factoid_parametrized):
+        """Make sure invalid string raises an exception."""
+        with pytest.raises(ValueError):
+            Fact.create_from_factoid(invalid_factoid_parametrized)
+
+    @pytest.mark.parametrize(('factoid', 'expectations'), [
         ('-7 foo@bar, palimpalum',
          {'start': datetime.datetime(2015, 5, 2, 18, 0, 0),
           'end': None,
@@ -316,9 +367,14 @@ class TestFact(object):
          ),
     ])
     @freeze_time('2015-05-02 18:07')
-    def test_create_from_raw_fact_with_delta(self, raw_fact, expectations):
-        fact = Fact.create_from_raw_fact(raw_fact)
+    def test_create_from_factoid_with_delta(self, factoid, expectations):
+        fact = Fact.create_from_factoid(factoid)
         assert fact.start == expectations['start']
+
+
+
+
+
 
     @pytest.mark.parametrize('start', [None, faker.date_time()])
     def test_start_valid(self, fact, start):
@@ -349,12 +405,14 @@ class TestFact(object):
 
     def test_delta(self, fact):
         """Make sure that valid arguments get stored by the setter."""
-        assert fact.delta == fact.end - fact.start
+        assert fact.delta() == fact.end - fact.start
 
     def test_delta_no_end(self, fact):
         """Make sure that a missing end datetime results in ``delta=None``."""
         fact.end = None
-        assert fact.delta is None
+        #assert fact.delta is None
+# FIXME: fix this test...
+        assert False  # FIXME: (lb): delta is until 'now' IRL.
 
     @pytest.mark.parametrize('offset', [
         (15, {'%M': '15', '%H:%M': '00:15'}),

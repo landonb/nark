@@ -1,18 +1,34 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
+# This file is part of 'hamster-lib'.
+#
+# 'hamster-lib' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'hamster-lib' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
 
 """Fixtures that are of general use."""
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import datetime
-
 import faker as faker_
 import pytest
-from hamster_lib.control import HamsterControl
-from hamster_lib.storage import BaseStore
 from pytest_factoryboy import register
 
+from hamster_lib.control import HamsterControl
+from hamster_lib.storage import BaseStore
+
 from . import factories
+
 
 register(factories.CategoryFactory)
 register(factories.ActivityFactory)
@@ -30,7 +46,9 @@ def convert_time_to_datetime(time_string):
     date.
     """
     return datetime.datetime.combine(
-        datetime.datetime.now().date(),
+        # MAYBE: Use controller.store.now ?
+        #datetime.datetime.now().date(),
+        datetime.datetime.utcnow().date(),
         datetime.datetime.strptime(time_string, "%H:%M").time()
     )
 
@@ -118,7 +136,9 @@ def list_of_facts(fact_factory):
     """
     def get_list_of_facts(number_of_facts):
         facts = []
-        old_start = datetime.datetime.now()
+        # MAYBE: Use controller.store.now ?
+        #old_start = datetime.datetime.now()
+        old_start = datetime.datetime.utcnow()
         offset = datetime.timedelta(hours=4)
         for i in range(number_of_facts):
             start = old_start + offset
@@ -137,7 +157,9 @@ def string_delta_format_parametrized(request):
 @pytest.fixture
 def today_fact(fact_factory):
     """Return a ``Fact`` instance that start and ends 'today'."""
-    start = datetime.datetime.now()
+    # MAYBE: Use controller.store.now ?
+    #start = datetime.datetime.now()
+    start = datetime.datetime.utcnow()
     end = start + datetime.timedelta(minutes=30)
     return fact_factory(start=start, end=end)
 
@@ -145,7 +167,9 @@ def today_fact(fact_factory):
 @pytest.fixture
 def not_today_fact(fact_factory):
     """Return a ``Fact`` instance that neither start nor ends 'today'."""
-    start = datetime.datetime.now() - datetime.timedelta(days=2)
+    # MAYBE: Use controller.store.now ?
+    #start = datetime.datetime.now() - datetime.timedelta(days=2)
+    start = datetime.datetime.utcnow() - datetime.timedelta(days=2)
     end = start + datetime.timedelta(minutes=30)
     return fact_factory(start=start, end=end)
 
@@ -153,7 +177,9 @@ def not_today_fact(fact_factory):
 @pytest.fixture
 def current_fact(fact_factory):
     """Provide a ``ongoing fact``. That is a fact that has started but not ended yet."""
-    return fact_factory(start=datetime.datetime.now(), end=None)
+    # MAYBE: Use controller.store.now ?
+    #return fact_factory(start=datetime.datetime.now(), end=None)
+    return fact_factory(start=datetime.datetime.utcnow(), end=None)
 
 
 @pytest.fixture(params=[

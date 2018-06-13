@@ -1,16 +1,31 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
+# This file is part of 'hamster-lib'.
+#
+# 'hamster-lib' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'hamster-lib' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'hamster-lib'.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import, unicode_literals
 
 import csv
 import datetime
 import os.path
-import xml
-
 import pytest
-from hamster_lib import reports
+import xml
 from icalendar import Calendar
 from six import text_type
+
+from hamster_lib import reports
 
 
 # Fixtures
