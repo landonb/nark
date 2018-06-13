@@ -111,7 +111,7 @@ class HamsterControl(object):
         itself.
         """
 
-        lib_logger = logging.getLogger('hamster-lib.log')
+        lib_logger = logging.getLogger('nark.log')
         lib_logger.addHandler(logging.NullHandler())
         return lib_logger
 

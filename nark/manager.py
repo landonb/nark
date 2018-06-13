@@ -62,7 +62,7 @@ class BaseStore(object):
         raise NotImplementedError
 
     def init_logger(self):
-        self.logger = logging.getLogger('hamster_lib.storage')
+        self.logger = logging.getLogger('nark.storage')
         self.logger.addHandler(logging.NullHandler())
 
         sql_log_level = self.config['sql_log_level']

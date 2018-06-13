@@ -44,8 +44,8 @@ __all__ = [
 
 # FIXME/MAYBE: (lb): New pattern? Can modules just get the logger here?
 #   Or should we make a top-level module that just returns this? Probably
-#   the latter, so we're not hard-coding 'hamster-lib.log' everywhere.
-logger = logging.getLogger('hamster-lib.log')
+#   the latter, so we're not hard-coding 'nark.log' everywhere.
+logger = logging.getLogger('nark.log')
 
 
 # FIXME: (lb): What's the best way to handle module-scope vars like this?
