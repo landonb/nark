@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Hamster LIB storage object managers."""
+"""``nark`` storage object managers."""
 
 from __future__ import absolute_import, unicode_literals
 

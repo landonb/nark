@@ -39,10 +39,10 @@ class BaseCategoryManager(BaseManager):
         Internal code decides whether we need to add or update.
 
         Args:
-            category (hamster_lib.Category): Category instance to be saved.
+            category (nark.Category): Category instance to be saved.
 
         Returns:
-            hamster_lib.Category: Saved Category
+            nark.Category: Saved Category
 
         Raises:
             TypeError: If the ``category`` parameter is not a valid
@@ -80,10 +80,10 @@ class BaseCategoryManager(BaseManager):
         db-backed version.
 
         Args:
-            category (hamster_lib.Category or None): The categories.
+            category (nark.Category or None): The categories.
 
         Returns:
-            hamster_lib.Category or None: The retrieved or created category. Either way,
+            nark.Category or None: The retrieved or created category. Either way,
                 the returned Category will contain all data from the backend, including
                 its primary key.
         """
@@ -107,10 +107,10 @@ class BaseCategoryManager(BaseManager):
         Add a ``Category`` to our backend.
 
         Args:
-            category (hamster_lib.Category): ``Category`` to be added.
+            category (nark.Category): ``Category`` to be added.
 
         Returns:
-            hamster_lib.Category: Newly created ``Category`` instance.
+            nark.Category: Newly created ``Category`` instance.
 
         Raises:
             ValueError: When the category name was already present!
@@ -131,10 +131,10 @@ class BaseCategoryManager(BaseManager):
         Update a ``Categories`` values in our backend.
 
         Args:
-            category (hamster_lib.Category): Category to be updated.
+            category (nark.Category): Category to be updated.
 
         Returns:
-            hamster_lib.Category: The updated Category.
+            nark.Category: The updated Category.
 
         Raises:
             KeyError: If the ``Category`` can not be found by the backend.
@@ -154,14 +154,14 @@ class BaseCategoryManager(BaseManager):
         ``Activity().category=None``.
 
         Args:
-            category (hamster_lib.Category): Category to be updated.
+            category (nark.Category): Category to be updated.
 
         Returns:
             None: If everything went ok.
 
         Raises:
             KeyError: If the ``Category`` can not be found by the backend.
-            TypeError: If category passed is not an hamster_lib.Category instance.
+            TypeError: If category passed is not an nark.Category instance.
             ValueError: If category passed does not have an pk.
         """
         raise NotImplementedError
@@ -176,7 +176,7 @@ class BaseCategoryManager(BaseManager):
             pk (int): Primary key of the ``Category`` to be fetched.
 
         Returns:
-            hamster_lib.Category: ``Category`` with given primary key.
+            nark.Category: ``Category`` with given primary key.
 
         Raises:
             KeyError: If no ``Category`` with this primary key can be found
@@ -195,7 +195,7 @@ class BaseCategoryManager(BaseManager):
             name (str): Unique name of the ``Category`` to we want to fetch.
 
         Returns:
-            hamster_lib.Category: ``Category`` with given name.
+            nark.Category: ``Category`` with given name.
 
         Raises:
             KeyError: If no ``Category`` with this name was found by the backend.

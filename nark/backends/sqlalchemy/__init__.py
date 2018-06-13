@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Submodule providing a SQLAlchemy storage backend for ``hamster-lib``."""
+"""Submodule providing a SQLAlchemy storage backend for ``nark``."""
 
 # Export classes from here for other application to more easily import.
 from .objects import (  # noqa: F401

@@ -21,7 +21,7 @@ from __future__ import absolute_import, unicode_literals
 class TestAlchemyCategory(object):
     """Make sure our custom methods behave properly."""
     def test_as_hamster(self, alchemy_store, alchemy_category):
-        """Make sure that conversion into a ``hamster_lib.Category```works as expected."""
+        """Make sure that conversion into a ``nark.Category```works as expected."""
         category = alchemy_category.as_hamster(alchemy_store)
         assert category.equal_fields(alchemy_category)
 
@@ -29,7 +29,7 @@ class TestAlchemyCategory(object):
 class TestAlchemyActivity(object):
     """Make sure our custom methods behave properly."""
     def test_as_hamster(self, alchemy_store, alchemy_activity):
-        """Make sure that conversion into a ``hamster_lib.Activity```works as expected."""
+        """Make sure that conversion into a ``nark.Activity```works as expected."""
         activity = alchemy_activity.as_hamster(alchemy_store)
         assert activity.equal_fields(alchemy_activity)
 
@@ -44,7 +44,7 @@ class TestAlchemyActivity(object):
 class TestAlchemyTag(object):
     """Make sure our custom methods behave properly."""
     def test_as_hamster(self, alchemy_store, alchemy_tag):
-        """Make sure that conversion into a ``hamster_lib.Tag``works as expected."""
+        """Make sure that conversion into a ``nark.Tag``works as expected."""
         tag = alchemy_tag.as_hamster(alchemy_store)
         assert tag.equal_fields(alchemy_tag)
 
@@ -76,6 +76,6 @@ class TestAlchemyFact(object):
         assert alchemy_fact.tags == new_tags
 
     def test_as_hamster(self, alchemy_store, alchemy_fact):
-        """Make sure that conversion into a ``hamster_lib.Fact```works as expected."""
+        """Make sure that conversion into a ``nark.Fact```works as expected."""
         fact = alchemy_fact.as_hamster(alchemy_store)
         assert fact.equal_fields(alchemy_fact)

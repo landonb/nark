@@ -67,7 +67,7 @@ class Fact(object):
         Initiate our new instance.
 
         Args:
-            activity (hamster_lib.Activity): Activity associated with this fact.
+            activity (nark.Activity): Activity associated with this fact.
 
             start (datetime.datetime): Start datetime of this fact.
 
@@ -85,7 +85,7 @@ class Fact(object):
 
             deleted (bool, optional): True if fact was deleted/edited/split.
 
-            split_from (hamster_lib.Fact.id, optional): ID of deleted fact this
+            split_from (nark.Fact.id, optional): ID of deleted fact this
                 fact succeeds.
         """
         self.pk = pk
@@ -138,7 +138,7 @@ class Fact(object):
             ``False`` ``tuple.pk = False``!
 
         Returns:
-            hamster_lib.FactTuple: Representing this categories values.
+            nark.FactTuple: Representing this categories values.
         """
         pk = self.pk
         if not include_pk:
@@ -676,7 +676,7 @@ class Fact(object):
         lenient=False,
     ):
         """
-        Construct a new ``hamster_lib.Fact`` from a string of fact details,
+        Construct a new ``nark.Fact`` from a string of fact details,
             or factoid.
 
         NOTE: This naïvely creates a new Fact and does not check against
@@ -697,7 +697,7 @@ class Fact(object):
                 tags, and description are optional.)
 
         Returns:
-            hamster_lib.Fact: New ``Fact`` object constructed from factoid.
+            nark.Fact: New ``Fact`` object constructed from factoid.
 
         Raises:
             ValueError: If we fail to extract at least ``start`` or ``activity.name``.

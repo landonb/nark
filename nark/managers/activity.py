@@ -39,10 +39,10 @@ class BaseActivityManager(BaseManager):
         This public method decides if it calls either ``_add`` or ``_update``.
 
         Args:
-            activity (hamster_lib.Activity): ``Activity`` to be saved.
+            activity (nark.Activity): ``Activity`` to be saved.
 
         Returns:
-            hamster_lib.Activity: The saved ``Activity``.
+            nark.Activity: The saved ``Activity``.
         """
 
         self.store.logger.debug(_("'{}' has been received.".format(activity)))
@@ -63,10 +63,10 @@ class BaseActivityManager(BaseManager):
             or create a new one.
 
         Args:
-            activity (hamster_lib.Activity): The activity we want.
+            activity (nark.Activity): The activity we want.
 
         Returns:
-            hamster_lib.Activity: The retrieved or created activity
+            nark.Activity: The retrieved or created activity
         """
         self.store.logger.debug(_("'{}' has been received.".format(activity)))
         try:
@@ -88,10 +88,10 @@ class BaseActivityManager(BaseManager):
         Add a new ``Activity`` instance to the database.
 
         Args:
-            activity (hamster_lib.Activity): The ``Activity`` to be added.
+            activity (nark.Activity): The ``Activity`` to be added.
 
         Returns:
-            hamster_lib.Activity: The newly created ``Activity``.
+            nark.Activity: The newly created ``Activity``.
 
         Raises:
             ValueError: If the passed activity has a PK.
@@ -119,10 +119,10 @@ class BaseActivityManager(BaseManager):
         are taken from passed activity as well.
 
         Args:
-            activity (hamster_lib.Activity): Activity to be updated.
+            activity (nark.Activity): Activity to be updated.
 
         Returns:
-            hamster_lib.Activity: Updated activity.
+            nark.Activity: Updated activity.
         Raises:
             ValueError: If the new name/category.name combination is already taken.
             ValueError: If the the passed activity does not have a PK assigned.
@@ -145,7 +145,7 @@ class BaseActivityManager(BaseManager):
         If it is not, we delete it from the backend.
 
         Args:
-            activity (hamster_lib.Activity): The activity to be removed.
+            activity (nark.Activity): The activity to be removed.
 
         Returns:
             bool: True
@@ -170,7 +170,7 @@ class BaseActivityManager(BaseManager):
             pk (int): Primary key of the activity
 
         Returns:
-            hamster_lib.Activity: Activity matching primary key.
+            nark.Activity: Activity matching primary key.
 
         Raises:
             KeyError: If the primary key can not be found in the database.
@@ -188,11 +188,11 @@ class BaseActivityManager(BaseManager):
         Args:
             name (str): Name of the ``Activities`` in question.
 
-            category (hamster_lib.Category or None): ``Category`` of the activities.
+            category (nark.Category or None): ``Category`` of the activities.
                 May be None.
 
         Returns:
-            hamster_lib.Activity: The corresponding activity
+            nark.Activity: The corresponding activity
 
         Raises:
             KeyError: If the composite key can not be found.
@@ -222,14 +222,14 @@ class BaseActivityManager(BaseManager):
         Return all matching activities.
 
         Args:
-            category (hamster_lib.Category, optional): Limit activities to this category.
+            category (nark.Category, optional): Limit activities to this category.
                 Defaults to ``False``. If ``category=None`` only activities without a
                 category will be considered.
             search_term (str, optional): Limit activities to those matching this string
                 a substring in their name. Defaults to ``empty string``.
 
         Returns:
-            list: List of ``hamster_lib.Activity`` instances matching constrains.
+            list: List of ``nark.Activity`` instances matching constrains.
                 This list is ordered by ``Activity.name``.
 
         Note:

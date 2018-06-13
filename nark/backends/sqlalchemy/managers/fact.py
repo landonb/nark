@@ -88,11 +88,11 @@ class FactManager(BaseFactManager):
         Add a new fact to the database.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be added.
+            fact (nark.Fact): Fact to be added.
             raw (bool): If ``True`` return ``AlchemyFact`` instead.
 
         Returns:
-            hamster_lib.Fact: Fact as stored in the database
+            nark.Fact: Fact as stored in the database
 
         Raises:
             ValueError: If the passed fact has a PK assigned.
@@ -145,13 +145,13 @@ class FactManager(BaseFactManager):
         Update and existing fact with new values.
 
         Args:
-            fact (hamster_lib.fact): Fact instance holding updated values.
+            fact (nark.fact): Fact instance holding updated values.
 
             raw (bool): If ``True`` return ``AlchemyFact`` instead.
               ANSWER: (lb): "instead" of what? raw is not used by Fact...
 
         Returns:
-            hamster_lib.fact: Updated Fact
+            nark.fact: Updated Fact
 
         Raises:
             KeyError: if a Fact with the relevant PK could not be found.
@@ -249,7 +249,7 @@ class FactManager(BaseFactManager):
         Remove a fact from our internal backend.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be removed
+            fact (nark.Fact): Fact to be removed
 
         Returns:
             bool: Success status
@@ -304,7 +304,7 @@ class FactManager(BaseFactManager):
             raw (bool): Return the AlchemyActivity instead.
 
         Returns:
-            hamster_lib.Fact: Fact matching given PK
+            nark.Fact: Fact matching given PK
 
         Raises:
             KeyError: If no Fact of given key was found.
@@ -380,7 +380,7 @@ class FactManager(BaseFactManager):
             order (string, optional): 'asc' or 'desc'; re: Fact.start.
 
         Returns:
-            list: List of ``hamster_lib.Facts`` instances.
+            list: List of ``nark.Facts`` instances.
 
         Note:
             This method will *NOT* return facts that start before and end after
@@ -579,11 +579,11 @@ class FactManager(BaseFactManager):
         Return the fact starting at the moment in time indicated by fact.start.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``start`` set.
 
         Returns:
-            hamster_lib.Fact: The found Fact, or None if none found.
+            nark.Fact: The found Fact, or None if none found.
 
         Raises:
             IntegrityError: If more than one Fact found at given time.
@@ -622,11 +622,11 @@ class FactManager(BaseFactManager):
         Return the fact ending at the moment in time indicated by fact.end.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``end`` set.
 
         Returns:
-            hamster_lib.Fact: The found Fact, or None if none found.
+            nark.Fact: The found Fact, or None if none found.
 
         Raises:
             IntegrityError: If more than one Fact found at given time.
@@ -665,14 +665,14 @@ class FactManager(BaseFactManager):
         Return the Fact immediately preceding the indicated Fact.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``start`` set.
 
             ref_time (datetime.datetime):
                 In lieu of fact, pass the datetime to reference.
 
         Returns:
-            hamster_lib.Fact: The antecedent Fact, or None if none found.
+            nark.Fact: The antecedent Fact, or None if none found.
 
         Raises:
             ValueError: If neither ``start`` nor ``end`` is set on fact.
@@ -712,14 +712,14 @@ class FactManager(BaseFactManager):
         Return the Fact immediately following the indicated Fact.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``end`` set.
 
             ref_time (datetime.datetime):
                 In lieu of fact, pass the datetime to reference.
 
         Returns:
-            hamster_lib.Fact: The subsequent Fact, or None if none found.
+            nark.Fact: The subsequent Fact, or None if none found.
 
         Raises:
             ValueError: If neither ``start`` nor ``end`` is set on fact.
@@ -769,7 +769,7 @@ class FactManager(BaseFactManager):
                 Maximum number of facts to find, else raise OverflowError.
 
         Returns:
-            list: List of ``hamster_lib.Facts`` instances.
+            list: List of ``nark.Facts`` instances.
         """
         query = self.store.session.query(AlchemyFact)
 
@@ -815,7 +815,7 @@ class FactManager(BaseFactManager):
                 Time of fact(s) to match.
 
         Returns:
-            list: List of ``hamster_lib.Facts`` instances.
+            list: List of ``nark.Facts`` instances.
 
         Raises:
             IntegrityError: If more than one Fact found at given time.
@@ -859,7 +859,7 @@ class FactManager(BaseFactManager):
             <none>
 
         Returns:
-            list: List of ``hamster_lib.Facts`` instances.
+            list: List of ``nark.Facts`` instances.
         """
         query = self.store.session.query(AlchemyFact)
 

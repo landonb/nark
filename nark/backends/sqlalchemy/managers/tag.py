@@ -39,11 +39,11 @@ class TagManager(BaseTagManager):
         alchemy instances.
 
         Args:
-            tag (hamster_lib.Tag): Tag we want.
+            tag (nark.Tag): Tag we want.
             raw (bool): Wether to return the AlchemyTag instead.
 
         Returns:
-            hamster_lib.Tag or None: Tag.
+            nark.Tag or None: Tag.
         """
 
         message = _("Received {!r} and raw={}.".format(tag, raw))
@@ -64,11 +64,11 @@ class TagManager(BaseTagManager):
         done correctly..
 
         Args:
-            tag (hamster_lib.Tag): Hamster Tag instance.
+            tag (nark.Tag): Hamster Tag instance.
             raw (bool): Wether to return the AlchemyTag instead.
 
         Returns:
-            hamster_lib.Tag: Saved instance, as_hamster()
+            nark.Tag: Saved instance, as_hamster()
 
         Raises:
             ValueError: If the name to be added is already present in the db.
@@ -113,10 +113,10 @@ class TagManager(BaseTagManager):
         Update a given Tag.
 
         Args:
-            tag (hamster_lib.Tag): Tag to be updated.
+            tag (nark.Tag): Tag to be updated.
 
         Returns:
-            hamster_lib.Tag: Updated tag.
+            nark.Tag: Updated tag.
 
         Raises:
             ValueError: If the new name is already taken.
@@ -158,7 +158,7 @@ class TagManager(BaseTagManager):
         Delete a given tag.
 
         Args:
-            tag (hamster_lib.Tag): Tag to be removed.
+            tag (nark.Tag): Tag to be removed.
 
         Returns:
             None: If everything went alright.
@@ -193,7 +193,7 @@ class TagManager(BaseTagManager):
             pk (int): PK of the tag to be retrieved.
 
         Returns:
-            hamster_lib.Tag: Tag matching given PK.
+            nark.Tag: Tag matching given PK.
 
         Raises:
             KeyError: If no such PK was found.
@@ -232,7 +232,7 @@ class TagManager(BaseTagManager):
             raw (bool): Wether to return the AlchemyTag instead.
 
         Returns:
-            hamster_lib.Tag: Tag of given name.
+            nark.Tag: Tag of given name.
 
         Raises:
             KeyError: If no tag matching the name was found.

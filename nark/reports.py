@@ -85,7 +85,7 @@ class ReportWriter(object):
         Write facts to output file and close the file like object.
 
         Args:
-            facts (Iterable): Iterable of ``hamster_lib.Fact`` instances to export.
+            facts (Iterable): Iterable of ``nark.Fact`` instances to export.
 
         Returns:
             None: If everything worked as expected.
@@ -106,7 +106,7 @@ class ReportWriter(object):
             individualy.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be converted.
+            fact (nark.Fact): Fact to be converted.
 
         Returns:
             FactTuple: Tuple representing the original ``Fact``.
@@ -175,7 +175,7 @@ class PlaintextWriter(ReportWriter):
         as any normalization happens.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be converted.
+            fact (nark.Fact): Fact to be converted.
 
         Returns:
             FactTuple: Tuple representing the original ``Fact``.
@@ -282,7 +282,7 @@ class ICALWriter(ReportWriter):
                 so this individualy.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be converted.
+            fact (nark.Fact): Fact to be converted.
 
         Returns:
             FactTuple: Tuple representing the original ``Fact``.
@@ -357,7 +357,7 @@ class XMLWriter(ReportWriter):
             do this individually.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be converted.
+            fact (nark.Fact): Fact to be converted.
 
         Returns:
             FactTuple: Tuple representing the original ``Fact``.

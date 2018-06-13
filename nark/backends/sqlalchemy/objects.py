@@ -33,7 +33,7 @@ Note:
 
     Our dedicated SQLAlchemy objects do not perform any general data
     validation as not to duplicate code. This is expected to be
-    handled by the generic ``hamster_lib`` objects.
+    handled by the generic ``nark`` objects.
 
     If need for backend specific validation should arise, it could of
     cause be added here.
@@ -81,7 +81,7 @@ class AlchemyCategory(Category):
         self.hidden = hidden
 
     def as_hamster(self, store):
-        """Return store object as a real ``hamster_lib.Category`` instance."""
+        """Return store object as a real ``nark.Category`` instance."""
         return Category(
             pk=self.pk,
             name=self.name,
@@ -97,7 +97,7 @@ class AlchemyActivity(Activity):
         Initiate a new instance.
 
         Args:
-            activity (hamster_lib.Activity): An activity that is to be
+            activity (nark.Activity): An activity that is to be
                 represented as a backend instance.
 
         Raises:
@@ -111,7 +111,7 @@ class AlchemyActivity(Activity):
         self.hidden = hidden
 
     def as_hamster(self, store):
-        """Return new ``hamster_lib.Activity`` representation of SQLAlchemy instance."""
+        """Return new ``nark.Activity`` representation of SQLAlchemy instance."""
         if self.category:
             category = self.category.as_hamster(store)
         else:
@@ -156,7 +156,7 @@ class AlchemyTag(Tag):
         self.hidden = hidden
 
     def as_hamster(self, store):
-        """Provide an convenient way to return it as a ``hamster_lib.Tag`` instance."""
+        """Provide an convenient way to return it as a ``nark.Tag`` instance."""
         return Tag(
             pk=self.pk,
             name=self.name,
@@ -172,7 +172,7 @@ class AlchemyFact(Fact):
         Initiate a new instance.
 
         Args:
-            fact (hamster_lib.Fact): A fact that is to be represented
+            fact (nark.Fact): A fact that is to be represented
                 as a backend instance.
 
         Raises:
@@ -190,7 +190,7 @@ class AlchemyFact(Fact):
         self.tags = list()
 
     def as_hamster(self, store):
-        """Provide an convenient way to return it as a ``hamster_lib.Fact`` instance."""
+        """Provide an convenient way to return it as a ``nark.Fact`` instance."""
         return Fact(
             pk=self.pk,
             deleted=self.deleted,

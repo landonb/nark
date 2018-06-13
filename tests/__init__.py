@@ -15,5 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for the ``hamster-lib`` package."""
+"""Tests for the ``nark`` package."""
 

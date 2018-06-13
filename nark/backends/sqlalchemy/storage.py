@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Hamster LIB object store."""
+"""``nark`` object store."""
 
 from __future__ import absolute_import, unicode_literals
 from future.utils import python_2_unicode_compatible

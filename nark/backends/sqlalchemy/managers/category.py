@@ -36,11 +36,11 @@ class CategoryManager(BaseCategoryManager):
         to alchemy instances.
 
         Args:
-            category (hamster_lib.Category): Category we want.
+            category (nark.Category): Category we want.
             raw (bool): Wether to return the AlchemyCategory instead.
 
         Returns:
-            hamster_lib.Category or None: Category.
+            nark.Category or None: Category.
         """
 
         message = _("Received {!r} and raw={}.".format(category, raw))
@@ -61,11 +61,11 @@ class CategoryManager(BaseCategoryManager):
         one is done correctly.
 
         Args:
-            category (hamster_lib.Category): Hamster Category instance.
+            category (nark.Category): Hamster Category instance.
             raw (bool): Wether to return the AlchemyCategory instead.
 
         Returns:
-            hamster_lib.Category: Saved instance, as_hamster()
+            nark.Category: Saved instance, as_hamster()
 
         Raises:
             ValueError: If the name to be added is already present in the db.
@@ -110,10 +110,10 @@ class CategoryManager(BaseCategoryManager):
         Update a given Category.
 
         Args:
-            category (hamster_lib.Category): Category to be updated.
+            category (nark.Category): Category to be updated.
 
         Returns:
-            hamster_lib.Category: Updated category.
+            nark.Category: Updated category.
 
         Raises:
             ValueError: If the new name is already taken.
@@ -155,7 +155,7 @@ class CategoryManager(BaseCategoryManager):
         Delete a given category.
 
         Args:
-            category (hamster_lib.Category): Category to be removed.
+            category (nark.Category): Category to be removed.
 
         Returns:
             None: If everything went alright.
@@ -190,7 +190,7 @@ class CategoryManager(BaseCategoryManager):
             pk (int): PK of the category to be retrieved.
 
         Returns:
-            hamster_lib.Category: Category matching given PK.
+            nark.Category: Category matching given PK.
 
         Raises:
             KeyError: If no such PK was found.
@@ -229,7 +229,7 @@ class CategoryManager(BaseCategoryManager):
             raw (bool): Whether to return the AlchemyCategory instead.
 
         Returns:
-            hamster_lib.Category: Category of given name.
+            nark.Category: Category of given name.
 
         Raises:
             KeyError: If no category matching the name was found.

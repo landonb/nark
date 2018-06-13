@@ -225,7 +225,7 @@ def set_of_alchemy_facts(start_datetime, alchemy_fact_factory):
 # interact.
 @pytest.fixture
 def category_factory(request, name):
-    """Provide a ``hamster_lib.Category`` factory."""
+    """Provide a ``nark.Category`` factory."""
     def generate():
         return Category(name, None)
     return generate
@@ -233,13 +233,13 @@ def category_factory(request, name):
 
 @pytest.fixture
 def category(request, category_factory):
-    """Provide a randomized ``hamster_lib.Category`` instance."""
+    """Provide a randomized ``nark.Category`` instance."""
     return category_factory()
 
 
 @pytest.fixture
 def tag_factory(request, name):
-    """Provide a ``hamster_lib.Tag`` factory."""
+    """Provide a ``nark.Tag`` factory."""
     def generate():
         return Tag(name, None)
     return generate
@@ -247,14 +247,14 @@ def tag_factory(request, name):
 
 @pytest.fixture
 def tag(request, tag_factory):
-    """Provide a randomized ``hamster_lib.Tag`` instance."""
+    """Provide a randomized ``nark.Tag`` instance."""
     return tag_factory()
 
 
 @pytest.fixture
 def activity_factory(request, name, category_factory):
     """
-    Provide a ``hamster_lib.Activity`` factory.
+    Provide a ``nark.Activity`` factory.
 
     Note:
         * The returned activity will have a *new* category associated as well.
@@ -268,14 +268,14 @@ def activity_factory(request, name, category_factory):
 
 @pytest.fixture
 def activity(request, activity_factory):
-    """Provide a randomized ``hamster_lib.Activity`` instance."""
+    """Provide a randomized ``nark.Activity`` instance."""
     return activity_factory()
 
 
 @pytest.fixture
 def fact_factory(request, activity_factory, tag_factory, start_end_datetimes, description):
     """
-    Provide a ``hamster_lib.Fact`` factory.
+    Provide a ``nark.Fact`` factory.
 
     Note:
         * The returned fact will have a *new* activity (and by consequence category)
@@ -293,5 +293,5 @@ def fact_factory(request, activity_factory, tag_factory, start_end_datetimes, de
 
 @pytest.fixture
 def fact(request, fact_factory):
-    """Return a randomized ``hamster_lib.Fact`` instance."""
+    """Return a randomized ``nark.Fact`` instance."""
     return fact_factory()

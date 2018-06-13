@@ -41,11 +41,11 @@ class BaseFactManager(BaseManager):
         requires that the config given ``fact_min_delta`` is enforced.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be saved. Needs to be complete otherwise
+            fact (nark.Fact): Fact to be saved. Needs to be complete otherwise
             this will fail.
 
         Returns:
-            hamster_lib.Fact: Saved Fact.
+            nark.Fact: Saved Fact.
 
         Raises:
             ValueError: If ``fact.delta`` is smaller than
@@ -92,10 +92,10 @@ class BaseFactManager(BaseManager):
         Add a new ``Fact`` to the backend.
 
         Args:
-            fact (hamster_lib.Fact): Fact to be added.
+            fact (nark.Fact): Fact to be added.
 
         Returns:
-            hamster_lib.Fact: Added ``Fact``.
+            nark.Fact: Added ``Fact``.
 
         Raises:
             ValueError: If passed fact has a PK. New facts should not have one.
@@ -110,10 +110,10 @@ class BaseFactManager(BaseManager):
         Update and existing fact with new values.
 
         Args:
-            fact (hamster_lib.fact): Fact instance holding updated values.
+            fact (nark.fact): Fact instance holding updated values.
 
         Returns:
-            hamster_lib.fact: Updated Fact
+            nark.fact: Updated Fact
 
         Raises:
             KeyError: if a Fact with the relevant PK could not be found.
@@ -129,7 +129,7 @@ class BaseFactManager(BaseManager):
         Remove a given ``Fact`` from the backend.
 
         Args:
-            fact (hamster_lib.Fact): ``Fact`` instance to be removed.
+            fact (nark.Fact): ``Fact`` instance to be removed.
 
         Returns:
             bool: Success status
@@ -154,7 +154,7 @@ class BaseFactManager(BaseManager):
                 all.
 
         Returns:
-            hamster_lib.Fact: The ``Fact`` corresponding to the primary key.
+            nark.Fact: The ``Fact`` corresponding to the primary key.
 
         Raises:
             KeyError: If primary key not found in the backend.
@@ -353,7 +353,7 @@ class BaseFactManager(BaseManager):
                 you can pass negative ``timedelta`` values. Defaults to None.
 
         Returns:
-            hamster_lib.Fact: The stored fact.
+            nark.Fact: The stored fact.
 
         Raises:
             TypeError: If ``end_hint`` is not a ``datetime.datetime`` or
@@ -406,7 +406,7 @@ class BaseFactManager(BaseManager):
         Provide a way to retrieve any existing 'ongoing fact'.
 
         Returns:
-            hamster_lib.Fact: An instance representing our current
+            nark.Fact: An instance representing our current
                 <ongoing fact>.
 
         Raises:
@@ -472,7 +472,7 @@ class BaseFactManager(BaseManager):
         or removing, other Facts.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to insert, with either or both ``start`` and ``end`` set.
 
         Returns:
@@ -683,11 +683,11 @@ class BaseFactManager(BaseManager):
         Return the fact starting at the moment in time indicated by fact.start.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``start`` set.
 
         Returns:
-            hamster_lib.Fact: The found Fact, or None if none found.
+            nark.Fact: The found Fact, or None if none found.
 
         Raises:
             IntegrityError: If more than one Fact found at given time.
@@ -701,11 +701,11 @@ class BaseFactManager(BaseManager):
         Return the fact ending at the moment in time indicated by fact.end.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``end`` set.
 
         Returns:
-            hamster_lib.Fact: The found Fact, or None if none found.
+            nark.Fact: The found Fact, or None if none found.
 
         Raises:
             IntegrityError: If more than one Fact found at given time.
@@ -719,14 +719,14 @@ class BaseFactManager(BaseManager):
         Return the Fact immediately preceding the indicated Fact.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``start`` set.
 
             ref_time (datetime.datetime):
                 In lieu of fact, pass the datetime to reference.
 
         Returns:
-            hamster_lib.Fact: The antecedent Fact, or None if none found.
+            nark.Fact: The antecedent Fact, or None if none found.
 
         Raises:
             ValueError: If neither ``start`` nor ``end`` is set on fact.
@@ -740,14 +740,14 @@ class BaseFactManager(BaseManager):
         Return the Fact immediately following the indicated Fact.
 
         Args:
-            fact (hamster_lib.Fact):
+            fact (nark.Fact):
                 The Fact to reference, with its ``end`` set.
 
             ref_time (datetime.datetime):
                 In lieu of fact, pass the datetime to reference.
 
         Returns:
-            hamster_lib.Fact: The subsequent Fact, or None if none found.
+            nark.Fact: The subsequent Fact, or None if none found.
 
         Raises:
             ValueError: If neither ``start`` nor ``end`` is set on fact.
@@ -771,7 +771,7 @@ class BaseFactManager(BaseManager):
                 Maximum number of facts to find, else raise OverflowError.
 
         Returns:
-            list: List of ``hamster_lib.Facts`` instances.
+            list: List of ``nark.Facts`` instances.
         """
         raise NotImplementedError
 
@@ -788,7 +788,7 @@ class BaseFactManager(BaseManager):
                 Time of fact(s) to match.
 
         Returns:
-            list: List of ``hamster_lib.Facts`` instances.
+            list: List of ``nark.Facts`` instances.
 
         Raises:
             IntegrityError: If more than one Fact found at given time.
@@ -805,7 +805,7 @@ class BaseFactManager(BaseManager):
             <none>
 
         Returns:
-            list: List of ``hamster_lib.Facts`` instances.
+            list: List of ``nark.Facts`` instances.
         """
         raise NotImplementedError
 

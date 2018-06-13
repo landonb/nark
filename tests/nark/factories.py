@@ -29,7 +29,7 @@ from hamster_lib.items import *
 
 @python_2_unicode_compatible
 class CategoryFactory(factory.Factory):
-    """Factory providing randomized ``hamster_lib.Category`` instances."""
+    """Factory providing randomized ``nark.Category`` instances."""
 
     pk = None
     # Although we do not need to reference to the object beeing created and
@@ -44,7 +44,7 @@ class CategoryFactory(factory.Factory):
 
 @python_2_unicode_compatible
 class ActivityFactory(factory.Factory):
-    """Factory providing randomized ``hamster_lib.Activity`` instances."""
+    """Factory providing randomized ``nark.Activity`` instances."""
 
     pk = None
     name = factory.Faker('word')
@@ -57,7 +57,7 @@ class ActivityFactory(factory.Factory):
 
 @python_2_unicode_compatible
 class TagFactory(factory.Factory):
-    """Factory providing randomized ``hamster_lib.Category`` instances."""
+    """Factory providing randomized ``nark.Category`` instances."""
 
     pk = None
     name = factory.Faker('word')
@@ -69,7 +69,7 @@ class TagFactory(factory.Factory):
 @python_2_unicode_compatible
 class FactFactory(factory.Factory):
     """
-    Factory providing randomized ``hamster_lib.Fact`` instances.
+    Factory providing randomized ``nark.Fact`` instances.
 
     Instances have a duration of 3 hours.
     """

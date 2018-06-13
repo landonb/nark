@@ -39,10 +39,10 @@ class BaseTagManager(BaseManager):
         Internal code decides whether we need to add or update.
 
         Args:
-            tag (hamster_lib.Tag): Tag instance to be saved.
+            tag (nark.Tag): Tag instance to be saved.
 
         Returns:
-            hamster_lib.Tag: Saved Tag
+            nark.Tag: Saved Tag
 
         Raises:
             TypeError: If the ``tag`` parameter is not a valid ``Tag`` instance.
@@ -79,10 +79,10 @@ class BaseTagManager(BaseManager):
         db-backed version.
 
         Args:
-            tag (hamster_lib.Tag or None): The categories.
+            tag (nark.Tag or None): The categories.
 
         Returns:
-            hamster_lib.Tag or None: The retrieved or created tag. Either way,
+            nark.Tag or None: The retrieved or created tag. Either way,
                 the returned Tag will contain all data from the backend, including
                 its primary key.
         """
@@ -106,10 +106,10 @@ class BaseTagManager(BaseManager):
         Add a ``Tag`` to our backend.
 
         Args:
-            tag (hamster_lib.Tag): ``Tag`` to be added.
+            tag (nark.Tag): ``Tag`` to be added.
 
         Returns:
-            hamster_lib.Tag: Newly created ``Tag`` instance.
+            nark.Tag: Newly created ``Tag`` instance.
 
         Raises:
             ValueError: When the tag name was already present! It is supposed to be
@@ -126,10 +126,10 @@ class BaseTagManager(BaseManager):
         Update a ``Tags`` values in our backend.
 
         Args:
-            tag (hamster_lib.Tag): Tag to be updated.
+            tag (nark.Tag): Tag to be updated.
 
         Returns:
-            hamster_lib.Tag: The updated Tag.
+            nark.Tag: The updated Tag.
 
         Raises:
             KeyError: If the ``Tag`` can not be found by the backend.
@@ -148,14 +148,14 @@ class BaseTagManager(BaseManager):
         Any ``Fact`` referencing the passed tag will have this tag removed.
 
         Args:
-            tag (hamster_lib.Tag): Tag to be updated.
+            tag (nark.Tag): Tag to be updated.
 
         Returns:
             None: If everything went ok.
 
         Raises:
             KeyError: If the ``Tag`` can not be found by the backend.
-            TypeError: If tag passed is not an hamster_lib.Tag instance.
+            TypeError: If tag passed is not an nark.Tag instance.
             ValueError: If tag passed does not have an pk.
         """
         raise NotImplementedError
@@ -170,7 +170,7 @@ class BaseTagManager(BaseManager):
             pk (int): Primary key of the ``Tag`` to be fetched.
 
         Returns:
-            hamster_lib.Tag: ``Tag`` with given primary key.
+            nark.Tag: ``Tag`` with given primary key.
 
         Raises:
             KeyError: If no ``Tag`` with this primary key can be found by the backend.
@@ -188,7 +188,7 @@ class BaseTagManager(BaseManager):
             name (str): Unique name of the ``Tag`` to we want to fetch.
 
         Returns:
-            hamster_lib.Tag: ``Tag`` with given name.
+            nark.Tag: ``Tag`` with given name.
 
         Raises:
             KeyError: If no ``Tag`` with this name was found by the backend.

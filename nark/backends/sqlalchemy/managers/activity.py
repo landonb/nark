@@ -37,11 +37,11 @@ class ActivityManager(BaseActivityManager):
         Alchemy instances.
 
         Args:
-            activity (hamster_lib.Activity): Activity we want.
+            activity (nark.Activity): Activity we want.
             raw (bool): Wether to return the AlchemyActivity instead.
 
         Returns:
-            hamster_lib.Activity: Activity.
+            nark.Activity: Activity.
         """
 
         message = _("Received {!r}, raw={}.".format(activity, raw))
@@ -59,10 +59,10 @@ class ActivityManager(BaseActivityManager):
         Add a new ``Activity`` instance to the databasse.
 
         Args:
-            activity (hamster_lib.Activity): Hamster activity
+            activity (nark.Activity): Hamster activity
 
         Returns:
-            hamster_lib.Activity: Hamster activity representation of stored instance.
+            nark.Activity: Hamster activity representation of stored instance.
 
         Raises:
             ValueError: If the passed activity has a PK.
@@ -125,10 +125,10 @@ class ActivityManager(BaseActivityManager):
         Update a given Activity.
 
         Args:
-            activity (hamster_lib.Activity): Activity to be updated.
+            activity (nark.Activity): Activity to be updated.
 
         Returns:
-            hamster_lib.Activity: Updated activity.
+            nark.Activity: Updated activity.
 
         Raises:
             ValueError: If the new name/category.name combination is already taken.
@@ -184,7 +184,7 @@ class ActivityManager(BaseActivityManager):
         Remove an activity from our internal backend.
 
         Args:
-            activity (hamster_lib.Activity): The activity to be removed.
+            activity (nark.Activity): The activity to be removed.
 
         Returns:
             bool: True
@@ -226,7 +226,7 @@ class ActivityManager(BaseActivityManager):
             raw (bool): Return the AlchemyActivity instead.
 
         Returns:
-            hamster_lib.Activity: Activity with given PK.
+            nark.Activity: Activity with given PK.
 
         Raises:
             KeyError: If no such pk was found.
@@ -260,12 +260,12 @@ class ActivityManager(BaseActivityManager):
 
         Args:
             name (str): The activities name.
-            category (hamster_lib.Category or None): The activities category.
+            category (nark.Category or None): The activities category.
                 May be None.
             raw (bool): Return the AlchemyActivity instead.
 
         Returns:
-            hamster_lib.Activity: The activity if it exists in this combination.
+            nark.Activity: The activity if it exists in this combination.
 
         Raises:
             KeyError: if composite key can not be found in the db.
@@ -350,10 +350,10 @@ class ActivityManager(BaseActivityManager):
                 each Activity.
             search_term (str, optional): Limit activities to those matching a substring
                 in their name. Defaults to ``empty string``.
-            category (hamster_lib.Category or str, optional): Limit activities to this
+            category (nark.Category or str, optional): Limit activities to this
                 category. Defaults to ``False``. If ``category=None`` only activities
                 without a category will be considered.
-            activity (hamster_lib.Activity, optional): Limit activities to this activity.
+            activity (nark.Activity, optional): Limit activities to this activity.
                 Defaults to ``False``. If ``activity=None`` only activities with a
                 matching name will be considered.
             sort_col (str, optional): Which columns to sort by. Defaults to 'activity'.
@@ -366,7 +366,7 @@ class ActivityManager(BaseActivityManager):
             offset (int, optional): Query "offset".
 
         Returns:
-            list: List of ``hamster_lib.Activity`` instances matching constrains.
+            list: List of ``nark.Activity`` instances matching constrains.
                 The list is ordered by ``Activity.name``.
         """
 

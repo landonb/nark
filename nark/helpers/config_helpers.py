@@ -33,7 +33,7 @@ config dict and a ``ConfigParser`` instance.
 Note:
     Backend config key/value information:
         store: A ``string`` indicating which store to use.
-            See: ``hamster_lib.REGISTERED_BACKENDS``
+            See: ``nark.REGISTERED_BACKENDS``
 
         day_start: ``datetime.time`` cna be used to specify default start time.
             (Weird Legacy Hamster feature; now disabled by default.)
