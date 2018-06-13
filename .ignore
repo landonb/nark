@@ -5,6 +5,5 @@
 docs/_build
 nark*.egg-info/
 htmlcov/
-man/hamster.1
 .trustme.log
 
