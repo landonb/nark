@@ -49,7 +49,7 @@ class BaseTagManager(BaseManager):
         """
 
         if not isinstance(tag, Tag):
-            message = _("You need to pass a hamster tag")
+            message = _("You need to pass a dob.Tag class object")
             self.store.logger.debug(message)
             raise TypeError(message)
 

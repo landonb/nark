@@ -50,7 +50,7 @@ class BaseCategoryManager(BaseManager):
         """
 
         if not isinstance(category, Category):
-            message = _("You need to pass a hamster category")
+            message = _("You need to pass a nark.Category class object")
             self.store.logger.debug(message)
             raise TypeError(message)
 
