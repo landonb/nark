@@ -22,17 +22,17 @@ import pytest
 from configparser import SafeConfigParser
 
 from nark.helpers import config_helpers
-from nark.helpers.config_helpers import HamsterAppDirs
+from nark.helpers.config_helpers import NarkAppDirs
 
 
-class TestHamsterAppDirs(object):
+class TestNarkAppDirs(object):
     """Make sure that our custom AppDirs works as intended."""
 
     def test_user_data_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
         mocker.patch('nark.helpers.config_helpers.appdirs.user_data_dir', return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         assert appdir.user_data_dir == path
 
     @pytest.mark.parametrize('create', [True, False])
@@ -40,7 +40,7 @@ class TestHamsterAppDirs(object):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
         mocker.patch('nark.helpers.config_helpers.appdirs.user_data_dir', return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.user_data_dir) is create
 
@@ -48,7 +48,7 @@ class TestHamsterAppDirs(object):
         """Make sure method returns directory."""
         path = tmpdir.strpath
         mocker.patch('nark.helpers.config_helpers.appdirs.site_data_dir', return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         assert appdir.site_data_dir == path
 
     @pytest.mark.parametrize('create', [True, False])
@@ -56,7 +56,7 @@ class TestHamsterAppDirs(object):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
         mocker.patch('nark.helpers.config_helpers.appdirs.site_data_dir', return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.site_data_dir) is create
 
@@ -65,7 +65,7 @@ class TestHamsterAppDirs(object):
         path = tmpdir.strpath
         mocker.patch('nark.helpers.config_helpers.appdirs.user_config_dir',
                     return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         assert appdir.user_config_dir == path
 
     @pytest.mark.parametrize('create', [True, False])
@@ -74,7 +74,7 @@ class TestHamsterAppDirs(object):
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
         mocker.patch('nark.helpers.config_helpers.appdirs.user_config_dir',
                      return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.user_config_dir) is create
 
@@ -83,7 +83,7 @@ class TestHamsterAppDirs(object):
         path = tmpdir.strpath
         mocker.patch('nark.helpers.config_helpers.appdirs.site_config_dir',
                      return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         assert appdir.site_config_dir == path
 
     @pytest.mark.parametrize('create', [True, False])
@@ -92,7 +92,7 @@ class TestHamsterAppDirs(object):
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
         mocker.patch('nark.helpers.config_helpers.appdirs.site_config_dir',
                      return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.site_config_dir) is create
 
@@ -101,7 +101,7 @@ class TestHamsterAppDirs(object):
         path = tmpdir.strpath
         mocker.patch('nark.helpers.config_helpers.appdirs.user_cache_dir',
                      return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         assert appdir.user_cache_dir == path
 
     @pytest.mark.parametrize('create', [True, False])
@@ -110,7 +110,7 @@ class TestHamsterAppDirs(object):
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
         mocker.patch('nark.helpers.config_helpers.appdirs.user_cache_dir',
                      return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.user_cache_dir) is create
 
@@ -118,7 +118,7 @@ class TestHamsterAppDirs(object):
         """Make sure method returns directory."""
         path = tmpdir.strpath
         mocker.patch('nark.helpers.config_helpers.appdirs.user_log_dir', return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         assert appdir.user_log_dir == path
 
     @pytest.mark.parametrize('create', [True, False])
@@ -126,7 +126,7 @@ class TestHamsterAppDirs(object):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
         mocker.patch('nark.helpers.config_helpers.appdirs.user_log_dir', return_value=path)
-        appdir = HamsterAppDirs('nark')
+        appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.user_log_dir) is create
 

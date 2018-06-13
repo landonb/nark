@@ -51,15 +51,15 @@ def appdirs(mocker, tmpdir):
             os.makedirs(directory)
         return directory
 
-    config_helpers.HamsterAppDirs.user_config_dir = ensure_directory_exists(os.path.join(
+    config_helpers.NarkAppDirs.user_config_dir = ensure_directory_exists(os.path.join(
         tmpdir.mkdir('config').strpath, 'nark/'))
-    config_helpers.HamsterAppDirs.user_data_dir = ensure_directory_exists(os.path.join(
+    config_helpers.NarkAppDirs.user_data_dir = ensure_directory_exists(os.path.join(
         tmpdir.mkdir('data').strpath, 'nark/'))
-    config_helpers.HamsterAppDirs.user_cache_dir = ensure_directory_exists(os.path.join(
+    config_helpers.NarkAppDirs.user_cache_dir = ensure_directory_exists(os.path.join(
         tmpdir.mkdir('cache').strpath, 'nark/'))
-    config_helpers.HamsterAppDirs.user_log_dir = ensure_directory_exists(os.path.join(
+    config_helpers.NarkAppDirs.user_log_dir = ensure_directory_exists(os.path.join(
         tmpdir.mkdir('log').strpath, 'nark/'))
-    return config_helpers.HamsterAppDirs
+    return config_helpers.NarkAppDirs
 
 
 @pytest.fixture
