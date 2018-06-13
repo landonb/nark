@@ -71,7 +71,7 @@ develop:
 	pip install -U -r requirements/dev.pip
 
 lint:
-	flake8 hamster_lib tests
+	flake8 nark tests
 
 test:
 	@echo "Use the PYTEST_ADDOPTS environment variable to add extra command line options."
@@ -93,15 +93,16 @@ coverage-html: coverage
 	$(BROWSER) htmlcov/index.html
 
 docs:
+	@echo "FIXME: docs task broken 'til fixed" && exit 1
 	rm -f docs/hamster-lib.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ hamster_lib
+	sphinx-apidoc -o docs/ nark
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
 isort:
-	isort --recursive setup.py hamster_lib/ tests/
+	isort --recursive setup.py nark/ tests/
 
 servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
@@ -124,7 +125,7 @@ cloc:
 ifndef CLOC
 	$(error "Please install cloc from: https://github.com/AlDanial/cloc")
 endif
-	@cloc --exclude-dir=.git,_build,hamster_cli.egg-info,.pytest_cache .
+	@cloc --exclude-dir=.git,_build,nark.egg-info,.pytest_cache .
 
 # vim:tw=0:ts=2:sw=2:noet:ft=make:
 
