@@ -33,7 +33,7 @@ BackendRegistryEntry = namedtuple(
 REGISTERED_BACKENDS = {
     'sqlalchemy': BackendRegistryEntry(
         'SQLAlchemy',
-        'hamster_lib.backends.sqlalchemy.SQLAlchemyStore',
+        'nark.backends.sqlalchemy.SQLAlchemyStore',
     ),
 }
 
