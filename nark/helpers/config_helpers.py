@@ -79,12 +79,12 @@ from six import text_type
 from ..control import REGISTERED_BACKENDS
 
 
-class HamsterAppDirs(appdirs.AppDirs):
+class NarkAppDirs(appdirs.AppDirs):
     """Custom class that ensure appdirs exist."""
 
     def __init__(self, *args, **kwargs):
         """Add create flag value to instance."""
-        super(HamsterAppDirs, self).__init__(*args, **kwargs)
+        super(NarkAppDirs, self).__init__(*args, **kwargs)
         self.create = True
 
     @property
@@ -167,7 +167,7 @@ class HamsterAppDirs(appdirs.AppDirs):
 
 
 DEFAULT_APP_NAME = 'projecthamster'
-DEFAULT_APPDIRS = HamsterAppDirs(DEFAULT_APP_NAME)
+DEFAULT_APPDIRS = NarkAppDirs(DEFAULT_APP_NAME)
 DEFAULT_CONFIG_FILENAME = '{}.conf'.format(DEFAULT_APPDIRS.appname)
 
 
@@ -186,7 +186,7 @@ def get_config_path(appdirs=DEFAULT_APPDIRS, file_name=DEFAULT_CONFIG_FILENAME):
         str: Fully qualified path (dir & filename) where we expect the config file.
     """
     if isinstance(appdirs, string_types):
-        appdirs = HamsterAppDirs(appdirs)
+        appdirs = NarkAppDirs(appdirs)
     return os.path.join(appdirs.user_config_dir, file_name)
 
 
@@ -200,7 +200,7 @@ def write_config_file(
 
     Args:
         config_instance: Config instance to safe to file.
-        appdirs (HamsterAppDirs, optional): ``HamsterAppDirs`` instance storing
+        appdirs (NarkAppDirs, optional): ``NarkAppDirs`` instance storing
             app/user specific path information.
         file_name (text_type, optional): Name of the config file. Defaults to
         ``DEFAULT_CONFIG_FILENAME``.
@@ -228,7 +228,7 @@ def load_config_file(
         with the result of ``get_default_backend_config``.
 
     Args:
-        appdirs (HamsterAppDirs, optional): ``HamsterAppDirs`` instance
+        appdirs (NarkAppDirs, optional): ``NarkAppDirs`` instance
             storing app/user specific path information.
         file_name (text_type, optional): Name of the config file.
             Defaults to ``DEFAULT_CONFIG_FILENAME``.
@@ -259,7 +259,7 @@ def get_default_backend_config(appdirs):
     Return a default config dictionary.
 
     Args:
-        appdirs (HamsterAppDirs): ``HamsterAppDirs`` instance encapsulating
+        appdirs (NarkAppDirs): ``NarkAppDirs`` instance encapsulating
             the apps details.
 
     Returns:
