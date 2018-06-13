@@ -409,7 +409,6 @@ class Fact(object):
         shellify=False,
         description_sep=', ',
         localize=False,
-        truncate=False,
         include_id=False,
         colorful=False,
         cut_width=None,
@@ -515,7 +514,7 @@ class Fact(object):
         def get_description_string(fact):
             description = self.description or ''
             if description:
-                if truncate:
+                if cut_width is not None:
                     description = format_value_truncate(description, cut_width)
                 description = '{}{}'.format(description_sep, description)
             return description
