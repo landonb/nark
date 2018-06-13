@@ -3,7 +3,8 @@
 .pytest_cache/
 .tox/
 docs/_build
-hamster_*.egg-info/
+nark*.egg-info/
 htmlcov/
 man/hamster.1
+.trustme.log
 
