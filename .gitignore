@@ -58,9 +58,9 @@ node_modules
 docs/_build
 !docs/_static/.gitkeep
 # 2018-04-11: (lb): After `make docs`:
-docs/hamster_lib.backends.rst
-docs/hamster_lib.backends.sqlalchemy.rst
-docs/hamster_lib.helpers.rst
-docs/hamster_lib.rst
+docs/nark.backends.rst
+docs/nark.backends.sqlalchemy.rst
+docs/nark.helpers.rst
+docs/nark.rst
 docs/modules.rst
 
