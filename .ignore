@@ -5,4 +5,5 @@
 docs/_build
 hamster_*.egg-info/
 htmlcov/
+man/hamster.1
 
