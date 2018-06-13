@@ -19,7 +19,7 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-from hamster_lib.helpers import logging as logging_helpers
+from nark.helpers import logging as logging_helpers
 
 
 class TestSetupHandler(object):

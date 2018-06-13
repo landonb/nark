@@ -21,8 +21,8 @@ import datetime
 import pytest
 from freezegun import freeze_time
 
-from hamster_lib.helpers import time as time_helpers
-#from hamster_lib.helpers.time import TimeFrame
+from nark.helpers import time as time_helpers
+#from nark.helpers.time import TimeFrame
 
 from . import truncate_to_whole_seconds
 

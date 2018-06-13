@@ -20,7 +20,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 import pytest
 
-from hamster_lib.storage import BaseStore
+from nark.storage import BaseStore
 
 
 class TestController:
@@ -50,7 +50,7 @@ class TestController:
         """Make sure we recieve a logger that maches our expectations."""
         logger = controller._get_logger()
         assert isinstance(logger, logging.Logger)
-        assert logger.name == 'hamster-lib.log'
+        assert logger.name == 'nark.log'
         # [FIXME]
         # assert len(logger.handlers) == 1
         assert isinstance(logger.handlers[0], logging.NullHandler)

@@ -24,8 +24,8 @@ import faker as faker_
 import pytest
 from pytest_factoryboy import register
 
-from hamster_lib.control import HamsterControl
-from hamster_lib.storage import BaseStore
+from nark.control import HamsterControl
+from nark.storage import BaseStore
 
 from . import factories
 

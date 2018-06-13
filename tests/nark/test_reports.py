@@ -25,7 +25,7 @@ import xml
 from icalendar import Calendar
 from six import text_type
 
-from hamster_lib import reports
+from nark import reports
 
 
 # Fixtures

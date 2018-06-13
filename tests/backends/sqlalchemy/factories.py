@@ -23,7 +23,7 @@ import datetime
 import factory
 import faker
 
-from hamster_lib.backends.sqlalchemy.objects import (
+from nark.backends.sqlalchemy.objects import (
     AlchemyActivity,
     AlchemyCategory,
     AlchemyFact,

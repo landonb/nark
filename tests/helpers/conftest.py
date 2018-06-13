@@ -27,8 +27,8 @@ import pytest
 from configparser import SafeConfigParser
 from six import text_type
 
-from hamster_lib.helpers import config_helpers
-#from hamster_lib.helpers.time import TimeFrame
+from nark.helpers import config_helpers
+#from nark.helpers.time import TimeFrame
 
 
 @pytest.fixture
@@ -52,13 +52,13 @@ def appdirs(mocker, tmpdir):
         return directory
 
     config_helpers.HamsterAppDirs.user_config_dir = ensure_directory_exists(os.path.join(
-        tmpdir.mkdir('config').strpath, 'hamster-lib/'))
+        tmpdir.mkdir('config').strpath, 'nark/'))
     config_helpers.HamsterAppDirs.user_data_dir = ensure_directory_exists(os.path.join(
-        tmpdir.mkdir('data').strpath, 'hamster-lib/'))
+        tmpdir.mkdir('data').strpath, 'nark/'))
     config_helpers.HamsterAppDirs.user_cache_dir = ensure_directory_exists(os.path.join(
-        tmpdir.mkdir('cache').strpath, 'hamster-lib/'))
+        tmpdir.mkdir('cache').strpath, 'nark/'))
     config_helpers.HamsterAppDirs.user_log_dir = ensure_directory_exists(os.path.join(
-        tmpdir.mkdir('log').strpath, 'hamster-lib/'))
+        tmpdir.mkdir('log').strpath, 'nark/'))
     return config_helpers.HamsterAppDirs
 
 

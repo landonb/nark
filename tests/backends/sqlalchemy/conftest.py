@@ -29,9 +29,9 @@ from sqlalchemy import create_engine
 
 
 # FIXME:
-from hamster_lib import Activity, Category, Fact, Tag
-from hamster_lib.backends.sqlalchemy import objects
-from hamster_lib.backends.sqlalchemy.storage import SQLAlchemyStore
+from nark import Activity, Category, Fact, Tag
+from nark.backends.sqlalchemy import objects
+from nark.backends.sqlalchemy.storage import SQLAlchemyStore
 
 
 from . import common, factories
@@ -187,7 +187,7 @@ def alchemy_store(request, alchemy_runner, alchemy_config):
     return SQLAlchemyStore(alchemy_config, common.Session)
 
 
-# We are sometimes tempted not using hamster-lib.objects at all. but as our tests
+# We are sometimes tempted not using nark.objects at all. but as our tests
 # expect them as input we need them!
 
 # Instance sets

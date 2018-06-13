@@ -24,7 +24,7 @@ import factory
 import fauxfactory
 from future.utils import python_2_unicode_compatible
 
-from hamster_lib.items import *
+from nark.items import *
 
 
 @python_2_unicode_compatible

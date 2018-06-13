@@ -20,7 +20,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import pytest
 
-from hamster_lib.backends.sqlalchemy import (
+from nark.backends.sqlalchemy import (
     AlchemyActivity,
     AlchemyCategory,
     AlchemyFact,

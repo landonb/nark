@@ -28,7 +28,7 @@ from six import text_type
 
 
 # FIXME:
-from hamster_lib import Activity, Category, Fact, Tag
+from nark import Activity, Category, Fact, Tag
 
 
 

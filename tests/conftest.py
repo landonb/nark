@@ -26,7 +26,7 @@ import pickle
 import pytest
 from pytest_factoryboy import register
 
-from .hamster_lib import factories as lib_factories
+from .nark import factories as lib_factories
 
 
 register(lib_factories.CategoryFactory)

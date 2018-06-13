@@ -21,8 +21,8 @@ import datetime
 import pytest
 from freezegun import freeze_time
 
-from hamster_lib.helpers import parsing as parsing_helpers
-from hamster_lib.helpers.parsing import FactArgs
+from nark.helpers import parsing as parsing_helpers
+from nark.helpers.parsing import FactArgs
 
 
 # FIXME/2018-05-12: (lb): I'll add unit tests, I swear!
