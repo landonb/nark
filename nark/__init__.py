@@ -28,11 +28,15 @@ from .items.category import Category  # noqa: F401
 from .items.fact import Fact  # noqa: F401
 from .items.tag import Tag  # noqa:
 
+__all__ = [
+    '__version__',
+]
+
 
 # SYNC_UP: nark/__init__.py <=> dob/__init__.py
 __author__ = 'HotOffThe Hamster'
 __author_email__ = 'hotoffthehamster+nark@gmail.com'
-__version__ = '3.0.0.a1'
+__version__ = '3.0.0a1'
 __appname__ = 'nark'
 __pipname__ = __appname__
 __briefly__ = _(
