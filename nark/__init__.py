@@ -40,7 +40,8 @@ __version__ = '3.0.0a1'
 __appname__ = 'nark'
 __pipname__ = __appname__
 __briefly__ = _(
-    'Robot backend for personal journaling and professional time tracking software (like `dob`).'
+    'Robot backend for personal journaling and professional time tracking software'
+    ' (like `dob`).'
 )
 __projurl__ = 'https://github.com/hotoffthehamster/nark'
 __keywords__ = ' '.join([
