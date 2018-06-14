@@ -21,7 +21,7 @@ from future.utils import python_2_unicode_compatible
 from collections import namedtuple
 from datetime import datetime
 from operator import attrgetter
-from pyoiler_timedelta import timedelta_wrap
+from pedantic_timedelta import PedanticTimedelta
 from six import text_type
 
 from .activity import Activity
@@ -305,7 +305,7 @@ class Fact(object):
         else:
             (
                 tm_fmttd, tm_scale, tm_units,
-            ) = timedelta_wrap(seconds=seconds).time_format_scaled()
+            ) = PedanticTimedelta(seconds=seconds).time_format_scaled()
             result = tm_fmttd
 
         return result

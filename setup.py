@@ -23,7 +23,7 @@ requirements = [
     'configparser >= 3.5.0b2',
     'dateparser',
     'future',
-    'human-timedelta',
+    'human-friendly_pedantic-timedelta',
     'icalendar',
     'iso8601',
     'pytz',
