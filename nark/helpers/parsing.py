@@ -293,7 +293,7 @@ class Parser(object):
         # Items are separated by any one of the separator(s)
         # not preceded by whitespace, and followed by either
         # whitespace, or end of string/before newline.
-        if separators is None:
+        if not separators:
             separators = FACT_METADATA_SEPARATORS
         assert len(separators) > 0
         sep_group = '|'.join(separators)
