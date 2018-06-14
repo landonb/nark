@@ -26,7 +26,7 @@ upgrade_legacy_db() {
   # Find the upgrade script.
   local migrations_dir="$(dirname ${BASH_SOURCE[0]})"
   local upgrade_sql
-  upgrade_sql=${migrations_dir}/upgrade_legacy_hamster_v2.sql
+  upgrade_sql=${migrations_dir}/upgrade_hamster-applet_db.sql
   [[ ! -f ${upgrade_sql} ]] && echo "Did not find SQL at: ${upgrade_sql}." && exit 1
 
   # Check the legacy version.

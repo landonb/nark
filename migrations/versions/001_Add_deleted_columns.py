@@ -30,7 +30,7 @@ from sqlalchemy import Table, MetaData, Column, Integer
 #
 #       If this applies to you, run the legacy upgrade script first:
 #
-#           migrations/upgrade_legacy_hamster_v2.sh
+#           migrations/upgrade_hamster-applet_db.sh
 
 # NOTE! We cannot use sqlalchemy.Boolean, lest downgrade barfs!
 #
