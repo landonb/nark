@@ -137,6 +137,8 @@ html_theme_options = {
     # 'logo': 'logo.png',
     'logo_name': True,
     'description': 'A time tracking libary.',
+# FIXME/2018-06-13: Change to hotoffthehamster user and repo... or just delete docs
+#   (and rely on README.rst, inline help, and man).
     'github_user': 'projecthamster',
     'github_repo': 'hamster-lib',
     'github_button': True,
