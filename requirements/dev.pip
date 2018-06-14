@@ -13,5 +13,7 @@ bumpversion==0.5.3
 #   Also: I tried ipython==6.4.0, but that still requires PPT v1.
 # Probably not needed:
 #   ipython==6.3.1
+twine
 wheel==0.31.0
 watchdog==0.8.3
+
