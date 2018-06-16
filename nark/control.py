@@ -75,8 +75,9 @@ class HamsterControl(object):
         self.sql_logger = self._sql_logger()
 
     def standup_store(self):
-        self.store.standup()
+        created_fresh = self.store.standup()
         self.for_your_convenience()
+        return created_fresh
 
     def for_your_convenience(self):
         self.migrations = self.store.migrations

@@ -32,13 +32,13 @@ __all__ = ['MigrationsManager']
 
 @python_2_unicode_compatible
 class MigrationsManager(BaseMigrationsManager):
-    def control(self):
+    def control(self, version=None):
         """Mark a database as under version control."""
         current_ver = self.version()
         if current_ver is None:
             url = self.store.get_db_url()
             try:
-                version_control(url, self.migration_repo(), version=None)
+                version_control(url, self.migration_repo(), version=version)
                 return True
             except DatabaseAlreadyControlledError:
                 return False
@@ -82,7 +82,7 @@ class MigrationsManager(BaseMigrationsManager):
             return False
 
     def version(self):
-        """Returns the migration version of the database indicated by the config."""
+        """Returns the current migration of the active database."""
         url = self.store.get_db_url()
         try:
             return db_version(url, self.migration_repo())
@@ -90,7 +90,7 @@ class MigrationsManager(BaseMigrationsManager):
             return None
 
     def latest_version(self):
-        """Returns the latest version of the database as used by the application."""
+        """Returns the latest version defined by the application."""
         try:
             return int(migrate_version(self.migration_repo()).value)
         except DatabaseNotControlledError:

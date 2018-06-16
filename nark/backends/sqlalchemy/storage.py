@@ -23,6 +23,7 @@ from future.utils import python_2_unicode_compatible
 import os.path
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
 from . import objects
@@ -84,9 +85,12 @@ class SQLAlchemyStore(BaseStore):
             The ``session`` argument is mainly useful for tests.
         """
         engine = self.create_storage_engine()
-        self.create_storage_tables(engine)
+        created_fresh = self.create_storage_tables(engine)
         self.initiate_storage_session(session, engine)
         self.create_item_managers()
+        if created_fresh:
+            self.control_and_version_store()
+        return created_fresh
 
     def cleanup(self):
         pass
@@ -209,9 +213,23 @@ class SQLAlchemyStore(BaseStore):
 
     def create_storage_tables(self, engine):
         objects.metadata.bind = engine
-        # NOTE: This creates the database store at db_path.
-        objects.metadata.create_all(engine)
-        self.logger.debug(_("Database tables created."))
+        created_fresh = False
+        try:
+            # Create the database store at db_path.
+            objects.metadata.create_all(engine, checkfirst=False)
+            created_fresh = True
+            self.logger.debug(_("Database tables created."))
+        except OperationalError:
+            # E.g., '(sqlite3.OperationalError) table categories already exists'.
+            self.logger.debug(_("Database tables already exist."))
+        return created_fresh
+
+    def control_and_version_store(self):
+        # (lb): I'm not sure how else to do this, or if this is "the way":
+        #         Put the new database under migration control.
+        latest_vers = self.migrations.latest_version()
+        assert latest_vers is not None and latest_vers > 0
+        self.migrations.control(version=latest_vers)
 
     def initiate_storage_session(self, session, engine):
         if not session:
