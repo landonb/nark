@@ -73,7 +73,12 @@ class HamsterControl(object):
         self.lib_logger = self._get_logger()
         self.store = self._get_store()
         self.sql_logger = self._sql_logger()
-        # convenience attributes
+
+    def standup_store(self):
+        self.store.standup()
+        self.for_your_convenience()
+
+    def for_your_convenience(self):
         self.migrations = self.store.migrations
         self.categories = self.store.categories
         self.activities = self.store.activities

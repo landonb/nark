@@ -36,7 +36,7 @@ class MigrationsManager(BaseMigrationsManager):
         """Mark a database as under version control."""
         current_ver = self.version()
         if current_ver is None:
-            url = self.store._get_db_url()
+            url = self.store.get_db_url()
             try:
                 version_control(url, self.migration_repo(), version=None)
                 return True
@@ -58,7 +58,7 @@ class MigrationsManager(BaseMigrationsManager):
         assert current_ver <= latest_ver
         if current_ver > 0:
             next_version = current_ver - 1
-            url = self.store._get_db_url()
+            url = self.store.get_db_url()
             downgrade(url, self.migration_repo(), version=next_version)
             return True
         else:
@@ -75,7 +75,7 @@ class MigrationsManager(BaseMigrationsManager):
         assert current_ver <= latest_ver
         if current_ver < latest_ver:
             next_version = current_ver + 1
-            url = self.store._get_db_url()
+            url = self.store.get_db_url()
             upgrade(url, self.migration_repo(), version=next_version)
             return True
         else:
@@ -83,7 +83,7 @@ class MigrationsManager(BaseMigrationsManager):
 
     def version(self):
         """Returns the migration version of the database indicated by the config."""
-        url = self.store._get_db_url()
+        url = self.store.get_db_url()
         try:
             return db_version(url, self.migration_repo())
         except DatabaseNotControlledError:

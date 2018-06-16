@@ -54,6 +54,13 @@ class BaseStore(object):
         self.facts = BaseFactManager(self)
         self._now = None
 
+    def standup(self):
+        """
+        Any backend specific setup code that needs to be executed before
+        the data store can be used (including creating the data store).
+        """
+        raise NotImplementedError
+
     def cleanup(self):
         """
         Any backend specific teardown code that needs to be executed before

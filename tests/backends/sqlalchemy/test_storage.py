@@ -71,14 +71,14 @@ class TestStore(object):
         """Make sure that db_url composition works as expected."""
         config, expectation = alchemy_config_parametrized
         alchemy_store.config = config
-        assert alchemy_store._get_db_url() == expectation
+        assert alchemy_store.get_db_url() == expectation
 
     def test_get_db_url_missing_keys(self, alchemy_config_missing_store_config_parametrized,
             alchemy_store):
         """Make sure that db_url composition throws error if key/values are missing in config."""
         alchemy_store.config = alchemy_config_missing_store_config_parametrized
         with pytest.raises(ValueError):
-            alchemy_store._get_db_url()
+            alchemy_store.get_db_url()
 
     def test_init_with_unicode_path(self, alchemy_config, db_path_parametrized):
         """Test that Instantiating a store with a unicode path works."""

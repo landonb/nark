@@ -65,20 +65,24 @@ class SQLAlchemyStore(BaseStore):
     an error alerting us about the inconsistency.
     """
 
-    def __init__(self, config, session=None):
+    def __init__(self, config):
+        """
+        """
+        super(SQLAlchemyStore, self).__init__(config)
+
+    def standup(self, session=None):
         """
         Set up the store.
 
         Args:
-            path (str): Specifies the database to be used. See SQLAlchemy docs for
-                details.
+            config (dict): Dictionary of config key/value pairs.
+
             session (SQLALcheny Session object, optional): Provide a dedicated session
                 to be used. Defaults to ``None``.
 
         Note:
             The ``session`` argument is mainly useful for tests.
         """
-        super(SQLAlchemyStore, self).__init__(config)
         engine = self.create_storage_engine()
         self.create_storage_tables(engine)
         self.initiate_storage_session(session, engine)
@@ -87,7 +91,7 @@ class SQLAlchemyStore(BaseStore):
     def cleanup(self):
         pass
 
-    def _get_db_url(self):
+    def get_db_url(self):
         """
         Create a ``database_url`` from ``config`` suitable to be consumed
         by ``create_engine``
@@ -194,7 +198,7 @@ class SQLAlchemyStore(BaseStore):
         # It takes more deliberation to decide how to handle engine creation
         # if we receive a session. Should be require the session to bring
         # its own engine?
-        engine = create_engine(self._get_db_url())
+        engine = create_engine(self.get_db_url())
         self.logger.debug(_('Engine created.'))
         # NOTE: (lb): I succeeded at setting the ORM (Sqlite3) logger level,
         # but it didn't log anything (I was hoping to see all statements).
@@ -205,6 +209,7 @@ class SQLAlchemyStore(BaseStore):
 
     def create_storage_tables(self, engine):
         objects.metadata.bind = engine
+        # NOTE: This creates the database store at db_path.
         objects.metadata.create_all(engine)
         self.logger.debug(_("Database tables created."))
 
