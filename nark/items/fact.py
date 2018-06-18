@@ -402,6 +402,42 @@ class Fact(object):
     def tagnames_underlined(self):
         return self.tagnames(underlined=True)
 
+    def tagnames_f(
+        self,
+        hashtag_token='#',
+        quote_tokens=False,
+        underlined=False,
+    ):
+        def format_tagname(tag):
+            uline = ' underline' if underlined else ''
+            tagged = []
+            tagged.append(('fg: #C6C6C6{}'.format(uline), hashtag_token))
+            tagged.append(('fg: #D7FF87{}'.format(uline), tag.name))
+            if quote_tokens:
+                fmt_quote = ('', '"')
+                tagged.insert(0, fmt_quote)
+                tagged.append(fmt_quote)
+            return tagged
+
+        # NOTE: The returned string includes leading space if nonempty!
+        tagnames = []
+        if self.tags:
+            ordered_tagnames = [
+                format_tagname(tag) for tag in self.tags_sorted
+            ]
+
+            fmt_space = ('', ' ')
+            n_tag = 0
+            for fmtd_tagn in ordered_tagnames:
+                if n_tag > 0:
+                    tagnames += [fmt_space]
+                n_tag += 1
+                tagnames += fmtd_tagn
+        return tagnames
+
+    def tagnames_underlined_f(self):
+        return self.tagnames_f(underlined=True)
+
     # ***
 
     def friendly_str(
