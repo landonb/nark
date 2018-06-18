@@ -618,88 +618,134 @@ class Fact(object):
 
     # ***
 
-    def friendly_diff(self, other, truncate=False):
-        result = ''
-        result += self.diff_other(other, 'start', 'start_fmt_local')
-        result += self.diff_other(other, 'end', 'end_fmt_local')
-        if (not truncate) or self.pk or other.pk:
-            def beautify(self_val, other_val):
-                if 'split' in other.dirty_reasons or 'split' in self.dirty_reasons:
-                    pass
-                if 'lsplit' in other.dirty_reasons:
-                    other_val = 'New split fact, created before new fact'
-                if 'rsplit' in other.dirty_reasons:
-                    other_val = 'New split fact, created after new fact'
-                return (self_val, other_val)
-            result += self.diff_other(other, 'id', 'pk', beautify=beautify)
-        result += self.diff_other(other, 'deleted', 'deleted')
-        # MAYBE?: (lb): Would we even want to show the split_from fact?
-        #  result += self.diff_other(other, 'split_from', 'split_from')
-        result += self.diff_other(other, 'activity', 'activity_name')
-        result += self.diff_other(other, 'category', 'category_name')
-        result += self.diff_other(other, 'tags', 'tagnames_underlined')
-        result += self.diff_other(
-            other, 'description', 'description', truncate=truncate,
-        )
-        return result.rstrip()
+    def friendly_diff(self, other, truncate=False, exclude=None, formatted=False):
+        def _friendly_diff():
+            if not formatted:
+                result = ''
+            else:
+                result = []
+            result += diff_other('start', 'start_fmt_local')
+            result += diff_other('end', 'end_fmt_local')
+            if (not truncate) or self.pk or other.pk:
+                def beautify(self_val, other_val):
+                    if (
+                        'split' in other.dirty_reasons
+                        or 'split' in self.dirty_reasons
+                    ):
+                        pass
+                    if 'lsplit' in other.dirty_reasons:
+                        other_val = 'New split fact, created before new fact'
+                    if 'rsplit' in other.dirty_reasons:
+                        other_val = 'New split fact, created after new fact'
+                    return (self_val, other_val)
+                result += diff_other('id', 'pk', beautify=beautify)
+            result += diff_other('deleted', 'deleted')
+            # MAYBE?: (lb): Would we even want to show the split_from fact?
+            #  result += diff_other('split_from', 'split_from')
+            result += diff_other('activity', 'activity_name')
+            result += diff_other('category', 'category_name')
+            if not formatted:
+                result += diff_other('tags', 'tagnames_underlined')
+            else:
+                # (lb): Ug... this 'formatted' business is crazy.
+                result += diff_other('tags', 'tagnames_underlined_f')
+            result += diff_other('description', 'description', truncate=truncate)
+            if not formatted:
+                result = result.rstrip()
+            return result
 
-    def diff_other(self, other, name, prop, truncate=False, beautify=None):
-        self_val = resolve_attr_or_method(self, prop)
-        other_val = ''
-        if other is not None:
-            other_val = resolve_attr_or_method(other, prop)
-            if callable(other_val):
-                other_val = other_val()
-            self_val, other_val = self.diff_values_enhance(
-                self_val, other_val, truncate=truncate, beautify=beautify,
-            )
-        elif truncate:
-            self_val = format_value_truncate(self_val)
-        attr_diff = self.diff_values_format(name, self_val, other_val)
-        return attr_diff
+        def diff_other(name, prop, truncate=False, beautify=None):
+            if exclude is not None and name in exclude:
+                return ''
+            self_val = resolve_attr_or_method(self, prop)
+            other_val = ''
+            if other is not None:
+                other_val = resolve_attr_or_method(other, prop)
+                if callable(other_val):
+                    other_val = other_val()
+                self_val, other_val = diff_values_enhance(
+                    self_val, other_val, truncate=truncate, beautify=beautify,
+                )
+            elif truncate:
+                self_val = format_value_truncate(self_val)
+                self_val = format_prepare(self_val)
+                other_val = format_prepare(other_val)
+            attr_diff = diff_values_format(name, self_val, other_val)
+            return attr_diff
 
-    def diff_values_enhance(
-        self, self_val, other_val, truncate=False, beautify=None,
-    ):
-        differ = False
-        if self_val != other_val:
-            differ = True
-        if truncate:
-            self_val = format_value_truncate(self_val)
-            other_val = format_value_truncate(other_val)
-        if beautify is not None:
-            self_val, other_val = beautify(self_val, other_val)
+        def diff_values_enhance(
+            self_val, other_val, truncate=False, beautify=None,
+        ):
+            differ = False
             if self_val != other_val:
                 differ = True
-        if differ:
-            self_val = self.format_edited_before(self_val)
-            other_val = self.format_edited_after(other_val)
-        else:
-            other_val = ''
-        return (self_val, other_val)
+            if truncate:
+                self_val = format_value_truncate(self_val)
+                other_val = format_value_truncate(other_val)
+            if beautify is not None:
+                self_val, other_val = beautify(self_val, other_val)
+                if self_val != other_val:
+                    differ = True
+            if differ:
+                self_val = format_edited_before(self_val)
+                other_val = format_edited_after(other_val)
+            else:
+                self_val = format_prepare(self_val)
+                other_val = format_prepare('')
+            return (self_val, other_val)
 
-    def format_edited_before(self, before_val):
-        return '{}{}{}'.format(
-            fg('spring_green_3a'),
-            before_val,
-            attr('reset'),
-        )
+        def format_prepare(some_val):
+            if not formatted or not isinstance(some_val, text_type):
+                return some_val
+            return [('', some_val)]
 
-    def format_edited_after(self, after_val):
-        return ' => {}{}{}{}{}'.format(
-            attr('bold'),
-            attr('underlined'),
-            fg('light_salmon_3b'),
-            after_val,
-            attr('reset'),
-        )
+        def format_edited_before(before_val):
+            if not formatted:
+                return '{}{}{}'.format(
+                    fg('spring_green_3a'),
+                    before_val,
+                    attr('reset'),
+                )
+            spring_green_3a = '00AF5F'
+            style = 'fg:#{}'.format(spring_green_3a)
+            before_parts = []
+            if isinstance(before_val, text_type):
+                before_parts += [(style, before_val)]
+            else:
+                for tup in before_val:
+                    before_parts.append((style, tup[1]))
+            return before_parts
 
-    def diff_values_format(self, name, self_val, other_val):
-        prefix = '  '
-        attr_diff = '{}{:.<19} : {}{}\n'.format(
-            prefix, name, self_val, other_val,
-        )
-        return attr_diff
+        def format_edited_after(after_val):
+            if not formatted:
+                return ' => {}{}{}{}{}'.format(
+                    attr('bold'),
+                    attr('underlined'),
+                    fg('light_salmon_3b'),
+                    after_val,
+                    attr('reset'),
+                )
+            light_salmon_3b = 'D7875F'
+            style = 'fg:#{} bold underline'.format(light_salmon_3b)
+            after_parts = [('', ' => ')]
+            if isinstance(after_val, text_type):
+                after_parts += [(style, after_val)]
+            else:
+                for tup in after_val:
+                    after_parts.append((style, tup[1]))
+            return after_parts
+
+        def diff_values_format(name, self_val, other_val):
+            prefix = '  '
+            left_col = '{}{:.<19} : '.format(prefix, name)
+            if not formatted:
+                return '{}{}{}\n'.format(left_col, self_val, other_val)
+            left_col = ('', left_col)
+            newline = ('', '\n')
+            format_tuples = [left_col] + self_val + other_val + [newline]
+            return format_tuples
+
+        return _friendly_diff()
 
     # ***
 
