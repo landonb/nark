@@ -627,18 +627,7 @@ class Fact(object):
             result += diff_other('start', 'start_fmt_local')
             result += diff_other('end', 'end_fmt_local')
             if (not truncate) or self.pk or other.pk:
-                def beautify(self_val, other_val):
-                    if (
-                        'split' in other.dirty_reasons
-                        or 'split' in self.dirty_reasons
-                    ):
-                        pass
-                    if 'lsplit' in other.dirty_reasons:
-                        other_val = 'New split fact, created before new fact'
-                    if 'rsplit' in other.dirty_reasons:
-                        other_val = 'New split fact, created after new fact'
-                    return (self_val, other_val)
-                result += diff_other('id', 'pk', beautify=beautify)
+                result += diff_other('id', 'pk', beautify=beautify_pk)
             result += diff_other('deleted', 'deleted')
             # MAYBE?: (lb): Would we even want to show the split_from fact?
             #  result += diff_other('split_from', 'split_from')
@@ -653,6 +642,18 @@ class Fact(object):
             if not formatted:
                 result = result.rstrip()
             return result
+
+        def beautify_pk(self_val, other_val):
+            if (
+                'split' in other.dirty_reasons
+                or 'split' in self.dirty_reasons
+            ):
+                pass
+            if 'lsplit' in other.dirty_reasons:
+                other_val = 'New split fact, created before new fact'
+            if 'rsplit' in other.dirty_reasons:
+                other_val = 'New split fact, created after new fact'
+            return (self_val, other_val)
 
         def diff_other(name, prop, truncate=False, beautify=None):
             if exclude is not None and name in exclude:
