@@ -23,6 +23,7 @@ from future.utils import python_2_unicode_compatible
 from six import text_type
 
 from .category import Category
+from .item_base import BaseItem
 
 
 ActivityTuple = namedtuple(
@@ -31,7 +32,7 @@ ActivityTuple = namedtuple(
 
 
 @python_2_unicode_compatible
-class Activity(object):
+class Activity(BaseItem):
     """Storage agnostic class for activities."""
 
     def __init__(self, name, pk=None, category=None, deleted=False, hidden=False):
@@ -55,8 +56,7 @@ class Activity(object):
         # [TODO]
         # Elaborate on the consequences of the deleted flag.
 
-        self.pk = pk
-        self.name = name
+        super(Activity, self).__init__(pk, name)
         self.category = category
         self.deleted = bool(deleted)
         self.hidden = bool(hidden)

@@ -22,6 +22,8 @@ from collections import namedtuple
 from future.utils import python_2_unicode_compatible
 from six import text_type
 
+from .item_base import BaseItem
+
 
 CategoryTuple = namedtuple(
     'CategoryTuple', ('pk', 'name', 'deleted', 'hidden'),
@@ -29,7 +31,7 @@ CategoryTuple = namedtuple(
 
 
 @python_2_unicode_compatible
-class Category(object):
+class Category(BaseItem):
     """Storage agnostic class for categories."""
 
     def __init__(self, name, pk=None, deleted=False, hidden=False):
@@ -41,8 +43,7 @@ class Category(object):
             pk: The unique primary key used by the backend.
         """
 
-        self.pk = pk
-        self.name = name
+        super(Category, self).__init__(pk, name)
         self.deleted = bool(deleted)
         self.hidden = bool(hidden)
 

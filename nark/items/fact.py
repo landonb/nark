@@ -26,6 +26,7 @@ from six import text_type
 
 from .activity import Activity
 from .category import Category
+from .item_base import BaseItem
 from .tag import Tag
 from ..helpers import time as time_helpers
 from ..helpers.colored import fg, attr, colorize, set_coloring
@@ -50,7 +51,7 @@ FactTuple = namedtuple(
 
 
 @python_2_unicode_compatible
-class Fact(object):
+class Fact(BaseItem):
     """Storage agnostic class for facts."""
     def __init__(
         self,
@@ -88,7 +89,7 @@ class Fact(object):
             split_from (nark.Fact.id, optional): ID of deleted fact this
                 fact succeeds.
         """
-        self.pk = pk
+        super(Fact, self).__init__(pk, name=None)
         assert activity is None or isinstance(activity, Activity)
         self.activity = activity
         self.start = start

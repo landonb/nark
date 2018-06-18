@@ -21,6 +21,8 @@ from future.utils import python_2_unicode_compatible
 from collections import namedtuple
 from six import text_type
 
+from .item_base import BaseItem
+
 
 TagTuple = namedtuple(
     'TagTuple', ('pk', 'name', 'deleted', 'hidden'),
@@ -28,7 +30,7 @@ TagTuple = namedtuple(
 
 
 @python_2_unicode_compatible
-class Tag(object):
+class Tag(BaseItem):
     """Storage agnostic class for tags."""
 
     def __init__(self, name, pk=None, deleted=False, hidden=False):
@@ -40,8 +42,7 @@ class Tag(object):
             pk: The unique primary key used by the backend.
         """
 
-        self.pk = pk
-        self.name = name
+        super(Tag, self).__init__(pk, name)
         self.deleted = bool(deleted)
         self.hidden = bool(hidden)
 
