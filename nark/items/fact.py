@@ -689,7 +689,7 @@ class Fact(object):
                     differ = True
             if differ:
                 self_val = format_edited_before(self_val)
-                other_val = format_edited_after(other_val)
+                self_val, other_val = format_edited_after(self_val, other_val)
             else:
                 self_val = format_prepare(self_val)
                 other_val = format_prepare('')
@@ -717,24 +717,29 @@ class Fact(object):
                     before_parts.append((style, tup[1]))
             return before_parts
 
-        def format_edited_after(after_val):
+        def format_edited_after(self_val, other_val):
             if not formatted:
-                return ' => {}{}{}{}{}'.format(
+                return '{}{}{}{}{} | was: '.format(
                     attr('bold'),
                     attr('underlined'),
                     fg('light_salmon_3b'),
-                    after_val,
+                    other_val,
                     attr('reset'),
+                    # (lb): What, colored has no italic option?
                 )
             light_salmon_3b = 'D7875F'
             style = 'fg:#{} bold underline'.format(light_salmon_3b)
-            after_parts = [('', ' => ')]
-            if isinstance(after_val, text_type):
-                after_parts += [(style, after_val)]
+            after_parts = []
+            if isinstance(other_val, text_type):
+                after_parts += [(style, other_val)]
             else:
-                for tup in after_val:
+                for tup in other_val:
                     after_parts.append((style, tup[1]))
-            return after_parts
+            # (lb): Swap the order, for display purposes.
+            #   (These formatting functions are so janky!)
+            if self_val and self_val[0][1]:
+                after_parts += [('italic', ' | was: ')]
+            return after_parts, self_val
 
         def diff_values_format(name, self_val, other_val):
             prefix = '  '
