@@ -23,6 +23,7 @@ import datetime
 
 from . import BaseManager
 from ..helpers import time as time_helpers
+from ..items.fact import Fact
 
 
 @python_2_unicode_compatible
@@ -52,16 +53,8 @@ class BaseFactManager(BaseManager):
               ``self.store.config['fact_min_delta']``
         """
         def _save():
-            self.store.logger.debug(_("Fact: '{}' has been received.".format(fact)))
             enforce_fact_min_delta()
-            return update_or_add()
-
-        def update_or_add():
-            if fact.pk or fact.pk == 0:
-                result = self._update(fact)
-            else:
-                result = self._add(fact)
-            return result
+            return super(BaseFactManager, self).save(fact, Fact, named=False)
 
         def enforce_fact_min_delta():
             if not fact.end:
@@ -70,10 +63,12 @@ class BaseFactManager(BaseManager):
 
             fact_min_delta = int(self.store.config['fact_min_delta'])
             if not fact_min_delta:
+                # User has not enabled min-delta behavior.
                 return
 
             min_delta = datetime.timedelta(seconds=fact_min_delta)
             if fact.delta() >= min_delta:
+                # Fact is at least as long as user's min-delta.
                 return
 
             message = _(

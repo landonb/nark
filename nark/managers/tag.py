@@ -35,8 +35,7 @@ class BaseTagManager(BaseManager):
 
     def save(self, tag):
         """
-        Save a Tag to our selected backend.
-        Internal code decides whether we need to add or update.
+        Save a Tag to the backend.
 
         Args:
             tag (nark.Tag): Tag instance to be saved.
@@ -47,21 +46,7 @@ class BaseTagManager(BaseManager):
         Raises:
             TypeError: If the ``tag`` parameter is not a valid ``Tag`` instance.
         """
-
-        if not isinstance(tag, Tag):
-            message = _("You need to pass a dob.Tag class object")
-            self.store.logger.debug(message)
-            raise TypeError(message)
-
-        self.store.logger.debug(_("'{}' has been received.".format(tag)))
-
-        # We don't check for just ``tag.pk`` because we don't want to make
-        # assumptions about the PK being an int or being >0.
-        if tag.pk or tag.pk == 0:
-            result = self._update(tag)
-        else:
-            result = self._add(tag)
-        return result
+        return super(BaseTagManager, self).save(tag, Tag, named=True)
 
     # ***
 

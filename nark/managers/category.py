@@ -35,8 +35,7 @@ class BaseCategoryManager(BaseManager):
 
     def save(self, category):
         """
-        Save a Category to our selected backend.
-        Internal code decides whether we need to add or update.
+        Save a Category to the backend.
 
         Args:
             category (nark.Category): Category instance to be saved.
@@ -48,21 +47,7 @@ class BaseCategoryManager(BaseManager):
             TypeError: If the ``category`` parameter is not a valid
                 ``Category`` instance.
         """
-
-        if not isinstance(category, Category):
-            message = _("You need to pass a nark.Category class object")
-            self.store.logger.debug(message)
-            raise TypeError(message)
-
-        self.store.logger.debug(_("'{}' has been received.".format(category)))
-
-        # We don't check for just ``category.pk`` because we don't want to make
-        # assumptions about the PK being an int or being >0.
-        if category.pk or category.pk == 0:
-            result = self._update(category)
-        else:
-            result = self._add(category)
-        return result
+        return super(BaseCategoryManager, self).save(category, Category, named=True)
 
     # ***
 

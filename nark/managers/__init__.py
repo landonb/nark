@@ -27,6 +27,8 @@ Note:
 from __future__ import absolute_import, unicode_literals
 from future.utils import python_2_unicode_compatible
 
+from ..items.item_base import BaseItem
+
 
 __all__ = ['BaseManager', ]
 
@@ -37,4 +39,43 @@ class BaseManager(object):
 
     def __init__(self, store):
         self.store = store
+
+    # ***
+
+    def save(self, item, cls=BaseItem, named=False):
+        """
+        Save a Nark object instance to user's selected backend.
+
+        Will either ``_add`` or ``_update`` based on item PK.
+
+        Args:
+            tag (nark.BaseItem, i.e., Activity/Category/Fact/Tag):
+                Nark instance to be saved.
+
+        Returns:
+            nark.BaseItem: Saved Nark instance.
+
+        Raises:
+            TypeError: If the ``item`` parameter is not a valid ``BaseItem`` instance.
+        """
+
+        if not isinstance(item, cls):
+            message = _("You need to pass a {} object").format(cls.__name__)
+            self.store.logger.debug(message)
+            raise TypeError(message)
+
+        # (lb): Not sure this is quite what we want, but Activity has been doing this,
+        # and I just made this base class, so now all items will be doing this.
+        if named and not item.name:
+            raise ValueError(_("You must specify an item name."))
+
+        self.store.logger.debug(_("'{}' has been received.".format(item)))
+
+        # NOTE: Not assuming that PK is an int, i.e., not testing '> 0'.
+        if item.pk or item.pk == 0:
+            result = self._update(item)
+        else:
+            # PK is empty string, empty list, None, etc., but not 0.
+            result = self._add(item)
+        return result
 

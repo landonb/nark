@@ -34,26 +34,19 @@ class BaseActivityManager(BaseManager):
 
     def save(self, activity):
         """
-        Save a ``Activity`` to the backend.
-
-        This public method decides if it calls either ``_add`` or ``_update``.
+        Save an ``Activity`` to the backend.
 
         Args:
             activity (nark.Activity): ``Activity`` to be saved.
 
         Returns:
             nark.Activity: The saved ``Activity``.
-        """
 
-        self.store.logger.debug(_("'{}' has been received.".format(activity)))
-        if not activity.name:
-            # Catching ``None``
-            raise ValueError(_("You need to specify an Activity.name."))
-        if activity.pk or activity.pk == 0:
-            result = self._update(activity)
-        else:
-            result = self._add(activity)
-        return result
+        Raises:
+            TypeError: If the ``activity`` parameter is not a valid
+                ``Activity`` instance.
+        """
+        return super(BaseActivityManager, self).save(activity, Activity, named=True)
 
     # ***
 
