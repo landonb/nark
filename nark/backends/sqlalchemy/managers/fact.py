@@ -222,15 +222,20 @@ class FactManager(BaseFactManager):
             else:
                 msg = 'Expected a start time.'
             raise TypeError(
-                _('Invalid start and/or end for {!r}. {}').format(fact, msg)
+                _('Invalid start and/or end for “{!r}”. {}').format(fact, msg)
             )
 
         # Check for valid time range.
-        if fact.end is not None and fact.start >= fact.end:
-            message = _(
-                'Invalid time range of {!r}.'
-                ' The start is large or equal than the end.'.format(fact)
-            )
+        # (lb): Should we allow "hidden", timeless Facts?? Sneaky...
+        # The old, strictly-not-gonna-allow-it behavior:
+        #   if fact.end is not None and fact.start >= fact.end:
+        if fact.end is not None and fact.start > fact.end:
+            message = _('Invalid time range for “{!r}”.').format(fact)
+            if fact.start == fact.end:
+                assert False  # (lb): Preserved in case we revert == policy.
+                message += _(' The start time cannot be the same as the end time.')
+            else:
+                message += _(' The start time cannot be after the end time.')
             self.store.logger.error(message)
             raise ValueError(message)
 
