@@ -54,7 +54,7 @@ class Tag(BaseItem):
     def name(self, name):
         if not name:
             # Catching ``None`` and ``empty string``.
-            raise ValueError(_("You need to specify a name."))
+            raise ValueError(_("You need to specify a Tag name."))
         self._name = text_type(name)
 
     def as_tuple(self, include_pk=True):

@@ -67,6 +67,7 @@ class Activity(BaseItem):
 
     @name.setter
     def name(self, name):
+        # NOTE: (lb): Unlike Category.name=, not requiring ``not name``.
         self._name = text_type(name)
 
     @classmethod
