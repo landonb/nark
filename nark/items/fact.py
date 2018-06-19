@@ -445,6 +445,7 @@ class Fact(BaseItem):
         self,
         shellify=False,
         description_sep=', ',
+        tags_sep=': ',
         localize=False,
         include_id=False,
         colorful=False,
@@ -456,8 +457,8 @@ class Fact(BaseItem):
         """
         def _friendly_str(fact):
             was_coloring = set_coloring(colorful)
-            parts = assemble_parts(fact)
-            result = format_result(fact, parts)
+            meta = assemble_parts(fact)
+            result = format_result(fact, meta)
             # (lb): EXPLAIN: Why do we cast here?
             result = text_type(result)
             set_coloring(was_coloring)
@@ -468,13 +469,15 @@ class Fact(BaseItem):
                 get_id_string(fact),
                 get_times_string(fact),
                 get_activity_string(fact),
-                get_tags_string(fact),
             ]
-            return parts
+            parts_str = ' '.join(list(filter(None, parts)))
+            tags = get_tags_string(fact)
+            parts_str += tags_sep + tags if tags else ''
+            return parts_str
 
-        def format_result(fact, parts):
+        def format_result(fact, meta):
             result = '{fact_meta}{description}'.format(
-                fact_meta=' '.join(filter(None, parts)),
+                fact_meta=meta,
                 description=get_description_string(fact),
             )
             return result
@@ -525,7 +528,11 @@ class Fact(BaseItem):
         def get_activity_string(fact):
             # (lb): We can skip delimiter after time when using ISO 8601.
             if not self.activity_name:
-                act_cat = '@'
+                if not self.category_name:
+                    # 2018-06-18: (lb): Should this be '@', or ''?
+                    act_cat = ''
+                else:
+                    act_cat = '@'
             else:
                 act_cat = (
                     '{}@{}'.format(
