@@ -140,6 +140,7 @@ class Parser(object):
         self.category_name = None
         self.tags = None
         self.description = None
+        self.warnings = []
 
     def __str__(self):
         return (
@@ -164,6 +165,7 @@ class Parser(object):
             ' / category_name: {}'
             ' / tags: {}'
             ' / description: {}'
+            ' / warnings: {}'
             .format(
                 self.raw,
                 self.flat,
@@ -186,6 +188,7 @@ class Parser(object):
                 self.category_name,
                 self.tags,
                 self.description,
+                self.warnings,
             )
         )
 
@@ -534,8 +537,16 @@ class Parser(object):
                 if len(tags) == 1:
                     self.description += tags[0]
                 else:
-                    # (lb): I don't think this code path is possible!
-                    assert False
+                    # This happens when there's something before the #tags that's
+                    # not part of the act@gory, e.g., `to 2018-12-12 doing a #thing`.
+                    # We could raise and complain, or we could just put in description
+                    # (i.e., keep parsing, do our best, and let user fix it in post).
+                    # MAYBE: (lb): Seems like a rather unnecessarily long message....
+                    warn_msg = _(
+                        'The factoid contains cruft before the #tags that is not part '
+                        'of the act@gory. Not sure if you were trying to tag ot not.'
+                    )
+                    self.warnings.append(warn_msg)
             else:
                 self.consume_tags(tags)
             # Append separator and second half of split.
@@ -547,10 +558,11 @@ class Parser(object):
         assert len(parts) == 1
         if Parser.RE_SPLIT_TAGS_AND_TAGS.match(parts[0].strip()):
             # FIXME/2018-05-18 16:50: (lb): Maybe not a warning, but a returned value?
-            logger.warning(_(
+            warn_msg = _(
                 'The factoid is missing the metadata-description separator, .'
                 'so skipping tags. But it looks like you were trying to tag.'
-            ))
+            )
+            self.warnings.append(warn_msg)
             # There's no separator (e.g., comma) after the '@'.
         self.description = parts[0]
 
@@ -683,6 +695,7 @@ def parse_factoid(*args, **kwargs):
         'category': parser.category_name.strip() if parser.category_name else '',
         'description': parser.description.strip() if parser.description else '',
         'tags': parser.tags if parser.tags else [],
+        'warnings': parser.warnings,
     }
     return fact_dict, err
 
