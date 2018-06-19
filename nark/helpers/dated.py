@@ -159,18 +159,22 @@ class HamsterTimeSpec(object):
         )
 
         pattern_just_clock = (
-            '(?P<clock_time>\d{2}:\d{2})'
+            '(?P<clock_time>\d{2}:?\d{2})'
         )
 
+        # (lb): Treat 4 digits as clock time, not year, i.e.,
+        #   `2030` should be 10:30 PM, not Jan 01, 2030.
+        # This steals colon-less clock times:
+        #   '(?:(\d{8}|\d{4}|\d{4}-\d{1,2}(-\d{1,2})?))'
         pattern_date = (
-            '(?:(\d{8}|\d{4}|\d{4}-\d{1,2}(-\d{1,2})?))'
+            '(?:(\d{8}|\d{4}-\d{1,2}(-\d{1,2})?))'
         )
         pattern_time = (  # noqa: E131
             '(?:\d{2})'
             '(?::?\d{2}'
                 '(?::?\d{2}'
                     '(?:\.\d+)?'
-                ')?'                        # noqa: E131
+                ')?'
             ')?'
         )
         pattern_zone = (  # noqa: E131
@@ -197,8 +201,11 @@ class HamsterTimeSpec(object):
 # ***
 
 
+# (lb) See comment atop pattern_date about allowing \d{4} (without :colon).
+#   Here's the stricter pattern:
+#    '^(?P<hours>\d{2}):(?P<minutes>\d{2})$'
 RE_RELATIVE_CLOCK = re.compile(
-    '^(?P<hours>\d{2}):(?P<minutes>\d{2})$'
+    '^(?P<hours>\d{2}):?(?P<minutes>\d{2})$'
 )
 
 
@@ -216,7 +223,10 @@ def datetime_from_clock_prior(dt_relative, clock_time):
     # across the "fold", e.g., 2 AM on daylight savings "fall back"
     # occurs twice, and in Python, the first time, fold=0, and the
     # second time, fold=1.
-    new_dt = dt_relative.replace(hour=clock_time[0], minute=clock_time[1])
+    new_dt = dt_relative.replace(
+        hour=int(clock_time[0]),
+        minute=int(clock_time[1]),
+    )
     if new_dt > dt_relative:
         new_dt -= timedelta(days=1)
     return new_dt
@@ -224,7 +234,10 @@ def datetime_from_clock_prior(dt_relative, clock_time):
 
 def datetime_from_clock_after(dt_relative, clock_time):
     # FIXME/MEH/2018-05-21 11:32: (lb): Ignoring so-called "fold"/DST issue.
-    new_dt = dt_relative.replace(hour=clock_time[0], minute=clock_time[1])
+    new_dt = dt_relative.replace(
+        hour=int(clock_time[0]),
+        minute=int(clock_time[1]),
+    )
     if new_dt < dt_relative:
         new_dt += timedelta(days=1)
     return new_dt
