@@ -537,9 +537,8 @@ class Parser(object):
             tags = Parser.RE_SPLIT_TAGS_AND_TAGS.split(parts[0].strip())
             # If one or more tags were found, first item is empty string.
             if tags[0].strip() != '':
-                if len(tags) == 1:
-                    self.description += tags[0]
-                else:
+                self.description += tags[0]
+                if len(tags) > 1:
                     # This happens when there's something before the #tags that's
                     # not part of the act@gory, e.g., `to 2018-12-12 doing a #thing`.
                     # We could raise and complain, or we could just put in description
@@ -550,6 +549,7 @@ class Parser(object):
                         'of the act@gory. Not sure if you were trying to tag ot not.'
                     )
                     self.warnings.append(warn_msg)
+                    self.consume_tags(tags[1:])
             else:
                 self.consume_tags(tags)
             # Append separator and second half of split.
@@ -571,6 +571,7 @@ class Parser(object):
 
     def consume_tags(self, tags):
         tags = [tag.strip() for tag in tags]
+        tags = list(filter(None, tags))
         self.tags = tags
 
     # ***
@@ -624,7 +625,7 @@ class Parser(object):
             # SKIP_TOKENS:          defaults to [‘t’]. Can be any string.
             # TIMEZONE:             defaults to UTC. Can be timezone abbrev
             #                       or any of tz database name as given here:
-            #                       https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+            #     https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
             # RETURN_AS_TIMEZONE_AWARE: return tz aware datetime objects in
             #                       case timezone is detected in the date string.
             # RELATIVE_BASE:        count relative date from this base date.
