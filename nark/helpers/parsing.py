@@ -337,9 +337,12 @@ class Parser(object):
             assert len(parts) == 3
             assert parts[0].strip() == ''
             assert parts[1].strip() in DATE_TO_DATE_SEPARATORS
-            rest = self.must_parse_datetime_from_rest(
+            after_dt2 = self.must_parse_datetime_from_rest(
                 parts[2], 'datetime2', ok_if_missing=strictly_two,
             )
+            if after_dt2 is not None:
+                rest = after_dt2
+            # else, was not a datetime, so re-include DATE_TO_DATE_SEPARATOR.
         elif strictly_two:
             self.raise_missing_datetime_two()
         return rest
@@ -488,7 +491,7 @@ class Parser(object):
             assert datetime_attr == 'datetime2'
             self.raise_missing_datetime_two()
         else:
-            rest = datetime_rest
+            rest = None
         return rest
 
     def lstrip_activity(self, act_and_rest):
