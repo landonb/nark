@@ -63,6 +63,7 @@ class Fact(BaseItem):
         tags=None,
         deleted=False,
         split_from=None,
+        ephemeral=None,
     ):
         """
         Initiate our new instance.
@@ -114,6 +115,10 @@ class Fact(BaseItem):
         #   so it's easy to tell what changed.
         self.dirty_reasons = set()
 
+        # (lb): I feel a little dirty about this, but it lets us easily
+        # ride some meta data along the fact during the import command.
+        self.ephemeral = ephemeral
+
     def __eq__(self, other):
         if not isinstance(other, FactTuple):
             other = other.as_tuple()
@@ -158,6 +163,7 @@ class Fact(BaseItem):
             tags=frozenset(ordered_tags),
             deleted=self.deleted,
             split_from=self.split_from,
+            # SKIP: self.ephemeral
         )
 
     def equal_fields(self, other):
@@ -817,6 +823,7 @@ class Fact(BaseItem):
         cls,
         parsed_fact,
         lenient=False,
+        **kwargs
     ):
         start = parsed_fact['start']
         end = parsed_fact['end']
@@ -841,6 +848,11 @@ class Fact(BaseItem):
         tags = parsed_fact['tags']
 
         return cls(
-            activity, start, end=end, description=description, tags=tags,
+            activity,
+            start,
+            end=end,
+            description=description,
+            tags=tags,
+            **kwargs
         )
 
