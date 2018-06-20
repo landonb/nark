@@ -22,7 +22,6 @@ from __future__ import absolute_import, unicode_literals
 import re
 from datetime import timedelta
 
-
 __all__ = [
     'HamsterTimeSpec',
     'parse_clock_time',
@@ -155,11 +154,11 @@ class HamsterTimeSpec(object):
 
         # Never forget! Hamster allows relative time!
         pattern_relative = (
-            '(?P<relative>[-+]?((\d+h)|(\d+h)?\dm?))'
+            '(?P<relative>([-+]?(\d+h)|[-+](\d+h)?\dm?))'
         )
 
         pattern_just_clock = (
-            '(?P<clock_time>\d{2}:?\d{2})'
+            '(?P<clock_time>\d{1,2}:?\d{2}(:\d{2})?)'
         )
 
         # (lb): Treat 4 digits as clock time, not year, i.e.,
@@ -190,22 +189,33 @@ class HamsterTimeSpec(object):
         )
 
         hamster_pattern = '(^|\s)({}|{}|{}|{})[,:]?(?=\s|$)(?P<rest>.*)'.format(
-            pattern_now, pattern_relative, pattern_just_clock, pattern_datetime,
+            pattern_now,
+            pattern_relative,
+            pattern_just_clock,
+            pattern_datetime,
         )
 
         # Use re.DOTALL to match newlines, which might be part
         # of the <rest> of the factoid.
         HamsterTimeSpec.RE_HAMSTER_TIME = re.compile(hamster_pattern, re.DOTALL)
 
+    @staticmethod
+    def has_time_of_day(raw_dt):
+        # Assuming format is year-mo-day separated from time of day by space or 'T'.
+        parts = re.split(r' |T', raw_dt)
+        if len(parts) != 2:
+            return False
+        assert re.match(RE_RELATIVE_CLOCK, parts[1]) is not None
+        return True
+
 
 # ***
-
 
 # (lb) See comment atop pattern_date about allowing \d{4} (without :colon).
 #   Here's the stricter pattern:
 #    '^(?P<hours>\d{2}):(?P<minutes>\d{2})$'
 RE_RELATIVE_CLOCK = re.compile(
-    '^(?P<hours>\d{2}):?(?P<minutes>\d{2})$'
+    '^(?P<hours>\d{1,2}):?(?P<minutes>\d{2})(:(?P<seconds>\d{2}))?$'
 )
 
 
@@ -214,7 +224,7 @@ def parse_clock_time(clock_time):
     match = RE_RELATIVE_CLOCK.match(clock_time)
     if match:
         parts = match.groupdict()
-        parsed_ct = (parts['hours'], parts['minutes'])
+        parsed_ct = (parts['hours'], parts['minutes'], parts['seconds'] or '0', )
     return parsed_ct
 
 
@@ -226,6 +236,7 @@ def datetime_from_clock_prior(dt_relative, clock_time):
     new_dt = dt_relative.replace(
         hour=int(clock_time[0]),
         minute=int(clock_time[1]),
+        second=int(clock_time[2]),
     )
     if new_dt > dt_relative:
         new_dt -= timedelta(days=1)
@@ -237,6 +248,7 @@ def datetime_from_clock_after(dt_relative, clock_time):
     new_dt = dt_relative.replace(
         hour=int(clock_time[0]),
         minute=int(clock_time[1]),
+        second=int(clock_time[2]),
     )
     if new_dt < dt_relative:
         new_dt += timedelta(days=1)
@@ -244,7 +256,6 @@ def datetime_from_clock_after(dt_relative, clock_time):
 
 
 # ***
-
 
 # FIXME: Add straight up XXXX or XX:XX relative time -- relative to fact's other time!
 

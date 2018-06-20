@@ -481,6 +481,7 @@ class Parser(object):
         if dt is not None:
             assert type_dt
             if type_dt == 'datetime':
+                self.warn_if_datetime_missing_clock_time(dt)
                 dt = self.hydrate_datetime_iso8601(dt, must=True)
             # else, relative time, or clock time; let caller handle.
             setattr(self, datetime_attr, dt)
@@ -493,6 +494,15 @@ class Parser(object):
         else:
             rest = None
         return rest
+
+    def warn_if_datetime_missing_clock_time(self, raw_dt):
+        if HamsterTimeSpec.has_time_of_day(raw_dt):
+            return
+        warn_msg = _(
+            'The identified datetime is missing the time of day.'
+            ' Is that what you wanted?'
+        )
+        self.warnings.append(warn_msg)
 
     def lstrip_activity(self, act_and_rest):
         act_cat_sep_idx = self.must_index_actegory_sep(act_and_rest, must=False)
