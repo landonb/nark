@@ -189,6 +189,7 @@ class BaseTagManager(BaseManager):
         until=None,
         deleted=False,
         hidden=False,
+        key=None,
         search_term='',
         activity=False,
         category=False,

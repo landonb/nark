@@ -205,6 +205,7 @@ class BaseActivityManager(BaseManager):
         until=None,
         deleted=False,
         hidden=False,
+        key=None,
         search_term='',
         category=False,
         activity=False,

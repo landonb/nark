@@ -277,6 +277,7 @@ class BaseFactManager(BaseManager):
         partial=False,
         include_usage=True,
         deleted=False,
+        key=None,
         search_term='',
         activity=False,
         category=False,

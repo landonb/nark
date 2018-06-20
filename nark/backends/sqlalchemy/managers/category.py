@@ -274,6 +274,8 @@ class CategoryManager(BaseCategoryManager):
         # FIXME/2018-06-09: (lb): Implement deleted/hidden. [i.e., in UI]
         deleted=False,
         hidden=False,
+        # FIXME/2018-06-20: (lb): Do what with key now?
+        key=None,
         search_term='',
         activity=False,
         sort_col='',

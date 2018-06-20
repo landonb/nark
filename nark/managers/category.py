@@ -196,6 +196,7 @@ class BaseCategoryManager(BaseManager):
         until=None,
         deleted=False,
         hidden=False,
+        key=None,
         search_term='',
         activity=False,
         sort_col='',
