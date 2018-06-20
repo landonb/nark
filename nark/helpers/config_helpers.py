@@ -67,6 +67,13 @@ Note:
 
         default_tzinfo: ``string`` default Timezone to use when storing time.
 
+        allow_momentaneous: ``bool`` indicting if 0-length duration Facts allowed,
+            e.g., start == end. Here's a little vocabulary lesson:
+                Fugacious: "lasting a short time"
+                Evanescent: "tending to vanish like vapor"
+                Momentaneous: "characterizing action begun, terminated in an instant"
+                See also: Vacant, Fleeting, Transient.
+
     Please also note that a backend *config dict* does except ``None`` / ``empty``
     values, its ``ConfigParser`` representation does not include those however!
 """
@@ -287,6 +294,7 @@ def get_default_backend_config(appdirs):
         'sql_log_level': 'WARNING',
         'tz_aware': False,
         'default_tzinfo': '',
+        'allow_momentaneous': False,
     }
 
 
@@ -347,6 +355,9 @@ def backend_config_to_configparser(config):
     def get_default_tzinfo():
         return text_type(config.get('default_tzinfo'))
 
+    def get_allow_momentaneous():
+        return config.getboolean('allow_momentaneous')
+
     cp_instance = SafeConfigParser()
     cp_instance.add_section('Backend')
     cp_instance.set('Backend', 'store', get_store())
@@ -362,6 +373,7 @@ def backend_config_to_configparser(config):
     cp_instance.set('Backend', 'sql_log_level', get_sql_log_level())
     cp_instance.set('Backend', 'tz_aware', get_tz_aware())
     cp_instance.set('Backend', 'default_tzinfo', get_default_tzinfo())
+    cp_instance.set('Backend', 'allow_momentaneous', get_allow_momentaneous())
 
     return cp_instance
 
@@ -437,6 +449,9 @@ def configparser_to_backend_config(cp_instance):
     def get_default_tzinfo():
         return text_type(cp_instance.get('Backend', 'default_tzinfo'))
 
+    def get_allow_momentaneous():
+        return cp_instance.getboolean('Backend', 'allow_momentaneous')
+
     result = {
         'store': get_store(),
         'day_start': get_day_start(),
@@ -451,5 +466,6 @@ def configparser_to_backend_config(cp_instance):
         'sql_log_level': get_sql_log_level(),
         'tz_aware': get_tz_aware(),
         'default_tzinfo': get_default_tzinfo(),
+        'allow_momentaneous': get_allow_momentaneous(),
     }
     return result

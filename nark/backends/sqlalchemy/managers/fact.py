@@ -226,10 +226,17 @@ class FactManager(BaseFactManager):
             )
 
         # Check for valid time range.
-        # (lb): Should we allow "hidden", timeless Facts?? Sneaky...
-        # The old, strictly-not-gonna-allow-it behavior:
-        #   if fact.end is not None and fact.start >= fact.end:
-        if fact.end is not None and fact.start > fact.end:
+        invalid_range = False
+        if fact.end is not None:
+            if fact.start > fact.end:
+                invalid_range = True
+            else:
+                # EXPERIMENTAL: Sneaky, "hidden", vacant, timeless Facts.
+                allow_momentaneous = self.store.config['allow_momentaneous']
+                if not allow_momentaneous and fact.start >= fact.end:
+                    invalid_range = True
+
+        if invalid_range:
             message = _('Invalid time range for “{!r}”.').format(fact)
             if fact.start == fact.end:
                 assert False  # (lb): Preserved in case we revert == policy.
