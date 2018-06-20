@@ -96,6 +96,14 @@ class NarkAppDirs(appdirs.AppDirs):
     def __init__(self, *args, **kwargs):
         """Add create flag value to instance."""
         super(NarkAppDirs, self).__init__(*args, **kwargs)
+        # FIXME: (lb): I'm not super cool with this side-effect:
+        #          Calling any property herein will cause its
+        #          directory path to be created! Creating paths
+        #          should be a deliberate action and not a side effect
+        #          of just asking for a path. In any case, it currently
+        #          works this way, so just rolling with the flow, for now.
+        #        See Click: it has concept of lazy-creating paths, i.e.,
+        #          only create path when a file therein opened for write.
         self.create = True
 
     @property
