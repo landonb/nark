@@ -243,8 +243,8 @@ class CategoryManager(BaseCategoryManager):
         try:
             result = self.store.session.query(AlchemyCategory).filter_by(name=name).one()
         except NoResultFound:
-            message = _("No category with 'name: {}' was found!".format(name))
-            self.store.logger.error(message)
+            message = _("No category named '{}' was found".format(name))
+            self.store.logger.debug(message)
             raise KeyError(message)
 
         if not raw:

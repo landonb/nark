@@ -293,7 +293,8 @@ class ActivityManager(BaseActivityManager):
                     'Consequently no related activity can be returned.'
                     .format(category)
                 )
-                self.store.logger.error(message)
+                # (lb): This was error, but shouldn't be; callers catch if they care.
+                self.store.logger.debug(message)
                 raise KeyError(message)
         else:
             alchemy_category = None
@@ -304,10 +305,10 @@ class ActivityManager(BaseActivityManager):
             result = query.one()
         except NoResultFound:
             message = _(
-                "No activity of given combination (name: {name}, category: {category})"
-                " could be found.".format(name=name, category=category)
+                "No activity named '{name}' of category '{category}' was found"
+                .format(name=name, category=category)
             )
-            self.store.logger.error(message)
+            self.store.logger.debug(message)
             raise KeyError(message)
         if not raw:
             result = result.as_hamster(self.store)

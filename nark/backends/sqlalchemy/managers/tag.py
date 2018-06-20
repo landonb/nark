@@ -246,8 +246,8 @@ class TagManager(BaseTagManager):
         try:
             result = self.store.session.query(AlchemyTag).filter_by(name=name).one()
         except NoResultFound:
-            message = _("No tag with 'name: {}' was found!".format(name))
-            self.store.logger.error(message)
+            message = _("No tag named '{}' was found".format(name))
+            self.store.logger.debug(message)
             raise KeyError(message)
 
         if not raw:
