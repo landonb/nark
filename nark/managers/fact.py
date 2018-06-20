@@ -588,7 +588,6 @@ class BaseFactManager(BaseManager):
                 edited_conflicts = resolve_fact_conflict(fact, conflict)
                 for edited in edited_conflicts:
                     resolved.append((edited, original,))
-            assert len(resolved) >= len(conflicts)
             return resolved
 
         def resolve_fact_conflict(fact, conflict):
