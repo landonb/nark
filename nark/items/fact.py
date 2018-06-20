@@ -619,15 +619,21 @@ class Fact(BaseItem):
         )
 
     @property
-    def brief(self):
-        # (lb): This fcn. is not used! Delete it? Probably.
-        assert(False)
+    def short(self):
+        """
+        A brief Fact one-liner.
+
+        (lb): Not actually called by any code, but useful for debugging!
+        """
         return self.friendly_str(
+            # shellify=False,
             description_sep=': ',
+            # tags_sep=': ',
             localize=True,
-            truncate=True,
             include_id=True,
-            colorful=False,
+            # colorful=False,
+            cut_width=39,
+            # show_elapsed=False,
         )
 
     # ***
