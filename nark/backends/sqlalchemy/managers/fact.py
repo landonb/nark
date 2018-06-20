@@ -348,11 +348,12 @@ class FactManager(BaseFactManager):
 
     def _get_all(
         self,
-        start=None,
-        end=None,
         endless=False,
         partial=False,
         include_usage=False,
+        # FIXME/2018-06-20: (lb): Implement since/until.
+        since=None,
+        until=None,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
         deleted=False,
         search_term='',
@@ -374,10 +375,10 @@ class FactManager(BaseFactManager):
             deleted (boolean, optional): False to restrict to non-deleted
                 Facts; True to find only those marked deleted; None to find
                 all.
-            start (datetime.datetime, optional):
-                Start of timeframe.
-            end (datetime.datetime, optional):
-                End of timeframe.
+            since (datetime.datetime, optional):
+                Match Facts more recent than a specific dates.
+            until (datetime.datetime, optional):
+                Match Facts older than a specific dates.
             search_term (text_type):
                 Case-insensitive strings to match ``Activity.name`` or
                 ``Category.name``.
@@ -400,9 +401,10 @@ class FactManager(BaseFactManager):
         """
 
         def _get_all_facts():
-            message = _('start: {} / end: {} / term: {} / col: {} / order: {}'.format(
-                start, end, search_term, sort_col, sort_order,
-            ))
+            message = _(
+                'since: {} / until: {} / term: {} / col: {} / order: {}'
+                .format(since, until, search_term, sort_col, sort_order)
+            )
             self.store.logger.debug(message)
 
             query, agg_cols = _get_all_start_query()
@@ -456,40 +458,40 @@ class FactManager(BaseFactManager):
         def _get_all_filter_partial(query):
             if partial:
                 # NOTE: (lb): Nothing sets partial=True except tests.
-                query = _get_partial_overlaps(query, start, end)
+                query = _get_partial_overlaps(query, since, until)
             else:
-                query = _get_complete_overlaps(query, start, end, endless=endless)
+                query = _get_complete_overlaps(query, since, until, endless=endless)
             return query
 
-        def _get_partial_overlaps(query, start, end):
+        def _get_partial_overlaps(query, since, until):
             """Return all facts where either start or end falls within the timeframe."""
-            if start and not end:
-                # (lb): Checking AlchemyFact.end >= start is sorta redundant,
-                # because AlchemyFact.start >= start should guarantee that.
+            if since and not until:
+                # (lb): Checking AlchemyFact.end >= since is sorta redundant,
+                # because AlchemyFact.start >= since should guarantee that.
                 query = query.filter(
-                    or_(AlchemyFact.start >= start, AlchemyFact.end >= start),
+                    or_(AlchemyFact.start >= since, AlchemyFact.end >= since),
                 )
-            elif not start and end:
-                # (lb): Checking AlchemyFact.start <= end is sorta redundant,
-                # because AlchemyFact.end <= end should guarantee that.
+            elif not since and until:
+                # (lb): Checking AlchemyFact.start <= until is sorta redundant,
+                # because AlchemyFact.end <= until should guarantee that.
                 query = query.filter(
-                    or_(AlchemyFact.start <= end, AlchemyFact.end <= end),
+                    or_(AlchemyFact.start <= until, AlchemyFact.end <= until),
                 )
-            elif start and end:
+            elif since and until:
                 query = query.filter(or_(
-                    and_(AlchemyFact.start >= start, AlchemyFact.start <= end),
-                    and_(AlchemyFact.end >= start, AlchemyFact.end <= end),
+                    and_(AlchemyFact.start >= since, AlchemyFact.start <= until),
+                    and_(AlchemyFact.end >= since, AlchemyFact.end <= until),
                 ))
             else:
                 pass
             return query
 
-        def _get_complete_overlaps(query, start, end, endless=False):
+        def _get_complete_overlaps(query, since, until, endless=False):
             """Return all facts with start and end within the timeframe."""
-            if start:
-                query = query.filter(AlchemyFact.start >= start)
-            if end:
-                query = query.filter(AlchemyFact.end <= end)
+            if since:
+                query = query.filter(AlchemyFact.start >= since)
+            if until:
+                query = query.filter(AlchemyFact.end <= until)
             elif endless:
                 query = query.filter(AlchemyFact.end == None)  # noqa: E711
             return query

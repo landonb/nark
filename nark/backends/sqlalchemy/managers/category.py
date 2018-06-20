@@ -268,6 +268,9 @@ class CategoryManager(BaseCategoryManager):
     def _get_all(
         self,
         include_usage=True,
+        # FIXME/2018-06-20: (lb): Implement since/until.
+        since=None,
+        until=None,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden. [i.e., in UI]
         deleted=False,
         hidden=False,

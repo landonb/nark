@@ -160,23 +160,22 @@ class BaseFactManager(BaseManager):
 
     def get_all(
         self,
-        start=None,
-        end=None,
+        since=None,
+        until=None,
         **kwargs
     ):
         """
-        Return all facts within a given timeframe (beginning of start_date
-        end of end_date) that match given search terms.
+        Return all facts within a given timeframe that match given search terms.
 
         # FIXME/2018-06-11: (lb): Update args help... this is stale:
 
         Args:
-            start_date (datetime.datetime, optional): Consider only Facts
+            until (datetime.datetime, optional): Consider only Facts
                 starting at or after this date. If a time is not specified,
                 "00:00:00" is used; otherwise the time of the object is used.
                 Defaults to ``None``.
 
-            end_date (datetime.datetime, optional): Consider only Facts ending
+            until (datetime.datetime, optional): Consider only Facts ending
                 before or at this date. If not time is specified, "00:00:00"
                 is used. Defaults to ``None``.
 
@@ -193,10 +192,10 @@ class BaseFactManager(BaseManager):
             list: List of ``Facts`` matching given specifications.
 
         Raises:
-            TypeError: If ``start`` or ``end`` are not ``datetime.date``,
+            TypeError: If ``since`` or ``until`` are not ``datetime.date``,
                 ``datetime.time`` or ``datetime.datetime`` objects.
 
-            ValueError: If ``end`` is before ``start``.
+            ValueError: If ``until`` is before ``since``.
 
         Note:
             * This public function only provides some sanity checks and
@@ -208,35 +207,35 @@ class BaseFactManager(BaseManager):
             * This method will *NOT* return facts that start before and end
                 after (e.g. that span more than) the specified timeframe.
         """
-        def _get_all_verify_start_end(start, end, **kwargs):
+        def _get_all_verify_since_until(since, until, **kwargs):
             self.store.logger.debug(
-                _('start: {start} / end: {end}').format(
-                    start=start, end=end
+                _('since: {since} / until: {until}').format(
+                    since=since, until=until
                 )
             )
-            start = _get_all_verify_start(start)
-            end = _get_all_verify_end(end)
-            if start and end and (end <= start):
-                message = _("End value cannot be earlier than start.")
+            since_dt = _get_all_verify_since(since)
+            until_dt = _get_all_verify_until(until)
+            if since_dt and until_dt and (until_dt <= since_dt):
+                message = _("`until` cannot be earlier than `since`.")
                 self.store.logger.debug(message)
                 raise ValueError(message)
-            return self._get_all(start=start, end=end, **kwargs)
+            return self._get_all(since=since_dt, until=until_dt, **kwargs)
 
-        def _get_all_verify_start(start):
-            if start is None:
-                return start
+        def _get_all_verify_since(since):
+            if since is None:
+                return since
 
-            if isinstance(start, datetime.datetime):
+            if isinstance(since, datetime.datetime):
                 # isinstance(datetime.datetime, datetime.date) returns True,
                 # which is why we need to catch this case first.
                 pass
-            elif isinstance(start, datetime.date):
+            elif isinstance(since, datetime.date):
                 # The user specified a date, but not a time. Assume midnight.
-                self.store.logger.debug(_('Using midnight as start time!'))
+                self.store.logger.debug(_('Using midnight as since date clock time!'))
                 day_start = '00:00:00'
-                start = datetime.datetime.combine(start, day_start)
-            elif isinstance(start, datetime.time):
-                start = datetime.datetime.combine(datetime.date.today(), start)
+                since_dt = datetime.datetime.combine(since, day_start)
+            elif isinstance(since, datetime.time):
+                since_dt = datetime.datetime.combine(datetime.date.today(), since)
             else:
                 message = _(
                     'You need to pass either a datetime.date, datetime.time'
@@ -244,36 +243,36 @@ class BaseFactManager(BaseManager):
                 )
                 self.store.logger.debug(message)
                 raise TypeError(message)
-            return start
+            return since_dt
 
-        def _get_all_verify_end(end):
-            if end is None:
-                return end
+        def _get_all_verify_until(until):
+            if until is None:
+                return until
 
-            if isinstance(end, datetime.datetime):
+            if isinstance(until, datetime.datetime):
                 # isinstance(datetime.datetime, datetime.date) returns True,
                 # which is why we need to except this case first.
                 pass
-            elif isinstance(end, datetime.date):
-                end = time_helpers.end_day_to_datetime(end, self.store.config)
-            elif isinstance(end, datetime.time):
-                end = datetime.datetime.combine(datetime.date.today(), end)
+            elif isinstance(until, datetime.date):
+                until_dt = time_helpers.end_day_to_datetime(until, self.store.config)
+            elif isinstance(until, datetime.time):
+                until_dt = datetime.datetime.combine(datetime.date.today(), until)
             else:
                 message = _(
                     'You need to pass either a datetime.date, datetime.time'
                     ' or datetime.datetime object.'
                 )
                 raise TypeError(message)
-            return end
+            return until_dt
 
-        return _get_all_verify_start_end(start, end, **kwargs)
+        return _get_all_verify_since_until(since, until, **kwargs)
 
     # ***
 
     def _get_all(
         self,
-        start=None,
-        end=None,
+        since=None,
+        until=None,
         endless=False,
         partial=False,
         include_usage=True,

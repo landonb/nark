@@ -192,6 +192,8 @@ class BaseCategoryManager(BaseManager):
     def get_all(
         self,
         include_usage=True,
+        since=None,
+        until=None,
         deleted=False,
         hidden=False,
         search_term='',
