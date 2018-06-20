@@ -63,6 +63,10 @@ Note:
 
         sql_log_level: ``string`` indicating the SQLAlchemy logging logger log level.
 
+        tz_aware: ``bool`` indicating if datetimes are relative UTC or not.
+
+        default_tzinfo: ``string`` default Timezone to use when storing time.
+
     Please also note that a backend *config dict* does except ``None`` / ``empty``
     values, its ``ConfigParser`` representation does not include those however!
 """
@@ -280,7 +284,9 @@ def get_default_backend_config(appdirs):
             appdirs.user_data_dir,
             '{}.sqlite'.format(appdirs.appname),
         ),
-        'sql_log_level': 'CRITICAL',
+        'sql_log_level': 'WARNING',
+        'tz_aware': False,
+        'default_tzinfo': '',
     }
 
 
@@ -335,6 +341,12 @@ def backend_config_to_configparser(config):
     def get_sql_log_level():
         return text_type(config.get('sql_log_level'))
 
+    def get_tz_aware():
+        return config.getboolean('tz_aware')
+
+    def get_default_tzinfo():
+        return text_type(config.get('default_tzinfo'))
+
     cp_instance = SafeConfigParser()
     cp_instance.add_section('Backend')
     cp_instance.set('Backend', 'store', get_store())
@@ -348,6 +360,8 @@ def backend_config_to_configparser(config):
     cp_instance.set('Backend', 'db_user', get_db_user())
     cp_instance.set('Backend', 'db_password', get_db_password())
     cp_instance.set('Backend', 'sql_log_level', get_sql_log_level())
+    cp_instance.set('Backend', 'tz_aware', get_tz_aware())
+    cp_instance.set('Backend', 'default_tzinfo', get_default_tzinfo())
 
     return cp_instance
 
@@ -417,6 +431,12 @@ def configparser_to_backend_config(cp_instance):
     def get_sql_log_level():
         return text_type(cp_instance.get('Backend', 'sql_log_level'))
 
+    def get_tz_aware():
+        return cp_instance.getboolean('Backend', 'tz_aware')
+
+    def get_default_tzinfo():
+        return text_type(cp_instance.get('Backend', 'default_tzinfo'))
+
     result = {
         'store': get_store(),
         'day_start': get_day_start(),
@@ -429,5 +449,7 @@ def configparser_to_backend_config(cp_instance):
         'db_user': get_db_user(),
         'db_password': get_db_password(),
         'sql_log_level': get_sql_log_level(),
+        'tz_aware': get_tz_aware(),
+        'default_tzinfo': get_default_tzinfo(),
     }
     return result
