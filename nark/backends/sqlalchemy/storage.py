@@ -70,6 +70,7 @@ class SQLAlchemyStore(BaseStore):
         """
         """
         super(SQLAlchemyStore, self).__init__(config)
+        self.create_item_managers()
 
     def standup(self, session=None):
         """
@@ -87,7 +88,6 @@ class SQLAlchemyStore(BaseStore):
         engine = self.create_storage_engine()
         created_fresh = self.create_storage_tables(engine)
         self.initiate_storage_session(session, engine)
-        self.create_item_managers()
         if created_fresh:
             self.control_and_version_store()
         return created_fresh

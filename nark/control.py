@@ -73,10 +73,10 @@ class HamsterControl(object):
         self.lib_logger = self._get_logger()
         self.store = self._get_store()
         self.sql_logger = self._sql_logger()
+        self.for_your_convenience()
 
     def standup_store(self):
         created_fresh = self.store.standup()
-        self.for_your_convenience()
         return created_fresh
 
     def for_your_convenience(self):
