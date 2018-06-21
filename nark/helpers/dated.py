@@ -266,6 +266,7 @@ RE_PATTERN_RELATIVE = re.compile(
 
 def parse_relative_minutes(rel_time):
     rel_mins = None
+    negative = None
     match = RE_PATTERN_RELATIVE.match(rel_time)
     if match:
         parts = match.groupdict()
@@ -275,6 +276,9 @@ def parse_relative_minutes(rel_time):
         if parts['hours']:
             rel_mins += int(parts['hours']) * 60
         if parts['signage'] == '-':
+            negative = True  # Because there's no such thang as "-0".
             rel_mins *= -1
-    return rel_mins
+        else:
+            negative = False
+    return rel_mins, negative
 
