@@ -410,6 +410,8 @@ class FactManager(BaseFactManager):
 
             query, agg_cols = _get_all_start_query()
 
+            query = _get_all_prepare_joins(query)
+
             query = _get_all_filter_partial(query)
 
             query = _get_all_filter_by_activity(query)
@@ -452,9 +454,15 @@ class FactManager(BaseFactManager):
                 agg_cols.append(time_col)
 
                 query = self.store.session.query(AlchemyFact, time_col)
-                query = query.join(AlchemyFact.activity)
 
             return query, agg_cols
+
+        def _get_all_prepare_joins(query):
+            if include_usage or (activity is not False) or (category is not False):
+                query = query.join(AlchemyFact.activity)  # Same as: AlchemyActivity
+            if category is not False:
+                query = query.join(AlchemyCategory)
+            return query
 
         def _get_all_filter_partial(query):
             if partial:
@@ -500,7 +508,7 @@ class FactManager(BaseFactManager):
         def _get_all_filter_by_activity(query):
             if activity is False:
                 return query
-            query = query.join(AlchemyActivity)
+
             if activity:
                 if activity.pk:
                     query = query.filter(AlchemyActivity.pk == activity.pk)
@@ -515,7 +523,6 @@ class FactManager(BaseFactManager):
         def _get_all_filter_by_category(query):
             if category is False:
                 return query
-            query = query.join(AlchemyActivity).join(AlchemyCategory)
             if category:
                 if category.pk:
                     query = query.filter(AlchemyCategory.pk == category.pk)
@@ -542,7 +549,7 @@ class FactManager(BaseFactManager):
             # FIXME/2018-06-09: (lb): Now with activity and category filters,
             # search_term makes less sense. Unless we apply to all parts?
             # E.g., match tags, and match description.
-            query = query.join(AlchemyActivity).join(AlchemyCategory).filter(
+            query = query.filter(
                 or_(AlchemyActivity.name.ilike('%{}%'.format(search_term)),
                     AlchemyCategory.name.ilike('%{}%'.format(search_term))
                     )
