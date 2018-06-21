@@ -36,6 +36,7 @@ from icalendar import Calendar, Event
 from six import text_type
 
 
+# SYNC_ME: FactTuple and PlaintextWriter's headers.
 FactTuple = namedtuple(
     'FactTuple',
     (
@@ -150,13 +151,15 @@ class PlaintextWriter(ReportWriter):
         """
         super(PlaintextWriter, self).__init__(path)
         self.csv_writer = csv.writer(self.file, dialect=dialect, **fmtparams)
+        # SYNC_ME: FactTuple and PlaintextWriter's headers.
         headers = (
             _("start time"),
             _("end time"),
+            _("duration minutes"),
             _("activity"),
             _("category"),
             _("description"),
-            _("duration minutes"),
+            _("deleted"),
         )
         results = []
         for h in headers:
