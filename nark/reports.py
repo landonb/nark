@@ -188,9 +188,12 @@ class PlaintextWriter(ReportWriter):
 
         description = fact.description or ''
 
+        start = fact.start.strftime(self.datetime_format) if fact.start else ''
+        end = fact.end.strftime(self.datetime_format) if fact.end else ''
+
         return FactTuple(
-            start=fact.start.strftime(self.datetime_format),
-            end=fact.end.strftime(self.datetime_format),
+            start=start,
+            end=end,
             duration=fact.get_string_delta(self.duration_fmt),
             activity=fact.activity.name,
             category=text_type(category),
