@@ -268,6 +268,7 @@ class CategoryManager(BaseCategoryManager):
     def _get_all(
         self,
         include_usage=True,
+        count_results=False,
         # FIXME/2018-06-20: (lb): Implement since/until.
         since=None,
         until=None,
@@ -319,7 +320,7 @@ class CategoryManager(BaseCategoryManager):
 
             self.store.logger.debug(_('Query') + ': {}'.format(str(query)))
 
-            results = query.all()
+            results = query.all() if not count_results else query.count()
 
             return results
 

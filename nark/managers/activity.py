@@ -201,6 +201,7 @@ class BaseActivityManager(BaseManager):
     def get_all(
         self,
         include_usage=True,
+        count_results=False,
         since=None,
         until=None,
         deleted=False,

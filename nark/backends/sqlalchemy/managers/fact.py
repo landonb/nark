@@ -351,6 +351,7 @@ class FactManager(BaseFactManager):
         endless=False,
         partial=False,
         include_usage=False,
+        count_results=False,
         # FIXME/2018-06-20: (lb): Implement since/until.
         since=None,
         until=None,
@@ -427,9 +428,9 @@ class FactManager(BaseFactManager):
 
             self.store.logger.debug(_('query: {}'.format(str(query))))
 
-            results = query.all()
+            results = query.all() if not count_results else query.count()
 
-            if not agg_cols:
+            if not count_results and not agg_cols:
                 # results is a `list` of 'sqlalchemy.objects.AlchemyFact'.
                 # FIXME/EXPLAIN: (lb): Why don't we as_hamster in _get_all_tags,
                 #   or _get_all_categories, or  _get_all_activities ??
