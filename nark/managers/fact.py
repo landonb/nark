@@ -387,13 +387,13 @@ class BaseFactManager(BaseManager):
                 ))
             else:
                 fact.end = end
-            result = self.save(fact)
+            new_fact = self.save(fact)
             self.store.logger.debug(_("Current fact is now history!"))
         else:
             message = _("Trying to stop a non existing ongoing fact.")
             self.store.logger.debug(message)
             raise ValueError(message)
-        return result
+        return new_fact
 
     # ***
 
@@ -457,6 +457,7 @@ class BaseFactManager(BaseManager):
             self.store.logger.debug(message)
             raise KeyError(message)
         self.remove(fact, purge)
+        return fact
 
     # ***
 
