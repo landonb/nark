@@ -820,7 +820,14 @@ class Fact(BaseItem):
             lenient=lenient,
         )
 
-        new_fact = cls.create_from_parsed_fact(parsed_fact, lenient=lenient)
+        ephemeral = {
+            'line_num': 1,
+            'raw_meta': ' '.join(factoid),
+        }
+
+        new_fact = cls.create_from_parsed_fact(
+            parsed_fact, lenient=lenient, ephemeral=ephemeral,
+        )
 
         return new_fact, err
 
