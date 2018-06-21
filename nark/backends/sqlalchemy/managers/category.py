@@ -325,7 +325,11 @@ class CategoryManager(BaseCategoryManager):
 
         def _get_all_start_query():
             agg_cols = []
-            if not include_usage:
+            if (
+                not include_usage
+                and not activity
+                and sort_col not in ['start', 'activity', ]
+            ):
                 query = self.store.session.query(AlchemyCategory)
             else:
                 count_col = func.count(AlchemyCategory.pk).label('uses')
@@ -383,13 +387,15 @@ class CategoryManager(BaseCategoryManager):
                 query = query.order_by(direction(AlchemyCategory.name))
             elif sort_col == 'category':
                 query = query.order_by(direction(AlchemyCategory.name))
-                query = query.order_by(direction(AlchemyActivity.name))
+                if count_col:
+                    query = query.order_by(direction(AlchemyActivity.name))
             else:
                 # FIXME/2018-05-29: (lb): Are all these sort_col's for real?
                 # Seems like they wouldn't sort like user would be expecting.
                 assert sort_col in ('', 'name', 'tag', 'fact')
                 query = query.order_by(direction(AlchemyCategory.name))
-                query = query.order_by(direction(AlchemyActivity.name))
+                if count_col:
+                    query = query.order_by(direction(AlchemyActivity.name))
             return query
 
         def _get_all_group_by(query, agg_cols):
