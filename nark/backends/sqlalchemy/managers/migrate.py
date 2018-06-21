@@ -24,8 +24,8 @@ from migrate.exceptions import DatabaseNotControlledError
 from migrate.versioning.api import db_version, downgrade, upgrade, version_control
 from migrate.versioning.api import version as migrate_version
 
+from ....helpers.legacy_db import upgrade_legacy_db_hamster_applet
 from ....managers.migrate import BaseMigrationsManager
-
 
 __all__ = ['MigrationsManager']
 
@@ -103,9 +103,25 @@ class MigrationsManager(BaseMigrationsManager):
         # another convenient way to do this, is there?
         path = os.path.abspath(
             os.path.join(
+                # Meh. We could also do dirname(nark.__file__) and use fewer ..'s.
                 os.path.dirname(__file__),
                 '../../../../migrations',
             )
         )
         return path
+
+    # ***
+
+    def legacy_upgrade_from_hamster_applet(self, db_path):
+        upgrade_legacy_db_hamster_applet(db_path)
+
+    def legacy_upgrade_from_hamster_lib(self):
+        # (lb): I'm not sure how much traction hamster-lib had.
+        #  So I'm not sure this function is needed.
+        #  And hamster-libbers out there need a hand?
+        #  You'll need to rename 3 things is all, I'm sure:
+        #    Table renamed: facttags → fact_tags
+        #    Cols renamed: facts.start_time/end_time → facts.start/end
+        #  Please open a ticket if you really want this feature!
+        raise NotImplementedError
 

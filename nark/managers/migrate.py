@@ -41,5 +41,17 @@ class BaseMigrationsManager(BaseManager):
         """Returns the latest version of the database as used by the application."""
         raise NotImplementedError
 
+    # ***
 
+    def migration_repo(self):
+        """Return the path to the migration script."""
+        raise NotImplementedError
+
+    def legacy_upgrade_from_hamster_applet(self, db_path):
+        """Upgrade legacy SQLite database created by hamster-applet."""
+        raise NotImplementedError
+
+    def legacy_upgrade_from_hamster_lib(self):
+        """Upgrade legacy SQLite database created by hamster-lib."""
+        raise NotImplementedError
 

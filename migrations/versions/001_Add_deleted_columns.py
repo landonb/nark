@@ -21,16 +21,20 @@ from migrate import *
 from sqlalchemy import *
 from sqlalchemy import Table, MetaData, Column, Integer
 
-# USAGE: Run this script via SQLAlchemy-migrate. Something like, e.g.,
+# USAGE: You could run this script manually, invoking SQLAlchemy-migrate, e.g.,
 #
 #           py3 migrations/manage.py upgrade <db_url> migrations
+#
+#       Or you could-should run it with the hamster CLI, dob.
+#
+#           dob migrate up
 
 # NOTE: This script will work against the Legacy Hamster DB on upgrade,
-#       but on downgrade, it'll barf a sqlite3.IntegrityError.
+#       but on downgrade, it'll barf an sqlite3.IntegrityError.
 #
-#       If this applies to you, run the legacy upgrade script first:
+#       So be sure you upgrade your legacy Hamster database:
 #
-#           migrations/upgrade_hamster-applet_db.sh
+#           dob store upgrade-legacy ~/.local/share/hamster-applet/hamster.db
 
 # NOTE! We cannot use sqlalchemy.Boolean, lest downgrade barfs!
 #
