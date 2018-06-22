@@ -474,7 +474,7 @@ class Fact(BaseItem):
             parts = [
                 get_id_string(fact),
                 get_times_string(fact),
-                get_activity_string(fact),
+                fact.actegory_string(shellify),
             ]
             parts_str = ' '.join(list(filter(None, parts)))
             tags = get_tags_string(fact)
@@ -484,7 +484,7 @@ class Fact(BaseItem):
         def format_result(fact, meta):
             result = '{fact_meta}{description}'.format(
                 fact_meta=meta,
-                description=get_description_string(fact),
+                description=fact.description_string(cut_width, description_sep),
             )
             return result
 
@@ -526,29 +526,8 @@ class Fact(BaseItem):
         def get_times_duration(fact):
             if not show_elapsed:
                 return ''
-            duration = ' [{}]'.format(
-                fact.get_string_delta('', localize),
-            )
+            duration = ' [{}]'.format(fact.get_string_delta('', localize))
             return colorize(duration, 'grey_78')
-
-        def get_activity_string(fact):
-            # (lb): We can skip delimiter after time when using ISO 8601.
-            if not self.activity_name:
-                if not self.category_name:
-                    # 2018-06-18: (lb): Should this be '@', or ''?
-                    act_cat = ''
-                else:
-                    act_cat = '@'
-            else:
-                act_cat = (
-                    '{}@{}'.format(
-                        self.activity_name,
-                        self.category_name,
-                    )
-                )
-            act_cat = colorize(act_cat, 'cornflower_blue', 'bold', 'underlined')
-            act_cat = '"{}"'.format(act_cat) if shellify else act_cat
-            return act_cat
 
         def get_tags_string(fact):
             # (lb): There are three ways to "shellify" a hashtag token:
@@ -561,17 +540,36 @@ class Fact(BaseItem):
             #   Nope:  hashtag_token = '@' if shellify else '#'
             return fact.tagnames(quote_tokens=shellify)
 
-        def get_description_string(fact):
-            description = self.description or ''
-            if description:
-                if cut_width is not None:
-                    description = format_value_truncate(description, cut_width)
-                description = '{}{}'.format(description_sep, description)
-            return description
-
         # ***
 
         return _friendly_str(self)
+
+    def actegory_string(self, shellify=False):
+        # (lb): We can skip delimiter after time when using ISO 8601.
+        if not self.activity_name:
+            if not self.category_name:
+                # 2018-06-18: (lb): Should this be '@', or ''?
+                act_cat = ''
+            else:
+                act_cat = '@'
+        else:
+            act_cat = (
+                '{}@{}'.format(
+                    self.activity_name,
+                    self.category_name,
+                )
+            )
+        act_cat = colorize(act_cat, 'cornflower_blue', 'bold', 'underlined')
+        act_cat = '"{}"'.format(act_cat) if shellify else act_cat
+        return act_cat
+
+    def description_string(self, cut_width=None, sep=', '):
+        description = self.description or ''
+        if description:
+            if cut_width is not None:
+                description = format_value_truncate(description, cut_width)
+            description = '{}{}'.format(sep, description)
+        return description
 
     # ***
 
@@ -635,6 +633,25 @@ class Fact(BaseItem):
             cut_width=39,
             # show_elapsed=False,
         )
+
+    @property
+    def basic_notif(self):
+        """
+        A briefer Fact one-liner.
+        """
+        was_coloring = set_coloring(False)
+        duration = '[{}]'.format(self.get_string_delta('', localize=True))
+        actegory = self.actegory_string() or '<i>No activity</i>'
+        simple_str = (
+            '{} {}: {}'
+            .format(
+                duration,
+                actegory,
+                self.description_string(cut_width=39, sep=''),
+            )
+        )
+        set_coloring(was_coloring)
+        return simple_str
 
     # ***
 
