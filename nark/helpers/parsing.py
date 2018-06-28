@@ -538,7 +538,14 @@ class Parser(object):
                 category = rest
             self.category_name = category
         else:
-            self.skip_tags_no_sep(parts)
+            self.verify_single_part_and_warn_if_contains_taglike(parts)
+            more_parts = parts[0].split(' ', 1)
+            if len(more_parts) == 2:
+                assert more_parts[0]  # Should not have a leading ' '.
+                self.category_name = more_parts[0]
+                self.description = more_parts[1].strip()
+            else:
+                self.description = more_parts[0]
 
     def parse_tags_and_remainder(self, tags_and_remainder):
         parts = self.re_item_sep.split(tags_and_remainder, 1)
@@ -565,9 +572,17 @@ class Parser(object):
             # Append separator and second half of split.
             self.description += ''.join(parts[1:])
         else:
-            self.skip_tags_no_sep(parts)
+            self.verify_single_part_and_warn_if_contains_taglike(parts)
+            self.description = parts[0].strip()
 
-    def skip_tags_no_sep(self, parts):
+    def verify_single_part_and_warn_if_contains_taglike(self, parts):
+        # This happens when there is no separator (e.g., comma) after the '@'.
+        # The remainder is either treated all as description text, or possibly
+        # as a single word category followed by the description -- which is up
+        # to the caller to do; here we just do a sanity check and warn the user
+        # if there are hashtag delimiters in the remaining text (which is just
+        # the remainder of the first line of the factoid, as everything after
+        # the first newline is treated as description).
         assert len(parts) == 1
         if Parser.RE_SPLIT_TAGS_AND_TAGS.match(parts[0].strip()):
             # FIXME/2018-05-18 16:50: (lb): Maybe not a warning, but a returned value?
@@ -576,8 +591,6 @@ class Parser(object):
                 'so skipping tags. But it looks like you were trying to tag.'
             )
             self.warnings.append(warn_msg)
-            # There's no separator (e.g., comma) after the '@'.
-        self.description = parts[0]
 
     def consume_tags(self, tags):
         tags = [tag.strip() for tag in tags]
