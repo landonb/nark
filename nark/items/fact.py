@@ -349,6 +349,36 @@ class Fact(BaseItem):
 
         return _get_string_delta()
 
+    def time_of_day_midpoint(self, localize=False):
+        if not self.times_ok:
+            return ''
+        clock_sep = ' ◐ '
+        midpoint = self.end - ((self.end - self.start) / 2)
+        hamned = '{0}'.format(
+            midpoint.strftime("%a %d %b %Y{0}%I:%M %p").format(clock_sep),
+            # FIXME: (lb): Add Colloquial TOD suffix, e.g., "morning".
+        )
+        return hamned
+
+    def time_of_day_humanize(self, localize=False):
+        if not self.times_ok:
+            return ''
+        clock_sep = ' ◐ '
+        wkd_day_mon_year = self.start.strftime("%a %d %b %Y")
+        text = self.start.strftime("{0}{1}%I:%M %p").format(
+            wkd_day_mon_year, clock_sep,
+        )
+        if self.end == self.start:
+            return text
+        text += _(" — ")
+        text += self.end.strftime("%I:%M %p")
+        end_wkd_day_mon_year = self.end.strftime("%a %d %b %Y")
+        if end_wkd_day_mon_year == wkd_day_mon_year:
+            return text
+        text += " "
+        text += end_wkd_day_mon_year
+        return text
+
     # ***
 
     @property
