@@ -277,6 +277,12 @@ class Fact(BaseItem):
             return ''
         return time_helpers.isoformat_tzless(self.end, sep=sep, timespec=timespec)
 
+    @property
+    def times_ok(self):
+        if isinstance(self.start, datetime) and isinstance(self.end, datetime):
+            return True
+        return False
+
     def delta(self, localize=False):
         """
         Provide the offset of start to end for this fact.
