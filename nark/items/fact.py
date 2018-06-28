@@ -467,10 +467,7 @@ class Fact(BaseItem):
         # NOTE: The returned string includes leading space if nonempty!
         tagnames = ''
         if self.tags:
-            ordered_tagnames = [
-                format_tagname(tag) for tag in self.tags_sorted
-            ]
-            tagnames = ' '.join(ordered_tagnames)
+            tagnames = ' '.join(self.ordered_tagnames(format_tagname))
         return tagnames
 
     def tagnames_underlined(self):
@@ -496,13 +493,9 @@ class Fact(BaseItem):
         # NOTE: The returned string includes leading space if nonempty!
         tagnames = []
         if self.tags:
-            ordered_tagnames = [
-                format_tagname(tag) for tag in self.tags_sorted
-            ]
-
             fmt_space = ('', ' ')
             n_tag = 0
-            for fmtd_tagn in ordered_tagnames:
+            for fmtd_tagn in self.ordered_tagnames(format_tagname):
                 if n_tag > 0:
                     tagnames += [fmt_space]
                 n_tag += 1
@@ -511,6 +504,11 @@ class Fact(BaseItem):
 
     def tagnames_underlined_f(self):
         return self.tagnames_f(underlined=True)
+
+    def ordered_tagnames(self, format_tagname):
+        return [
+            format_tagname(tag) for tag in self.tags_sorted
+        ]
 
     # ***
 
