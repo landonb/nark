@@ -720,12 +720,27 @@ class Fact(BaseItem):
 
     # ***
 
-    def friendly_diff(self, other, truncate=False, exclude=None, formatted=False):
+    def friendly_diff(
+        self,
+        other,
+        truncate=False,
+        exclude=None,
+        formatted=False,
+        show_elapsed=False,
+        show_midpoint=False,
+    ):
         def _friendly_diff():
             if not formatted:
                 result = ''
             else:
                 result = []
+
+            result += diff_values_format('interval', None, time_humanize())
+            if show_midpoint:
+                result += diff_values_format('midpoint', None, time_midpoint())
+            if show_elapsed:
+                self_val, other_val = diff_elapsed()
+                result += diff_values_format('duration', self_val, other_val)
             result += diff_other('start', 'start_fmt_local')
             result += diff_other('end', 'end_fmt_local')
             if (not truncate) or self.pk or other.pk:
@@ -741,9 +756,31 @@ class Fact(BaseItem):
                 # (lb): Ug... this 'formatted' business is crazy.
                 result += diff_other('tags', 'tagnames_underlined_f')
             result += diff_other('description', 'description', truncate=truncate)
+
             if not formatted:
                 result = result.rstrip()
             return result
+
+        def diff_elapsed():
+            self_val = time_elapsed(self)
+            other_val = time_elapsed(other)
+            if not self_val:
+                # Make 'em the same, i.e., show no diff, no styling.
+                self_val = other_val
+            return diff_values_enhance(self_val, other_val)
+
+        def time_elapsed(fact):
+            # NOTE: start and/or end might be string; e.g., clock or rel. time.
+            if not fact.times_ok:
+                return None
+            time_val = fact.get_string_delta('HHhMMm', localize=True)
+            return time_val
+
+        def time_midpoint():
+            return format_prepare(other.time_of_day_midpoint())
+
+        def time_humanize():
+            return format_prepare(other.time_of_day_humanize())
 
         def beautify_pk(self_val, other_val):
             if (
@@ -814,7 +851,7 @@ class Fact(BaseItem):
             before_parts = []
             if isinstance(before_val, text_type):
                 before_parts += [(style, before_val)]
-            else:
+            elif before_val is not None:
                 for tup in before_val:
                     before_parts.append((style, tup[1]))
             return before_parts
@@ -834,7 +871,7 @@ class Fact(BaseItem):
             after_parts = []
             if isinstance(other_val, text_type):
                 after_parts += [(style, other_val)]
-            else:
+            elif other_val is not None:
                 for tup in other_val:
                     after_parts.append((style, tup[1]))
             # (lb): Swap the order, for display purposes.
@@ -847,10 +884,17 @@ class Fact(BaseItem):
             prefix = '  '
             left_col = '{}{:.<19} : '.format(prefix, name)
             if not formatted:
-                return '{}{}{}\n'.format(left_col, self_val, other_val)
+                return '{}{}{}\n'.format(
+                    left_col, self_val or '', other_val or '',
+                )
             left_col = ('', left_col)
             newline = ('', '\n')
-            format_tuples = [left_col] + self_val + other_val + [newline]
+            format_tuples = [left_col]
+            if self_val:
+                format_tuples += self_val
+            if other_val:
+                format_tuples += other_val
+            format_tuples += [newline]
             return format_tuples
 
         return _friendly_diff()
