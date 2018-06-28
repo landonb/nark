@@ -143,7 +143,14 @@ class PlaintextWriter(ReportWriter):
     #   >>> import csv
     #   >>> csv.list_dialects()
     #   ['excel-tab', 'excel', 'unix']
-    def __init__(self, path, duration_fmt, dialect='excel', **fmtparams):
+    def __init__(
+        self,
+        path,
+        duration_fmt,
+        datetime_format="%Y-%m-%d %H:%M:%S",
+        dialect='excel',
+        **fmtparams
+    ):
         """
         Initialize a new instance.
 
@@ -152,7 +159,7 @@ class PlaintextWriter(ReportWriter):
         In that case ``self.file`` will be openend in binary mode and ready to accept
         those encoded headings.
         """
-        super(PlaintextWriter, self).__init__(path)
+        super(PlaintextWriter, self).__init__(path, datetime_format)
         self.csv_writer = csv.writer(self.file, dialect=dialect, **fmtparams)
         # SYNC_ME: FactTuple and PlaintextWriter's headers.
         headers = (
@@ -226,7 +233,7 @@ class PlaintextWriter(ReportWriter):
 
 @python_2_unicode_compatible
 class CSVWriter(PlaintextWriter):
-    def __init__(self, path):
+    def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         super(CSVWriter, self).__init__(
             path,
             # (lb): I figured using 'excel' dialect would be enough,
@@ -245,6 +252,7 @@ class CSVWriter(PlaintextWriter):
             # EXPLAIN/2018-05-05: (lb): What did scientificsteve use '%M'
             #   and not '%H:%M'?
             duration_fmt='%M',
+            datetime_format=datetime_format,
             # EXPLAIN/2018-05-05: (lb): ',' is also the default delimiter.
             #   How if this different than the default dialect='excel'?
             #   It's probably not....
@@ -255,10 +263,11 @@ class CSVWriter(PlaintextWriter):
 
 @python_2_unicode_compatible
 class TSVWriter(PlaintextWriter):
-    def __init__(self, path):
+    def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         super(TSVWriter, self).__init__(
             path,
             duration_fmt='%H:%M',
+            datetime_format=datetime_format,
             dialect='excel-tab',
         )
 
@@ -275,8 +284,7 @@ class ICALWriter(ReportWriter):
                 will be directed to. datetime_format (str): String specifying
                 how datetime information is to be rendered in the output.
         """
-        self.datetime_format = datetime_format
-        super(ICALWriter, self).__init__(path)
+        super(ICALWriter, self).__init__(path, datetime_format)
         self.calendar = Calendar()
 
     def _fact_to_tuple(self, fact):
@@ -349,8 +357,7 @@ class XMLWriter(ReportWriter):
 
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         """Setup the writer including a main xml document."""
-        self.datetime_format = datetime_format
-        super(XMLWriter, self).__init__(path)
+        super(XMLWriter, self).__init__(path, datetime_format)
         self.document = Document()
         self.fact_list = self.document.createElement("facts")
 
