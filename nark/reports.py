@@ -29,6 +29,7 @@ import csv
 import datetime
 import sys
 from collections import namedtuple
+from io import open
 from xml.dom.minidom import Document
 
 from future.utils import python_2_unicode_compatible
@@ -76,10 +77,7 @@ class ReportWriter(object):
         # [FIXME]
         # If it turns out that this is specific to csv handling we may move it
         # there and use a simpler default behaviour for our base method.
-        if sys.version_info < (3,):
-            self.file = open(path, 'wb')
-        else:
-            self.file = open(path, 'w', encoding='utf-8')
+        self.file = open(path, 'w', encoding='utf-8')
 
     def write_report(self, facts):
         """
@@ -273,7 +271,7 @@ class ICALWriter(ReportWriter):
                 how datetime information is to be rendered in the output.
         """
         self.datetime_format = datetime_format
-        self.file = open(path, 'wb')
+        super(ICALWriter, self).__init__(path)
         self.calendar = Calendar()
 
     def _fact_to_tuple(self, fact):
@@ -347,7 +345,7 @@ class XMLWriter(ReportWriter):
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         """Setup the writer including a main xml document."""
         self.datetime_format = datetime_format
-        self.file = open(path, 'wb')
+        super(XMLWriter, self).__init__(path)
         self.document = Document()
         self.fact_list = self.document.createElement("facts")
 
