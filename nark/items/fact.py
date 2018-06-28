@@ -700,9 +700,9 @@ class Fact(BaseItem):
         )
 
     @property
-    def basic_notif(self):
+    def short_notif(self):
         """
-        A briefer Fact one-liner.
+        A briefer Fact one-liner. Useful for, e.g., a notifier.
         """
         was_coloring = set_coloring(False)
         duration = '[{}]'.format(self.get_string_delta('', localize=True))
