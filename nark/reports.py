@@ -77,7 +77,10 @@ class ReportWriter(object):
         # [FIXME]
         # If it turns out that this is specific to csv handling we may move it
         # there and use a simpler default behaviour for our base method.
-        self.file = open(path, 'w', encoding='utf-8')
+        if not path:
+            self.file = sys.stdout
+        else:
+            self.file = open(path, 'w', encoding='utf-8')
 
     def write_report(self, facts):
         """
@@ -129,6 +132,8 @@ class ReportWriter(object):
 
     def _close(self):
         """Default teardown method."""
+        if self.file is sys.stdout:
+            return
         self.file.close()
 
 
