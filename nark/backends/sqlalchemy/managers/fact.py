@@ -26,6 +26,9 @@ from sqlalchemy.sql.expression import and_, or_
 
 from . import query_apply_limit_offset, query_apply_true_or_not
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
+
+from ..objects import AlchemyTag
+
 from ....managers.fact import BaseFactManager
 
 
@@ -74,6 +77,9 @@ class FactManager(BaseFactManager):
 
         if fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
+
+        if fact.split_from:
+            condition = and_(condition, AlchemyFact.pk != fact.split_from.pk)
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
