@@ -419,10 +419,15 @@ class Fact(BaseItem):
         self._description = description
 
     def tags_replace(self, tags):
-        self.tags = set()
+        new_tags = set()
         for tagn in set(tags) if tags else set():
             tag = tagn if isinstance(tagn, Tag) else Tag(name=tagn)
-            self.tags.add(tag)
+            new_tags.add(tag)
+        # (lb): Do this in one swoop, and be sure to assign a list; when wrapped
+        # by SQLAlchemy, if tried to set to, e.g., set(), complains:
+        #   TypeError: Incompatible collection type: set is not list-like
+        # (That error is from orm.attribute.CollectionAttributeImpl.set.)
+        self.tags = list(new_tags)
 
     @property
     def tags_sorted(self):
