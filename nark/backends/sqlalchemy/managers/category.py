@@ -388,14 +388,14 @@ class CategoryManager(BaseCategoryManager):
                 query = query.order_by(direction(AlchemyCategory.name))
             elif sort_col == 'category':
                 query = query.order_by(direction(AlchemyCategory.name))
-                if count_col:
+                if count_col is not None:
                     query = query.order_by(direction(AlchemyActivity.name))
             else:
                 # FIXME/2018-05-29: (lb): Are all these sort_col's for real?
                 # Seems like they wouldn't sort like user would be expecting.
                 assert sort_col in ('', 'name', 'tag', 'fact')
                 query = query.order_by(direction(AlchemyCategory.name))
-                if count_col:
+                if count_col is not None:
                     query = query.order_by(direction(AlchemyActivity.name))
             return query
 
