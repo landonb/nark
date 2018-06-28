@@ -22,12 +22,14 @@ from builtins import str
 from datetime import datetime
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import and_, or_
 
 from . import query_apply_limit_offset, query_apply_true_or_not
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 
 from ..objects import AlchemyTag
+from ..objects import fact_tags
 
 from ....managers.fact import BaseFactManager
 
@@ -368,6 +370,12 @@ class FactManager(BaseFactManager):
         category=False,
         sort_col='',
         sort_order='',
+        raw=False,
+
+        # FIXME/2018-06-25: (lb): Use lazy_tags fix export slowness,
+        #   if I re-introduced it inadvertently.
+        lazy_tags=False,
+
         # kwargs: limit, offset
         **kwargs
     ):
@@ -407,6 +415,8 @@ class FactManager(BaseFactManager):
             (e.g. that span more than) the specified timeframe.
         """
 
+        MAGIC_TAG_SEP = '%%%%,%%%%'
+
         def _get_all_facts():
             message = _(
                 'since: {} / until: {} / term: {} / col: {} / order: {}'
@@ -414,7 +424,11 @@ class FactManager(BaseFactManager):
             )
             self.store.logger.debug(message)
 
-            query, agg_cols = _get_all_start_query()
+            query = self.store.session.query(AlchemyFact)
+
+            query, time_col = _get_all_prepare_usage_col(query)
+
+            query, tags_col = _get_all_prepare_tags_col(query)
 
             query = _get_all_prepare_joins(query)
 
@@ -428,46 +442,86 @@ class FactManager(BaseFactManager):
 
             query = query_apply_true_or_not(query, AlchemyFact.deleted, deleted)
 
-            query = _get_all_order_by(query, *agg_cols)
+            query = _get_all_order_by(query, time_col)
 
             query = query_apply_limit_offset(query, **kwargs)
 
-            query = _get_all_with_entities(query, agg_cols)
+            query = _get_all_with_entities(query, time_col, tags_col)
 
             self.store.logger.debug(_('query: {}'.format(str(query))))
 
             results = query.all() if not count_results else query.count()
 
-            if not count_results and not agg_cols:
-                # results is a `list` of 'sqlalchemy.objects.AlchemyFact'.
-                # FIXME/EXPLAIN: (lb): Why don't we as_hamster in _get_all_tags,
-                #   or _get_all_categories, or  _get_all_activities ??
-                results = [fact.as_hamster(self.store) for fact in results]
-            # else, results is a `list` of `sqlalchemy.util._collections.result`,
-            # which are tuples: ('sqlalchemy.objects.AlchemyFact', *agg_cols).
-            # (lb): I'm guessing because with_entities()?
+            new_results = _process_results(results, time_col, tags_col)
 
-            return results
+            return new_results
 
-        def _get_all_start_query():
-            agg_cols = []
+        def _process_results(results, time_col, tags_col):
+            if time_col is None and tags_col is None:
+                if raw:
+                    return results
+                else:
+                    return [fact.as_hamster(self.store) for fact in results]
+
+            new_results = []
+            for fact, *cols in results:
+                new_tags = None
+                if lazy_tags is None:
+                    tags = cols.pop()
+                    new_tags = tags.split(MAGIC_TAG_SEP) if tags else []
+
+                if not raw:
+                    new_fact = fact.as_hamster(self.store, new_tags)
+                else:
+                    if new_tags:
+                        fact.tags = new_tags
+                    new_fact = fact
+
+                if len(cols):
+                    new_results.append((new_fact, *cols))
+                else:
+                    new_results.append(new_fact)
+            return new_results
+
+        # ***
+
+        def _get_all_prepare_tags_col(query):
+            if lazy_tags:
+                return
+            # (lb): Always include tags. We could let SQLAlchemy lazy load,
+            # but this can be slow. E.g., on 15K Facts, calling fact.tags on
+            # each -- triggering lazy load -- takes 7 seconds on my machine.
+            # As opposed to 0 seconds (rounded down) when preloading tags.
+            tags_col = func.group_concat(
+                AlchemyTag.name, MAGIC_TAG_SEP,
+            ).label("facts_tags")
+            query = query.add_columns(tags_col)
+            query = query.outerjoin(fact_tags)
+            query = query.outerjoin(AlchemyTag)
+            query = query.group_by(AlchemyFact.pk)
+            if lazy_tags is False:
+                # FIXME/2018-06-25: (lb): Not quite sure this'll work...
+                # http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html
+                #   #joined-eager-loading
+                query = query.options(joinedload(AlchemyFact.tags))
+                tags_col = None
+            return query, tags_col
+
+        def _get_all_prepare_usage_col(query):
             if not include_usage:
-                query = self.store.session.query(AlchemyFact)
-            else:
-                time_col = (
-                    func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
-                ).label('span')
-                agg_cols.append(time_col)
+                return query, None
 
-                query = self.store.session.query(AlchemyFact, time_col)
-
-            return query, agg_cols
+            time_col = (
+                func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
+            ).label('span')
+            query = self.store.session.query(AlchemyFact, time_col)
+            return query, time_col
 
         def _get_all_prepare_joins(query):
             if include_usage or (activity is not False) or (category is not False):
-                query = query.join(AlchemyFact.activity)  # Same as: AlchemyActivity
+                query = query.outerjoin(AlchemyFact.activity)  # Same as: AlchemyActivity
             if category is not False:
-                query = query.join(AlchemyCategory)
+                query = query.outerjoin(AlchemyCategory)
             return query
 
         def _get_all_filter_partial(query):
@@ -587,13 +641,19 @@ class FactManager(BaseFactManager):
                 query = query.order_by(direction(AlchemyFact.start))
             return query
 
-        def _get_all_with_entities(query, agg_cols):
-            if not agg_cols:
-                return query
-            # Throw in the count column, which act/cat/tag fetch, so we can
-            # use the same utility functions (that except a count column).
-            static_count = '1'
-            query = query.with_entities(AlchemyFact, static_count, *agg_cols)
+        def _get_all_with_entities(query, time_col, tags_col):
+            columns = []
+            if time_col is not None:
+                # Throw in the count column, which act/cat/tag fetch, so we can
+                # use the same utility functions (that except a count column).
+                static_count = '1'
+                columns.append(static_count)
+                columns.append(time_col)
+            if tags_col is not None:
+                assert lazy_tags is None
+                columns.append(tags_col)
+            query = query.with_entities(AlchemyFact, *columns)
+
             return query
 
         # ***
