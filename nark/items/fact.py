@@ -166,6 +166,27 @@ class Fact(BaseItem):
             # SKIP: self.ephemeral
         )
 
+    def copy(self, include_pk=True):
+        """
+        """
+        new_fact = Fact(
+            activity=self.activity,
+            start=self.start,
+            end=self.end,
+            description=self.description,
+            # self.tags might be an sqlalchemy.orm.collections.InstrumentedList
+            # and calling list() on it will create a new list of what could be
+            # nark.backends.sqlalchemy.objects.AlchemyTag.
+            tags=list(self.tags),
+            deleted=self.deleted,
+            split_from=self.split_from,
+            # If this is an AlchemyFact object, it won't have non-table
+            # attrs, like dirty_reasons or ephemeral.
+        )
+        if include_pk:
+            new_fact.pk = self.pk
+        return new_fact
+
     def equal_fields(self, other):
         """
         Compare this instances fields with another fact. This excludes comparing the PK.
