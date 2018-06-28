@@ -583,6 +583,9 @@ class BaseFactManager(BaseManager):
             resolved = []
             for conflict in conflicts:
                 assert conflict.pk > 0
+                if fact.pk == conflict.pk:
+                    # Editing existing Fact may find itself in db.
+                    continue
                 if conflict.pk in seen:
                     continue
                 seen.add(conflict.pk)
