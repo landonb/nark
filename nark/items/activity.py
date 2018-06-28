@@ -138,7 +138,7 @@ class Activity(BaseItem):
         return self.as_tuple(include_pk=False) == other.as_tuple(include_pk=False)
 
     def __eq__(self, other):
-        if not isinstance(other, ActivityTuple):
+        if other is not None and not isinstance(other, ActivityTuple):
             other = other.as_tuple()
         return self.as_tuple() == other
 

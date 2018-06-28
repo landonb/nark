@@ -101,13 +101,8 @@ class Category(BaseItem):
         return self.as_tuple(include_pk=False) == other
 
     def __eq__(self, other):
-        if other:
-            if isinstance(other, CategoryTuple):
-                pass
-            else:
-                other = other.as_tuple()
-        else:
-            other = None
+        if other is not None and not isinstance(other, CategoryTuple):
+            other = other.as_tuple()
         return self.as_tuple() == other
 
     def __hash__(self):

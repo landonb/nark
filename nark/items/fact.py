@@ -120,7 +120,7 @@ class Fact(BaseItem):
         self.ephemeral = ephemeral
 
     def __eq__(self, other):
-        if not isinstance(other, FactTuple):
+        if other is not None and not isinstance(other, FactTuple):
             other = other.as_tuple()
 
         return self.as_tuple() == other
