@@ -189,8 +189,21 @@ class AlchemyFact(Fact):
         # Tags can only be assigned after the fact has been created.
         self.tags = list()
 
-    def as_hamster(self, store):
+    def as_hamster(self, store, tags=None):
         """Provide an convenient way to return it as a ``nark.Fact`` instance."""
+        # NOTE: (lb): By default, self.tags is lazy loaded, which causes a fetch
+        #   when it's looked up, once per Fact. This is normally not an issue, but
+        #   I noticed a significant delay processing 15K Facts. My first attempt
+        #   to resolve this was explicitly joining and coalescing tags in the
+        #   query, and then passing the hydrated facts herein. So I added this
+        #   if-else block. 2018-06-28: But then I learned about joinedload. I'm
+        #   going to leave this here to make it easy to test performance issues
+        #   as I continue to investigate this issue.
+        if tags is None:
+            nark_tags = set([tag.as_hamster(store) for tag in self.tags])
+        else:
+            nark_tags = set([Tag(tag) for tag in tags])
+
         return Fact(
             pk=self.pk,
             deleted=self.deleted,
@@ -199,7 +212,7 @@ class AlchemyFact(Fact):
             start=self.start,
             end=self.end,
             description=self.description,
-            tags=set([tag.as_hamster(store) for tag in self.tags]),
+            tags=nark_tags,
         )
 
 
