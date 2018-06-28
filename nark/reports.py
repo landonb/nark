@@ -379,7 +379,7 @@ class XMLWriter(ReportWriter):
         return FactTuple(
             start=fact.start.strftime(self.datetime_format),
             end=fact.end.strftime(self.datetime_format),
-            duration=fact.get_string_delta(format='%M'),
+            duration=fact.get_string_delta(formatting='%M'),
             activity=text_type(fact.activity.name),
             category=text_type(category),
             description=text_type(description),

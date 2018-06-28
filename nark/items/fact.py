@@ -295,54 +295,59 @@ class Fact(BaseItem):
         end_time = self.end
         if not end_time:
             end_time = datetime.now() if localize else datetime.utcnow()
-        result = end_time - self.start
-        return result
 
-    def get_string_delta(self, format='%M', localize=False):
+        return end_time - self.start
+
+    def get_string_delta(self, formatting='%M', localize=False):
         """
         Return a string representation of ``Fact().delta``.
 
         Args:
-            format (str): Specifies the output format. Valid choices are:
+            formatting (str): Specifies the output format.
+
+              Valid choices are:
                 * ``'%M'``: As minutes, rounded down.
                 * ``'%H:%M'``: As 'hours:minutes'. rounded down.
+                * ````: As human friendly time.
 
         Returns:
-            str: String representing this facts *duration* in the given format.capitalize
-
-        Raises:
-            ValueError: If a unrecognized format specifier is received.
+            str: Formatted string representing this fact's *duration*.
         """
-        seconds = int(self.delta(localize).total_seconds())
-        # MAYBE/2018-05-05: (lb): scientificsteve rounds instead of floors.
-        # I'm not sure this is correct. The user only commented in the commit,
-        #   "Round the minutes instead of flooring." But they did not bother to
-        #   edit the docstring above, which explicitly says that time is rounded
-        #   down!
-        # So I'm making a note of this -- because I incorporated the tags feature
-        #   from scientificsteve's PR -- but I did not incorporate the rounding
-        #   change. For one, I am not sure what uses this function, so I don't
-        #   feel confident changing it.
-        # See:
-        #   SHA 369050067485636475cd38d2cc8f38aaf58a3932
-        if format == '%M':
-            result = text_type(int(seconds / 60))
-            # From scientificsteve's PR:
-            #  result = text_type(int(round(seconds / 60.)))
-        elif format == '%H:%M':
-            result = (
-                '{hours:02d}:{minutes:02d}'.format(
-                    hours=int(seconds / 3600),
-                    minutes=int((seconds % 3600) / 60),
-                )
-            )
-        else:
+        def _get_string_delta():
+            delta = self.delta(localize)
+            seconds = delta.total_seconds() if delta is not None else 0
+            hours = int(seconds / 3600)
+            minutes = int((seconds % 3600) / 60)
+            if formatting == '%M':
+                return format_mins(minutes)
+            elif formatting == '%H:%M':
+                return format_hours_mins(hours, minutes)
+            elif formatting == 'HHhMMm':
+                return format_hours_h_mins_m(hours, minutes)
+            else:
+                return format_pedantic(seconds)
+
+        def format_mins(minutes):
+            return text_typem(minutes)
+
+        def format_hours_mins(hours, minutes):
+            return '{0:02d}:{1:02d}'.format(hours, minutes)
+
+        def format_hours_h_mins_m(hours, minutes):
+            text = ''
+            text += "{0:>2d} ".format(hours)
+            text += _("hour ") if hours == 1 else _("hours")
+            text += " {0:>2d} ".format(minutes)
+            text += _("minute ") if minutes == 1 else _("minutes")
+            return text
+
+        def format_pedantic(seconds):
             (
                 tm_fmttd, tm_scale, tm_units,
             ) = PedanticTimedelta(seconds=seconds).time_format_scaled()
-            result = tm_fmttd
+            return tm_fmttd
 
-        return result
+        return _get_string_delta()
 
     # ***
 
