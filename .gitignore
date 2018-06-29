@@ -64,3 +64,7 @@ docs/nark.helpers.rst
 docs/nark.rst
 docs/modules.rst
 
+# In lieu of a personalizable, secondary Grep/Silver Searcher/RipGrep ignore,
+# like .gitignore's .git/info/exclude, the repo contains an .ignore.example.
+.ignore
+
