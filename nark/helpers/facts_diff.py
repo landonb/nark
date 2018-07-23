@@ -47,6 +47,7 @@ class FactsDiff(object):
         exclude=None,
         show_elapsed=False,
         show_midpoint=False,
+        show_now=False,
     ):
         def _friendly_diff():
             self.include_newlines = True
@@ -68,19 +69,22 @@ class FactsDiff(object):
 
         def assemble_diff_attrs(result):
             result += self.diff_line_assemble(
-                None, self.time_humanize(), 'interval',
+                None, self.time_humanize(show_now), 'interval',
             )
             if show_midpoint:
                 result += self.diff_line_assemble(
                     None, self.time_midpoint(), 'midpoint',
                 )
             if show_elapsed:
-                self_val, other_val = self.diff_time_elapsed()
+                self_val, other_val = self.diff_time_elapsed(show_now)
                 result += self.diff_line_assemble(
                     self_val, other_val, 'duration',
                 )
             result += self.diff_attrs('start_fmt_local', 'start')
-            result += self.diff_attrs('end_fmt_local', 'end')
+            if not show_now:
+                result += self.diff_attrs('end_fmt_local', 'end')
+            else:
+                result += self.diff_attrs('end_fmt_local_nowwed', 'end')
             if (not truncate) or self.orig_fact.pk or self.edit_fact.pk:
                 result += self.diff_attrs('pk', 'id', beautify=self.beautify_pk)
             result += self.diff_attrs('deleted', 'deleted')
@@ -156,26 +160,30 @@ class FactsDiff(object):
 
     # ***
 
-    def diff_time_elapsed(self):
-        self_val = self.time_elapsed(self.orig_fact)
-        other_val = self.time_elapsed(self.edit_fact)
+    def diff_time_elapsed(self, show_now=False):
+        self_val = self.time_elapsed(self.orig_fact, show_now)
+        other_val = self.time_elapsed(self.edit_fact, show_now)
         if not self_val:
             # Make 'em the same, i.e., show no diff, no styling.
             self_val = other_val
         return self.diff_values_enhance(self_val, other_val)
 
-    def time_elapsed(self, fact):
+    def time_elapsed(self, fact, show_now=False):
         # NOTE: start and/or end might be string; e.g., clock or rel. time.
-        if not fact.times_ok:
+        if (not fact.times_ok) and (not show_now):
             return None
         time_val = fact.get_string_delta('HHhMMm')
         return time_val
 
     def time_midpoint(self):
-        return self.format_prepare(self.edit_fact.time_of_day_midpoint)
+        return self.format_prepare(
+            self.edit_fact.time_of_day_midpoint
+        )
 
-    def time_humanize(self):
-        return self.format_prepare(self.edit_fact.time_of_day_humanize())
+    def time_humanize(self, show_now=False):
+        return self.format_prepare(
+            self.edit_fact.time_of_day_humanize(show_now=show_now)
+        )
 
     def beautify_pk(self, self_val, other_val):
         if (

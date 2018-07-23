@@ -317,6 +317,21 @@ class Fact(BaseItem):
             return ''
         return time_helpers.isoformat_tzless(self.end, sep=' ', timespec='seconds')
 
+    @property
+    def end_fmt_local_nowwed(self):
+        """FIXME: Document"""
+        if not self.end:
+            return '{} <now>'.format(self.end_fmt_local_or_now)
+        return self.end_fmt_local
+
+    @property
+    def end_fmt_local_or_now(self):
+        if not self.end:
+            return '{}'.format(time_helpers.isoformat_tzless(
+                self.time_now, sep=' ', timespec='seconds',
+            ))
+        return self.end_fmt_local
+
     # ***
 
     @property
@@ -426,10 +441,8 @@ class Fact(BaseItem):
         )
         return hamned
 
-    # ***
-
-    def time_of_day_humanize(self):
-        if not self.times_ok:
+    def time_of_day_humanize(self, show_now=False):
+        if not self.times_ok and not show_now:
             return ''
         clock_sep = ' ◐ '
         wkd_day_mon_year = self.start.strftime("%a %d %b %Y")
@@ -813,6 +826,7 @@ class Fact(BaseItem):
         formatted=False,
         show_elapsed=False,
         show_midpoint=False,
+        show_now=False,
     ):
         facts_diff = FactsDiff(self, other, formatted=formatted)
         return facts_diff.friendly_diff(
@@ -820,6 +834,7 @@ class Fact(BaseItem):
             exclude=exclude,
             show_elapsed=show_elapsed,
             show_midpoint=show_midpoint,
+            show_now=show_now,
         )
 
     # ***
