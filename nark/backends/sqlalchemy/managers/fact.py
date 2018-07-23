@@ -446,21 +446,24 @@ class FactManager(BaseFactManager):
 
             self.store.logger.debug(_('query: {}'.format(str(query))))
 
-            results = query.all() if not count_results else query.count()
+            if count_results:
+                results = query.count()
+            else:
+                # Profiling: 2018-07-15: (lb): ~ 0.120 s. to fetch latest of 20K Facts.
+                records = query.all()
+                results = _process_results(records, span_col, tags_col)
 
-            new_results = _process_results(results, time_col, tags_col)
+            return results
 
-            return new_results
-
-        def _process_results(results, span_col, tags_col):
+        def _process_results(records, span_col, tags_col):
             if span_col is None and tags_col is None:
                 if raw:
-                    return results
+                    return records
                 else:
-                    return [fact.as_hamster(self.store) for fact in results]
+                    return [fact.as_hamster(self.store) for fact in records]
 
-            new_results = []
-            for fact, *cols in results:
+            results = []
+            for fact, *cols in records:
                 new_tags = None
                 if lazy_tags is None:
                     tags = cols.pop()
@@ -474,10 +477,10 @@ class FactManager(BaseFactManager):
                     new_fact = fact
 
                 if len(cols):
-                    new_results.append((new_fact, *cols))
+                    results.append((new_fact, *cols))
                 else:
-                    new_results.append(new_fact)
-            return new_results
+                    results.append(new_fact)
+            return results
 
         # ***
 
