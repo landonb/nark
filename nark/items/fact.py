@@ -408,13 +408,20 @@ class Fact(BaseItem):
 
     # ***
 
-    def time_of_day_midpoint(self):
+    @property
+    def midpoint(self):
         if not self.times_ok:
+            return None
+        midpoint = self.end - ((self.end - self.start) / 2)
+        return midpoint
+
+    @property
+    def time_of_day_midpoint(self):
+        if not self.midpoint:
             return ''
         clock_sep = ' ◐ '
-        midpoint = self.end - ((self.end - self.start) / 2)
         hamned = '{0}'.format(
-            midpoint.strftime("%a %d %b %Y{0}%I:%M %p").format(clock_sep),
+            self.midpoint.strftime("%a %d %b %Y{0}%I:%M %p").format(clock_sep),
             # FIXME: (lb): Add Colloquial TOD suffix, e.g., "morning".
         )
         return hamned

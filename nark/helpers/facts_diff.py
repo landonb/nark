@@ -172,7 +172,7 @@ class FactsDiff(object):
         return time_val
 
     def time_midpoint(self):
-        return self.format_prepare(self.edit_fact.time_of_day_midpoint())
+        return self.format_prepare(self.edit_fact.time_of_day_midpoint)
 
     def time_humanize(self):
         return self.format_prepare(self.edit_fact.time_of_day_humanize())
