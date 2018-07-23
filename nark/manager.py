@@ -89,12 +89,6 @@ class BaseStore(object):
             warn_name = True
             self.logger.setLevel(logging.WARNING)
 
-        stream_handler = logging.StreamHandler()
-        formatter = logging_helpers.formatter_basic()
-        formatter = logging_helpers.setupHandler(
-            stream_handler, formatter, self.logger,
-        )
-
         if warn_name:
             self.logger.warning(
                 _('Unknown Backend.sql_log_level specified: {}')
