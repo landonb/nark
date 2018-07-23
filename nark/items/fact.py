@@ -184,6 +184,7 @@ class Fact(BaseItem):
             # If this is an AlchemyFact object, it won't have non-table
             # attrs, like dirty_reasons or ephemeral.
         )
+        new_fact.dirty_reasons = set(list(self.dirty_reasons))
         if include_pk:
             new_fact.pk = self.pk
         return new_fact
