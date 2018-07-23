@@ -42,7 +42,7 @@ class BaseManager(object):
 
     # ***
 
-    def save(self, item, cls=BaseItem, named=False):
+    def save(self, item, cls=BaseItem, named=False, **kwargs):
         """
         Save a Nark object instance to user's selected backend.
 
@@ -73,9 +73,9 @@ class BaseManager(object):
 
         # NOTE: Not assuming that PK is an int, i.e., not testing '> 0'.
         if item.pk or item.pk == 0:
-            result = self._update(item)
+            result = self._update(item, **kwargs)
         else:
             # PK is empty string, empty list, None, etc., but not 0.
-            result = self._add(item)
+            result = self._add(item, **kwargs)
         return result
 

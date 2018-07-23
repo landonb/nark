@@ -36,7 +36,7 @@ class BaseFactManager(BaseManager):
 
     # ***
 
-    def save(self, fact):
+    def save(self, fact, **kwargs):
         """
         Save a Fact to our selected backend.
 
@@ -56,7 +56,9 @@ class BaseFactManager(BaseManager):
         """
         def _save():
             enforce_fact_min_delta()
-            return super(BaseFactManager, self).save(fact, Fact, named=False)
+            return super(BaseFactManager, self).save(
+                fact, cls=Fact, named=False, **kwargs
+            )
 
         def enforce_fact_min_delta():
             if not fact.end:
