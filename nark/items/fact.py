@@ -562,8 +562,8 @@ class Fact(BaseItem):
                 tagnames += fmtd_tagn
         return tagnames
 
-    def tagnames_underlined_f(self):
-        return self.tagnames_f(underlined=True)
+    def tagnames_underlined_f(self, underlined=True, **kwargs):
+        return self.tagnames_f(underlined=underlined, **kwargs)
 
     def ordered_tagnames(self, format_tagname):
         return [
