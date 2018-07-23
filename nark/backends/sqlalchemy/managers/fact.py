@@ -892,15 +892,15 @@ class FactManager(BaseFactManager):
 
     # ***
 
-    def strictly_during(self, start, end, result_limit=1000):
+    def strictly_during(self, since, until, result_limit=1000):
         """
-        Return the fact(s) strictly contained within a start and end time.
+        Return the fact(s) strictly contained within a since and until time.
 
         Args:
-            start (datetime.datetime):
+            since (datetime.datetime):
                 Start datetime of facts to find.
 
-            end (datetime.datetime):
+            until (datetime.datetime):
                 End datetime of facts to find.
 
             result_limit (int):
@@ -911,15 +911,18 @@ class FactManager(BaseFactManager):
         """
         query = self.store.session.query(AlchemyFact)
 
-        condition = and_(AlchemyFact.start >= start, AlchemyFact.end <= end)
+        condition = and_(
+            func.datetime(AlchemyFact.start) >= self._get_sql_datetime(since),
+            func.datetime(AlchemyFact.end) <= self._get_sql_datetime(until),
+        )
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
         query = query.filter(condition)
 
         self.store.logger.debug(_(
-            'start: {} / end: {} / query: {}'
-            .format(start, end, str(query))
+            'since: {} / until: {} / query: {}'
+            .format(since, until, str(query))
         ))
 
         # LATER: (lb): We'll let the client ask for as many records as they
