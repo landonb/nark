@@ -59,23 +59,23 @@ class FactsDiff(object):
             if show_midpoint:
                 result += self.diff_values_format('midpoint', None, self.time_midpoint())
             if show_elapsed:
-                self_val, other_val = self.diff_elapsed()
+                self_val, other_val = self.diff_time_elapsed()
                 result += self.diff_values_format('duration', self_val, other_val)
-            result += self.diff_other('start', 'start_fmt_local')
-            result += self.diff_other('end', 'end_fmt_local')
+            result += self.diff_attrs('start', 'start_fmt_local')
+            result += self.diff_attrs('end', 'end_fmt_local')
             if (not truncate) or self.orig_fact.pk or self.edit_fact.pk:
-                result += self.diff_other('id', 'pk', beautify=self.beautify_pk)
-            result += self.diff_other('deleted', 'deleted')
+                result += self.diff_attrs('id', 'pk', beautify=self.beautify_pk)
+            result += self.diff_attrs('deleted', 'deleted')
             # MAYBE?: (lb): Would we even want to show the split_from fact?
-            #  result += self.diff_other('split_from', 'split_from')
-            result += self.diff_other('activity', 'activity_name')
-            result += self.diff_other('category', 'category_name')
+            #  result += self.diff_attrs('split_from', 'split_from')
+            result += self.diff_attrs('activity', 'activity_name')
+            result += self.diff_attrs('category', 'category_name')
             if not self.formatted:
-                result += self.diff_other('tags', 'tagnames_underlined')
+                result += self.diff_attrs('tags', 'tagnames_underlined')
             else:
                 # (lb): Ug... this 'formatted' business is crazy.
-                result += self.diff_other('tags', 'tagnames_underlined_f')
-            result += self.diff_other('description', 'description', truncate=truncate)
+                result += self.diff_attrs('tags', 'tagnames_underlined_f')
+            result += self.diff_attrs('description', 'description', truncate=truncate)
 
             self.exclude_attrs = None
 
@@ -89,7 +89,7 @@ class FactsDiff(object):
 
     # ***
 
-    def diff_other(self, name, prop, truncate=False, beautify=None):
+    def diff_attrs(self, name, prop, truncate=False, beautify=None):
         if (self.exclude_attrs is not None) and (name in self.exclude_attrs):
             return ''
         self_val = resolve_attr_or_method(self.orig_fact, prop)
@@ -136,7 +136,7 @@ class FactsDiff(object):
 
     # ***
 
-    def diff_elapsed(self):
+    def diff_time_elapsed(self):
         self_val = self.time_elapsed(self.orig_fact)
         other_val = self.time_elapsed(self.edit_fact)
         if not self_val:
