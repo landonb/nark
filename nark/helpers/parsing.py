@@ -328,7 +328,7 @@ class Parser(object):
             assert parts[0].strip() == ''
             assert parts[1].strip() in DATE_TO_DATE_SEPARATORS
             after_dt2 = self.must_parse_datetime_from_rest(
-                parts[2], 'datetime2', ok_if_missing=strictly_two,
+                parts[2], 'datetime2', ok_if_missing=(not strictly_two),
             )
             if after_dt2 is not None:
                 rest = after_dt2
