@@ -605,6 +605,7 @@ class Fact(BaseItem):
             parts_str = ' '.join(list(filter(None, parts)))
             tags = get_tags_string(fact)
             parts_str += tags_sep + tags if tags else ''
+            parts_str += _(" [del]") if fact.deleted else ''
             return parts_str
 
         def format_result(fact, meta):
