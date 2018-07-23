@@ -72,6 +72,13 @@ class BaseStore(object):
     def init_logger(self):
         self.logger = logging.getLogger('nark.storage')
         self.logger.addHandler(logging.NullHandler())
+        # (lb): BIZARRE: On a 14.04 machine, parent.handlers has StreamHandler
+        #   in it, so it prints to console. This does not happen on a 16.04
+        #   machine I also use. And I cannot determine the reason (both
+        #   machines use a virtualenv configured exactly the same way, and
+        #   the Python version is merely off by one PATCH).
+        self.logger.parent.handlers = []
+        self.logger.parent.addHandler(logging.NullHandler())
 
         sql_log_level = self.config['sql_log_level']
         log_level, warn_name = logging_helpers.resolve_log_level(sql_log_level)
