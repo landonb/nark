@@ -195,10 +195,14 @@ class FactManager(BaseFactManager):
         if not fact.deleted:
             assert alchemy_fact.pk == fact.pk
             fact.split_from = alchemy_fact
+            # Clear the ID so that a new ID is assigned.
             fact.pk = None
             new_fact = self._add(fact, raw=True, skip_commit=True)
             # NOTE: _add() calls:
             #       self.store.session.commit()
+            # Restore the ID to not confuse the caller!
+            assert new_fact.pk > alchemy_fact.pk
+            fact.pk = alchemy_fact.pk
         else:
             # (lb): else, fact is being deleted. Note that we _could_ check all
             # the fact attrs against alchemy_fact to see if the user edited any
@@ -207,6 +211,8 @@ class FactManager(BaseFactManager):
             new_fact = alchemy_fact
 
         alchemy_fact.deleted = True
+        # Should the caller use the old, deleted fact object, reflect its new state.
+        fact.deleted = True
 
         self.store.session.commit()
 
