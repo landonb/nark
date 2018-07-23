@@ -36,20 +36,21 @@ class FactsDiff(object):
         self.orig_fact = orig_fact
         self.edit_fact = edit_fact
         self.formatted = formatted
+        self.exclude_attrs = None
 
     # ***
 
     def friendly_diff(
         self,
-        other,
         truncate=False,
         exclude=None,
-        formatted=False,
         show_elapsed=False,
         show_midpoint=False,
     ):
         def _friendly_diff():
-            if not formatted:
+            self.exclude_attrs = exclude
+
+            if not self.formatted:
                 result = ''
             else:
                 result = []
@@ -62,27 +63,29 @@ class FactsDiff(object):
                 result += diff_values_format('duration', self_val, other_val)
             result += diff_other('start', 'start_fmt_local')
             result += diff_other('end', 'end_fmt_local')
-            if (not truncate) or self.pk or other.pk:
+            if (not truncate) or self.orig_fact.pk or self.edit_fact.pk:
                 result += diff_other('id', 'pk', beautify=beautify_pk)
             result += diff_other('deleted', 'deleted')
             # MAYBE?: (lb): Would we even want to show the split_from fact?
             #  result += diff_other('split_from', 'split_from')
             result += diff_other('activity', 'activity_name')
             result += diff_other('category', 'category_name')
-            if not formatted:
+            if not self.formatted:
                 result += diff_other('tags', 'tagnames_underlined')
             else:
                 # (lb): Ug... this 'formatted' business is crazy.
                 result += diff_other('tags', 'tagnames_underlined_f')
             result += diff_other('description', 'description', truncate=truncate)
 
-            if not formatted:
+            self.exclude_attrs = None
+
+            if not self.formatted:
                 result = result.rstrip()
             return result
 
         def diff_elapsed():
-            self_val = time_elapsed(self)
-            other_val = time_elapsed(other)
+            self_val = time_elapsed(self.orig_fact)
+            other_val = time_elapsed(self.edit_fact)
             if not self_val:
                 # Make 'em the same, i.e., show no diff, no styling.
                 self_val = other_val
@@ -96,30 +99,30 @@ class FactsDiff(object):
             return time_val
 
         def time_midpoint():
-            return format_prepare(other.time_of_day_midpoint())
+            return format_prepare(self.edit_fact.time_of_day_midpoint())
 
         def time_humanize():
-            return format_prepare(other.time_of_day_humanize())
+            return format_prepare(self.edit_fact.time_of_day_humanize())
 
         def beautify_pk(self_val, other_val):
             if (
-                'split' in other.dirty_reasons
-                or 'split' in self.dirty_reasons
+                'split' in self.edit_fact.dirty_reasons
+                or 'split' in self.orig_fact.dirty_reasons
             ):
                 pass
-            if 'lsplit' in other.dirty_reasons:
+            if 'lsplit' in self.edit_fact.dirty_reasons:
                 other_val = 'New split fact, created before new fact'
-            if 'rsplit' in other.dirty_reasons:
+            if 'rsplit' in self.edit_fact.dirty_reasons:
                 other_val = 'New split fact, created after new fact'
             return (self_val, other_val)
 
         def diff_other(name, prop, truncate=False, beautify=None):
-            if exclude is not None and name in exclude:
+            if (self.exclude_attrs is not None) and (name in self.exclude_attrs):
                 return ''
-            self_val = resolve_attr_or_method(self, prop)
+            self_val = resolve_attr_or_method(self.orig_fact, prop)
             other_val = ''
-            if other is not None:
-                other_val = resolve_attr_or_method(other, prop)
+            if self.edit_fact is not None:
+                other_val = resolve_attr_or_method(self.edit_fact, prop)
                 if callable(other_val):
                     other_val = other_val()
                 self_val, other_val = diff_values_enhance(
@@ -154,12 +157,12 @@ class FactsDiff(object):
             return (self_val, other_val)
 
         def format_prepare(some_val):
-            if not formatted or not isinstance(some_val, text_type):
+            if not self.formatted or not isinstance(some_val, text_type):
                 return some_val
             return [('', some_val)]
 
         def format_edited_before(before_val):
-            if not formatted:
+            if not self.formatted:
                 return '{}{}{}'.format(
                     fg('spring_green_3a'),
                     before_val,
@@ -176,7 +179,7 @@ class FactsDiff(object):
             return before_parts
 
         def format_edited_after(self_val, other_val):
-            if not formatted:
+            if not self.formatted:
                 return '{}{}{}{}{} | was: '.format(
                     attr('bold'),
                     attr('underlined'),
@@ -202,7 +205,7 @@ class FactsDiff(object):
         def diff_values_format(name, self_val, other_val):
             prefix = '  '
             left_col = '{}{:.<19} : '.format(prefix, name)
-            if not formatted:
+            if not self.formatted:
                 return '{}{}{}\n'.format(
                     left_col, self_val or '', other_val or '',
                 )
