@@ -276,8 +276,11 @@ class Parser(object):
         #   ``nark on --ask``
         factoid = factoid or ('',)
 
-        # Keep a flat copy of the args.
-        flat = ' '.join(factoid)
+        # Parse a flat copy of the args.
+        full = ' '.join(factoid)
+        parts = full.split(os.linesep, 1)
+        flat = parts[0]
+        more_description = '' if len(parts) == 1 else parts[1].strip()
 
         # Items are separated by any one of the separator(s)
         # not preceded by whitespace, and followed by either
@@ -286,7 +289,8 @@ class Parser(object):
             separators = FACT_METADATA_SEPARATORS
         assert len(separators) > 0
         sep_group = '|'.join(separators)
-        re_item_sep = re.compile(r'(?<=\S)({})(?=\s|$)'.format(sep_group))
+        # C✗P✗: re.compile('(?:,|:)(?=\\s|$)')
+        re_item_sep = re.compile(r'(?:{})(?=\s|$)'.format(sep_group))
 
         if not hash_stamps:
             hash_stamps = '#@'
@@ -294,7 +298,7 @@ class Parser(object):
         self.reset()
         self.raw = factoid
         self.flat = flat
-        self.rest = factoid
+        self.rest = more_description
         self.time_hint = time_hint
         self.re_item_sep = re_item_sep
         self.hash_stamps = hash_stamps
@@ -380,10 +384,9 @@ class Parser(object):
         # as the delimiter -- even though it's used to delimit time -- because
         # the item separator must be the last character of a word.)
         parts = self.re_item_sep.split(datetimes_and_act, 1)
-        if len(parts) == 3:
+        if len(parts) == 2:
             datetimes = parts[0]
-            # Ignore: separator = parts[1]
-            self.activity_name = parts[2]
+            self.activity_name = parts[1]
         else:
             assert len(parts) == 1
             datetimes = None
@@ -407,7 +410,7 @@ class Parser(object):
         assert self.raw_datetime2 is None
 
         if expecting == 2:
-            # Look for separator, e.g., ' to ', ' until ', etc.
+            # Look for separator, e.g., ' to ', ' until ', ' and ', etc.
             parts = Parser.RE_DATE_TO_DATE_SEP.split(datetimes, 1)
             if len(parts) > 1:
                 assert len(parts) == 3  # middle part is the match
@@ -506,77 +509,55 @@ class Parser(object):
     # *** 2: Parse category and tags.
 
     def parse_cat_and_remainder(self, cat_and_remainder):
-        parts = self.re_item_sep.split(cat_and_remainder, 1)
-        if len(parts) == 3:
+        # NOTE: cat_and_remainder may contain leading whitespace, if input
+        #       was of form ``act @ cat``, not ``act@cat`` or ``act @cat``.
+        # Split on any delimiter: ,|:|\n
+        parts = self.re_item_sep.split(cat_and_remainder, 2)
+        description_prefix = ''
+        if len(parts) == 1:
             cat_and_tags = parts[0]
-            # Ignore: separator = parts[1]
-            self.description = parts[2]
-            # Only split on hashtags preceded by a space,
-            # because first part is still the category name.
-            # (lb): Do not strip(), so that empty category works, e.g.,
-            #   `nark on act@ @tag 1: Yee haw!
-            #   NOPE: rest = cat_and_tags.strip()
-            rest = cat_and_tags
-            if Parser.RE_SPLIT_CAT_AND_TAGS.search(rest):
-                category, *tags = Parser.RE_SPLIT_CAT_AND_TAGS.split(rest)
-                self.consume_tags(tags)
-            else:
-                category = rest
-            self.category_name = category
+            unseparated_tags = None
         else:
-            self.verify_single_part_and_warn_if_contains_taglike(parts)
-            more_parts = parts[0].split(' ', 1)
-            if len(more_parts) == 2:
-                assert more_parts[0]  # Should not have a leading ' '.
-                self.category_name = more_parts[0]
-                self.description = more_parts[1].strip()
-            else:
-                self.description = more_parts[0]
+            self.category_name = parts[0]
+            cat_and_tags = None
+            unseparated_tags = parts[1]
+            if len(parts) == 3:
+                remainder = parts[2].strip()
+                if remainder:
+                    description_prefix = remainder
+
+        if cat_and_tags:
+            cat_tags = Parser.RE_SPLIT_TAGS_AND_TAGS.split(cat_and_tags, 1)
+            self.category_name = cat_tags[0]
+            if len(cat_tags) == 2:
+                unseparated_tags = self.hash_stamps[0] + cat_tags[1]
+
+        self.consume_tags_and_description_prefix(unseparated_tags, description_prefix)
 
     def parse_tags_and_remainder(self, tags_and_remainder):
         parts = self.re_item_sep.split(tags_and_remainder, 1)
-        if len(parts) == 3:
-            self.description = ''
-            tags = Parser.RE_SPLIT_TAGS_AND_TAGS.split(parts[0].strip())
-            # If one or more tags were found, first item is empty string.
-            if tags[0].strip() != '':
-                self.description += tags[0]
-                if len(tags) > 1:
-                    # This happens when there's something before the #tags that's
-                    # not part of the act@gory, e.g., `to 2018-12-12 doing a #thing`.
-                    # We could raise and complain, or we could just put in description
-                    # (i.e., keep parsing, do our best, and let user fix it in post).
-                    # MAYBE: (lb): Seems like a rather unnecessarily long message....
-                    warn_msg = _(
-                        'The factoid contains cruft before the #tags that is not part '
-                        'of the act@gory. Not sure if you were trying to tag ot not.'
-                    )
-                    self.warnings.append(warn_msg)
-                    self.consume_tags(tags[1:])
-            else:
-                self.consume_tags(tags)
-            # Append separator and second half of split.
-            self.description += ''.join(parts[1:])
-        else:
-            self.verify_single_part_and_warn_if_contains_taglike(parts)
-            self.description = parts[0].strip()
+        description_middle = ''
+        if len(parts) == 2:
+            description_middle = parts[1]
+        self.consume_tags_and_description_prefix(parts[0], description_middle)
 
-    def verify_single_part_and_warn_if_contains_taglike(self, parts):
-        # This happens when there is no separator (e.g., comma) after the '@'.
-        # The remainder is either treated all as description text, or possibly
-        # as a single word category followed by the description -- which is up
-        # to the caller to do; here we just do a sanity check and warn the user
-        # if there are hashtag delimiters in the remaining text (which is just
-        # the remainder of the first line of the factoid, as everything after
-        # the first newline is treated as description).
-        assert len(parts) == 1
-        if Parser.RE_SPLIT_TAGS_AND_TAGS.match(parts[0].strip()):
-            # FIXME/2018-05-18 16:50: (lb): Maybe not a warning, but a returned value?
-            warn_msg = _(
-                'The factoid is missing the metadata-description separator, .'
-                'so skipping tags. But it looks like you were trying to tag.'
-            )
-            self.warnings.append(warn_msg)
+    def consume_tags_and_description_prefix(
+        self, unseparated_tags, description_middle='',
+    ):
+        description_prefix = ''
+        if unseparated_tags:
+            match_tags = Parser.RE_SPLIT_CAT_AND_TAGS.match(unseparated_tags)
+            if match_tags is not None:
+                split_tags = Parser.RE_SPLIT_TAGS_AND_TAGS.split(unseparated_tags)
+                self.consume_tags(split_tags)
+            else:
+                description_prefix = unseparated_tags
+
+        self.description = description_prefix
+        self.description += " " if description_middle else ""
+        self.description += description_middle
+        self.description += "\n" if self.rest else ""
+        self.description += self.rest
 
     def consume_tags(self, tags):
         tags = [tag.strip() for tag in tags]
