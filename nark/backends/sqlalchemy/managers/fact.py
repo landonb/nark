@@ -121,7 +121,7 @@ class FactManager(BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        self.must_validate_datetimes(fact, endless_okay=True)
+        self.must_validate_datetimes(fact)
 
         alchemy_fact = AlchemyFact(
             pk=None,
@@ -188,10 +188,7 @@ class FactManager(BaseFactManager):
             raise KeyError(message)
 
         if alchemy_fact.deleted:
-            message = _(
-                '{!r} is already marked deleted!'
-                ' One cannot edit such facts'.format(fact)
-            )
+            message = _('Cannot edit deleted Fact: {!r}'.format(fact))
             self.store.logger.error(message)
             raise ValueError(message)
 
@@ -222,18 +219,9 @@ class FactManager(BaseFactManager):
 
     # ***
 
-    def must_validate_datetimes(self, fact, endless_okay=False):
-        if (
-            not isinstance(fact.start, datetime)
-            or (not endless_okay and not isinstance(fact.end, datetime))
-        ):
-            if not endless_okay:
-                msg = 'Expected two datetimes.'
-            else:
-                msg = 'Expected a start time.'
-            raise TypeError(
-                _('Invalid start and/or end for “{!r}”. {}').format(fact, msg)
-            )
+    def must_validate_datetimes(self, fact):
+        if not isinstance(fact.start, datetime):
+            raise TypeError(_('Missing start time for “{!r}”.').format(fact))
 
         # Check for valid time range.
         invalid_range = False
@@ -258,7 +246,7 @@ class FactManager(BaseFactManager):
 
         if not self._timeframe_available_for_fact(fact):
             msg = _(
-                'One or more facts already exist '
+                'One or more Facts already exist '
                 'between the indicated start and end times. '
             )
             self.store.logger.error(msg)
