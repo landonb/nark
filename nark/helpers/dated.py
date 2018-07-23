@@ -245,7 +245,11 @@ def parse_clock_time(clock_time):
     match = RE_RELATIVE_CLOCK.match(clock_time)
     if match:
         parts = match.groupdict()
-        parsed_ct = (parts['hours'], parts['minutes'], parts['seconds'] or '0', )
+        parsed_ct = (
+            parts['hours'],
+            parts['minutes'],
+            parts['seconds'] or '0',
+        )
     return parsed_ct
 
 
