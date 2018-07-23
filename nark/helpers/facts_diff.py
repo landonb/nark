@@ -61,12 +61,18 @@ class FactsDiff(object):
             return result
 
         def assemble_diff_attrs(result):
-            result += self.diff_values_format('interval', None, self.time_humanize())
+            result += self.diff_line_assemble(
+                None, self.time_humanize(), 'interval',
+            )
             if show_midpoint:
-                result += self.diff_values_format('midpoint', None, self.time_midpoint())
+                result += self.diff_line_assemble(
+                    None, self.time_midpoint(), 'midpoint',
+                )
             if show_elapsed:
                 self_val, other_val = self.diff_time_elapsed()
-                result += self.diff_values_format('duration', self_val, other_val)
+                result += self.diff_line_assemble(
+                    self_val, other_val, 'duration',
+                )
             result += self.diff_attrs('start_fmt_local', 'start')
             result += self.diff_attrs('end_fmt_local', 'end')
             if (not truncate) or self.orig_fact.pk or self.edit_fact.pk:
@@ -106,8 +112,15 @@ class FactsDiff(object):
             self_val = format_value_truncate(self_val)
             self_val = self.format_prepare(self_val)
             other_val = self.format_prepare(other_val)
-        attr_diff = self.diff_values_format(name, self_val, other_val)
+        attr_diff = self.diff_line_assemble(self_val, other_val, name)
         return attr_diff
+
+    def diff_line_assemble(self, self_val, other_val, name=None):
+        prefix = self.diff_values_padded_prefix(name)
+        if not self.formatted:
+            return self.diff_line_inline_style(self_val, other_val, prefix)
+        else:
+            return self.diff_line_tuples_style(self_val, other_val, prefix)
 
     def diff_values_enhance(
         self, self_val, other_val, truncate=False, beautify=None,
@@ -215,20 +228,25 @@ class FactsDiff(object):
 
     # ***
 
-    def diff_values_format(self, name, self_val, other_val):
-        prefix = '  '
-        left_col = '{}{:.<19} : '.format(prefix, name)
-        if not self.formatted:
-            return '{}{}{}\n'.format(
-                left_col, self_val or '', other_val or '',
-            )
-        left_col = ('', left_col)
-        newline = ('', '\n')
-        format_tuples = [left_col]
+    def diff_values_padded_prefix(self, name):
+        if name is None:
+            return ''
+        prefix_prefix = '  '
+        padded_prefix = '{}{:.<19} : '.format(prefix_prefix, name)
+        return padded_prefix
+
+    def diff_line_inline_style(self, self_val, other_val, prefix=''):
+        format_inline = "{}{}{}\n".format(prefix, self_val or '', other_val or '')
+        return format_inline
+
+    def diff_line_tuples_style(self, self_val, other_val, prefix=''):
+        format_tuples = []
+        if prefix:
+            format_tuples += [('', prefix)]
         if self_val:
             format_tuples += self_val
         if other_val:
             format_tuples += other_val
-        format_tuples += [newline]
+        format_tuples += [('', '\n')]
         return format_tuples
 
