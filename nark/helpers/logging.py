@@ -73,7 +73,7 @@ def resolve_log_level(level):
     return log_level, error
 
 
-def setupHandler(handler, formatter, *loggers):
+def setup_handler(handler, formatter, *loggers):
     handler.setFormatter(formatter)
     for logger in loggers:
         logger.addHandler(handler)

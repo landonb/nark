@@ -33,6 +33,6 @@ class TestSetupHandler(object):
         stream_handler = logging.StreamHandler()
         formatter = logging_helpers.formatter_basic()
         logger = mocker.MagicMock()
-        logging_helpers.setupHandler(stream_handler, formatter, logger)
+        logging_helpers.setup_handler(stream_handler, formatter, logger)
         logger.addHandler.assert_called_with(stream_handler)
 
