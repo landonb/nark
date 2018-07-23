@@ -582,6 +582,7 @@ class Fact(BaseItem):
         colorful=False,
         cut_width=None,
         show_elapsed=False,
+        omit_empty_actegory=False,
     ):
         """
         Flexible Fact serializer.
@@ -599,7 +600,7 @@ class Fact(BaseItem):
             parts = [
                 get_id_string(fact),
                 get_times_string(fact),
-                fact.actegory_string(shellify),
+                fact.actegory_string(shellify, omit_empty_actegory),
             ]
             parts_str = ' '.join(list(filter(None, parts)))
             tags = get_tags_string(fact)
@@ -671,12 +672,11 @@ class Fact(BaseItem):
 
     # ***
 
-    def actegory_string(self, shellify=False):
+    def actegory_string(self, shellify=False, omit_empty_actegory=False):
         # (lb): We can skip delimiter after time when using ISO 8601.
         if not self.activity_name:
             if not self.category_name:
-                # 2018-06-18: (lb): Should this be '@', or ''?
-                act_cat = ''
+                act_cat = '' if omit_empty_actegory else '@'
             else:
                 act_cat = '@'
         else:
@@ -768,7 +768,8 @@ class Fact(BaseItem):
         """
         was_coloring = set_coloring(False)
         duration = '[{}]'.format(self.get_string_delta('', localize=True))
-        actegory = self.actegory_string() or '<i>No activity</i>'
+        actegory = self.actegory_string(omit_empty_actegory=True)
+        actegory = actegory or '<i>No activity</i>'
         description = self.description_string(cut_width=39, sep=': ')
         simple_str = (
             '{} {}{}'
