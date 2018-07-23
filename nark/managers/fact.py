@@ -608,7 +608,7 @@ class BaseFactManager(BaseManager):
                 if conflict.pk in seen:
                     continue
                 seen.add(conflict.pk)
-                original = copy.deepcopy(conflict)
+                original = conflict.copy()
                 edited_conflicts = resolve_fact_conflict(fact, conflict)
                 for edited in edited_conflicts:
                     resolved.append((edited, original,))
