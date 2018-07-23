@@ -537,6 +537,7 @@ class Fact(BaseItem):
         hashtag_token='#',
         quote_tokens=False,
         underlined=False,
+        split_lines=False,
     ):
         def format_tagname(tag):
             uline = ' underline' if underlined else ''
@@ -552,11 +553,11 @@ class Fact(BaseItem):
         # NOTE: The returned string includes leading space if nonempty!
         tagnames = []
         if self.tags:
-            fmt_space = ('', ' ')
+            fmt_sep = ('', "\n") if split_lines else ('', ' ')
             n_tag = 0
             for fmtd_tagn in self.ordered_tagnames(format_tagname):
                 if n_tag > 0:
-                    tagnames += [fmt_space]
+                    tagnames += [fmt_sep]
                 n_tag += 1
                 tagnames += fmtd_tagn
         return tagnames
