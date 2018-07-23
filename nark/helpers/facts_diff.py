@@ -36,6 +36,7 @@ class FactsDiff(object):
         self.orig_fact = orig_fact
         self.edit_fact = edit_fact
         self.formatted = formatted
+        self.include_newlines = False
         self.exclude_attrs = None
 
     # ***
@@ -48,15 +49,20 @@ class FactsDiff(object):
         show_midpoint=False,
     ):
         def _friendly_diff():
+            self.include_newlines = True
             self.exclude_attrs = exclude
 
             result = '' if not self.formatted else []
             result = assemble_diff_attrs(result)
 
+            self.include_newlines = False
             self.exclude_attrs = None
 
             if not self.formatted:
                 result = result.rstrip()
+            else:
+                while (len(result) > 0) and (not result[-1][1].strip()):
+                    result.pop()
 
             return result
 
@@ -236,7 +242,8 @@ class FactsDiff(object):
         return padded_prefix
 
     def diff_line_inline_style(self, self_val, other_val, prefix=''):
-        format_inline = "{}{}{}\n".format(prefix, self_val or '', other_val or '')
+        format_inline = '{}{}{}'.format(prefix, self_val or '', other_val or '')
+        format_inline += "\n" if self.include_newlines else ''
         return format_inline
 
     def diff_line_tuples_style(self, self_val, other_val, prefix=''):
@@ -247,6 +254,7 @@ class FactsDiff(object):
             format_tuples += self_val
         if other_val:
             format_tuples += other_val
-        format_tuples += [('', '\n')]
+        if self.include_newlines:
+            format_tuples += [('', '\n')]
         return format_tuples
 
