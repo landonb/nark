@@ -23,12 +23,19 @@ import re
 from datetime import timedelta
 from six import text_type
 
+from .parse_errors import ParserInvalidDatetimeException
+
+import lazy_import
+# Profiling: load iso8601: ~ 0.004 secs.
+iso8601 = lazy_import.lazy_module('iso8601')
+
 __all__ = [
     'HamsterTimeSpec',
     'parse_dated',
     'parse_clock_time',
     'datetime_from_clock_prior',
     'datetime_from_clock_after',
+    'parse_datetime_iso8601',
     'parse_relative_minutes',
 ]
 
@@ -278,6 +285,23 @@ def datetime_from_clock_after(dt_relative, clock_time):
     if new_dt < dt_relative:
         new_dt += timedelta(days=1)
     return new_dt
+
+
+# ***
+
+def parse_datetime_iso8601(datepart, must=False, local_tz=None):
+    try:
+        # NOTE: Defaults to datetime.timezone.utc.
+        #       Uses naive if we set default_timezone=None.
+        parsed = iso8601.parse_date(datepart, default_timezone=local_tz)
+    except iso8601.iso8601.ParseError:
+        parsed = None
+        if must:
+            raise ParserInvalidDatetimeException(_(
+                'Unable to parse iso8601 datetime: {}.'
+                .format(datepart)
+            ))
+    return parsed
 
 
 # ***
