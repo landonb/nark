@@ -62,20 +62,22 @@ class FactManager(BaseFactManager):
             If the given fact is the only fact instance within the given timeframe
             the timeframe is considered available (for this fact)!
         """
-        start, end = fact.start, fact.end
+        # Use func.datetime and _get_sql_datetime to normalize time comparisons,
+        # so that equivalent times that are expressed differently are evaluated
+        # as equal, e.g., "2018-01-01 10:00" should match "2018-01-01 10:00:00".
+        # FIXME: func.datetime is SQLite-specific: need to abstract for other DBMSes.
+
+        start = self._get_sql_datetime(fact.start)
         query = self.store.session.query(AlchemyFact)
 
-        condition = and_(AlchemyFact.end > start)
-        if end:
-            condition = and_(
-                AlchemyFact.end > start,
-                AlchemyFact.start < end
-            )
+        condition = and_(func.datetime(AlchemyFact.end) > start)
+        if fact.end is not None:
+            end = self._get_sql_datetime(fact.end)
+            condition = and_(condition, func.datetime(AlchemyFact.start) < end)
         else:
-            condition = or_(
-                AlchemyFact.end > start,
-                AlchemyFact.end == None  # noqa: E711
-            )
+            # The fact is ongoing, so also match the ongoing Fact in the store.
+            # E711: `is None` breaks Alchemy, so use `== None`.
+            condition = or_(AlchemyFact.end == None, condition)  # noqa: E711
 
         if fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
@@ -525,11 +527,12 @@ class FactManager(BaseFactManager):
             return query
 
         def _get_all_filter_partial(query):
+            fmt_since = self._get_sql_datetime(since) if since else None
+            fmt_until = self._get_sql_datetime(until) if until else None
             if partial:
-                # NOTE: (lb): Nothing sets partial=True except tests.
-                query = _get_partial_overlaps(query, since, until)
+                query = _get_partial_overlaps(query, fmt_since, fmt_until)
             else:
-                query = _get_complete_overlaps(query, since, until, endless=endless)
+                query = _get_complete_overlaps(query, fmt_since, fmt_until, endless)
             return query
 
         def _get_partial_overlaps(query, since, until):
@@ -538,18 +541,30 @@ class FactManager(BaseFactManager):
                 # (lb): Checking AlchemyFact.end >= since is sorta redundant,
                 # because AlchemyFact.start >= since should guarantee that.
                 query = query.filter(
-                    or_(AlchemyFact.start >= since, AlchemyFact.end >= since),
+                    or_(
+                        func.datetime(AlchemyFact.start) >= since,
+                        func.datetime(AlchemyFact.end) >= since,
+                    ),
                 )
             elif not since and until:
                 # (lb): Checking AlchemyFact.start <= until is sorta redundant,
                 # because AlchemyFact.end <= until should guarantee that.
                 query = query.filter(
-                    or_(AlchemyFact.start <= until, AlchemyFact.end <= until),
+                    or_(
+                        func.datetime(AlchemyFact.start) <= until,
+                        func.datetime(AlchemyFact.end) <= until,
+                    ),
                 )
             elif since and until:
                 query = query.filter(or_(
-                    and_(AlchemyFact.start >= since, AlchemyFact.start <= until),
-                    and_(AlchemyFact.end >= since, AlchemyFact.end <= until),
+                    and_(
+                        func.datetime(AlchemyFact.start) >= since,
+                        func.datetime(AlchemyFact.start) <= until,
+                    ),
+                    and_(
+                        func.datetime(AlchemyFact.end) >= since,
+                        func.datetime(AlchemyFact.end) <= until,
+                    ),
                 ))
             else:
                 pass
@@ -558,9 +573,9 @@ class FactManager(BaseFactManager):
         def _get_complete_overlaps(query, since, until, endless=False):
             """Return all facts with start and end within the timeframe."""
             if since:
-                query = query.filter(AlchemyFact.start >= since)
+                query = query.filter(func.datetime(AlchemyFact.start) >= since)
             if until:
-                query = query.filter(AlchemyFact.end <= until)
+                query = query.filter(func.datetime(AlchemyFact.end) <= until)
             elif endless:
                 query = query.filter(AlchemyFact.end == None)  # noqa: E711
             return query
@@ -662,6 +677,21 @@ class FactManager(BaseFactManager):
 
     # ***
 
+    def _get_sql_datetime(self, datetm):
+        # Be explicit with the format used by the SQL engine, otherwise,
+        #   e.g., and_(AlchemyFact.start > start) might match where
+        #   AlchemyFact.start == start. In the case of SQLite, the stored
+        #   date will be translated with the seconds, even if 0, e.g.,
+        #   "2018-06-29 16:32:00", but the datetime we use for the compare
+        #   gets translated without, e.g., "2018-06-29 16:32". And we
+        #   all know that "2018-06-29 16:32:00" > "2018-06-29 16:32".
+        # See also: func.datetime(AlchemyFact.start/end).
+        cmp_fmt = '%Y-%m-%d %H:%M:%S'
+        text = datetm.strftime(cmp_fmt)
+        return text
+
+    # ***
+
     def starting_at(self, fact):
         """
         Return the fact starting at the moment in time indicated by fact.start.
@@ -681,7 +711,8 @@ class FactManager(BaseFactManager):
         if fact.start is None:
             raise ValueError('No `start` for starting_at(fact).')
 
-        condition = and_(AlchemyFact.start == fact.start)
+        start_at = self._get_sql_datetime(fact.start)
+        condition = and_(func.datetime(AlchemyFact.start) == start_at)
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
@@ -724,7 +755,8 @@ class FactManager(BaseFactManager):
         if fact.end is None:
             raise ValueError('No `end` for ending_at(fact).')
 
-        condition = and_(AlchemyFact.end == fact.end)
+        end_at = self._get_sql_datetime(fact.end)
+        condition = and_(func.datetime(AlchemyFact.end) == end_at)
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
@@ -772,10 +804,12 @@ class FactManager(BaseFactManager):
                 ref_time = fact.start
             elif fact.end and isinstance(fact.end, datetime):
                 ref_time = fact.end
-        if ref_time is None:
+        if not isinstance(ref_time, datetime):
             raise ValueError(_('No reference time for antecedent(fact).'))
 
-        condition = and_(AlchemyFact.start < ref_time)
+        ref_time = self._get_sql_datetime(ref_time)
+
+        condition = and_(func.datetime(AlchemyFact.start) < ref_time)
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
@@ -816,13 +850,13 @@ class FactManager(BaseFactManager):
 
         if fact is not None:
             if fact.end and isinstance(fact.end, datetime):
-                ref_time = fact.end
+                ref_time = self._get_sql_datetime(fact.end)
             elif fact.start and isinstance(fact.start, datetime):
-                ref_time = fact.start
+                ref_time = self._get_sql_datetime(fact.start)
         if ref_time is None:
             raise ValueError(_('No reference time for subsequent(fact).'))
 
-        condition = and_(AlchemyFact.end > ref_time)
+        condition = and_(func.datetime(AlchemyFact.end) > ref_time)
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
@@ -910,10 +944,15 @@ class FactManager(BaseFactManager):
         """
         query = self.store.session.query(AlchemyFact)
 
+        cmp_time = self._get_sql_datetime(fact_time)
+
         condition = and_(
-            AlchemyFact.start < fact_time,
+            func.datetime(AlchemyFact.start) < cmp_time,
             # Find surrounding complete facts, or the ongoing fact.
-            or_(AlchemyFact.end > fact_time, AlchemyFact.end == None),  # noqa: E711
+            or_(
+                func.datetime(AlchemyFact.end) > cmp_time,
+                AlchemyFact.end == None,
+            ),  # noqa: E711
         )
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
