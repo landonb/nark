@@ -296,7 +296,7 @@ class Parser(object):
 
     def parse_datetimes_easy(self):
         rest = self.flat
-        if self.time_hint == 'verify_start':
+        if self.time_hint in ['verify_start', 'verify_then', 'verify_still']:
             # NOTE: Be nice and look for end, just in case it's there.
             rest = self.parse_datetimes_easy_both(rest, strictly_two=False)
         elif self.time_hint == 'verify_end':
@@ -304,7 +304,7 @@ class Parser(object):
         elif self.time_hint == 'verify_both':
             rest = self.parse_datetimes_easy_both(rest, strictly_two=True)
         else:
-            assert self.time_hint == 'verify_none'
+            assert self.time_hint in ['verify_none', 'verify_after']
         return rest
 
     def parse_datetimes_easy_both(self, rest, strictly_two=False):
@@ -330,11 +330,11 @@ class Parser(object):
         expect_category = True
         if self.time_hint == 'verify_start':
             rest_after_act = self.lstrip_datetimes(expecting=2, strictly_two=False)
-        elif self.time_hint == 'verify_end':
+        elif self.time_hint in ['verify_end', 'verify_then', 'verify_still']:
             rest_after_act = self.lstrip_datetimes(expecting=1)
         elif self.time_hint == 'verify_both':
             rest_after_act = self.lstrip_datetimes(expecting=2, strictly_two=True)
-        elif self.time_hint == 'verify_none':
+        elif self.time_hint in ['verify_none', 'verify_after']:
             # There is no datetime(s). Just the act@cat.
             rest_after_act, expect_category = self.lstrip_activity(self.flat)
         else:
@@ -414,7 +414,7 @@ class Parser(object):
                 self.raw_datetime1 = datetimes
                 self.datetime2 = ''
             else:
-                assert self.time_hint == 'verify_end'
+                assert self.time_hint in ['verify_end', 'verify_then', 'verify_still']
                 assert not strictly_two
                 self.datetime1 = ''
                 self.raw_datetime2 = datetimes
@@ -444,7 +444,7 @@ class Parser(object):
             if self.time_hint == 'verify_start':
                 dt_attr = 'datetime1'
             else:
-                assert self.time_hint == 'verify_end'
+                assert self.time_hint in ['verify_end', 'verify_then', 'verify_still']
                 dt_attr = 'datetime2'
 
         rest = self.must_parse_datetime_from_rest(dt_and_act, dt_attr)
