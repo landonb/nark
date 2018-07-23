@@ -39,6 +39,8 @@ requirements = [
     'icalendar',
     # https://bitbucket.org/micktwomey/pyiso8601
     'iso8601',
+    # https://github.com/mnmelo/lazy_import
+    'lazy_import',
     # Daylight saving time-aware timezone library.
     #  https://pythonhosted.org/pytz/
     'pytz',
