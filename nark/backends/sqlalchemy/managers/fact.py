@@ -367,6 +367,7 @@ class FactManager(BaseFactManager):
         sort_col='',
         sort_order='',
         raw=False,
+        exclude_ongoing=None,
 
         # FIXME/2018-06-25: (lb): Use lazy_tags fix export slowness,
         #   if I re-introduced it inadvertently.
@@ -437,6 +438,8 @@ class FactManager(BaseFactManager):
             query = _get_all_filter_by_search_term(query)
 
             query = query_apply_true_or_not(query, AlchemyFact.deleted, deleted)
+
+            query = _get_all_filter_by_ongoing(query)
 
             query = _get_all_order_by(query, span_col)
 
@@ -626,6 +629,13 @@ class FactManager(BaseFactManager):
                     AlchemyCategory.name.ilike('%{}%'.format(search_term))
                     )
             )
+            return query
+
+        def _get_all_filter_by_ongoing(query):
+            if not exclude_ongoing:
+                return query
+            if exclude_ongoing:
+                query = query.filter(AlchemyFact.end != None)  # noqa: E711
             return query
 
         # FIXME/2018-06-09: (lb): DRY: Combing each manager's _get_all_order_by.
