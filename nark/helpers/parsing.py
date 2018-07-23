@@ -189,12 +189,19 @@ class Parser(object):
         # FIXME/2018-05-15: (lb): Should #|@ be settable, like the other
         # two (DATE_TO_DATE_SEPARATORS and FACT_METADATA_SEPARATORS)?
         # Or does that make maintaining the parser that much harder?
+        # HINT: Matches space(s) followed by hash.
+        #   On split, removes whitespace (because matched).
+        #   - First split element may be empty string.
+        #   - Final split element may have trailing spaces.
         Parser.RE_SPLIT_CAT_AND_TAGS = re.compile(
             r'\s+[{hash_stamps}](?=\S)'
             .format(hash_stamps=self.hash_stamps)
         )
 
     def re_setup_tags_upon_tags(self):
+        # HINT: Matches only on a hash starting the string.
+        #   On split, leaves trailing spaces on each element.
+        #   - First split element may be whitespace string.
         Parser.RE_SPLIT_TAGS_AND_TAGS = re.compile(
             r'(?<!\S)[{hash_stamps}](?=\S)'
             .format(hash_stamps=self.hash_stamps)
