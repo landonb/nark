@@ -67,20 +67,20 @@ class FactsDiff(object):
             if show_elapsed:
                 self_val, other_val = self.diff_time_elapsed()
                 result += self.diff_values_format('duration', self_val, other_val)
-            result += self.diff_attrs('start', 'start_fmt_local')
-            result += self.diff_attrs('end', 'end_fmt_local')
+            result += self.diff_attrs('start_fmt_local', 'start')
+            result += self.diff_attrs('end_fmt_local', 'end')
             if (not truncate) or self.orig_fact.pk or self.edit_fact.pk:
-                result += self.diff_attrs('id', 'pk', beautify=self.beautify_pk)
+                result += self.diff_attrs('pk', 'id', beautify=self.beautify_pk)
             result += self.diff_attrs('deleted', 'deleted')
             # MAYBE?: (lb): Would we even want to show the split_from fact?
             #  result += self.diff_attrs('split_from', 'split_from')
-            result += self.diff_attrs('activity', 'activity_name')
-            result += self.diff_attrs('category', 'category_name')
+            result += self.diff_attrs('activity_name', 'activity')
+            result += self.diff_attrs('category_name', 'category')
             if not self.formatted:
-                result += self.diff_attrs('tags', 'tagnames_underlined')
+                result += self.diff_attrs('tagnames_underlined', 'tags')
             else:
                 # (lb): Ug... this 'formatted' business is crazy.
-                result += self.diff_attrs('tags', 'tagnames_underlined_f')
+                result += self.diff_attrs('tagnames_underlined_f', 'tags')
             result += self.diff_attrs('description', 'description', truncate=truncate)
             return result
 
@@ -90,7 +90,7 @@ class FactsDiff(object):
 
     # ***
 
-    def diff_attrs(self, name, prop, truncate=False, beautify=None):
+    def diff_attrs(self, prop, name=None, truncate=False, beautify=None):
         if (self.exclude_attrs is not None) and (name in self.exclude_attrs):
             return ''
         self_val = resolve_attr_or_method(self.orig_fact, prop)
