@@ -55,27 +55,27 @@ class FactsDiff(object):
             else:
                 result = []
 
-            result += diff_values_format('interval', None, time_humanize())
+            result += self.diff_values_format('interval', None, self.time_humanize())
             if show_midpoint:
-                result += diff_values_format('midpoint', None, time_midpoint())
+                result += self.diff_values_format('midpoint', None, self.time_midpoint())
             if show_elapsed:
-                self_val, other_val = diff_elapsed()
-                result += diff_values_format('duration', self_val, other_val)
-            result += diff_other('start', 'start_fmt_local')
-            result += diff_other('end', 'end_fmt_local')
+                self_val, other_val = self.diff_elapsed()
+                result += self.diff_values_format('duration', self_val, other_val)
+            result += self.diff_other('start', 'start_fmt_local')
+            result += self.diff_other('end', 'end_fmt_local')
             if (not truncate) or self.orig_fact.pk or self.edit_fact.pk:
-                result += diff_other('id', 'pk', beautify=beautify_pk)
-            result += diff_other('deleted', 'deleted')
+                result += self.diff_other('id', 'pk', beautify=self.beautify_pk)
+            result += self.diff_other('deleted', 'deleted')
             # MAYBE?: (lb): Would we even want to show the split_from fact?
-            #  result += diff_other('split_from', 'split_from')
-            result += diff_other('activity', 'activity_name')
-            result += diff_other('category', 'category_name')
+            #  result += self.diff_other('split_from', 'split_from')
+            result += self.diff_other('activity', 'activity_name')
+            result += self.diff_other('category', 'category_name')
             if not self.formatted:
-                result += diff_other('tags', 'tagnames_underlined')
+                result += self.diff_other('tags', 'tagnames_underlined')
             else:
                 # (lb): Ug... this 'formatted' business is crazy.
-                result += diff_other('tags', 'tagnames_underlined_f')
-            result += diff_other('description', 'description', truncate=truncate)
+                result += self.diff_other('tags', 'tagnames_underlined_f')
+            result += self.diff_other('description', 'description', truncate=truncate)
 
             self.exclude_attrs = None
 
@@ -85,147 +85,149 @@ class FactsDiff(object):
 
         # ***
 
-        def diff_other(name, prop, truncate=False, beautify=None):
-            if (self.exclude_attrs is not None) and (name in self.exclude_attrs):
-                return ''
-            self_val = resolve_attr_or_method(self.orig_fact, prop)
-            other_val = ''
-            if self.edit_fact is not None:
-                other_val = resolve_attr_or_method(self.edit_fact, prop)
-                if callable(other_val):
-                    other_val = other_val()
-                self_val, other_val = diff_values_enhance(
-                    self_val, other_val, truncate=truncate, beautify=beautify,
-                )
-            elif truncate:
-                self_val = format_value_truncate(self_val)
-                self_val = format_prepare(self_val)
-                other_val = format_prepare(other_val)
-            attr_diff = diff_values_format(name, self_val, other_val)
-            return attr_diff
+        return _friendly_diff()
 
-        def diff_values_enhance(
-            self_val, other_val, truncate=False, beautify=None,
-        ):
-            differ = False
+    # ***
+
+    def diff_other(self, name, prop, truncate=False, beautify=None):
+        if (self.exclude_attrs is not None) and (name in self.exclude_attrs):
+            return ''
+        self_val = resolve_attr_or_method(self.orig_fact, prop)
+        other_val = ''
+        if self.edit_fact is not None:
+            other_val = resolve_attr_or_method(self.edit_fact, prop)
+            if callable(other_val):
+                other_val = other_val()
+            self_val, other_val = self.diff_values_enhance(
+                self_val, other_val, truncate=truncate, beautify=beautify,
+            )
+        elif truncate:
+            self_val = format_value_truncate(self_val)
+            self_val = self.format_prepare(self_val)
+            other_val = self.format_prepare(other_val)
+        attr_diff = self.diff_values_format(name, self_val, other_val)
+        return attr_diff
+
+    def diff_values_enhance(
+        self, self_val, other_val, truncate=False, beautify=None,
+    ):
+        differ = False
+        if self_val != other_val:
+            differ = True
+        if truncate:
+            self_val = format_value_truncate(self_val)
+            other_val = format_value_truncate(other_val)
+        if beautify is not None:
+            self_val, other_val = beautify(self_val, other_val)
             if self_val != other_val:
                 differ = True
-            if truncate:
-                self_val = format_value_truncate(self_val)
-                other_val = format_value_truncate(other_val)
-            if beautify is not None:
-                self_val, other_val = beautify(self_val, other_val)
-                if self_val != other_val:
-                    differ = True
-            if differ:
-                self_val = format_edited_before(self_val)
-                self_val, other_val = format_edited_after(self_val, other_val)
-            else:
-                self_val = format_prepare(self_val)
-                other_val = format_prepare('')
-            return (self_val, other_val)
+        if differ:
+            self_val = self.format_edited_before(self_val)
+            self_val, other_val = self.format_edited_after(self_val, other_val)
+        else:
+            self_val = self.format_prepare(self_val)
+            other_val = self.format_prepare('')
+        return (self_val, other_val)
 
-        def format_prepare(some_val):
-            if not self.formatted or not isinstance(some_val, text_type):
-                return some_val
-            return [('', some_val)]
+    def format_prepare(self, some_val):
+        if not self.formatted or not isinstance(some_val, text_type):
+            return some_val
+        return [('', some_val)]
 
-        # ***
+    # ***
 
-        def diff_elapsed():
-            self_val = time_elapsed(self.orig_fact)
-            other_val = time_elapsed(self.edit_fact)
-            if not self_val:
-                # Make 'em the same, i.e., show no diff, no styling.
-                self_val = other_val
-            return diff_values_enhance(self_val, other_val)
+    def diff_elapsed(self):
+        self_val = self.time_elapsed(self.orig_fact)
+        other_val = self.time_elapsed(self.edit_fact)
+        if not self_val:
+            # Make 'em the same, i.e., show no diff, no styling.
+            self_val = other_val
+        return self.diff_values_enhance(self_val, other_val)
 
-        def time_elapsed(fact):
-            # NOTE: start and/or end might be string; e.g., clock or rel. time.
-            if not fact.times_ok:
-                return None
-            time_val = fact.get_string_delta('HHhMMm', localize=True)
-            return time_val
+    def time_elapsed(self, fact):
+        # NOTE: start and/or end might be string; e.g., clock or rel. time.
+        if not fact.times_ok:
+            return None
+        time_val = fact.get_string_delta('HHhMMm', localize=True)
+        return time_val
 
-        def time_midpoint():
-            return format_prepare(self.edit_fact.time_of_day_midpoint())
+    def time_midpoint(self):
+        return self.format_prepare(self.edit_fact.time_of_day_midpoint())
 
-        def time_humanize():
-            return format_prepare(self.edit_fact.time_of_day_humanize())
+    def time_humanize(self):
+        return self.format_prepare(self.edit_fact.time_of_day_humanize())
 
-        def beautify_pk(self_val, other_val):
-            if (
-                'split' in self.edit_fact.dirty_reasons
-                or 'split' in self.orig_fact.dirty_reasons
-            ):
-                pass
-            if 'lsplit' in self.edit_fact.dirty_reasons:
-                other_val = 'New split fact, created before new fact'
-            if 'rsplit' in self.edit_fact.dirty_reasons:
-                other_val = 'New split fact, created after new fact'
-            return (self_val, other_val)
+    def beautify_pk(self, self_val, other_val):
+        if (
+            'split' in self.edit_fact.dirty_reasons
+            or 'split' in self.orig_fact.dirty_reasons
+        ):
+            pass
+        if 'lsplit' in self.edit_fact.dirty_reasons:
+            other_val = 'New split fact, created before new fact'
+        if 'rsplit' in self.edit_fact.dirty_reasons:
+            other_val = 'New split fact, created after new fact'
+        return (self_val, other_val)
 
-        # ***
+    # ***
 
-        def format_edited_before(before_val):
-            if not self.formatted:
-                return '{}{}{}'.format(
-                    fg('spring_green_3a'),
-                    before_val,
-                    attr('reset'),
-                )
-            spring_green_3a = '00AF5F'
-            style = 'fg:#{}'.format(spring_green_3a)
-            before_parts = []
-            if isinstance(before_val, text_type):
-                before_parts += [(style, before_val)]
-            elif before_val is not None:
-                for tup in before_val:
-                    before_parts.append((style, tup[1]))
-            return before_parts
+    def format_edited_before(self, before_val):
+        if not self.formatted:
+            return '{}{}{}'.format(
+                fg('spring_green_3a'),
+                before_val,
+                attr('reset'),
+            )
+        spring_green_3a = '00AF5F'
+        style = 'fg:#{}'.format(spring_green_3a)
+        before_parts = []
+        if isinstance(before_val, text_type):
+            before_parts += [(style, before_val)]
+        elif before_val is not None:
+            for tup in before_val:
+                before_parts.append((style, tup[1]))
+        return before_parts
 
-        def format_edited_after(self_val, other_val):
-            if not self.formatted:
-                return '{}{}{}{}{} | was: '.format(
-                    attr('bold'),
-                    attr('underlined'),
-                    fg('light_salmon_3b'),
-                    other_val,
-                    attr('reset'),
-                    # (lb): What, colored has no italic option?
-                ), self_val
-            light_salmon_3b = 'D7875F'
-            style = 'fg:#{} bold underline'.format(light_salmon_3b)
-            after_parts = []
-            if isinstance(other_val, text_type):
-                after_parts += [(style, other_val)]
-            elif other_val is not None:
-                for tup in other_val:
-                    after_parts.append((style, tup[1]))
-            # (lb): Swap the order, for display purposes.
-            #   (These formatting functions are so janky!)
-            if self_val and self_val[0][1]:
-                after_parts += [('italic', ' | was: ')]
-            return after_parts, self_val
+    def format_edited_after(self, self_val, other_val):
+        if not self.formatted:
+            return '{}{}{}{}{} | was: '.format(
+                attr('bold'),
+                attr('underlined'),
+                fg('light_salmon_3b'),
+                other_val,
+                attr('reset'),
+                # (lb): What, colored has no italic option?
+            ), self_val
+        light_salmon_3b = 'D7875F'
+        style = 'fg:#{} bold underline'.format(light_salmon_3b)
+        after_parts = []
+        if isinstance(other_val, text_type):
+            after_parts += [(style, other_val)]
+        elif other_val is not None:
+            for tup in other_val:
+                after_parts.append((style, tup[1]))
+        # (lb): Swap the order, for display purposes.
+        #   (These formatting functions are so janky!)
+        if self_val and self_val[0][1]:
+            after_parts += [('italic', ' | was: ')]
+        return after_parts, self_val
 
-        # ***
+    # ***
 
-        def diff_values_format(name, self_val, other_val):
-            prefix = '  '
-            left_col = '{}{:.<19} : '.format(prefix, name)
-            if not self.formatted:
-                return '{}{}{}\n'.format(
-                    left_col, self_val or '', other_val or '',
-                )
-            left_col = ('', left_col)
-            newline = ('', '\n')
-            format_tuples = [left_col]
-            if self_val:
-                format_tuples += self_val
-            if other_val:
-                format_tuples += other_val
-            format_tuples += [newline]
-            return format_tuples
-
-        return _friendly_diff()
+    def diff_values_format(self, name, self_val, other_val):
+        prefix = '  '
+        left_col = '{}{:.<19} : '.format(prefix, name)
+        if not self.formatted:
+            return '{}{}{}\n'.format(
+                left_col, self_val or '', other_val or '',
+            )
+        left_col = ('', left_col)
+        newline = ('', '\n')
+        format_tuples = [left_col]
+        if self_val:
+            format_tuples += self_val
+        if other_val:
+            format_tuples += other_val
+        format_tuples += [newline]
+        return format_tuples
 
