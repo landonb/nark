@@ -145,7 +145,7 @@ class HamsterTimeSpec(object):
 
         # Never forget! Hamster allows relative time!
         pattern_relative = (
-            '(?P<relative>([-+]?(\d+h)|[-+](\d+h)?\dm?))'
+            '(?P<relative>([-+]?(\d+h)|[-+](\d+h)?\d+m?))'
         )
 
         pattern_just_clock = (
