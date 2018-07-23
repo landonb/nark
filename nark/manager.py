@@ -51,7 +51,8 @@ class BaseStore(object):
         self.categories = BaseCategoryManager(self)
         self.activities = BaseActivityManager(self)
         self.tags = BaseTagManager(self)
-        self.facts = BaseFactManager(self)
+        localize = self.config['tz_aware']
+        self.facts = BaseFactManager(self, localize=localize)
         self._now = None
 
     def standup(self):

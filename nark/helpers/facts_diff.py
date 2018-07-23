@@ -168,7 +168,7 @@ class FactsDiff(object):
         # NOTE: start and/or end might be string; e.g., clock or rel. time.
         if not fact.times_ok:
             return None
-        time_val = fact.get_string_delta('HHhMMm', localize=True)
+        time_val = fact.get_string_delta('HHhMMm')
         return time_val
 
     def time_midpoint(self):

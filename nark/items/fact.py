@@ -234,6 +234,16 @@ class Fact(BaseItem):
 
     # ***
 
+    LOCALIZE = False
+
+    @classmethod
+    def localize(cls, localize=None):
+        if localize is not None:
+            cls.LOCALIZE = localize
+        return cls.LOCALIZE
+
+    # ***
+
     @property
     def start(self):
         return self._start
@@ -316,6 +326,10 @@ class Fact(BaseItem):
         return False
 
     @property
+    def time_now(self):
+        return datetime.now() if self.localize else datetime.utcnow()
+
+    @property
     def times(self):
         return (self.start, self.end)
 
@@ -327,7 +341,7 @@ class Fact(BaseItem):
 
     # ***
 
-    def delta(self, localize=False):
+    def delta(self):
         """
         Provide the offset of start to end for this fact.
 
@@ -337,11 +351,11 @@ class Fact(BaseItem):
         """
         end_time = self.end
         if not end_time:
-            end_time = datetime.now() if localize else datetime.utcnow()
+            end_time = self.time_now
 
         return end_time - self.start
 
-    def get_string_delta(self, formatting='%M', localize=False):
+    def get_string_delta(self, formatting='%M'):
         """
         Return a string representation of ``Fact().delta``.
 
@@ -357,7 +371,7 @@ class Fact(BaseItem):
             str: Formatted string representing this fact's *duration*.
         """
         def _get_string_delta():
-            delta = self.delta(localize)
+            delta = self.delta()
             seconds = delta.total_seconds() if delta is not None else 0
             hours = int(seconds / 3600)
             minutes = int((seconds % 3600) / 60)
@@ -394,7 +408,7 @@ class Fact(BaseItem):
 
     # ***
 
-    def time_of_day_midpoint(self, localize=False):
+    def time_of_day_midpoint(self):
         if not self.times_ok:
             return ''
         clock_sep = ' ◐ '
@@ -407,7 +421,7 @@ class Fact(BaseItem):
 
     # ***
 
-    def time_of_day_humanize(self, localize=False):
+    def time_of_day_humanize(self):
         if not self.times_ok:
             return ''
         clock_sep = ' ◐ '
@@ -418,8 +432,9 @@ class Fact(BaseItem):
         if self.end == self.start:
             return text
         text += _(" — ")
-        text += self.end.strftime("%I:%M %p")
-        end_wkd_day_mon_year = self.end.strftime("%a %d %b %Y")
+        end_time = self.end if self.end is not None else self.time_now
+        text += end_time.strftime("%I:%M %p")
+        end_wkd_day_mon_year = end_time.strftime("%a %d %b %Y")
         if end_wkd_day_mon_year == wkd_day_mon_year:
             return text
         text += " "
@@ -630,7 +645,7 @@ class Fact(BaseItem):
         def get_times_string_start(fact):
             if not fact.start:
                 return ''
-            if not localize:
+            if not self.localize:
                 start_time = fact.start_fmt_utc
             else:
                 start_time = fact.start_fmt_local
@@ -643,7 +658,7 @@ class Fact(BaseItem):
             if not fact.end:
                 # (lb): What's a good term here? '<ongoing>'? Or just 'now'?
                 end_time = _('<now>')
-            elif not localize:
+            elif not self.localize:
                 end_time = fact.end_fmt_utc
             else:
                 end_time = fact.end_fmt_local
@@ -653,7 +668,7 @@ class Fact(BaseItem):
         def get_times_duration(fact):
             if not show_elapsed:
                 return ''
-            duration = ' [{}]'.format(fact.get_string_delta('', localize))
+            duration = ' [{}]'.format(fact.get_string_delta(''))
             return colorize(duration, 'grey_78')
 
         def get_tags_string(fact):
@@ -738,7 +753,6 @@ class Fact(BaseItem):
         return self.friendly_str(
             shellify=shellify,
             description_sep=': ',
-            localize=False,
             truncate=False,
             include_id=False,
             colorful=False,
@@ -755,7 +769,6 @@ class Fact(BaseItem):
             # shellify=False,
             description_sep=': ',
             # tags_sep=': ',
-            localize=True,
             include_id=True,
             # colorful=False,
             cut_width=39,
@@ -768,7 +781,7 @@ class Fact(BaseItem):
         A briefer Fact one-liner. Useful for, e.g., a notifier.
         """
         was_coloring = set_coloring(False)
-        duration = '[{}]'.format(self.get_string_delta('', localize=True))
+        duration = '[{}]'.format(self.get_string_delta(''))
         actegory = self.actegory_string(omit_empty_actegory=True)
         actegory = actegory or '<i>No activity</i>'
         description = self.description_string(cut_width=39, sep=': ')
