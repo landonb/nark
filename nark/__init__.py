@@ -21,13 +21,6 @@ from __future__ import absolute_import, unicode_literals
 
 from gettext import gettext as _
 
-# Export classes from here for other application to more easily import.
-from .control import REGISTERED_BACKENDS, HamsterControl  # noqa: F401
-from .items.activity import Activity  # noqa: F401
-from .items.category import Category  # noqa: F401
-from .items.fact import Fact  # noqa: F401
-from .items.tag import Tag  # noqa:
-
 __all__ = [
     '__version__',
 ]

@@ -29,9 +29,12 @@ from sqlalchemy import create_engine
 
 
 # FIXME:
-from nark import Activity, Category, Fact, Tag
 from nark.backends.sqlalchemy import objects
 from nark.backends.sqlalchemy.storage import SQLAlchemyStore
+from nark.items.activity import Activity
+from nark.items.category import Category
+from nark.items.fact import Fact
+from nark.items.tag import Tag
 
 
 from . import common, factories

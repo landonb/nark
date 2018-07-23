@@ -23,7 +23,7 @@ import pickle
 import pytest
 from freezegun import freeze_time
 
-from nark import Fact
+from nark.items.fact import Fact
 
 
 class TestBaseStore():

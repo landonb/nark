@@ -17,9 +17,10 @@
 
 """Submodule providing a SQLAlchemy storage backend for ``nark``."""
 
-# Export classes from here for other application to more easily import.
-from .objects import (  # noqa: F401
-    AlchemyActivity, AlchemyCategory, AlchemyFact, AlchemyTag,
-)
+# Normally, to control lazy-loading, we wouldn't export classes from here,
+# but the store is loaded dynamically, so we need to export classes here
+# so that the factory generator doesn't have to explicitly import them all.
+# (lb): Or something.
+#   Search: importlib.import_module
 from .storage import SQLAlchemyStore  # noqa: F401
 

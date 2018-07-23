@@ -20,13 +20,13 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import pytest
 
-from nark.backends.sqlalchemy import (
+from nark.backends.sqlalchemy.objects import (
     AlchemyActivity,
     AlchemyCategory,
     AlchemyFact,
-    AlchemyTag,
-    SQLAlchemyStore,
+    AlchemyTag
 )
+from nark.backends.sqlalchemy.storage import SQLAlchemyStore
 
 
 # The reason we see a great deal of count == 0 statements is to make sure that

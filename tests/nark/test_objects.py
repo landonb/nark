@@ -28,7 +28,10 @@ from six import text_type
 
 
 # FIXME:
-from nark import Activity, Category, Fact, Tag
+from nark.items.activity import Activity
+from nark.items.category import Category
+from nark.items.fact import Fact
+from nark.items.tag import Tag
 
 
 
