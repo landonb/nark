@@ -174,7 +174,7 @@ class BaseFactManager(BaseManager):
         # FIXME/2018-06-11: (lb): Update args help... this is stale:
 
         Args:
-            until (datetime.datetime, optional): Consider only Facts
+            since (datetime.datetime, optional): Consider only Facts
                 starting at or after this date. If a time is not specified,
                 "00:00:00" is used; otherwise the time of the object is used.
                 Defaults to ``None``.
@@ -232,7 +232,7 @@ class BaseFactManager(BaseManager):
             if isinstance(since, datetime.datetime):
                 # isinstance(datetime.datetime, datetime.date) returns True,
                 # which is why we need to catch this case first.
-                pass
+                since_dt = since
             elif isinstance(since, datetime.date):
                 # The user specified a date, but not a time. Assume midnight.
                 self.store.logger.debug(_('Using midnight as since date clock time!'))
@@ -256,7 +256,7 @@ class BaseFactManager(BaseManager):
             if isinstance(until, datetime.datetime):
                 # isinstance(datetime.datetime, datetime.date) returns True,
                 # which is why we need to except this case first.
-                pass
+                until_dt = until
             elif isinstance(until, datetime.date):
                 until_dt = time_helpers.end_day_to_datetime(until, self.store.config)
             elif isinstance(until, datetime.time):
