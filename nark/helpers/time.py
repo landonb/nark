@@ -125,6 +125,12 @@ def validate_start_end_range(range_tuple):
 def must_be_datetime_or_relative(dt):
     """FIXME: Document"""
     if not dt or isinstance(dt, datetime.datetime) or isinstance(dt, text_type):
+        if isinstance(dt, datetime.datetime):
+            # FIXME: (lb): I've got milliseconds in my store data!!
+            #        So this little hack kludge-fixes the problem;
+            #        perhaps someday I'll revisit this and really
+            #        figure out what's going on.
+            return dt.replace(microsecond=0)
         return dt
     raise TypeError(_(
         'Found {} rather than a datetime, string, or None, as expected.'
