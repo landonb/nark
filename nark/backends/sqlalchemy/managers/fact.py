@@ -43,7 +43,7 @@ class FactManager(BaseFactManager):
 
     # ***
 
-    def _timeframe_available_for_fact(self, fact):
+    def _timeframe_available_for_fact(self, fact, ignore_pks=[]):
         """
         Determine if a timeframe given by the passed fact is already occupied.
 
@@ -85,6 +85,9 @@ class FactManager(BaseFactManager):
         if fact.split_from:
             condition = and_(condition, AlchemyFact.pk != fact.split_from.pk)
 
+        if ignore_pks:
+            condition = and_(condition, AlchemyFact.pk.notin_(ignore_pks))
+
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
         query = query.filter(condition)
@@ -93,7 +96,7 @@ class FactManager(BaseFactManager):
 
     # ***
 
-    def _add(self, fact, raw=False, skip_commit=False):
+    def _add(self, fact, raw=False, skip_commit=False, ignore_pks=[]):
         """
         Add a new fact to the database.
 
@@ -121,7 +124,7 @@ class FactManager(BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        self.must_validate_datetimes(fact)
+        self.must_validate_datetimes(fact, ignore_pks=ignore_pks)
 
         alchemy_fact = AlchemyFact(
             pk=None,
@@ -150,7 +153,7 @@ class FactManager(BaseFactManager):
 
     # ***
 
-    def _update(self, fact, raw=False):
+    def _update(self, fact, raw=False, ignore_pks=[]):
         """
         Update and existing fact with new values.
 
@@ -179,7 +182,7 @@ class FactManager(BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        self.must_validate_datetimes(fact)
+        self.must_validate_datetimes(fact, ignore_pks=ignore_pks)
 
         alchemy_fact = self.store.session.query(AlchemyFact).get(fact.pk)
         if not alchemy_fact:
@@ -197,7 +200,7 @@ class FactManager(BaseFactManager):
             fact.split_from = alchemy_fact
             # Clear the ID so that a new ID is assigned.
             fact.pk = None
-            new_fact = self._add(fact, raw=True, skip_commit=True)
+            new_fact = self._add(fact, raw=True, skip_commit=True, ignore_pks=ignore_pks)
             # NOTE: _add() calls:
             #       self.store.session.commit()
             # Restore the ID to not confuse the caller!
@@ -225,7 +228,7 @@ class FactManager(BaseFactManager):
 
     # ***
 
-    def must_validate_datetimes(self, fact):
+    def must_validate_datetimes(self, fact, ignore_pks=[]):
         if not isinstance(fact.start, datetime):
             raise TypeError(_('Missing start time for “{!r}”.').format(fact))
 
@@ -250,7 +253,7 @@ class FactManager(BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        if not self._timeframe_available_for_fact(fact):
+        if not self._timeframe_available_for_fact(fact, ignore_pks):
             msg = _(
                 'One or more Facts already exist '
                 'between the indicated start and end times. '
