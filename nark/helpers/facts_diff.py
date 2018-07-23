@@ -50,11 +50,17 @@ class FactsDiff(object):
         def _friendly_diff():
             self.exclude_attrs = exclude
 
-            if not self.formatted:
-                result = ''
-            else:
-                result = []
+            result = '' if not self.formatted else []
+            result = assemble_diff_attrs(result)
 
+            self.exclude_attrs = None
+
+            if not self.formatted:
+                result = result.rstrip()
+
+            return result
+
+        def assemble_diff_attrs(result):
             result += self.diff_values_format('interval', None, self.time_humanize())
             if show_midpoint:
                 result += self.diff_values_format('midpoint', None, self.time_midpoint())
@@ -76,11 +82,6 @@ class FactsDiff(object):
                 # (lb): Ug... this 'formatted' business is crazy.
                 result += self.diff_attrs('tags', 'tagnames_underlined_f')
             result += self.diff_attrs('description', 'description', truncate=truncate)
-
-            self.exclude_attrs = None
-
-            if not self.formatted:
-                result = result.rstrip()
             return result
 
         # ***
