@@ -206,6 +206,32 @@ class Fact(BaseItem):
         """
         return self.as_tuple(include_pk=False) == other.as_tuple(include_pk=False)
 
+    def squash(self, other, squash_sep=''):
+        # (lb): Not super happy about this whole squash business,
+        #   as you can probably suss form all these asserts....
+        assert other.pk is None or other.pk < 0
+        assert not self.deleted
+        assert not other.deleted
+        assert not other.split_from
+        assert self.start
+        assert not self.end
+        assert not (other.start and other.end)
+
+        self.end = other.start or other.end
+        assert self.end
+
+        if other.activity_name or other.category_name:
+            self.activity = other.activity
+
+        self.tags_replace(self.tags + other.tags)
+
+        self.description_squash(other, squash_sep)
+
+        other.deleted = True
+        # For completeness, and to make verification easier.
+        other.start = self.start
+        other.end = self.end
+
     # ***
 
     @property
@@ -426,6 +452,16 @@ class Fact(BaseItem):
         else:
             description = None
         self._description = description
+
+    def description_squash(self, other, description_sep):
+        if not other.description:
+            return
+        # (lb): Build local desc. copy, because setter stores None, never ''.
+        new_description = self.description or ''
+        new_description += description_sep if new_description else ''
+        new_description += other.description
+        self.description = new_description
+        other.description = None
 
     def tags_replace(self, tags):
         new_tags = set()
