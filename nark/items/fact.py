@@ -307,6 +307,18 @@ class Fact(BaseItem):
             return ''
         return time_helpers.isoformat_tzless(self.end, sep=' ', timespec='seconds')
 
+    # ***
+
+    @property
+    def momentaneous(self):
+        if self.times_ok and self.start == self.end:
+            return True
+        return False
+
+    @property
+    def times(self):
+        return (self.start, self.end)
+
     @property
     def times_ok(self):
         if isinstance(self.start, datetime) and isinstance(self.end, datetime):
