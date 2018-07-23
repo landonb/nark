@@ -835,9 +835,12 @@ class Fact(BaseItem):
             lenient=lenient,
         )
 
+        # COUPLING: Note that this object is used by dob, and not by nark;
+        #   nark is being nice and helping out the the CLI by setting this.
+        # MAYBE: Move ephemeral back to CLI (and, e.g., use wrapper class around Fact).
         ephemeral = {
             'line_num': 1,
-            'raw_meta': ' '.join(factoid),
+            'line_raw': ' '.join(factoid),
         }
 
         new_fact = cls.create_from_parsed_fact(
