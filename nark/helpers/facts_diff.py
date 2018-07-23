@@ -83,38 +83,7 @@ class FactsDiff(object):
                 result = result.rstrip()
             return result
 
-        def diff_elapsed():
-            self_val = time_elapsed(self.orig_fact)
-            other_val = time_elapsed(self.edit_fact)
-            if not self_val:
-                # Make 'em the same, i.e., show no diff, no styling.
-                self_val = other_val
-            return diff_values_enhance(self_val, other_val)
-
-        def time_elapsed(fact):
-            # NOTE: start and/or end might be string; e.g., clock or rel. time.
-            if not fact.times_ok:
-                return None
-            time_val = fact.get_string_delta('HHhMMm', localize=True)
-            return time_val
-
-        def time_midpoint():
-            return format_prepare(self.edit_fact.time_of_day_midpoint())
-
-        def time_humanize():
-            return format_prepare(self.edit_fact.time_of_day_humanize())
-
-        def beautify_pk(self_val, other_val):
-            if (
-                'split' in self.edit_fact.dirty_reasons
-                or 'split' in self.orig_fact.dirty_reasons
-            ):
-                pass
-            if 'lsplit' in self.edit_fact.dirty_reasons:
-                other_val = 'New split fact, created before new fact'
-            if 'rsplit' in self.edit_fact.dirty_reasons:
-                other_val = 'New split fact, created after new fact'
-            return (self_val, other_val)
+        # ***
 
         def diff_other(name, prop, truncate=False, beautify=None):
             if (self.exclude_attrs is not None) and (name in self.exclude_attrs):
@@ -161,6 +130,43 @@ class FactsDiff(object):
                 return some_val
             return [('', some_val)]
 
+        # ***
+
+        def diff_elapsed():
+            self_val = time_elapsed(self.orig_fact)
+            other_val = time_elapsed(self.edit_fact)
+            if not self_val:
+                # Make 'em the same, i.e., show no diff, no styling.
+                self_val = other_val
+            return diff_values_enhance(self_val, other_val)
+
+        def time_elapsed(fact):
+            # NOTE: start and/or end might be string; e.g., clock or rel. time.
+            if not fact.times_ok:
+                return None
+            time_val = fact.get_string_delta('HHhMMm', localize=True)
+            return time_val
+
+        def time_midpoint():
+            return format_prepare(self.edit_fact.time_of_day_midpoint())
+
+        def time_humanize():
+            return format_prepare(self.edit_fact.time_of_day_humanize())
+
+        def beautify_pk(self_val, other_val):
+            if (
+                'split' in self.edit_fact.dirty_reasons
+                or 'split' in self.orig_fact.dirty_reasons
+            ):
+                pass
+            if 'lsplit' in self.edit_fact.dirty_reasons:
+                other_val = 'New split fact, created before new fact'
+            if 'rsplit' in self.edit_fact.dirty_reasons:
+                other_val = 'New split fact, created after new fact'
+            return (self_val, other_val)
+
+        # ***
+
         def format_edited_before(before_val):
             if not self.formatted:
                 return '{}{}{}'.format(
@@ -201,6 +207,8 @@ class FactsDiff(object):
             if self_val and self_val[0][1]:
                 after_parts += [('italic', ' | was: ')]
             return after_parts, self_val
+
+        # ***
 
         def diff_values_format(name, self_val, other_val):
             prefix = '  '
