@@ -485,6 +485,8 @@ class BaseFactManager(BaseManager):
             ValueError: If start or end time is not specified and cannot be
                 deduced by other Facts in the system.
         """
+        allow_momentaneous = self.store.config['allow_momentaneous']
+
         def _insert_forcefully(facts, fact):
             # Steps:
             #   Find fact overlapping start.
@@ -639,7 +641,15 @@ class BaseFactManager(BaseManager):
             if fact.end <= conflict.start:
                 # Disparate facts.
                 return
-            elif fact.end >= conflict.end:
+            elif conflict.end and fact.end >= conflict.end:
+                if (
+                    allow_momentaneous
+                    and (fact.start == conflict.start)
+                    and (conflict.start == conflict.end)
+                ):
+                    # (lb): 0-length Fact is not surrounded by new Fact.
+                    #   As they say in Futurama, I'm going to allow this.
+                    return
                 conflict.deleted = True
                 conflict.dirty_reasons.add('deleted-starts_before')
             else:
@@ -657,6 +667,13 @@ class BaseFactManager(BaseManager):
                 # Disparate facts.
                 return
             elif fact.start <= conflict.start:
+                if (
+                    allow_momentaneous
+                    and (fact.end == conflict.end)
+                    and (conflict.start == conflict.end)
+                ):
+                    # 0-length Fact is not surrounded by new Fact; I'll allow it.
+                    return
                 conflict.deleted = True
                 conflict.dirty_reasons.add('deleted-ends_after')
             else:
