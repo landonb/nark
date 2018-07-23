@@ -150,13 +150,14 @@ class Fact(BaseItem):
         if not include_pk:
             pk = False
 
-        ordered_tags = [
-            tag.as_tuple(include_pk=include_pk) for tag in self.tags_sorted
-        ]
+        activity_tup = self.activity and self.activity.as_tuple(include_pk=include_pk)
+
+        sorted_tags = self.tags_sorted
+        ordered_tags = [tag.as_tuple(include_pk=include_pk) for tag in sorted_tags]
 
         return FactTuple(
             pk=pk,
-            activity=self.activity.as_tuple(include_pk=include_pk),
+            activity=activity_tup,
             start=self.start,
             end=self.end,
             description=self.description,
