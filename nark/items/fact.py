@@ -230,20 +230,22 @@ class Fact(BaseItem):
         self._start = time_helpers.must_be_datetime_or_relative(start)
 
     @property
-    def start_fmt_utc(self, sep=' ', timespec='seconds'):
+    def start_fmt_utc(self):
         """FIXME: Document"""
         if not self.start:
             return ''
         # Format like: '%Y-%m-%d %H:%M:%S%z'
-        return time_helpers.isoformat_tzinfo(self.start, sep=sep, timespec=timespec)
+        return time_helpers.isoformat_tzinfo(self.start, sep=' ', timespec='seconds')
 
     @property
-    def start_fmt_local(self, sep=' ', timespec='seconds'):
+    def start_fmt_local(self):
         """FIXME: Document"""
         if not self.start:
             return ''
         # Format like: '%Y-%m-%d %H:%M:%S'
-        return time_helpers.isoformat_tzless(self.start, sep=sep, timespec=timespec)
+        return time_helpers.isoformat_tzless(self.start, sep=' ', timespec='seconds')
+
+    # ***
 
     @property
     def end(self):
@@ -264,24 +266,26 @@ class Fact(BaseItem):
         self._end = time_helpers.must_be_datetime_or_relative(end)
 
     @property
-    def end_fmt_utc(self, sep=' ', timespec='seconds'):
+    def end_fmt_utc(self):
         """FIXME: Document"""
         if not self.end:
             return ''
-        return time_helpers.isoformat_tzinfo(self.end, sep=sep, timespec=timespec)
+        return time_helpers.isoformat_tzinfo(self.end, sep=' ', timespec='seconds')
 
     @property
-    def end_fmt_local(self, sep=' ', timespec='seconds'):
+    def end_fmt_local(self):
         """FIXME: Document"""
         if not self.end:
             return ''
-        return time_helpers.isoformat_tzless(self.end, sep=sep, timespec=timespec)
+        return time_helpers.isoformat_tzless(self.end, sep=' ', timespec='seconds')
 
     @property
     def times_ok(self):
         if isinstance(self.start, datetime) and isinstance(self.end, datetime):
             return True
         return False
+
+    # ***
 
     def delta(self, localize=False):
         """
@@ -291,7 +295,6 @@ class Fact(BaseItem):
             datetime.timedelta or None: Difference between start- and end datetime.
                 If we only got a start datetime, return ``None``.
         """
-        result = None
         end_time = self.end
         if not end_time:
             end_time = datetime.now() if localize else datetime.utcnow()
@@ -328,7 +331,7 @@ class Fact(BaseItem):
                 return format_pedantic(seconds)
 
         def format_mins(minutes):
-            return text_typem(minutes)
+            return text_type(minutes)
 
         def format_hours_mins(hours, minutes):
             return '{0:02d}:{1:02d}'.format(hours, minutes)
@@ -349,6 +352,8 @@ class Fact(BaseItem):
 
         return _get_string_delta()
 
+    # ***
+
     def time_of_day_midpoint(self, localize=False):
         if not self.times_ok:
             return ''
@@ -359,6 +364,8 @@ class Fact(BaseItem):
             # FIXME: (lb): Add Colloquial TOD suffix, e.g., "morning".
         )
         return hamned
+
+    # ***
 
     def time_of_day_humanize(self, localize=False):
         if not self.times_ok:
@@ -428,6 +435,8 @@ class Fact(BaseItem):
         #   TypeError: Incompatible collection type: set is not list-like
         # (That error is from orm.attribute.CollectionAttributeImpl.set.)
         self.tags = list(new_tags)
+
+    # ***
 
     @property
     def tags_sorted(self):
@@ -609,6 +618,8 @@ class Fact(BaseItem):
 
         return _friendly_str(self)
 
+    # ***
+
     def actegory_string(self, shellify=False):
         # (lb): We can skip delimiter after time when using ISO 8601.
         if not self.activity_name:
@@ -763,6 +774,8 @@ class Fact(BaseItem):
                 'verify_both': Expect to find both start and end times.
                 'verify_start': Expect to find just one time, which is the start.
                 'verify_end': Expect to find just one time, which is the end.
+                'verify_then': Time specifies new start; and back-fill interval gap.
+                'verify_after': No time spec. Start new Fact at time of previous end.
 
             lenient (bool, optional): If False, parser raises errors on misssing
                 mandatory components (such as time or activity). (Category,
@@ -804,7 +817,7 @@ class Fact(BaseItem):
     ):
         start = parsed_fact['start']
         end = parsed_fact['end']
-        # Verify that start > end, if neither are None.
+        # Verify that start > end, if neither are None or not a datetime.
         start, end = time_helpers.validate_start_end_range((start, end))
 
         activity = ''
