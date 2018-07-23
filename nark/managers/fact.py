@@ -468,8 +468,7 @@ class BaseFactManager(BaseManager):
 
     # ***
 
-    # FIXME/2018-05-12: (lb): insert_forcefully does not respect tmp_fact!
-    def insert_forcefully(self, fact):
+    def insert_forcefully(self, fact, squash_sep=''):
         """
         Insert the possibly open-ended Fact into the set of logical
         (chronological) Facts, possibly changing the time frames of,
@@ -529,7 +528,7 @@ class BaseFactManager(BaseManager):
             conflict = None
             if ref_time == 'start':
                 if fact.start is None:
-                    set_start_per_antecedent(facts, fact)
+                    conflict = set_start_per_antecedent(facts, fact)
                 else:
                     conflict = facts.starting_at(fact)
             else:
@@ -553,11 +552,22 @@ class BaseFactManager(BaseManager):
                 raise ValueError(_(
                     'Please specify `start` for fact being added before time existed.'
                 ))
-            # Because we called surrounding and got nothing,
-            # we know that found_fact.end < fact.end,
-            # so we can set fact.start accordingly.
-            assert ref_fact.end < fact.end
-            fact.start = ref_fact.end
+            # Because we called surrounding and got nothing, we know that
+            # found_fact.end < fact.end; or that found_fact.end is None,
+            # a/k/a, the ongoing Fact.
+            conflict = None
+            if ref_fact.end is not None:
+                assert ref_fact.end < fact.end
+                fact.start = ref_fact.end
+            else:
+                # There's an ongoing Fact, and the new Fact has no start, which
+                # indicates that these two facts should be squashed. (We'll create
+                # an intermediate conflict now, and we'll squash the Facts later,
+                # so that we include the ongoing Fact in the list of edited Facts
+                # we return later.)
+                assert ref_fact.start < fact.end
+                conflict = ref_fact
+            return conflict
 
         def set_end_per_subsequent(facts, fact):
             assert fact.end is None
@@ -607,7 +617,9 @@ class BaseFactManager(BaseManager):
             # other Fact will be split in twain, so we may end up
             # with more conflicts.
             resolved = []
-            if fact.start <= conflict.start:
+            if fact.start is None and conflict.end is None:
+                resolve_fact_squash_fact(fact, conflict, resolved)
+            elif fact.start <= conflict.start:
                 resolve_fact_starts_before(fact, conflict, resolved)
             elif conflict.end is None or fact.end >= conflict.end:
                 resolve_fact_ends_after(fact, conflict, resolved)
@@ -615,6 +627,13 @@ class BaseFactManager(BaseManager):
                 # The new fact is contained *within* the conflict!
                 resolve_fact_is_inside(fact, conflict, resolved)
             return cull_duplicates(resolved)
+
+        def resolve_fact_squash_fact(fact, conflict, resolved):
+            conflict.dirty_reasons.add('stopped')
+            conflict.dirty_reasons.add('end')
+            conflict.dirty_reasons.add('squash')
+            conflict.squash(fact, squash_sep)
+            resolved.append(conflict)
 
         def resolve_fact_starts_before(fact, conflict, resolved):
             if fact.end <= conflict.start:
