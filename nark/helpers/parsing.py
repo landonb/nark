@@ -19,13 +19,11 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import dateparser
-import iso8601
 import logging
 import os
 import re
 
-from .dated import HamsterTimeSpec
+from .dated import HamsterTimeSpec, parse_datetime_iso8601
 from .strings import comma_or_join
 from .parse_errors import (
     ParserException,
@@ -35,6 +33,11 @@ from .parse_errors import (
     ParserMissingSeparatorActivity,
     ParserMissingActivityException
 )
+
+# Profiling: `import dateparser` takes ~ 0.2 seconds.
+import lazy_import
+dateparser = lazy_import.lazy_module('dateparser')
+
 
 __all__ = [
     'parse_factoid',
@@ -471,7 +474,7 @@ class Parser(object):
             assert type_dt
             if type_dt == 'datetime':
                 self.warn_if_datetime_missing_clock_time(dt)
-                dt = self.hydrate_datetime_iso8601(dt, must=True)
+                dt = parse_datetime_iso8601(dt, must=True, local_tz=self.local_tz)
             # else, relative time, or clock time; let caller handle.
             setattr(self, datetime_attr, dt)
             setattr(self, 'type_{}'.format(datetime_attr), type_dt)
@@ -575,35 +578,23 @@ class Parser(object):
         )
 
     def hydrate_datetime_either(self, the_datetime, raw_datetime):
-        if not the_datetime and raw_datetime:
-            # Remove any trailing separator that may have been left.
-            raw_datetime = self.re_item_sep.sub('', raw_datetime)
-            if not the_datetime:
-                the_datetime = self.hydrate_datetime_iso8601(
-                    raw_datetime, must=False,
-                )
-            if not the_datetime:
-                the_datetime = self.hydrate_datetime_friendly(
-                    raw_datetime, must=False,
-                )
-        return the_datetime
-
-    def hydrate_datetime_iso8601(self, datepart, must=False):
-        try:
-            # NOTE: Defaults to datetime.timezone.utc.
-            #       Uses naive if we set default_timezone=None.
-            parsed = iso8601.parse_date(
-                datepart,
-                default_timezone=self.local_tz,
+        if the_datetime or not raw_datetime:
+            return the_datetime
+        # Remove any trailing separator that may have been left.
+        raw_datetime = self.re_item_sep.sub('', raw_datetime)
+        if not the_datetime:
+            the_datetime = parse_datetime_iso8601(
+                raw_datetime, must=False, local_tz=self.local_tz,
             )
-        except iso8601.iso8601.ParseError:
-            parsed = None
-            if must:
-                raise ParserInvalidDatetimeException(_(
-                    'Unable to parse iso8601 datetime: {}.'
-                    .format(datepart)
-                ))
-        return parsed
+            if the_datetime:
+                # 2018-07-02: (lb): Is this path possible?
+                #   Or would we have processed ISO dates already?
+                logger.warning('hydrate_datetime_either: found ISO datetime?')
+        if not the_datetime:
+            the_datetime = self.hydrate_datetime_friendly(
+                raw_datetime, must=False,
+            )
+        return the_datetime
 
     def hydrate_datetime_friendly(self, datepart, must=False):
         settings = {
