@@ -21,9 +21,11 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 from datetime import timedelta
+from six import text_type
 
 __all__ = [
     'HamsterTimeSpec',
+    'parse_dated',
     'parse_clock_time',
     'datetime_from_clock_prior',
     'datetime_from_clock_after',
@@ -195,6 +197,37 @@ class HamsterTimeSpec(object):
             return False
         assert re.match(RE_RELATIVE_CLOCK, parts[1]) is not None
         return True
+
+
+# ***
+
+def parse_dated(dated, time_now, cruftless=False):
+    """"""
+    def _parse_dated():
+        if not isinstance(dated, text_type):
+            # Let BaseFactManager.get_all() process, if not already datetime.
+            return dated
+        dt, type_dt, sep, rest = HamsterTimeSpec.discern(dated)
+        if cruftless and rest:
+            return None
+        return datetime_from_discerned(dated, dt, type_dt)
+
+    def datetime_from_discerned(dated, dt, type_dt):
+        if dt is None:
+            return dated
+        if type_dt == 'datetime':
+            dt_suss = parse_datetime_iso8601(dt, must=True, local_tz=None)
+        # else, relative time, or clock time; let caller handle.
+        elif type_dt == 'clock_time':
+            clock_time = parse_clock_time(dt)
+            dt_suss = datetime_from_clock_prior(time_now, clock_time)
+        else:
+            assert type_dt == 'relative'
+            rel_mins, negative = parse_relative_minutes(dt)
+            dt_suss = time_now + timedelta(minutes=rel_mins)
+        return dt_suss
+
+    return _parse_dated()
 
 
 # ***
