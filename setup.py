@@ -18,18 +18,39 @@ except ImportError:
 
 
 requirements = [
+    # Platform-specific directory magic.
+    #  https://github.com/ActiveState/appdirs
     'appdirs',
+    # https://gitlab.com/dslackw/colored
     'colored',
+    # Basic INI parser.
+    #  https://pypi.org/project/configparser/
+    #  https://docs.python.org/3/library/configparser.html
     'configparser >= 3.5.0b2',
+    # https://github.com/scrapinghub/dateparser
     'dateparser',
+    # Py2/3 support shim. (Higher-level than `six`.)
+    #  https://pypi.org/project/future/
+    #  https://python-future.org/
     'future',
+    # Human Friendly timedelta formatter, e.g., "1 day, 4 hours, 4 mins."
     'human-friendly_pedantic-timedelta',
+    # https://github.com/collective/icalendar
     'icalendar',
+    # https://bitbucket.org/micktwomey/pyiso8601
     'iso8601',
+    # Daylight saving time-aware timezone library.
+    #  https://pythonhosted.org/pytz/
     'pytz',
+    # https://pythonhosted.org/six/
     'six',
+    # https://www.sqlalchemy.org/
     'sqlalchemy',
+    # Database gooser/versioner.
+    #  https://pypi.org/project/sqlalchemy-migrate/
+    #  https://sqlalchemy-migrate.readthedocs.io/en/latest/
     'sqlalchemy-migrate',
+    # https://github.com/regebro/tzlocal
     'tzlocal',
 ]
 
