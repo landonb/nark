@@ -643,7 +643,7 @@ class FactManager(BaseFactManager):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
-                query = query.order_by(direction(AlchemyFact.start))
+                query = _get_all_order_by_times(query, direction)
             elif sort_col == 'time':
                 assert include_usage and span_col is not None
                 direction = desc if not sort_order else direction
@@ -660,7 +660,16 @@ class FactManager(BaseFactManager):
                 # etc., are acceptable here, if not simply ignored.
                 assert sort_col in ('', 'name', 'tag', 'fact')
                 direction = desc if not sort_order else direction
-                query = query.order_by(direction(AlchemyFact.start))
+                query = _get_all_order_by_times(query, direction)
+            return query
+
+        def _get_all_order_by_times(query, direction):
+            # Include end so that momentaneous Facts are sorted properly.
+            query = query.order_by(
+                direction(AlchemyFact.start),
+                direction(AlchemyFact.end),
+                direction(AlchemyFact.pk),
+            )
             return query
 
         def _get_all_with_entities(query, span_col, tags_col):
