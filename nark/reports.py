@@ -30,12 +30,13 @@ import datetime
 import sys
 from collections import namedtuple
 from io import open
-from xml.dom.minidom import Document
 
 from future.utils import python_2_unicode_compatible
-from icalendar import Calendar, Event
 from six import text_type
 
+# Profiling: load icalendar: ~ 0.008 secs.
+import lazy_import
+icalendar = lazy_import.lazy_module('icalendar')
 
 # SYNC_ME: FactTuple and PlaintextWriter's headers.
 FactTuple = namedtuple(
@@ -285,7 +286,7 @@ class ICALWriter(ReportWriter):
                 how datetime information is to be rendered in the output.
         """
         super(ICALWriter, self).__init__(path, datetime_format)
-        self.calendar = Calendar()
+        self.calendar = icalendar.Calendar()
 
     def _fact_to_tuple(self, fact):
         """
@@ -335,7 +336,7 @@ class ICALWriter(ReportWriter):
         # [FIXME]
         # It apears that date/time requirements for VEVENT have changed between
         # RFCs. 5545 now seems to require a 'dstamp' and a 'uid'!
-        event = Event()
+        event = icalendar.Event()
         event.add('dtstart', fact_tuple.start)
         event.add('dtend', fact_tuple.end + datetime.timedelta(seconds=1))
         event.add('categories', fact_tuple.category)
@@ -358,6 +359,8 @@ class XMLWriter(ReportWriter):
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         """Setup the writer including a main xml document."""
         super(XMLWriter, self).__init__(path, datetime_format)
+        # Profiling: load Document: ~ 0.004 secs.
+        from xml.dom.minidom import Document
         self.document = Document()
         self.fact_list = self.document.createElement("facts")
 
