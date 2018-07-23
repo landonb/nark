@@ -27,17 +27,17 @@ import re
 
 from .dated import HamsterTimeSpec
 from .strings import comma_or_join
-
+from .parse_errors import (
+    ParserException,
+    ParserMissingDatetimeOneException,
+    ParserMissingDatetimeTwoException,
+    ParserInvalidDatetimeException,
+    ParserMissingSeparatorActivity,
+    ParserMissingActivityException
+)
 
 __all__ = [
     'parse_factoid',
-    'ParserException',
-    'ParserMissingDatetimeException',
-    'ParserMissingDatetimeOneException',
-    'ParserMissingDatetimeTwoException',
-    'ParserInvalidDatetimeException',
-    'ParserMissingSeparatorActivity',
-    'ParserMissingActivityException',
     'Parser',
 ]
 
@@ -54,50 +54,29 @@ logger = logging.getLogger('nark.log')
 #        From a function-scoped sub-function?
 #        Or is here fine?
 DATE_TO_DATE_SEPARATORS = ['to', 'until', '\-', '\|']
+# (lb): "and" could work, feels naturally, but could also make parsing more difficult.
+# E.g., "from dusk until dawn", "between two ferns", "from hell and back"
+# DATE_TO_DATE_SEPARATORS = ['to', 'until', 'and', '\-', '\|']
 
 
-FACT_METADATA_SEPARATORS = [",", ":", os.linesep]
+FACT_METADATA_SEPARATORS = [",", ":"]
 
 
 TIME_HINT_MAP = {
+    # SYNC_ME: RE_TIME_HINT, TIME_HINT_MAP.
     'on': 'verify_none',
     'now': 'verify_none',
+    'from': 'verify_both',
+    'between': 'verify_both',
     'at': 'verify_start',
     'to': 'verify_end',
     'until': 'verify_end',
-    'from': 'verify_both',
-    'between': 'verify_both',
+    'then': 'verify_then',
+    'still': 'verify_still',
+    'after': 'verify_after',
+    'next': 'verify_after',
+    'since': 'verify_after',
 }
-
-
-class ParserException(Exception):
-    """Raised if parser cannot decipher nark factoid string."""
-    pass
-# FIXME/LINTING/2018-05-15: (lb): I bet this needs to be double-spaced!
-
-class ParserMissingDatetimeException(ParserException):  # noqa: E302
-    """Raised if the raw_fact is missing one or both datetime tokens."""
-    pass
-
-class ParserMissingDatetimeOneException(ParserMissingDatetimeException):  # noqa: E302
-    """Raised if the raw_fact is missing its start datetime token(s)."""
-    pass
-
-class ParserMissingDatetimeTwoException(ParserMissingDatetimeException):  # noqa: E302
-    """Raised if the raw_fact is missing its end datetime token(s)."""
-    pass
-
-class ParserInvalidDatetimeException(ParserException):  # noqa: E302
-    """Raised if a time from raw_fact in not parseworthy."""
-    pass
-
-class ParserMissingSeparatorActivity(ParserException):  # noqa: E302
-    """Raised if activity@category separator not found."""
-    pass
-
-class ParserMissingActivityException(ParserException):  # noqa: E302
-    """Raised if factoid is missing: act@cat, cat@, @cat, or just @."""
-    pass
 
 
 class Parser(object):
