@@ -422,7 +422,7 @@ class FactManager(BaseFactManager):
 
             query = self.store.session.query(AlchemyFact)
 
-            query, time_col = _get_all_prepare_usage_col(query)
+            query, span_col = _get_all_prepare_span_col(query)
 
             query, tags_col = _get_all_prepare_tags_col(query)
 
@@ -438,11 +438,11 @@ class FactManager(BaseFactManager):
 
             query = query_apply_true_or_not(query, AlchemyFact.deleted, deleted)
 
-            query = _get_all_order_by(query, time_col)
+            query = _get_all_order_by(query, span_col)
 
             query = query_apply_limit_offset(query, **kwargs)
 
-            query = _get_all_with_entities(query, time_col, tags_col)
+            query = _get_all_with_entities(query, span_col, tags_col)
 
             self.store.logger.debug(_('query: {}'.format(str(query))))
 
@@ -452,8 +452,8 @@ class FactManager(BaseFactManager):
 
             return new_results
 
-        def _process_results(results, time_col, tags_col):
-            if time_col is None and tags_col is None:
+        def _process_results(results, span_col, tags_col):
+            if span_col is None and tags_col is None:
                 if raw:
                     return results
                 else:
@@ -503,15 +503,15 @@ class FactManager(BaseFactManager):
                 tags_col = None
             return query, tags_col
 
-        def _get_all_prepare_usage_col(query):
+        def _get_all_prepare_span_col(query):
             if not include_usage:
                 return query, None
 
-            time_col = (
+            span_col = (
                 func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
             ).label('span')
-            query = self.store.session.query(AlchemyFact, time_col)
-            return query, time_col
+            query = self.store.session.query(AlchemyFact, span_col)
+            return query, span_col
 
         def _get_all_prepare_joins(query):
             if include_usage or (activity is not False) or (category is not False):
@@ -626,15 +626,15 @@ class FactManager(BaseFactManager):
             return query
 
         # FIXME/2018-06-09: (lb): DRY: Combing each manager's _get_all_order_by.
-        def _get_all_order_by(query, time_col=None):
+        def _get_all_order_by(query, span_col=None):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
                 query = query.order_by(direction(AlchemyFact.start))
             elif sort_col == 'time':
-                assert include_usage and time_col is not None
+                assert include_usage and span_col is not None
                 direction = desc if not sort_order else direction
-                query = query.order_by(direction(time_col))
+                query = query.order_by(direction(span_col))
             elif sort_col == 'activity':
                 query = query.order_by(direction(AlchemyActivity.name))
                 query = query.order_by(direction(AlchemyCategory.name))
@@ -650,14 +650,14 @@ class FactManager(BaseFactManager):
                 query = query.order_by(direction(AlchemyFact.start))
             return query
 
-        def _get_all_with_entities(query, time_col, tags_col):
+        def _get_all_with_entities(query, span_col, tags_col):
             columns = []
-            if time_col is not None:
+            if span_col is not None:
                 # Throw in the count column, which act/cat/tag fetch, so we can
                 # use the same utility functions (that except a count column).
                 static_count = '1'
                 columns.append(static_count)
-                columns.append(time_col)
+                columns.append(span_col)
             if tags_col is not None:
                 assert lazy_tags is None
                 columns.append(tags_col)
