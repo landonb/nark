@@ -61,6 +61,9 @@ class BaseFactManager(BaseManager):
             )
 
         def enforce_fact_min_delta():
+            # BROKEN/DONT_CARE: (lb): The Facts Carousel does not check the
+            # min delta, meaning you could violate fact_min_delta and end up
+            # raising from herein. Oh, well, I don't delta, so I don't care.
             if not fact.end:
                 # The ongoing fact.
                 return
@@ -477,7 +480,7 @@ class BaseFactManager(BaseManager):
                 The Fact to insert, with either or both ``start`` and ``end`` set.
 
         Returns:
-            list: List of ``Facts``, ordered by ``start``.
+            list: List of edited ``Facts``, ordered by ``start``.
 
         Raises:
             ValueError: If start or end time is not specified and cannot be
@@ -621,6 +624,10 @@ class BaseFactManager(BaseManager):
                 conflict.deleted = True
                 conflict.dirty_reasons.add('deleted-starts_before')
             else:
+                # This is either the last Fact in the database, which is still
+                # open (if conflict.end is None); or fact ends before conflict
+                # ends. And in either case, fact ends after conflict starts,
+                # so move conflict's start to no longer conflict.
                 assert conflict.start < fact.end
                 conflict.start = fact.end
                 conflict.dirty_reasons.add('start')
