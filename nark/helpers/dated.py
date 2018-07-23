@@ -97,7 +97,6 @@ class HamsterTimeSpec(object):
     def discern(hamster_time):
         """
         Check for magic datetimes:
-          - 'now' currently;
           - '+/-n' relative;
           - 'nn:nn' clocktime;
           - ISO 8601 datetime.
@@ -111,14 +110,7 @@ class HamsterTimeSpec(object):
 
         match = HamsterTimeSpec.RE_HAMSTER_TIME.match(hamster_time)
         if match is not None:
-            dt = None
             say_what = match.groupdict()
-            if say_what['now']:
-                assert dt is None
-                # Rather than setting to, say, datetime.now(), use
-                # relative format, so caller is forced to handle.
-                dt = '-0'
-                type_dt = 'now'
             if say_what['relative']:
                 assert dt is None
                 dt = say_what['relative']
@@ -147,10 +139,6 @@ class HamsterTimeSpec(object):
         #       For instance, this matches, but the microseconds has an error:
         #
         #           RE_HAMSTER_TIME.match('2018-05-14 22:29:24.123x456+00:02')
-
-        pattern_now = (
-            '(?P<now>now)'
-        )
 
         # Never forget! Hamster allows relative time!
         pattern_relative = (
@@ -188,8 +176,7 @@ class HamsterTimeSpec(object):
             .format(pattern_date, pattern_time, pattern_zone)
         )
 
-        hamster_pattern = '(^|\s)({}|{}|{}|{})[,:]?(?=\s|$)(?P<rest>.*)'.format(
-            pattern_now,
+        hamster_pattern = '(^|\s)({}|{}|{})[,:]?(?=\s|$)(?P<rest>.*)'.format(
             pattern_relative,
             pattern_just_clock,
             pattern_datetime,
