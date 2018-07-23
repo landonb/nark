@@ -476,8 +476,8 @@ class Parser(object):
     ):
         assert datetime_attr in ['datetime1', 'datetime2']
         assert not ok_if_missing or datetime_attr == 'datetime2'
-        # See if datetime: 'now', '+/-n' mins, 'nn:nn' clock, or ISO 8601.
-        dt, type_dt, rest = HamsterTimeSpec.discern(datetime_rest)
+        # See if datetime: '+/-n' mins, 'nn:nn' clock, or ISO 8601.
+        dt, type_dt, sep, rest = HamsterTimeSpec.discern(datetime_rest)
         if dt is not None:
             assert type_dt
             if type_dt == 'datetime':

@@ -103,7 +103,7 @@ class HamsterTimeSpec(object):
 
         NOTE: This fcn. does not make datetime.datetime's; that's up to the caller.
         """
-        dt, type_dt, rest = None, None, None
+        dt, type_dt, sep, rest = None, None, None, None
 
         if HamsterTimeSpec.RE_HAMSTER_TIME is None:
             HamsterTimeSpec.setup_re()
@@ -124,9 +124,10 @@ class HamsterTimeSpec(object):
                 dt = say_what['datetime']
                 type_dt = 'datetime'
             assert dt is not None
+            sep = say_what['sep']
             rest = say_what['rest']
 
-        return dt, type_dt, rest
+        return dt, type_dt, sep, rest
 
     @staticmethod
     def setup_re():
@@ -176,7 +177,7 @@ class HamsterTimeSpec(object):
             .format(pattern_date, pattern_time, pattern_zone)
         )
 
-        hamster_pattern = '(^|\s)({}|{}|{})[,:]?(?=\s|$)(?P<rest>.*)'.format(
+        hamster_pattern = '(^|\s)({}|{}|{})(?P<sep>[,:]?)(?=\s|$)(?P<rest>.*)'.format(
             pattern_relative,
             pattern_just_clock,
             pattern_datetime,
