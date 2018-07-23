@@ -102,13 +102,13 @@ class FactsDiff(object):
 
     # ***
 
-    def diff_attrs(self, prop, name=None, truncate=False, beautify=None):
+    def diff_attrs(self, prop, name=None, truncate=False, beautify=None, **kwargs):
         if (self.exclude_attrs is not None) and (name in self.exclude_attrs):
             return ''
-        self_val = resolve_attr_or_method(self.orig_fact, prop)
+        self_val = resolve_attr_or_method(self.orig_fact, prop, **kwargs)
         other_val = ''
         if self.edit_fact is not None:
-            other_val = resolve_attr_or_method(self.edit_fact, prop)
+            other_val = resolve_attr_or_method(self.edit_fact, prop, **kwargs)
             if callable(other_val):
                 other_val = other_val()
             self_val, other_val = self.diff_values_enhance(

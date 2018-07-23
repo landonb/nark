@@ -25,9 +25,9 @@ __all__ = [
 ]
 
 
-def resolve_attr_or_method(self, prop):
+def resolve_attr_or_method(self, prop, **kwargs):
     self_val = getattr(self, prop)
     if callable(self_val):
-        self_val = self_val()
+        self_val = self_val(**kwargs)
     return self_val
 
