@@ -678,7 +678,7 @@ class Fact(BaseItem):
             if not self.category_name:
                 act_cat = '' if omit_empty_actegory else '@'
             else:
-                act_cat = '@'
+                act_cat = '@{}'.format(self.category_name)
         else:
             act_cat = (
                 '{}@{}'.format(
@@ -687,7 +687,7 @@ class Fact(BaseItem):
                 )
             )
         act_cat = colorize(act_cat, 'cornflower_blue', 'bold', 'underlined')
-        act_cat = '"{}"'.format(act_cat) if shellify else act_cat
+        act_cat = '"{}"'.format(act_cat) if act_cat and shellify else act_cat
         return act_cat
 
     def description_string(self, cut_width=None, sep=', '):
