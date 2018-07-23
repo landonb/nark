@@ -19,6 +19,12 @@
 
 from __future__ import absolute_import, unicode_literals
 
+__PROFILING__ = True
+# DEVS: Comment this out to see load times summary.
+__PROFILING__ = False
+import time
+__time_0__ = time.time()
+
 from gettext import gettext as _
 
 __all__ = [

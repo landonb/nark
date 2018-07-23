@@ -19,13 +19,14 @@ from __future__ import absolute_import, unicode_literals
 from future.utils import python_2_unicode_compatible
 
 import os
-from migrate.exceptions import DatabaseAlreadyControlledError
-from migrate.exceptions import DatabaseNotControlledError
-from migrate.versioning.api import db_version, downgrade, upgrade, version_control
-from migrate.versioning.api import version as migrate_version
 
 from ....helpers.legacy_db import upgrade_legacy_db_hamster_applet
 from ....managers.migrate import BaseMigrationsManager
+
+# Profiling: Loading `migrate` takes ~ 0.090 seconds.
+import lazy_import
+migrate_exceptions = lazy_import.lazy_module('migrate.exceptions')
+migrate_versioning_api = lazy_import.lazy_module('migrate.versioning.api')
 
 __all__ = ['MigrationsManager']
 
@@ -38,9 +39,11 @@ class MigrationsManager(BaseMigrationsManager):
         if current_ver is None:
             url = self.store.get_db_url()
             try:
-                version_control(url, self.migration_repo(), version=version)
+                migrate_versioning_api.version_control(
+                    url, self.migration_repo(), version=version,
+                )
                 return True
-            except DatabaseAlreadyControlledError:
+            except migrate_exceptions.DatabaseAlreadyControlledError:
                 return False
         elif current_ver == 0:
             return False
@@ -52,14 +55,16 @@ class MigrationsManager(BaseMigrationsManager):
         current_ver = self.version()
         if current_ver is None:
             return None
-        latest_ver = migrate_version(self.migration_repo())
+        latest_ver = migrate_versioning_api.version(self.migration_repo())
         if not latest_ver:
             return None
         assert current_ver <= latest_ver
         if current_ver > 0:
             next_version = current_ver - 1
             url = self.store.get_db_url()
-            downgrade(url, self.migration_repo(), version=next_version)
+            migrate_versioning_api.downgrade(
+                url, self.migration_repo(), version=next_version,
+            )
             return True
         else:
             return False
@@ -69,14 +74,16 @@ class MigrationsManager(BaseMigrationsManager):
         current_ver = self.version()
         if current_ver is None:
             return None
-        latest_ver = migrate_version(self.migration_repo())
+        latest_ver = migrate_versioning_api.version(self.migration_repo())
         if not latest_ver:
             return None
         assert current_ver <= latest_ver
         if current_ver < latest_ver:
             next_version = current_ver + 1
             url = self.store.get_db_url()
-            upgrade(url, self.migration_repo(), version=next_version)
+            migrate_versioning_api.upgrade(
+                url, self.migration_repo(), version=next_version,
+            )
             return True
         else:
             return False
@@ -85,15 +92,15 @@ class MigrationsManager(BaseMigrationsManager):
         """Returns the current migration of the active database."""
         url = self.store.get_db_url()
         try:
-            return db_version(url, self.migration_repo())
-        except DatabaseNotControlledError:
+            return migrate_versioning_api.db_version(url, self.migration_repo())
+        except migrate_exceptions.DatabaseNotControlledError:
             return None
 
     def latest_version(self):
         """Returns the latest version defined by the application."""
         try:
-            return int(migrate_version(self.migration_repo()).value)
-        except DatabaseNotControlledError:
+            return int(migrate_versioning_api.version(self.migration_repo()).value)
+        except migrate_exceptions.DatabaseNotControlledError:
             return None
 
     # ***

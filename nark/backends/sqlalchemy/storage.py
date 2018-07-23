@@ -22,8 +22,10 @@ from future.utils import python_2_unicode_compatible
 
 import os.path
 
+# Profiling: load create_engine: ~ 0.100 secs.
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
+# Profiling: load sessionmaker: ~ 0.050 secs.
 from sqlalchemy.orm import sessionmaker
 
 from . import objects
@@ -33,7 +35,6 @@ from .managers.migrate import MigrationsManager
 from .managers.fact import FactManager
 from .managers.tag import TagManager
 from ...manager import BaseStore
-
 
 __all__ = ['SQLAlchemyStore']
 

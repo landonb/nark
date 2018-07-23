@@ -21,8 +21,11 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import math
-import pytz
 from six import text_type
+
+import lazy_import
+# Profiling: load pytz: ~ 0.002 secs.
+pytz = lazy_import.lazy_module('pytz')
 
 
 __all__ = [

@@ -24,6 +24,8 @@ import logging
 import sys
 from collections import namedtuple
 
+from .helpers.dev.profiling import timefunc
+
 
 BackendRegistryEntry = namedtuple(
     'BackendRegistryEntry', ('verbose_name', 'store_class'),
@@ -71,6 +73,7 @@ class HamsterControl(object):
     def __init__(self, config):
         self.config = config
         self.lib_logger = self._get_logger()
+        # Profiling: _get_store(): Observed: ~ 0.136 to 0.240 secs.
         self.store = self._get_store()
         self.sql_logger = self._sql_logger()
         self.for_your_convenience()
@@ -91,6 +94,7 @@ class HamsterControl(object):
         self.config = config
         self.store = self._get_store()
 
+    @timefunc
     def _get_store(self):
         """
         Setup the store used by this controller.
@@ -103,10 +107,11 @@ class HamsterControl(object):
         if not backend:
             raise KeyError(_("No or invalid storage specified."))
         import_path, storeclass = tuple(backend.store_class.rsplit('.', 1))
-
+        # Profiling: importlib.import_module: ~ 0.265 secs.
         backend_module = importlib.import_module(import_path)
         cls = getattr(backend_module, storeclass)
-        return cls(self.config)
+        store = cls(self.config)
+        return store
 
     def _get_logger(self):
         """
