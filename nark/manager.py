@@ -105,10 +105,10 @@ class BaseStore(object):
         # (lb): Also, we use @property to convey to the caller that this
         # is not a function; i.e., the value is static, not re-calculated.
         if self._now is None:
-            self._now = self._now_tz_aware()
+            self._now = self.now_tz_aware()
         return self._now
 
-    def _now_tz_aware(self):
+    def now_tz_aware(self):
         if self.config['tz_aware']:
             # FIXME/2018-05-23: (lb): Tests use utcnow(). Should they honor tz_aware?
             return datetime.utcnow()
