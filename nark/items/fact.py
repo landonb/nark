@@ -575,7 +575,7 @@ class Fact(BaseItem):
     def friendly_str(
         self,
         shellify=False,
-        description_sep=', ',
+        description_sep=': ',
         tags_sep=': ',
         localize=False,
         include_id=False,
@@ -736,7 +736,7 @@ class Fact(BaseItem):
         """
         return self.friendly_str(
             shellify=shellify,
-            description_sep=', ',
+            description_sep=': ',
             localize=False,
             truncate=False,
             include_id=False,
@@ -769,12 +769,13 @@ class Fact(BaseItem):
         was_coloring = set_coloring(False)
         duration = '[{}]'.format(self.get_string_delta('', localize=True))
         actegory = self.actegory_string() or '<i>No activity</i>'
+        description = self.description_string(cut_width=39, sep=': ')
         simple_str = (
-            '{} {}: {}'
+            '{} {}{}'
             .format(
                 duration,
                 actegory,
-                self.description_string(cut_width=39, sep=''),
+                description,
             )
         )
         set_coloring(was_coloring)
