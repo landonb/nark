@@ -21,7 +21,7 @@ import os
 import pytest
 from configparser import SafeConfigParser
 
-from nark.helpers import config_helpers
+from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
 
 
@@ -31,7 +31,7 @@ class TestNarkAppDirs(object):
     def test_user_data_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_data_dir', return_value=path)
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_data_dir', return_value=path)
         appdir = NarkAppDirs('nark')
         assert appdir.user_data_dir == path
 
@@ -39,7 +39,7 @@ class TestNarkAppDirs(object):
     def test_user_data_dir_creates_file(self, tmpdir, mocker, create, faker):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_data_dir', return_value=path)
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_data_dir', return_value=path)
         appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.user_data_dir) is create
@@ -47,7 +47,7 @@ class TestNarkAppDirs(object):
     def test_site_data_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
-        mocker.patch('nark.helpers.config_helpers.appdirs.site_data_dir', return_value=path)
+        mocker.patch('nark.helpers.app_dirs.appdirs.site_data_dir', return_value=path)
         appdir = NarkAppDirs('nark')
         assert appdir.site_data_dir == path
 
@@ -55,7 +55,7 @@ class TestNarkAppDirs(object):
     def test_site_data_dir_creates_file(self, tmpdir, mocker, create, faker):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
-        mocker.patch('nark.helpers.config_helpers.appdirs.site_data_dir', return_value=path)
+        mocker.patch('nark.helpers.app_dirs.appdirs.site_data_dir', return_value=path)
         appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.site_data_dir) is create
@@ -63,7 +63,7 @@ class TestNarkAppDirs(object):
     def test_user_config_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_config_dir',
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_config_dir',
                     return_value=path)
         appdir = NarkAppDirs('nark')
         assert appdir.user_config_dir == path
@@ -72,7 +72,7 @@ class TestNarkAppDirs(object):
     def test_user_config_dir_creates_file(self, tmpdir, mocker, create, faker):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_config_dir',
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_config_dir',
                      return_value=path)
         appdir = NarkAppDirs('nark')
         appdir.create = create
@@ -81,7 +81,7 @@ class TestNarkAppDirs(object):
     def test_site_config_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
-        mocker.patch('nark.helpers.config_helpers.appdirs.site_config_dir',
+        mocker.patch('nark.helpers.app_dirs.appdirs.site_config_dir',
                      return_value=path)
         appdir = NarkAppDirs('nark')
         assert appdir.site_config_dir == path
@@ -90,7 +90,7 @@ class TestNarkAppDirs(object):
     def test_site_config_dir_creates_file(self, tmpdir, mocker, create, faker):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
-        mocker.patch('nark.helpers.config_helpers.appdirs.site_config_dir',
+        mocker.patch('nark.helpers.app_dirs.appdirs.site_config_dir',
                      return_value=path)
         appdir = NarkAppDirs('nark')
         appdir.create = create
@@ -99,7 +99,7 @@ class TestNarkAppDirs(object):
     def test_user_cache_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_cache_dir',
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_cache_dir',
                      return_value=path)
         appdir = NarkAppDirs('nark')
         assert appdir.user_cache_dir == path
@@ -108,7 +108,7 @@ class TestNarkAppDirs(object):
     def test_user_cache_dir_creates_file(self, tmpdir, mocker, create, faker):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_cache_dir',
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_cache_dir',
                      return_value=path)
         appdir = NarkAppDirs('nark')
         appdir.create = create
@@ -117,7 +117,7 @@ class TestNarkAppDirs(object):
     def test_user_log_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_log_dir', return_value=path)
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_log_dir', return_value=path)
         appdir = NarkAppDirs('nark')
         assert appdir.user_log_dir == path
 
@@ -125,7 +125,7 @@ class TestNarkAppDirs(object):
     def test_user_log_dir_creates_file(self, tmpdir, mocker, create, faker):
         """Make sure that path creation depends on ``create`` attribute."""
         path = os.path.join(tmpdir.strpath, '{}/'.format(faker.word()))
-        mocker.patch('nark.helpers.config_helpers.appdirs.user_log_dir', return_value=path)
+        mocker.patch('nark.helpers.app_dirs.appdirs.user_log_dir', return_value=path)
         appdir = NarkAppDirs('nark')
         appdir.create = create
         assert os.path.exists(appdir.user_log_dir) is create
@@ -136,8 +136,8 @@ class TestGetConfigPath(object):
 
     def test_get_config_path(self, appdirs):
         """Make sure the config target path is constructed to our expectations."""
-        expectation = os.path.join(appdirs.user_config_dir, config_helpers.DEFAULT_CONFIG_FILENAME)
-        result = config_helpers.get_config_path()
+        expectation = os.path.join(appdirs.user_config_dir, app_config.DEFAULT_CONFIG_FILENAME)
+        result = app_config.get_config_path()
         assert result == expectation
 
 
@@ -150,13 +150,13 @@ class TestWriteConfigFile(object):
 
         Note: Content is not checked, this is ConfigParsers job.
         """
-        config_helpers.write_config_file(config_instance)
-        expected_location = config_helpers.get_config_path()
+        app_config.write_config_file(config_instance)
+        expected_location = app_config.get_config_path()
         assert os.path.lexists(expected_location)
 
     def test_return_config_instance(self, config_instance, appdirs):
         """Make sure we return a ``SafeConfigParser`` instance."""
-        result = config_helpers.write_config_file(config_instance)
+        result = app_config.write_config_file(config_instance)
         assert isinstance(result, SafeConfigParser)
 
 
@@ -170,12 +170,12 @@ class TestLoadConfigFile(object):
         Notw:
             We use the ``appdirs`` fixture to make sure the required dirs exist.
         """
-        result = config_helpers.load_config_file(fallback_config_instance=config_instance)
+        result = app_config.load_config_file(fallback_config_instance=config_instance)
         assert result == config_instance
 
     def test_file_present(self, config_instance, backend_config):
         """Make sure we try parsing a found config file."""
-        result = config_helpers.load_config_file()
+        result = app_config.load_config_file()
         assert isinstance(result, SafeConfigParser)
 
 
@@ -185,5 +185,5 @@ class TestConfigParserToBackendConfig(object):
     def test_regular_usecase(self, configparser_instance):
         """Make sure basic mechanics work and int/time types are created."""
         cp_instance, expectation = configparser_instance
-        result = config_helpers.configparser_to_backend_config(cp_instance)
+        result = app_config.configparser_to_backend_config(cp_instance)
         assert result == expectation

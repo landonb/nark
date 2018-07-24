@@ -27,7 +27,7 @@ import pytest
 from configparser import SafeConfigParser
 from six import text_type
 
-from nark.helpers import config_helpers
+from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
 #from nark.helpers.time import TimeFrame
 
@@ -66,8 +66,8 @@ def appdirs(mocker, tmpdir):
 @pytest.fixture
 def backend_config(appdirs):
     """Provide generic backend config."""
-    appdir = appdirs(config_helpers.DEFAULT_APP_NAME)
-    return config_helpers.get_default_backend_config(appdir)
+    appdir = appdirs(app_config.DEFAULT_APP_NAME)
+    return app_config.get_default_backend_config(appdir)
 
 
 @pytest.fixture
@@ -117,7 +117,7 @@ def config_file(backend_config, appdirs):
     """Provide a config file stored under our fake config dir."""
     with codecs.open(os.path.join(appdirs.user_config_dir, 'config.conf'),
             'w', encoding='utf-8') as fobj:
-        config_helpers.backend_config_to_configparser(backend_config).write(fobj)
+        app_config.backend_config_to_configparser(backend_config).write(fobj)
         config_instance.write(fobj)
 
 

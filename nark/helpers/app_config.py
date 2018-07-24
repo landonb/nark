@@ -89,11 +89,15 @@ from six import text_type
 from .app_dirs import NarkAppDirs
 from ..control import REGISTERED_BACKENDS
 
+# NOTE: (lb): This file is unused by nark/dob.
+#       It's used by hamster-gtk, which is broke
+#       against nark because of so much refactoring.
+# FIXME: Fix this file to work with hamster-gtk again?
+#        (I'm not sure how much I care about the windowed app;
+#         I'm pretty happy with just the CLI....)
 
-# FIXME: (lb): The CLI sets the appname when it calls get_config_path(), so
-#        this 'projecthamster' value is not used, but I'm wondering if we
-#        should rebrand it, either 'nark', or 'hotoffthehamster'...
-DEFAULT_APP_NAME = 'projecthamster'
+
+DEFAULT_APP_NAME = 'nark'
 DEFAULT_APPDIRS = NarkAppDirs(DEFAULT_APP_NAME)
 DEFAULT_CONFIG_FILENAME = '{}.conf'.format(DEFAULT_APPDIRS.appname)
 
