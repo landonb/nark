@@ -910,7 +910,7 @@ class Fact(BaseItem):
         start = parsed_fact['start']
         end = parsed_fact['end']
         # Verify that start > end, if neither are None or not a datetime.
-        start, end = time_helpers.validate_start_end_range((start, end))
+        start, end = time_helpers.must_not_start_after_end((start, end))
 
         activity = ''
         activity_name = parsed_fact['activity']

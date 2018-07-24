@@ -32,7 +32,7 @@ __all__ = [
     'day_end_datetime',
     'day_end_time',
     'must_be_datetime_or_relative',
-    'validate_start_end_range',
+    'must_not_start_after_end',
     'isoformat',
     'isoformat_tzinfo',
     'isoformat_tzless',
@@ -111,7 +111,7 @@ def must_be_datetime_or_relative(dt):
     ))
 
 
-def validate_start_end_range(range_tuple):
+def must_not_start_after_end(range_tuple):
     """
     Perform basic sanity checks on a timeframe.
 

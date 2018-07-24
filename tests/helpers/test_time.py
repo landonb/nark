@@ -322,7 +322,7 @@ class TestValidateStartEndRange(object):
     ))
     def test_valid_ranges(self, range):
         """Make sure that ranges with end > start pass validation."""
-        result = time_helpers.validate_start_end_range(range)
+        result = time_helpers.must_not_start_after_end(range)
         assert result == range
 
     @pytest.mark.parametrize('range', (
@@ -332,7 +332,7 @@ class TestValidateStartEndRange(object):
     def test_invalid_ranges(self, range):
         """Make sure that ranges with start > end fail validation."""
         with pytest.raises(ValueError):
-            time_helpers.validate_start_end_range(range)
+            time_helpers.must_not_start_after_end(range)
 
 
 class TestTruncateToWholeSeconds(object):
