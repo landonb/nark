@@ -29,14 +29,14 @@ __all__ = [
     'tags_inline',
     'tags_tuples',
     # Private:
-    #  'actegory_string',
-    #  'description_string',
-    #  'ordered_tagnames',
+    #  '_actegory_string',
+    #  '_description_string',
+    #  '_ordered_tagnames',
 ]
 
 
 def friendly_str(
-    self,
+    fact,
     shellify=False,
     description_sep=': ',
     tags_sep=': ',
@@ -63,7 +63,7 @@ def friendly_str(
         parts = [
             get_id_string(fact),
             get_times_string(fact),
-            fact.actegory_string(shellify, omit_empty_actegory),
+            _actegory_string(fact, shellify, omit_empty_actegory),
         ]
         parts_str = ' '.join(list(filter(None, parts)))
         tags = get_tags_string(fact)
@@ -74,7 +74,7 @@ def friendly_str(
     def format_result(fact, meta):
         result = '{fact_meta}{description}'.format(
             fact_meta=meta,
-            description=fact.description_string(cut_width, description_sep),
+            description=_description_string(fact, cut_width, description_sep),
         )
         return result
 
@@ -93,7 +93,7 @@ def friendly_str(
     def get_times_string_start(fact):
         if not fact.start:
             return ''
-        if not self.localize:
+        if not fact.localize:
             start_time = fact.start_fmt_utc
         else:
             start_time = fact.start_fmt_local
@@ -106,7 +106,7 @@ def friendly_str(
         if not fact.end:
             # (lb): What's a good term here? '<ongoing>'? Or just 'now'?
             end_time = _('<now>')
-        elif not self.localize:
+        elif not fact.localize:
             end_time = fact.end_fmt_utc
         else:
             end_time = fact.end_fmt_local
@@ -132,20 +132,20 @@ def friendly_str(
 
     # ***
 
-    return _friendly_str(self)
+    return _friendly_str(fact)
 
 
 # ***
 
-def html_notif(self):
+def html_notif(fact):
     """
     A briefer Fact one-liner using HTML. Useful for, e.g., notifier toast.
     """
     was_coloring = set_coloring(False)
-    duration = '[{}]'.format(self.format_delta(''))
-    actegory = self.actegory_string(omit_empty_actegory=True)
+    duration = '[{}]'.format(fact.format_delta(''))
+    actegory = _actegory_string(fact, omit_empty_actegory=True)
     actegory = actegory or '<i>No activity</i>'
-    description = self.description_string(cut_width=39, sep=': ')
+    description = _description_string(fact, cut_width=39, sep=': ')
     simple_str = (
         '{} {}{}'
         .format(
@@ -160,18 +160,18 @@ def html_notif(self):
 
 # ***
 
-def actegory_string(self, shellify=False, omit_empty_actegory=False):
+def _actegory_string(fact, shellify=False, omit_empty_actegory=False):
     # (lb): We can skip delimiter after time when using ISO 8601.
-    if not self.activity_name:
-        if not self.category_name:
+    if not fact.activity_name:
+        if not fact.category_name:
             act_cat = '' if omit_empty_actegory else '@'
         else:
-            act_cat = '@{}'.format(self.category_name)
+            act_cat = '@{}'.format(fact.category_name)
     else:
         act_cat = (
             '{}@{}'.format(
-                self.activity_name,
-                self.category_name,
+                fact.activity_name,
+                fact.category_name,
             )
         )
 # FIXME: Skinify these colors.
@@ -182,8 +182,8 @@ def actegory_string(self, shellify=False, omit_empty_actegory=False):
 
 # ***
 
-def description_string(self, cut_width=None, sep=', '):
-    description = self.description or ''
+def _description_string(fact, cut_width=None, sep=', '):
+    description = fact.description or ''
     if description:
         if cut_width is not None:
             description = format_value_truncate(description, cut_width)
@@ -202,7 +202,7 @@ def description_string(self, cut_width=None, sep=', '):
 # By default, this function assumes the tags do not need special
 # delimiting; that the pound sign is fine.
 def tags_inline(
-    self,
+    fact,
     hashtag_token='#',
     quote_tokens=False,
     underlined=False,
@@ -224,13 +224,13 @@ def tags_inline(
 
     # NOTE: The returned string includes leading space if nonempty!
     tagnames = ''
-    if self.tags:
-        tagnames = ' '.join(self.ordered_tagnames(format_tagname))
+    if fact.tags:
+        tagnames = ' '.join(_ordered_tagnames(fact, format_tagname))
     return tagnames
 
 
 def tags_tuples(
-    self,
+    fact,
     hashtag_token='#',
     quote_tokens=False,
     underlined=False,
@@ -251,10 +251,10 @@ def tags_tuples(
 
     # NOTE: The returned string includes leading space if nonempty!
     tagnames = []
-    if self.tags:
+    if fact.tags:
         fmt_sep = ('', "\n") if split_lines else ('', ' ')
         n_tag = 0
-        for fmtd_tagn in self.ordered_tagnames(format_tagname):
+        for fmtd_tagn in _ordered_tagnames(fact, format_tagname):
             if n_tag > 0:
                 tagnames += [fmt_sep]
             n_tag += 1
@@ -262,8 +262,8 @@ def tags_tuples(
     return tagnames
 
 
-def ordered_tagnames(self, format_tagname):
+def _ordered_tagnames(fact, format_tagname):
     return [
-        format_tagname(tag) for tag in self.tags_sorted
+        format_tagname(tag) for tag in fact.tags_sorted
     ]
 
