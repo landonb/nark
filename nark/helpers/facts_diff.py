@@ -93,10 +93,9 @@ class FactsDiff(object):
             result += self.diff_attrs('activity_name', 'activity')
             result += self.diff_attrs('category_name', 'category')
             if not self.formatted:
-                result += self.diff_attrs('tagnames_underlined', 'tags')
+                result += self.diff_attrs('tags_inline', 'tags')
             else:
-                # (lb): Ug... this 'formatted' business is crazy.
-                result += self.diff_attrs('tagnames_underlined_f', 'tags')
+                result += self.diff_attrs('tags_tuples', 'tags')
             result += self.diff_attrs('description', 'description', truncate=truncate)
             return result
 

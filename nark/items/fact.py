@@ -28,11 +28,10 @@ from .category import Category
 from .item_base import BaseItem
 from .tag import Tag
 from ..helpers import time as time_helpers
+from ..helpers import format_fact
 from ..helpers import format_time
-from ..helpers.colored import attr, colorize, set_coloring
 from ..helpers.facts_diff import FactsDiff
 from ..helpers.parsing import parse_factoid
-from ..helpers.strings import format_value_truncate
 
 
 FactTuple = namedtuple(
@@ -130,10 +129,10 @@ class Fact(BaseItem):
         return hash(self.as_tuple())
 
     def __str__(self):
-        return self.friendly_str(text_type)
+        return format_fact.friendly_str(text_type)
 
     def __repr__(self):
-        return self.friendly_str(repr)
+        return format_fact.friendly_str(repr)
 
     def as_tuple(self, include_pk=True):
         """
@@ -487,218 +486,25 @@ class Fact(BaseItem):
         # (That error is from orm.attribute.CollectionAttributeImpl.set.)
         self.tags = list(new_tags)
 
-    # ***
-
     @property
     def tags_sorted(self):
         return sorted(list(self.tags), key=attrgetter('name'))
 
-    @property
-    def tagfield(self):
-        return self.tagnames()
+    # ***
 
-    # (lb): People associate tags with pound signs -- like, #hashtag!
-    # But Bash, and other shells, use octothorpes to start comments.
-    # The user can tell Bash to interpret a pound sign as input by
-    # "#quoting" it, or by \#delimiting it. Hamster also lets the user
-    # use an '@' at symbol instead (not to be confused with typical
-    # social media usage of '@' to refer to other users or people).
-    # By default, this function assumes the tags do not need special
-    # delimiting; that the pound sign is fine.
-    def tagnames(
-        self,
-        hashtag_token='#',
-        quote_tokens=False,
-        underlined=False,
-    ):
-        def format_tagname(tag):
-            tagged = '{}{}'.format(
-                colorize(hashtag_token, 'grey_78'),
-                colorize(tag.name, 'dark_olive_green_1b'),
-            )
-            if underlined:
-                tagged = '{}{}{}'.format(
-                    attr('underlined'), tagged, attr('res_underlined'),
-                )
-            if quote_tokens:
-                tagged = '"{}"'.format(tagged)
-            return tagged
+    def tagnames(self, *args, **kwargs):
+        return format_fact.tags_inline(*args, **kwargs)
 
-        # NOTE: The returned string includes leading space if nonempty!
-        tagnames = ''
-        if self.tags:
-            tagnames = ' '.join(self.ordered_tagnames(format_tagname))
-        return tagnames
+    def tags_inline(self, underlined=True, **kwargs):
+        return format_fact.tags_inline(underlined=underlined, **kwargs)
 
-    def tagnames_underlined(self):
-        return self.tagnames(underlined=True)
-
-    def tagnames_f(
-        self,
-        hashtag_token='#',
-        quote_tokens=False,
-        underlined=False,
-        split_lines=False,
-    ):
-        def format_tagname(tag):
-            uline = ' underline' if underlined else ''
-            tagged = []
-            tagged.append(('fg: #C6C6C6{}'.format(uline), hashtag_token))
-            tagged.append(('fg: #D7FF87{}'.format(uline), tag.name))
-            if quote_tokens:
-                fmt_quote = ('', '"')
-                tagged.insert(0, fmt_quote)
-                tagged.append(fmt_quote)
-            return tagged
-
-        # NOTE: The returned string includes leading space if nonempty!
-        tagnames = []
-        if self.tags:
-            fmt_sep = ('', "\n") if split_lines else ('', ' ')
-            n_tag = 0
-            for fmtd_tagn in self.ordered_tagnames(format_tagname):
-                if n_tag > 0:
-                    tagnames += [fmt_sep]
-                n_tag += 1
-                tagnames += fmtd_tagn
-        return tagnames
-
-    def tagnames_underlined_f(self, underlined=True, **kwargs):
-        return self.tagnames_f(underlined=underlined, **kwargs)
-
-    def ordered_tagnames(self, format_tagname):
-        return [
-            format_tagname(tag) for tag in self.tags_sorted
-        ]
+    def tags_tuples(self, underlined=True, **kwargs):
+        return format_fact.tags_tuples(underlined=underlined, **kwargs)
 
     # ***
 
-    def friendly_str(
-        self,
-        shellify=False,
-        description_sep=': ',
-        tags_sep=': ',
-        localize=False,
-        include_id=False,
-        colorful=False,
-        cut_width=None,
-        show_elapsed=False,
-        omit_empty_actegory=False,
-    ):
-        """
-        Flexible Fact serializer.
-        """
-        def _friendly_str(fact):
-            was_coloring = set_coloring(colorful)
-            meta = assemble_parts(fact)
-            result = format_result(fact, meta)
-            # (lb): EXPLAIN: Why do we cast here?
-            result = text_type(result)
-            set_coloring(was_coloring)
-            return result
-
-        def assemble_parts(fact):
-            parts = [
-                get_id_string(fact),
-                get_times_string(fact),
-                fact.actegory_string(shellify, omit_empty_actegory),
-            ]
-            parts_str = ' '.join(list(filter(None, parts)))
-            tags = get_tags_string(fact)
-            parts_str += tags_sep + tags if tags else ''
-            parts_str += _(" [del]") if fact.deleted else ''
-            return parts_str
-
-        def format_result(fact, meta):
-            result = '{fact_meta}{description}'.format(
-                fact_meta=meta,
-                description=fact.description_string(cut_width, description_sep),
-            )
-            return result
-
-        def get_id_string(fact):
-            if not include_id:
-                return ''
-            return colorize('(${})'.format(fact.pk), 'grey_78')
-
-        def get_times_string(fact):
-            times = ''
-            times += get_times_string_start(fact)
-            times += get_times_string_end(fact, times)
-            times += get_times_duration(fact)
-            return times
-
-        def get_times_string_start(fact):
-            if not fact.start:
-                return ''
-            if not self.localize:
-                start_time = fact.start_fmt_utc
-            else:
-                start_time = fact.start_fmt_local
-            start_time = colorize(start_time, 'sandy_brown')
-            return start_time
-
-        def get_times_string_end(fact, times):
-            # NOTE: The CLI's DATE_TO_DATE_SEPARATORS[0] is 'to'.
-            prefix = colorize(' to ', 'grey_85') if times else ''
-            if not fact.end:
-                # (lb): What's a good term here? '<ongoing>'? Or just 'now'?
-                end_time = _('<now>')
-            elif not self.localize:
-                end_time = fact.end_fmt_utc
-            else:
-                end_time = fact.end_fmt_local
-            end_time = colorize(end_time, 'sandy_brown')
-            return prefix + end_time
-
-        def get_times_duration(fact):
-            if not show_elapsed:
-                return ''
-            duration = ' [{}]'.format(fact.format_delta(''))
-            return colorize(duration, 'grey_78')
-
-        def get_tags_string(fact):
-            # (lb): There are three ways to "shellify" a hashtag token:
-            #         1.) "#quote" it;
-            #         2.) \#delimit it; or
-            #         3.) use the inoffensive @ symbol instead of #.
-            # Let's do 1.) by default, because most people associate the pound
-            # sign with tags, because quotes are less offensive than a slash,
-            # and because the @ symbol makes me think of "at'ing someone".
-            #   Nope:  hashtag_token = '@' if shellify else '#'
-            return fact.tagnames(quote_tokens=shellify)
-
-        # ***
-
-        return _friendly_str(self)
-
-    # ***
-
-    def actegory_string(self, shellify=False, omit_empty_actegory=False):
-        # (lb): We can skip delimiter after time when using ISO 8601.
-        if not self.activity_name:
-            if not self.category_name:
-                act_cat = '' if omit_empty_actegory else '@'
-            else:
-                act_cat = '@{}'.format(self.category_name)
-        else:
-            act_cat = (
-                '{}@{}'.format(
-                    self.activity_name,
-                    self.category_name,
-                )
-            )
-        act_cat = colorize(act_cat, 'cornflower_blue', 'bold', 'underlined')
-        act_cat = '"{}"'.format(act_cat) if act_cat and shellify else act_cat
-        return act_cat
-
-    def description_string(self, cut_width=None, sep=', '):
-        description = self.description or ''
-        if description:
-            if cut_width is not None:
-                description = format_value_truncate(description, cut_width)
-            description = '{}{}'.format(sep, description)
-        return description
+    def friendly_str(self, *args, **kwargs):
+        return format_fact.friendly_str(self, *args, **kwargs)
 
     # ***
 
@@ -736,13 +542,7 @@ class Fact(BaseItem):
         Returns:
             text_type: Canonical string encoding all available fact info.
         """
-        return self.friendly_str(
-            shellify=shellify,
-            description_sep=': ',
-            truncate=False,
-            include_id=False,
-            colorful=False,
-        )
+        return format_fact.friendly_str(shellify=shellify)
 
     @property
     def short(self):
@@ -751,57 +551,20 @@ class Fact(BaseItem):
 
         (lb): Not actually called by any code, but useful for debugging!
         """
-        return self.friendly_str(
-            # shellify=False,
-            description_sep=': ',
-            # tags_sep=': ',
-            include_id=True,
-            # colorful=False,
-            cut_width=39,
-            # show_elapsed=False,
-        )
+        return format_fact.friendly_str(include_id=True, cut_width=39)
 
     @property
-    def short_notif(self):
+    def html_notif(self):
         """
-        A briefer Fact one-liner. Useful for, e.g., a notifier.
+        A briefer Fact one-liner using HTML. Useful for, e.g., notifier toast.
         """
-        was_coloring = set_coloring(False)
-        duration = '[{}]'.format(self.format_delta(''))
-        actegory = self.actegory_string(omit_empty_actegory=True)
-        actegory = actegory or '<i>No activity</i>'
-        description = self.description_string(cut_width=39, sep=': ')
-        simple_str = (
-            '{} {}{}'
-            .format(
-                duration,
-                actegory,
-                description,
-            )
-        )
-        set_coloring(was_coloring)
-        return simple_str
+        return format_fact.html_notif(self)
 
     # ***
 
-    def friendly_diff(
-        self,
-        other,
-        truncate=False,
-        exclude=None,
-        formatted=False,
-        show_elapsed=False,
-        show_midpoint=False,
-        show_now=False,
-    ):
+    def friendly_diff(self, other, formatted=False, **kwargs):
         facts_diff = FactsDiff(self, other, formatted=formatted)
-        return facts_diff.friendly_diff(
-            truncate=truncate,
-            exclude=exclude,
-            show_elapsed=show_elapsed,
-            show_midpoint=show_midpoint,
-            show_now=show_now,
-        )
+        return facts_diff.friendly_diff(**kwargs)
 
     # ***
 
