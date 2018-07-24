@@ -61,7 +61,7 @@ def isoformat(dt, sep='T', timespec='auto', include_tz=False):
     ValueError will be raised on an invalid timespec argument.
 
     """
-    def _isoformat():
+    def _isoformat(dt, sep, timespec, include_tz):
         timecomp = _format_timespec(dt, timespec)
 
         tzcomp = ''
@@ -95,7 +95,7 @@ def isoformat(dt, sep='T', timespec='auto', include_tz=False):
         else:
             raise ValueError('Not a valid `timespec`: {}'.format(timespec))
 
-    return _isoformat()
+    return _isoformat(dt, sep, timespec, include_tz)
 
 
 def isoformat_tzinfo(dt, sep='T', timespec='auto'):
