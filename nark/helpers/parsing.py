@@ -56,10 +56,7 @@ logger = logging.getLogger('nark.log')
 #        From a "globals" module?
 #        From a function-scoped sub-function?
 #        Or is here fine?
-DATE_TO_DATE_SEPARATORS = ['to', 'until', '\-', '\|']
-# (lb): "and" could work, feels naturally, but could also make parsing more difficult.
-# E.g., "from dusk until dawn", "between two ferns", "from hell and back"
-# DATE_TO_DATE_SEPARATORS = ['to', 'until', 'and', '\-', '\|']
+DATE_TO_DATE_SEPARATORS = ['to', 'until', '\-']
 
 
 FACT_METADATA_SEPARATORS = [",", ":"]
