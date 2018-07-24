@@ -23,7 +23,6 @@ import logging
 import os
 import re
 
-from .dated import HamsterTimeSpec, parse_datetime_iso8601
 from .strings import comma_or_join
 from .parse_errors import (
     ParserException,
@@ -33,6 +32,7 @@ from .parse_errors import (
     ParserMissingSeparatorActivity,
     ParserMissingActivityException
 )
+from .parse_time import HamsterTimeSpec, parse_datetime_iso8601
 
 # Profiling: `import dateparser` takes ~ 0.2 seconds.
 import lazy_import
