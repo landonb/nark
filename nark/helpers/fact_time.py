@@ -24,12 +24,45 @@ from six import text_type
 
 
 __all__ = [
+    'datetime_from_clock_prior',
+    'datetime_from_clock_after',
     'day_end_datetime',
     'day_end_time',
     'must_be_datetime_or_relative',
     'must_not_start_after_end',
 ]
 
+
+# ***
+
+def datetime_from_clock_prior(dt_relative, clock_time):
+    # FIXME/MEH/2018-05-21 11:32: (lb): I'm guessing this doesn't work
+    # across the "fold", e.g., 2 AM on daylight savings "fall back"
+    # occurs twice, and in Python, the first time, fold=0, and the
+    # second time, fold=1.
+    new_dt = dt_relative.replace(
+        hour=int(clock_time[0]),
+        minute=int(clock_time[1]),
+        second=int(clock_time[2]),
+    )
+    if new_dt > dt_relative:
+        new_dt -= datetime.timedelta(days=1)
+    return new_dt
+
+
+def datetime_from_clock_after(dt_relative, clock_time):
+    # FIXME/MEH/2018-05-21 11:32: (lb): Ignoring so-called "fold"/DST issue.
+    new_dt = dt_relative.replace(
+        hour=int(clock_time[0]),
+        minute=int(clock_time[1]),
+        second=int(clock_time[2]),
+    )
+    if new_dt < dt_relative:
+        new_dt += datetime.timedelta(days=1)
+    return new_dt
+
+
+# ***
 
 def day_end_datetime(end_date, start_time=None):
     """
@@ -86,6 +119,8 @@ def day_end_time(start_time):
     end_time = end_datetime.time()
     return end_time
 
+
+# ***
 
 def must_be_datetime_or_relative(dt):
     """FIXME: Document"""
