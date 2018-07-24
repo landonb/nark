@@ -22,7 +22,7 @@ import pytest
 from configparser import SafeConfigParser
 
 from nark.helpers import config_helpers
-from nark.helpers.config_helpers import NarkAppDirs
+from nark.helpers.app_dirs import NarkAppDirs
 
 
 class TestNarkAppDirs(object):
