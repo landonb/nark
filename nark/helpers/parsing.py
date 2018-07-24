@@ -62,23 +62,6 @@ DATE_TO_DATE_SEPARATORS = ['to', 'until', '\-']
 FACT_METADATA_SEPARATORS = [",", ":"]
 
 
-TIME_HINT_MAP = {
-    # SYNC_ME: RE_TIME_HINT, TIME_HINT_MAP.
-    'on': 'verify_none',
-    'now': 'verify_none',
-    'from': 'verify_both',
-    'between': 'verify_both',
-    'at': 'verify_start',
-    'to': 'verify_end',
-    'until': 'verify_end',
-    'then': 'verify_then',
-    'still': 'verify_still',
-    'after': 'verify_after',
-    'next': 'verify_after',
-    'since': 'verify_after',
-}
-
-
 class Parser(object):
     """FIXME"""
 
