@@ -19,6 +19,9 @@
 
 from __future__ import absolute_import, unicode_literals
 
+from pedantic_timedelta import PedanticTimedelta
+from six import text_type
+
 import datetime
 import math
 
@@ -33,6 +36,8 @@ __all__ = [
     'isoformat_tzless',
 ]
 
+
+# ***
 
 def isoformat(dt, sep='T', timespec='auto', include_tz=False):
     """
@@ -112,4 +117,58 @@ def isoformat_tzless(dt, sep='T', timespec='auto'):
         return isoformat(dt, sep=sep, timespec=timespec, include_tz=False)
     else:
         return dt
+
+
+# ***
+
+def format_delta(delta, style='%M'):
+    """
+    Return a string representation of ``Fact().delta``.
+
+    Args:
+        style (str): Specifies the output format.
+
+          Valid choices are:
+            * ``'%M'``: As minutes, rounded down.
+            * ``'%H:%M'``: As 'hours:minutes'. rounded down.
+            * ````: As human friendly time.
+
+    Returns:
+        str: Formatted string representing this fact's *duration*.
+    """
+    def _format_delta():
+        seconds = delta.total_seconds() if delta is not None else 0
+        hours = int(seconds / 3600)
+        minutes = int((seconds % 3600) / 60)
+        if style == '%M':
+            return format_mins(minutes)
+        elif style == '%H:%M':
+            return format_hours_mins(hours, minutes)
+        elif style == 'HHhMMm':
+            return format_hours_h_mins_m(hours, minutes)
+        else:
+            return format_pedantic(seconds)
+
+    def format_mins(minutes):
+        return text_type(minutes)
+
+    def format_hours_mins(hours, minutes):
+        return '{0:02d}:{1:02d}'.format(hours, minutes)
+
+    def format_hours_h_mins_m(hours, minutes):
+        text = ''
+        text += "{0:>2d} ".format(hours)
+        text += _("hour ") if hours == 1 else _("hours")
+        text += " {0:>2d} ".format(minutes)
+        text += _("minute ") if minutes == 1 else _("minutes")
+        return text
+
+    def format_pedantic(seconds):
+        (
+            tm_fmttd, tm_scale, tm_units,
+        ) = PedanticTimedelta(seconds=seconds).time_format_scaled()
+        return tm_fmttd
+
+    return _format_delta()
+
 

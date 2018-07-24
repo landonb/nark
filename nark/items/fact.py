@@ -21,7 +21,6 @@ from future.utils import python_2_unicode_compatible
 from collections import namedtuple
 from datetime import datetime
 from operator import attrgetter
-from pedantic_timedelta import PedanticTimedelta
 from six import text_type
 
 from .activity import Activity
@@ -371,7 +370,7 @@ class Fact(BaseItem):
 
         return end_time - self.start
 
-    def get_string_delta(self, formatting='%M'):
+    def format_delta(self, formatting='%M'):
         """
         Return a string representation of ``Fact().delta``.
 
@@ -386,41 +385,7 @@ class Fact(BaseItem):
         Returns:
             str: Formatted string representing this fact's *duration*.
         """
-        def _get_string_delta():
-            delta = self.delta()
-            seconds = delta.total_seconds() if delta is not None else 0
-            hours = int(seconds / 3600)
-            minutes = int((seconds % 3600) / 60)
-            if formatting == '%M':
-                return format_mins(minutes)
-            elif formatting == '%H:%M':
-                return format_hours_mins(hours, minutes)
-            elif formatting == 'HHhMMm':
-                return format_hours_h_mins_m(hours, minutes)
-            else:
-                return format_pedantic(seconds)
-
-        def format_mins(minutes):
-            return text_type(minutes)
-
-        def format_hours_mins(hours, minutes):
-            return '{0:02d}:{1:02d}'.format(hours, minutes)
-
-        def format_hours_h_mins_m(hours, minutes):
-            text = ''
-            text += "{0:>2d} ".format(hours)
-            text += _("hour ") if hours == 1 else _("hours")
-            text += " {0:>2d} ".format(minutes)
-            text += _("minute ") if minutes == 1 else _("minutes")
-            return text
-
-        def format_pedantic(seconds):
-            (
-                tm_fmttd, tm_scale, tm_units,
-            ) = PedanticTimedelta(seconds=seconds).time_format_scaled()
-            return tm_fmttd
-
-        return _get_string_delta()
+        return format_time.format_delta(self.delta())
 
     # ***
 
@@ -689,7 +654,7 @@ class Fact(BaseItem):
         def get_times_duration(fact):
             if not show_elapsed:
                 return ''
-            duration = ' [{}]'.format(fact.get_string_delta(''))
+            duration = ' [{}]'.format(fact.format_delta(''))
             return colorize(duration, 'grey_78')
 
         def get_tags_string(fact):
@@ -802,7 +767,7 @@ class Fact(BaseItem):
         A briefer Fact one-liner. Useful for, e.g., a notifier.
         """
         was_coloring = set_coloring(False)
-        duration = '[{}]'.format(self.get_string_delta(''))
+        duration = '[{}]'.format(self.format_delta(''))
         actegory = self.actegory_string(omit_empty_actegory=True)
         actegory = actegory or '<i>No activity</i>'
         description = self.description_string(cut_width=39, sep=': ')

@@ -211,7 +211,7 @@ class TestXMLWriter(object):
         assert result.start == fact.start.strftime(xml_writer.datetime_format)
         assert result.end == fact.end.strftime(xml_writer.datetime_format)
         assert result.activity == text_type(fact.activity.name)
-        assert result.duration == text_type(fact.get_string_delta(formatting='%M'))
+        assert result.duration == text_type(fact.format_delta(style='%M'))
         assert result.category == text_type(fact.category.name)
         assert result.description == text_type(fact.description)
 

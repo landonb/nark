@@ -150,7 +150,7 @@ def list_of_facts(fact_factory):
 
 @pytest.fixture(params=('%M', '%H:%M'))
 def string_delta_format_parametrized(request):
-    """Provide all possible format option for ``Fact().get_string_delta()``."""
+    """Provide all possible format option for ``Fact().format_delta()``."""
     return request.param
 
 

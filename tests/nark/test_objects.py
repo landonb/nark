@@ -418,22 +418,27 @@ class TestFact(object):
         assert False  # FIXME: (lb): delta is until 'now' IRL.
 
     @pytest.mark.parametrize('offset', [
-        (15, {'%M': '15', '%H:%M': '00:15'}),
+        ( 15, {'%M':  '15', '%H:%M': '00:15'}),
         (452, {'%M': '452', '%H:%M': '07:32'}),
         (912, {'%M': '912', '%H:%M': '15:12'}),
     ])
-    def test_get_string_delta_valid_format(self, fact, offset,
-            start_end_datetimes_from_offset, string_delta_format_parametrized):
+    def test_format_delta_valid_style(
+        self,
+        fact,
+        offset,
+        start_end_datetimes_from_offset,
+        string_delta_style_parametrized,
+    ):
         """Make sure that the resulting string matches our expectation."""
         offset, expectation = offset
         fact.start, fact.end = start_end_datetimes_from_offset(offset)
-        result = fact.get_string_delta(string_delta_format_parametrized)
-        assert result == expectation[string_delta_format_parametrized]
+        result = fact.format_delta(style=string_delta_style_parametrized)
+        assert result == expectation[string_delta_style_parametrized]
 
-    def test_get_string_delta_invalid_format(self, fact):
+    def test_format_delta_invalid_style(self, fact):
         """Ensure that passing an invalid format will raise an exception."""
         with pytest.raises(ValueError):
-            fact.get_string_delta('foobar')
+            fact.format_delta(style='foobar')
 
     def test_date(self, fact):
         """Make sure the property returns just the date of ``Fact().start``."""

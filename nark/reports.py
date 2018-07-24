@@ -208,7 +208,7 @@ class PlaintextWriter(ReportWriter):
         return FactTuple(
             start=start,
             end=end,
-            duration=fact.get_string_delta(self.duration_fmt),
+            duration=fact.format_delta(style=self.duration_fmt),
             activity=fact.activity.name,
             category=text_type(category),
             description=description,
@@ -392,7 +392,7 @@ class XMLWriter(ReportWriter):
         return FactTuple(
             start=fact.start.strftime(self.datetime_format),
             end=fact.end.strftime(self.datetime_format),
-            duration=fact.get_string_delta(formatting='%M'),
+            duration=fact.format_delta(style='%M'),
             activity=text_type(fact.activity.name),
             category=text_type(category),
             description=text_type(description),
