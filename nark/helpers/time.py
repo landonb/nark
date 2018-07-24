@@ -167,39 +167,41 @@ def isoformat(dt, sep='T', timespec='auto', include_tz=False):
     ValueError will be raised on an invalid timespec argument.
 
     """
-    timecomp = _format_timespec(dt, timespec)
+    def _isoformat():
+        timecomp = _format_timespec(dt, timespec)
 
-    tzcomp = ''
-    if dt.tzinfo:
-        if include_tz:
-            tzcomp = '%z'
+        tzcomp = ''
+        if dt.tzinfo:
+            if include_tz:
+                tzcomp = '%z'
+            else:
+                dt = dt.astimezone(pytz.utc)
+        # else, a naive datetime, we'll just have to assume it's UTC!
+
+        return dt.strftime('%Y-%m-%d{}{}{}'.format(sep, timecomp, tzcomp))
+
+    def _format_timespec(dt, timespec):
+        if timespec == 'auto':
+            if not dt.microsecond:
+                timespec = 'seconds'
+            else:
+                timespec = 'microseconds'
+
+        if timespec == 'hours':
+            return '%H'
+        elif timespec == 'minutes':
+            return '%H:%M'
+        elif timespec == 'seconds':
+            return '%H:%M:%S'
+        elif timespec == 'milliseconds':
+            msec = '{:03}'.format(math.floor(dt.microsecond / 1000))
+            return '%H:%M:%S.{}'.format(msec)
+        elif timespec == 'microseconds':
+            return '%H:%M:%S.%f'
         else:
-            dt = dt.astimezone(pytz.utc)
-    # else, a naive datetime, we'll just have to assume it's UTC!
+            raise ValueError('Not a valid `timespec`: {}'.format(timespec))
 
-    return dt.strftime('%Y-%m-%d{}{}{}'.format(sep, timecomp, tzcomp))
-
-
-def _format_timespec(dt, timespec):
-    if timespec == 'auto':
-        if not dt.microsecond:
-            timespec = 'seconds'
-        else:
-            timespec = 'microseconds'
-
-    if timespec == 'hours':
-        return '%H'
-    elif timespec == 'minutes':
-        return '%H:%M'
-    elif timespec == 'seconds':
-        return '%H:%M:%S'
-    elif timespec == 'milliseconds':
-        msec = '{:03}'.format(math.floor(dt.microsecond / 1000))
-        return '%H:%M:%S.{}'.format(msec)
-    elif timespec == 'microseconds':
-        return '%H:%M:%S.%f'
-    else:
-        raise ValueError('Not a valid `timespec`: {}'.format(timespec))
+    return _isoformat()
 
 
 def isoformat_tzinfo(dt, sep='T', timespec='auto'):
