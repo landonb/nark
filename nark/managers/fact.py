@@ -336,9 +336,9 @@ class BaseFactManager(BaseManager):
         self.store.logger.debug(_("Returning today's facts"))
 
         today = datetime.date.today()
-        start = datetime.datetime.combine(today, self.store.config['day_start'])
-        end = time_helpers.end_day_to_datetime(today, self.store.config)
-        return self.get_all(start=start, end=end)
+        since = datetime.datetime.combine(today, self.store.config['day_start'])
+        until = time_helpers.end_day_to_datetime(today, self.store.config)
+        return self.get_all(since=since, until=until)
 
     # ***
 

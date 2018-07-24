@@ -268,58 +268,59 @@ class TestFactManager:
         with pytest.raises(NotImplementedError):
             basestore.facts.get(12)
 
-    @pytest.mark.parametrize(('start', 'end', 'filter_term', 'expectation'), [
+    @pytest.mark.parametrize(('since', 'until', 'filter_term', 'expectation'), [
         (None, None, '', {
-            'start': None,
-            'end': None}),
-        # Various start info
+            'since': None,
+            'until': None}),
+        # Various since info
         (datetime.date(2014, 4, 1), None, '', {
-            'start': datetime.datetime(2014, 4, 1, 5, 30, 0),
-            'end': None}),
+            'since': datetime.datetime(2014, 4, 1, 5, 30, 0),
+            'until': None}),
         (datetime.time(13, 40, 25), None, '', {
-            'start': datetime.datetime(2015, 4, 1, 13, 40, 25),
-            'end': None}),
+            'since': datetime.datetime(2015, 4, 1, 13, 40, 25),
+            'until': None}),
         (datetime.datetime(2014, 4, 1, 13, 40, 25), None, '', {
-            'start': datetime.datetime(2014, 4, 1, 13, 40, 25),
-            'end': None}),
-        # Various end info
+            'since': datetime.datetime(2014, 4, 1, 13, 40, 25),
+            'until': None}),
+        # Various until info
         (None, datetime.date(2014, 2, 1), '', {
-            'start': None,
-            'end': datetime.datetime(2014, 2, 2, 5, 29, 59)}),
+            'since': None,
+            'until': datetime.datetime(2014, 2, 2, 5, 29, 59)}),
         (None, datetime.time(13, 40, 25), '', {
-            'start': None,
-            'end': datetime.datetime(2015, 4, 1, 13, 40, 25)}),
+            'since': None,
+            'until': datetime.datetime(2015, 4, 1, 13, 40, 25)}),
         (None, datetime.datetime(2014, 4, 1, 13, 40, 25), '', {
-            'start': None,
-            'end': datetime.datetime(2014, 4, 1, 13, 40, 25)}),
+            'since': None,
+            'until': datetime.datetime(2014, 4, 1, 13, 40, 25)}),
     ])
     @freeze_time('2015-04-01 18:00')
-    def test_get_all_various_start_and_end_times(self, basestore, mocker, start, end,
-            filter_term, expectation):
+    def test_get_all_various_since_and_until_times(
+        self, basestore, mocker, since, until, filter_term, expectation,
+    ):
         """Test that time conversion matches expectations."""
         basestore.facts._get_all = mocker.MagicMock()
-        basestore.facts.get_all(start, end, filter_term)
+        basestore.facts.get_all(since=since, until=, search_term=filter_term)
         assert basestore.facts._get_all.called
-        assert basestore.facts._get_all.call_args[0] == (expectation['start'], expectation['end'],
+        assert basestore.facts._get_all.call_args[0] == (expectation['since'], expectation['until'],
             filter_term)
 
-    @pytest.mark.parametrize(('start', 'end'), [
+    @pytest.mark.parametrize(('since', 'until'), [
         (datetime.date(2015, 4, 5), datetime.date(2012, 3, 4)),
         (datetime.datetime(2015, 4, 5, 18, 0, 0), datetime.datetime(2012, 3, 4, 19, 0, 0)),
     ])
-    def test_get_all_end_before_start(self, basestore, mocker, start, end):
-        """Test that we throw an exception if passed endtime is before start time."""
+    def test_get_all_until_before_since(self, basestore, mocker, since, until):
+        """Test that we throw an exception if passed until time is before since time."""
         with pytest.raises(ValueError):
-            basestore.facts.get_all(start, end)
+            basestore.facts.get_all(since, until)
 
-    @pytest.mark.parametrize(('start', 'end'), [
+    @pytest.mark.parametrize(('since', 'until'), [
         (datetime.date(2015, 4, 5), '2012-03-04'),
         ('2015-04-05 18:00:00', '2012-03-04 19:00:00'),
     ])
-    def test_get_all_invalid_date_types(self, basestore, mocker, start, end):
+    def test_get_all_invalid_date_types(self, basestore, mocker, since, until):
         """Test that we throw an exception if we recieve invalid date/time objects."""
         with pytest.raises(TypeError):
-            basestore.facts.get_all(start, end)
+            basestore.facts.get_all(since, until)
 
     @freeze_time('2015-10-03 14:45')
     def test_get_today(self, basestore, mocker):
