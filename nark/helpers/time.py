@@ -29,8 +29,8 @@ pytz = lazy_import.lazy_module('pytz')
 
 
 __all__ = [
-    'end_day_to_datetime',
-    'get_day_end',
+    'day_end_datetime',
+    'day_end_time',
     'must_be_datetime_or_relative',
     'validate_start_end_range',
     'isoformat',
@@ -39,58 +39,60 @@ __all__ = [
 ]
 
 
-def end_day_to_datetime(end_day, config):
+def day_end_datetime(end_date, start_time=None):
     """
-    Convert a given end day to its proper datetime.
-
-    This is non trivial because of variable ``day_start``. We want to make sure
-    that even if an 'end day' is specified the actual point in time may reach
-    into the following day.
+    Convert a given end date to its proper datetime, based on a day start time.
 
     Args:
-        end (datetime.date): Raw end date that is to be adjusted.
-        config: Controller config containing information on when a workday starts.
+        end_date (datetime.date): Raw end date that is to be adjusted.
+        start_time (string): Clock time of start of day.
 
     Returns:
-        datetime.datetime: The endday as a adjusted datetime object.
+        datetime.datetime: The adjusted end datetime for a given date,
+          based on a specific start_time.
 
     Example:
-        Given a ``day_start`` of ``5:30`` and end date of ``2015-04-01`` we
-        actually want to consider even points in time up to ``2015-04-02 5:29``.
-        That is to represent that a *work day* does not match *calendar days*.
+        Given a ``start_time`` of ``5:30`` and an end date of ``2015-04-01``,
+          the active end datetime is ``2015-04-02 5:29``, to account for an
+          actual start datettime of ``2015-04-01 5:30``. The gist is that a
+          *work day* does not match a *calendar* (24-hour) day; it depends on
+          what the user considers their "daily start time". (Though for many
+          users, they'll leave day_start untouched, in which case a single
+          day covers a normal 24-hour span, i.e., from 00:00 to 23:59.
 
     Note:
-        An alternative implementation for the similar problem in legacy hamster:
-            ``hamster.storage.db.Storage.__get_todays_facts``.
+        An alternative implementation can be found in legacy hamster:
+          ``hamster.storage.db.Storage.__get_todays_facts``.
     """
-    day_start_time = config['day_start'] or '00:00'
-    day_end_time = get_day_end(config)
-
-    if day_start_time == datetime.time(0, 0, 0):
-        end = datetime.datetime.combine(end_day, day_end_time)
+    start_time = start_time or datetime.time(0, 0, 0)
+    end_time = day_end_time(start_time)
+    if start_time == datetime.time(0, 0, 0):
+        # The start time is midnight, so the end time is 23:59:59
+        # on the same day.
+        assert end_time == datetime.time(23, 59, 59)
+        end = datetime.datetime.combine(end_date, end_time)
     else:
-        end = datetime.datetime.combine(end_day, day_end_time)
+        # The start time is not midnight, so the end time is
+        # on the following day.
+        end = datetime.datetime.combine(end_date, end_time)
         end += datetime.timedelta(days=1)
     return end
 
 
-def get_day_end(config):
+def day_end_time(start_time):
     """
     Get the day end time given the day start. This assumes full 24h day.
 
     Args:
-        config (dict): Configdict. Needed to extract ``day_start``.
-
-    Note:
-        This is merely a convenience funtion so we do not have to deduct
-        this from ``day_start`` by hand all the time.
+        start_time (string): Clock time of start of day.
     """
-    day_start = config['day_start'] or '00:00'
-    day_start_datetime = datetime.datetime.combine(
-        datetime.date.today(), day_start,
-    )
-    day_end_datetime = day_start_datetime - datetime.timedelta(seconds=1)
-    return day_end_datetime.time()
+    # NOTE: Because we're only returning the time, we don't need the
+    #       static "now" from the controller.
+    today_date = datetime.date.today()
+    start_datetime = datetime.datetime.combine(today_date, start_time)
+    end_datetime = start_datetime - datetime.timedelta(seconds=1)
+    end_time = end_datetime.time()
+    return end_time
 
 
 def must_be_datetime_or_relative(dt):

@@ -238,7 +238,10 @@ class BaseFactManager(BaseManager):
                 since_dt = since
             elif isinstance(since, datetime.date):
                 # The user specified a date, but not a time. Assume midnight.
-                self.store.logger.debug(_('Using midnight as since date clock time!'))
+                # MAYBE: Use config['day_start'] and subtract a day minus a minute?
+                self.store.logger.debug(
+                    _('Using midnight as clock time for `since` date.')
+                )
                 day_start = '00:00:00'
                 since_dt = datetime.datetime.combine(since, day_start)
             elif isinstance(since, datetime.time):
@@ -261,7 +264,10 @@ class BaseFactManager(BaseManager):
                 # which is why we need to except this case first.
                 until_dt = until
             elif isinstance(until, datetime.date):
-                until_dt = time_helpers.end_day_to_datetime(until, self.store.config)
+                # MAYBE: (lb): Feels weird that since defaults to midnight,
+                #   but until defaults to 'day_start' plus a day...
+                #   (need to TESTME to really feel what's going on).
+                until_dt = self.day_end_datetime(until)
             elif isinstance(until, datetime.time):
                 until_dt = datetime.datetime.combine(datetime.date.today(), until)
             else:
@@ -335,10 +341,16 @@ class BaseFactManager(BaseManager):
         """
         self.store.logger.debug(_("Returning today's facts"))
 
-        today = datetime.date.today()
+        today = self.store.now.date()
         since = datetime.datetime.combine(today, self.store.config['day_start'])
-        until = time_helpers.end_day_to_datetime(today, self.store.config)
+        until = self.day_end_datetime(today)
         return self.get_all(since=since, until=until)
+
+    def day_end_datetime(self, end_date=None):
+        if end_date is None:
+            end_date = self.store.now.date()
+        start_time = self.store.config['day_start']
+        return time_helpers.day_end_datetime(end_date, start_time)
 
     # ***
 
