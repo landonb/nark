@@ -29,6 +29,7 @@ from .category import Category
 from .item_base import BaseItem
 from .tag import Tag
 from ..helpers import time as time_helpers
+from ..helpers import format_time
 from ..helpers.colored import attr, colorize, set_coloring
 from ..helpers.facts_diff import FactsDiff
 from ..helpers.parsing import parse_factoid
@@ -273,7 +274,7 @@ class Fact(BaseItem):
         if not self.start:
             return ''
         # Format like: '%Y-%m-%d %H:%M:%S%z'
-        return time_helpers.isoformat_tzinfo(self.start, sep=' ', timespec='seconds')
+        return format_time.isoformat_tzinfo(self.start, sep=' ', timespec='seconds')
 
     @property
     def start_fmt_local(self):
@@ -281,7 +282,7 @@ class Fact(BaseItem):
         if not self.start:
             return ''
         # Format like: '%Y-%m-%d %H:%M:%S'
-        return time_helpers.isoformat_tzless(self.start, sep=' ', timespec='seconds')
+        return format_time.isoformat_tzless(self.start, sep=' ', timespec='seconds')
 
     # ***
 
@@ -308,14 +309,14 @@ class Fact(BaseItem):
         """FIXME: Document"""
         if not self.end:
             return ''
-        return time_helpers.isoformat_tzinfo(self.end, sep=' ', timespec='seconds')
+        return format_time.isoformat_tzinfo(self.end, sep=' ', timespec='seconds')
 
     @property
     def end_fmt_local(self):
         """FIXME: Document"""
         if not self.end:
             return ''
-        return time_helpers.isoformat_tzless(self.end, sep=' ', timespec='seconds')
+        return format_time.isoformat_tzless(self.end, sep=' ', timespec='seconds')
 
     @property
     def end_fmt_local_nowwed(self):
@@ -327,7 +328,7 @@ class Fact(BaseItem):
     @property
     def end_fmt_local_or_now(self):
         if not self.end:
-            return '{}'.format(time_helpers.isoformat_tzless(
+            return '{}'.format(format_time.isoformat_tzless(
                 self.time_now, sep=' ', timespec='seconds',
             ))
         return self.end_fmt_local
