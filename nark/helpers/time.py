@@ -29,33 +29,14 @@ pytz = lazy_import.lazy_module('pytz')
 
 
 __all__ = [
-    'get_day_end',
     'end_day_to_datetime',
-    'validate_start_end_range',
+    'get_day_end',
     'must_be_datetime_or_relative',
+    'validate_start_end_range',
     'isoformat',
     'isoformat_tzinfo',
     'isoformat_tzless',
 ]
-
-
-def get_day_end(config):
-    """
-    Get the day end time given the day start. This assumes full 24h day.
-
-    Args:
-        config (dict): Configdict. Needed to extract ``day_start``.
-
-    Note:
-        This is merely a convenience funtion so we do not have to deduct
-        this from ``day_start`` by hand all the time.
-    """
-    day_start = config['day_start'] or '00:00'
-    day_start_datetime = datetime.datetime.combine(
-        datetime.date.today(), day_start,
-    )
-    day_end_datetime = day_start_datetime - datetime.timedelta(seconds=1)
-    return day_end_datetime.time()
 
 
 def end_day_to_datetime(end_day, config):
@@ -93,6 +74,41 @@ def end_day_to_datetime(end_day, config):
     return end
 
 
+def get_day_end(config):
+    """
+    Get the day end time given the day start. This assumes full 24h day.
+
+    Args:
+        config (dict): Configdict. Needed to extract ``day_start``.
+
+    Note:
+        This is merely a convenience funtion so we do not have to deduct
+        this from ``day_start`` by hand all the time.
+    """
+    day_start = config['day_start'] or '00:00'
+    day_start_datetime = datetime.datetime.combine(
+        datetime.date.today(), day_start,
+    )
+    day_end_datetime = day_start_datetime - datetime.timedelta(seconds=1)
+    return day_end_datetime.time()
+
+
+def must_be_datetime_or_relative(dt):
+    """FIXME: Document"""
+    if not dt or isinstance(dt, datetime.datetime) or isinstance(dt, text_type):
+        if isinstance(dt, datetime.datetime):
+            # FIXME: (lb): I've got milliseconds in my store data!!
+            #        So this little hack kludge-fixes the problem;
+            #        perhaps someday I'll revisit this and really
+            #        figure out what's going on.
+            return dt.replace(microsecond=0)
+        return dt
+    raise TypeError(_(
+        'Found {} rather than a datetime, string, or None, as expected.'
+        .format(type=type(dt))
+    ))
+
+
 def validate_start_end_range(range_tuple):
     """
     Perform basic sanity checks on a timeframe.
@@ -120,22 +136,6 @@ def validate_start_end_range(range_tuple):
         raise ValueError(_("Start after end!"))
 
     return range_tuple
-
-
-def must_be_datetime_or_relative(dt):
-    """FIXME: Document"""
-    if not dt or isinstance(dt, datetime.datetime) or isinstance(dt, text_type):
-        if isinstance(dt, datetime.datetime):
-            # FIXME: (lb): I've got milliseconds in my store data!!
-            #        So this little hack kludge-fixes the problem;
-            #        perhaps someday I'll revisit this and really
-            #        figure out what's going on.
-            return dt.replace(microsecond=0)
-        return dt
-    raise TypeError(_(
-        'Found {} rather than a datetime, string, or None, as expected.'
-        .format(type=type(dt))
-    ))
 
 
 def isoformat(dt, sep='T', timespec='auto', include_tz=False):
