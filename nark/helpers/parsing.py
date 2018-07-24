@@ -62,6 +62,17 @@ DATE_TO_DATE_SEPARATORS = ['to', 'until', '\-']
 FACT_METADATA_SEPARATORS = [",", ":"]
 
 
+# Map time_hint to minimum and maximum datetimes to seek.
+TIME_HINT_CLUE = {
+    'verify_start': (1, 2),  # end time is optional.
+    'verify_end': (1, 1),  # exactly one is required.
+    'verify_then': (0, 2),  # both times are optional.
+    'verify_still': (0, 2),  # both times are optional.
+    'verify_none': (0, 0),  # none is none is all alone.
+    'verify_both': (2, 2),  # and both is both times two.
+}
+
+
 class Parser(object):
     """FIXME"""
 
@@ -223,8 +234,8 @@ class Parser(object):
         try:
             # If the date(s) are ISO 8601, find 'em fast.
             after_datetimes = self.parse_datetimes_easy()
-            # Datetimes were 8601 (code did not raise), so
-            # now look for the '@' and set the activity.
+            # Datetime(s) were 8601 (code did not raise),
+            # so now look for the '@' and set the activity.
             rest_after_act, expect_category = self.lstrip_activity(after_datetimes)
         except ParserException:
             self.reset_result()
@@ -290,19 +301,22 @@ class Parser(object):
 
     def parse_datetimes_easy(self):
         rest = self.flat
-        if self.time_hint in ['verify_start', 'verify_then', 'verify_still']:
-            # NOTE: Be nice and look for end, just in case it's there.
-            rest = self.parse_datetimes_easy_both(rest, strictly_two=False)
-        elif self.time_hint == 'verify_end':
+        if self.time_hint == 'verify_end':
             rest = self.must_parse_datetime_from_rest(rest, 'datetime2')
-        elif self.time_hint == 'verify_both':
-            rest = self.parse_datetimes_easy_both(rest, strictly_two=True)
-        else:
-            assert self.time_hint in ['verify_none', 'verify_after']
+        elif self.time_hint != 'verify_none':
+            minmax = TIME_HINT_CLUE[self.time_hint]
+            rest = self.parse_datetimes_easy_both(rest, minmax)
+        # else, time_hint == 'verify_none', so rest is rest.
         return rest
 
-    def parse_datetimes_easy_both(self, rest, strictly_two=False):
-        rest = self.must_parse_datetime_from_rest(rest, 'datetime1')
+    def parse_datetimes_easy_both(self, rest, minmax):
+        try:
+            rest = self.must_parse_datetime_from_rest(rest, 'datetime1')
+        except ParserMissingDatetimeOneException:
+            if minmax[0] == 0:
+                return rest
+            raise
+        strictly_two = (minmax[0] == 2)
         # The next token in rest could be the ' to '/' until ' sep.
         match = Parser.RE_DATE_TO_DATE_SEP.match(rest)
         if match:
@@ -322,31 +336,26 @@ class Parser(object):
 
     def parse_datetimes_hard(self):
         expect_category = True
-        if self.time_hint == 'verify_start':
-            rest_after_act = self.lstrip_datetimes(expecting=2, strictly_two=False)
-        elif self.time_hint in ['verify_end', 'verify_then', 'verify_still']:
-            rest_after_act = self.lstrip_datetimes(expecting=1)
-        elif self.time_hint == 'verify_both':
-            rest_after_act = self.lstrip_datetimes(expecting=2, strictly_two=True)
-        elif self.time_hint in ['verify_none', 'verify_after']:
+        if self.time_hint == 'verify_none':
             # There is no datetime(s). Just the act@cat.
             rest_after_act, expect_category = self.lstrip_activity(self.flat)
         else:
-            raise Exception('Parser detected missing or incorrect time_hint.')
+            minmax = TIME_HINT_CLUE[self.time_hint]
+            rest_after_act = self.lstrip_datetimes(minmax)
         return (rest_after_act, expect_category)
 
-    def lstrip_datetimes(self, expecting, strictly_two=False):
-        assert expecting in (1, 2)
-        (
-            datetimes_and_act, datetimes, rest_after_act,
-        ) = self.lstrip_datetimes_delimited()
+    def lstrip_datetimes(self, minmax):
+        two_is_okay = (minmax[1] == 2)
+        strictly_two = (minmax[0] == 2)
+        parts = self.lstrip_datetimes_delimited()
+        datetimes_and_act, datetimes, rest_after_act = parts
         if datetimes:
-            self.must_parse_datetimes_known(datetimes, expecting, strictly_two)
+            self.must_parse_datetimes_known(datetimes, two_is_okay, strictly_two)
             # We've processed datetime1, datetime2, and activity_name.
         else:
             # The user did not delimit the datetimes and the activity.
             # See if the user specified anything magically, otherwise, bye.
-            self.must_parse_datetimes_magic(datetimes_and_act, expecting, strictly_two)
+            self.must_parse_datetimes_magic(datetimes_and_act, two_is_okay, strictly_two)
         return rest_after_act
 
     def lstrip_datetimes_delimited(self):
@@ -363,9 +372,9 @@ class Parser(object):
         rest_after_act = self.flat[act_cat_sep_idx + 1:]
         # Determine if the user delimited the datetime(s) from the activity
         # using, e.g., a comma, ',' (that follows not-whitespace, and is
-        # followed by whitespace/end-of-string). (Note that ':' can be used
-        # as the delimiter -- even though it's used to delimit time -- because
-        # the item separator must be the last character of a word.)
+        # followed by whitespace/end-of-string). (Note that ':' can also be
+        # used as the delimiter -- even though it's used to delimit time --
+        # because the item separator must be the last character of a word.)
         parts = self.re_item_sep.split(datetimes_and_act, 1)
         if len(parts) == 2:
             datetimes = parts[0]
@@ -388,12 +397,13 @@ class Parser(object):
 
     # *** 1: Parse datetime(s) and activity.
 
-    def must_parse_datetimes_known(self, datetimes, expecting, strictly_two=False):
+    def must_parse_datetimes_known(self, datetimes, two_is_okay, strictly_two):
         assert self.raw_datetime1 is None
         assert self.raw_datetime2 is None
+        assert two_is_okay or (not strictly_two)
 
-        if expecting == 2:
-            # Look for separator, e.g., ' to ', ' until ', ' and ', etc.
+        if two_is_okay:
+            # Look for separator, e.g., " to ", or " until ", or " - ", etc.
             parts = Parser.RE_DATE_TO_DATE_SEP.split(datetimes, 1)
             if len(parts) > 1:
                 assert len(parts) == 3  # middle part is the match
@@ -402,26 +412,21 @@ class Parser(object):
             elif strictly_two:
                 self.raise_missing_datetime_two()
 
-        if expecting == 1 or not self.raw_datetime1:
-            if self.time_hint == 'verify_start':
-                self.raw_datetime1 = datetimes
-                self.datetime2 = ''
-            else:
-                assert self.time_hint in ['verify_end', 'verify_then', 'verify_still']
-                assert not strictly_two
+        if not self.raw_datetime1:
+            # Maybe not two_is_okay; definitely not strictly_two.
+            if self.time_hint == 'verify_end':
                 self.datetime1 = ''
                 self.raw_datetime2 = datetimes
+            else:
+                self.raw_datetime1 = datetimes
+                self.datetime2 = ''
 
-    def must_parse_datetimes_magic(
-        self,
-        datetimes_and_act,
-        expecting,
-        strictly_two=False,
-    ):
-        assert self.raw_datetime1 is None  # ??
-        assert self.raw_datetime2 is None  # ??
+    def must_parse_datetimes_magic(self, datetimes_and_act, two_is_okay, strictly_two):
+        assert self.raw_datetime1 is None
+        assert self.raw_datetime2 is None
+        assert two_is_okay or (not strictly_two)
 
-        if expecting == 2:
+        if two_is_okay:
             # Look for separator, e.g., " to ", or " until ", or " - ", etc.
             parts = Parser.RE_DATE_TO_DATE_SEP.split(datetimes_and_act, 1)
             if len(parts) > 1:
@@ -432,13 +437,12 @@ class Parser(object):
             elif strictly_two:
                 self.raise_missing_datetime_two()
 
-        if expecting == 1 or not self.raw_datetime1:
+        if not self.raw_datetime1:
             dt_and_act = datetimes_and_act
-            if self.time_hint == 'verify_start':
-                dt_attr = 'datetime1'
-            else:
-                assert self.time_hint in ['verify_end', 'verify_then', 'verify_still']
+            if self.time_hint == 'verify_end':
                 dt_attr = 'datetime2'
+            else:
+                dt_attr = 'datetime1'
 
         rest = self.must_parse_datetime_from_rest(dt_and_act, dt_attr)
         self.activity_name = rest
@@ -457,6 +461,8 @@ class Parser(object):
                 dt = parse_datetime_iso8601(dt, must=True, local_tz=self.local_tz)
             # else, relative time, or clock time; let caller handle.
             setattr(self, datetime_attr, dt)
+            # Set either 'type_datetime1' or 'type_datetime2'.
+            # (NOTE: (lb): No caller actually uses type_dt.)
             setattr(self, 'type_{}'.format(datetime_attr), type_dt)
         elif datetime_attr == 'datetime1':
             self.raise_missing_datetime_one()
