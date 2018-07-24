@@ -27,7 +27,7 @@ from .activity import Activity
 from .category import Category
 from .item_base import BaseItem
 from .tag import Tag
-from ..helpers import time as time_helpers
+from ..helpers import fact_time
 from ..helpers import format_fact
 from ..helpers import format_time
 from ..helpers.facts_diff import FactsDiff
@@ -264,7 +264,7 @@ class Fact(BaseItem):
         # `start`. So when you set, e.g, `self.start = X` from the AlchemyFact
         # class, it does not call this base class' @setter for start. So don't
         # use self._start except in self.start()/=.
-        self._start = time_helpers.must_be_datetime_or_relative(start)
+        self._start = fact_time.must_be_datetime_or_relative(start)
 
     @property
     def start_fmt_utc(self):
@@ -300,7 +300,7 @@ class Fact(BaseItem):
             TypeError: If we receive something other than a ``datetime.datetime``
                 (sub-)class or ``None``.
         """
-        self._end = time_helpers.must_be_datetime_or_relative(end)
+        self._end = fact_time.must_be_datetime_or_relative(end)
 
     @property
     def end_fmt_utc(self):
@@ -639,7 +639,7 @@ class Fact(BaseItem):
         start = parsed_fact['start']
         end = parsed_fact['end']
         # Verify that start > end, if neither are None or not a datetime.
-        start, end = time_helpers.must_not_start_after_end((start, end))
+        start, end = fact_time.must_not_start_after_end((start, end))
 
         activity = ''
         activity_name = parsed_fact['activity']

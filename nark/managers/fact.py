@@ -22,7 +22,7 @@ import copy
 import datetime
 
 from . import BaseManager
-from ..helpers import time as time_helpers
+from ..helpers import fact_time
 from ..items.fact import Fact
 
 
@@ -350,7 +350,7 @@ class BaseFactManager(BaseManager):
         if end_date is None:
             end_date = self.store.now.date()
         start_time = self.store.config['day_start']
-        return time_helpers.day_end_datetime(end_date, start_time)
+        return fact_time.day_end_datetime(end_date, start_time)
 
     # ***
 

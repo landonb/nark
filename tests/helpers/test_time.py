@@ -21,8 +21,7 @@ import datetime
 import pytest
 from freezegun import freeze_time
 
-from nark.helpers import time as time_helpers
-#from nark.helpers.time import TimeFrame
+from nark.helpers import fact_time
 
 from . import truncate_to_whole_seconds
 
@@ -37,7 +36,7 @@ class TestGetDayEnd(object):
     def test_various_day_start_times(self, base_config, day_start, expectation):
         """Ensure that resulting end times match our expectation given ``day_start``-"""
         base_config['day_start'] = day_start
-        assert time_helpers.get_day_end(base_config) == expectation
+        assert fact_time.day_end_time(day_start) == expectation
 
 
 class TestEndDayToDatetime(object):
@@ -53,7 +52,7 @@ class TestEndDayToDatetime(object):
         """
         base_config['day_start'] = day_start
         end_day = datetime.datetime(2015, 4, 15)
-        assert time_helpers.end_day_to_datetime(end_day, base_config) == expectation
+        assert fact_time.day_end_datetime(end_day, base_config) == expectation
 
 
 #class TestParseTimeRange(object):
@@ -87,7 +86,15 @@ class TestEndDayToDatetime(object):
 #    def test_various_time_infos(self, time_info, expectation):
 #        """Make sure that our parser works according to our expectations."""
 #        assert time_helpers.extract_time_info(time_info) == expectation
+#          FIXME: RIP: extract_time_info ^^^^^
+#                      time_helpers.extract_time_info
+#                      fact_time.extract_time_info
 
+
+# FIXME: RIP: time_helpers.TimeFrame / fact_time.TimeFrame
+# FIXME: RIP: time_helpers.complete_timeframe / fact_time.complete_timeframe
+# FIXME: RIP: time_helpers.parse_time / fact_time.parse_time
+#               from nark.helpers.time import TimeFrame
 
 #class TestCompleteTimeFrame(object):
 #    @pytest.mark.parametrize(('timeframe', 'expectation'), [
@@ -290,7 +297,7 @@ class TestEndDayToDatetime(object):
 #        """Make sure that end_day conversion matches our expectation."""
 #        config = base_config
 #        config['day_start'] = day_start
-#        assert time_helpers.end_day_to_datetime(end_day, config) == expectation
+#        assert time_helpers.day_end_datetime(end_day, config) == expectation
 
 
 #class TestParseTime(object):
@@ -322,7 +329,7 @@ class TestValidateStartEndRange(object):
     ))
     def test_valid_ranges(self, range):
         """Make sure that ranges with end > start pass validation."""
-        result = time_helpers.must_not_start_after_end(range)
+        result = fact_time.must_not_start_after_end(range)
         assert result == range
 
     @pytest.mark.parametrize('range', (
@@ -332,7 +339,7 @@ class TestValidateStartEndRange(object):
     def test_invalid_ranges(self, range):
         """Make sure that ranges with start > end fail validation."""
         with pytest.raises(ValueError):
-            time_helpers.must_not_start_after_end(range)
+            fact_time.must_not_start_after_end(range)
 
 
 class TestTruncateToWholeSeconds(object):
