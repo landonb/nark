@@ -224,6 +224,11 @@ class PlaintextWriter(ReportWriter):
             end=end,
             duration=fact.format_delta(style=self.duration_fmt),
             activity=fact.activity.name,
+            # EXPLAIN: (lb): I think this is an artifact from hamster-lib,
+            # but am unclear on the "why": cast the category name to the
+            # appropriate string type. Which begs the obvious question, Why
+            # do we do this? but also begs the question, Why don't we also
+            # do this to fact.activity.name and description?
             category=text_type(category),
             description=description,
             deleted=bool(fact.deleted),
