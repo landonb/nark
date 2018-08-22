@@ -2,18 +2,31 @@ BUILDDIR = _build
 
 .PHONY: clean-pyc clean-build docs clean
 
-define BROWSER_PYSCRIPT
-import os, webbrowser, sys
-try:
-	from urllib import pathname2url
-except:
-	from urllib.request import pathname2url
-
-webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
-endef
-export BROWSER_PYSCRIPT
-
-BROWSER := python -c "$$BROWSER_PYSCRIPT"
+# (lb): I'm commenting this out for now, but keeping in case we want to reenable.
+# Here's how you use Python to open a browser tab:
+#
+#   define BROWSER_PYSCRIPT
+#   import os, webbrowser, sys
+#   try:
+#   	from urllib import pathname2url
+#   except:
+#   	from urllib.request import pathname2url
+#
+#   webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
+#   endef
+#   export BROWSER_PYSCRIPT
+#
+#   BROWSER := python -c "$$BROWSER_PYSCRIPT"
+#
+# However, that opens Opera for me, and I'd rather have Chrome opened.
+# And my cop out solution is to use `sensible-browser`, so I don't have
+# to figure out how to train webbrowser.open, but at the expense of being
+# more universal (does mac OS support sensible-browser? Does Windows?).
+#
+# MAYBE/2018-08-23: (lb): Does webbrowser use environ['BROWSER']?
+#  I could set that in my shell and go back to using webbrowser.open
+#  (which would be more universal than using `sensible-browser`).
+BROWSER := "sensible-browser"
 
 help:
 	@echo "Please choose a target for make:"
