@@ -212,7 +212,7 @@ class PlaintextWriter(ReportWriter):
             activity=fact.activity.name,
             category=text_type(category),
             description=description,
-            deleted=fact.deleted,
+            deleted=bool(fact.deleted),
         )
 
     def _write_fact(self, fact_tuple):
@@ -320,7 +320,7 @@ class ICALWriter(ReportWriter):
             activity=text_type(fact.activity.name),
             category=text_type(category),
             description=text_type(description),
-            deleted=fact.deleted,
+            deleted=bool(fact.deleted),
         )
 
     def _write_fact(self, fact_tuple):

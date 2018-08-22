@@ -95,8 +95,8 @@ class ActivityManager(BaseActivityManager):
             pk=None,
             name=activity.name,
             category=None,
-            deleted=activity.deleted,
-            hidden=activity.hidden,
+            deleted=bool(activity.deleted),
+            hidden=bool(activity.hidden),
         )
         if activity.category:
             try:
@@ -106,8 +106,8 @@ class ActivityManager(BaseActivityManager):
                 category = AlchemyCategory(
                     pk=None,
                     name=activity.category.name,
-                    deleted=activity.category.deleted,
-                    hidden=activity.category.hidden,
+                    deleted=bool(activity.category.deleted),
+                    hidden=bool(activity.category.hidden),
                 )
         else:
             category = None
@@ -165,7 +165,7 @@ class ActivityManager(BaseActivityManager):
         alchemy_activity.category = self.store.categories.get_or_create(
             activity.category, raw=True,
         )
-        alchemy_activity.deleted = activity.deleted
+        alchemy_activity.deleted = bool(activity.deleted)
         try:
             self.store.session.commit()
         except IntegrityError as e:

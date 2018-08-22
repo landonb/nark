@@ -69,7 +69,7 @@ class BaseActivityManager(BaseManager):
                 Activity(
                     activity.name,
                     category=activity.category,
-                    deleted=activity.deleted,
+                    deleted=bool(activity.deleted),
                 )
             )
         return activity

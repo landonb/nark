@@ -72,7 +72,10 @@ class Tag(BaseItem):
         if not include_pk:
             pk = False
         tag_tup = TagTuple(
-            pk=pk, name=self.name, deleted=self.deleted, hidden=self.hidden
+            pk=pk,
+            name=self.name,
+            deleted=bool(self.deleted),
+            hidden=bool(self.hidden),
         )
         return tag_tup
 

@@ -115,8 +115,8 @@ class Activity(BaseItem):
             pk=pk,
             name=self.name,
             category=category,
-            deleted=self.deleted,
-            hidden=self.hidden,
+            deleted=bool(self.deleted),
+            hidden=bool(self.hidden),
         )
 
     def equal_fields(self, other):

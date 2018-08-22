@@ -86,8 +86,8 @@ class CategoryManager(BaseCategoryManager):
         alchemy_category = AlchemyCategory(
             pk=None,
             name=category.name,
-            deleted=category.deleted,
-            hidden=category.hidden,
+            deleted=bool(category.deleted),
+            hidden=bool(category.hidden),
         )
         self.store.session.add(alchemy_category)
         try:

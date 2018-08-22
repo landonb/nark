@@ -132,7 +132,7 @@ class FactManager(BaseFactManager):
             start=fact.start,
             end=fact.end,
             description=fact.description,
-            deleted=fact.deleted,
+            deleted=bool(fact.deleted),
             split_from=fact.split_from,
         )
         get_or_create = self.store.activities.get_or_create

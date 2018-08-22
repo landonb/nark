@@ -89,8 +89,8 @@ class TagManager(BaseTagManager):
         alchemy_tag = AlchemyTag(
             pk=None,
             name=tag.name,
-            deleted=tag.deleted,
-            hidden=tag.hidden,
+            deleted=bool(tag.deleted),
+            hidden=bool(tag.hidden),
         )
         self.store.session.add(alchemy_tag)
         try:

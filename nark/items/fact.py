@@ -161,7 +161,7 @@ class Fact(BaseItem):
             end=self.end,
             description=self.description,
             tags=frozenset(ordered_tags),
-            deleted=self.deleted,
+            deleted=bool(self.deleted),
             split_from=self.split_from,
             # SKIP: self.ephemeral
         )
@@ -178,7 +178,7 @@ class Fact(BaseItem):
             # and calling list() on it will create a new list of what could be
             # nark.backends.sqlalchemy.objects.AlchemyTag.
             tags=list(self.tags),
-            deleted=self.deleted,
+            deleted=bool(self.deleted),
             split_from=self.split_from,
             # If this is an AlchemyFact object, it won't have non-table
             # attrs, like dirty_reasons or ephemeral.

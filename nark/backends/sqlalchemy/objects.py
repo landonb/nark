@@ -79,16 +79,16 @@ class AlchemyCategory(Category):
 
         self.pk = pk
         self.name = name
-        self.deleted = deleted
-        self.hidden = hidden
+        self.deleted = bool(deleted)
+        self.hidden = bool(hidden)
 
     def as_hamster(self, store):
         """Return store object as a real ``nark.Category`` instance."""
         return Category(
             pk=self.pk,
             name=self.name,
-            deleted=self.deleted,
-            hidden=self.hidden,
+            deleted=bool(self.deleted),
+            hidden=bool(self.hidden),
         )
 
 
@@ -109,8 +109,8 @@ class AlchemyActivity(Activity):
         self.pk = pk
         self.name = name
         self.category = category
-        self.deleted = deleted
-        self.hidden = hidden
+        self.deleted = bool(deleted)
+        self.hidden = bool(hidden)
 
     def as_hamster(self, store):
         """Return new ``nark.Activity`` representation of SQLAlchemy instance."""
@@ -137,8 +137,8 @@ class AlchemyActivity(Activity):
             pk=self.pk,
             name=activity_name,
             category=category,
-            deleted=self.deleted,
-            hidden=self.hidden,
+            deleted=bool(self.deleted),
+            hidden=bool(self.hidden),
         )
 
 
@@ -154,16 +154,16 @@ class AlchemyTag(Tag):
 
         self.pk = pk
         self.name = name
-        self.deleted = deleted
-        self.hidden = hidden
+        self.deleted = bool(deleted)
+        self.hidden = bool(hidden)
 
     def as_hamster(self, store):
         """Provide an convenient way to return it as a ``nark.Tag`` instance."""
         return Tag(
             pk=self.pk,
             name=self.name,
-            deleted=self.deleted,
-            hidden=self.hidden,
+            deleted=bool(self.deleted),
+            hidden=bool(self.hidden),
         )
 
 
@@ -182,7 +182,7 @@ class AlchemyFact(Fact):
         """
         # FIXME/2018-05-15: (lb): DRY: Any reason this doesn't called super()?
         self.pk = pk
-        self.deleted = deleted
+        self.deleted = bool(deleted)
         self.split_from = split_from
         self.activity = activity
         self.start = start
@@ -208,7 +208,7 @@ class AlchemyFact(Fact):
 
         return Fact(
             pk=self.pk,
-            deleted=self.deleted,
+            deleted=bool(self.deleted),
             split_from=self.split_from,
             activity=self.activity.as_hamster(store),
             start=self.start,

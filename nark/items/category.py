@@ -72,7 +72,10 @@ class Category(BaseItem):
         if not include_pk:
             pk = False
         cat_tup = CategoryTuple(
-            pk=pk, name=self.name, deleted=self.deleted, hidden=self.hidden,
+            pk=pk,
+            name=self.name,
+            deleted=bool(self.deleted),
+            hidden=bool(self.hidden),
         )
         return cat_tup
 
