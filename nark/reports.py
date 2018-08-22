@@ -55,7 +55,12 @@ FactTuple = namedtuple(
 
 @python_2_unicode_compatible
 class ReportWriter(object):
-    def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
+    def __init__(
+        self,
+        path,
+        datetime_format="%Y-%m-%d %H:%M:%S",
+        output_b=False,
+    ):
         """
         Initiate new instance and open an output file like object.
 
@@ -81,7 +86,13 @@ class ReportWriter(object):
         if not path:
             self.file = sys.stdout
         else:
+            self.open_file(path, output_b=output_b)
+
+    def open_file(self, path, output_b=False):
+        if not output_b:
             self.file = open(path, 'w', encoding='utf-8')
+        else:
+            self.file = open(path, 'wb')
 
     def write_report(self, facts):
         """
@@ -149,6 +160,7 @@ class PlaintextWriter(ReportWriter):
         path,
         duration_fmt,
         datetime_format="%Y-%m-%d %H:%M:%S",
+        output_b=False,
         dialect='excel',
         **fmtparams
     ):
@@ -160,7 +172,9 @@ class PlaintextWriter(ReportWriter):
         In that case ``self.file`` will be openend in binary mode and ready to accept
         those encoded headings.
         """
-        super(PlaintextWriter, self).__init__(path, datetime_format)
+        super(PlaintextWriter, self).__init__(
+            path, datetime_format, output_b=output_b,
+        )
         self.csv_writer = csv.writer(self.file, dialect=dialect, **fmtparams)
         # SYNC_ME: FactTuple and PlaintextWriter's headers.
         headers = (
@@ -285,7 +299,7 @@ class ICALWriter(ReportWriter):
                 will be directed to. datetime_format (str): String specifying
                 how datetime information is to be rendered in the output.
         """
-        super(ICALWriter, self).__init__(path, datetime_format)
+        super(ICALWriter, self).__init__(path, datetime_format, output_b=True)
         self.calendar = icalendar.Calendar()
 
     def _fact_to_tuple(self, fact):
@@ -358,7 +372,7 @@ class XMLWriter(ReportWriter):
 
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         """Setup the writer including a main xml document."""
-        super(XMLWriter, self).__init__(path, datetime_format)
+        super(XMLWriter, self).__init__(path, datetime_format, output_b=True)
         # Profiling: load Document: ~ 0.004 secs.
         from xml.dom.minidom import Document
         self.document = Document()
