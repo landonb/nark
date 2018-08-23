@@ -82,7 +82,7 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import os
-from configparser import SafeConfigParser
+from configparser import NoOptionError, SafeConfigParser
 from six import string_types
 from six import text_type
 
@@ -320,19 +320,64 @@ def configparser_to_backend_config(cp_instance):
         If a key is not found in ``cp_instance`` the resulting dict will have
           ``None`` assigned to this dict key.
     """
+    def cp_instance_get(section, keyname, default=None):
+        try:
+            return cp_instance.get(section, keyname)
+        except NoOptionError:
+            return default
+
+    def cp_instance_getboolean(section, keyname, default=None):
+        try:
+            return cp_instance.getboolean(section, keyname)
+        except NoOptionError:
+            return default
+
+    def cp_instance_getint(section, keyname, default=None):
+        try:
+            return cp_instance.getint(section, keyname)
+        except NoOptionError:
+            return default
+
+    # ***
+
     def get_store():
-        # [TODO]
-        # This should be deligated to a dedicated validation function!
-        store = cp_instance.get('Backend', 'store')
+        # (lb): Here's a comment from hamster-lib:
+        #     "This should be deligated to a dedicated validation function!"
+        #   Though I'm not sure what's the ask. Should we
+        #   check more than `store in REGISTERED_BACKENDS.keys`?
+        # MAYBE: (lb): Use default 'sqlalchemy' if store not set?
+        store = cp_instance_get('Backend', 'store')
         if store not in REGISTERED_BACKENDS.keys():
             raise ValueError(_("Unrecognized store option."))
         return store
 
+    def get_db_engine():
+        # (lb): Use default 'sqlite' if db_engine not set?
+        return text_type(cp_instance_get('Backend', 'db_engine'))
+
+    def get_db_path():
+        return text_type(cp_instance_get('Backend', 'db_path'))
+
+    def get_db_host():
+        return text_type(cp_instance_get('Backend', 'db_host'))
+
+    def get_db_port():
+        return cp_instance_getint('Backend', 'db_port')
+
+    def get_db_name():
+        return text_type(cp_instance_get('Backend', 'db_name'))
+
+    def get_db_user():
+        return text_type(cp_instance_get('Backend', 'db_user'))
+
+    def get_db_password():
+        return text_type(cp_instance_get('Backend', 'db_password'))
+
     def get_allow_momentaneous():
-        return cp_instance.getboolean('Backend', 'allow_momentaneous')
+        return cp_instance_getboolean('Backend', 'allow_momentaneous', False)
 
     def get_day_start():
-        day_start = cp_instance.get('Backend', 'day_start')
+        day_start = cp_instance_get('Backend', 'day_start')
         if not day_start:
             return ''
         try:
@@ -345,37 +390,16 @@ def configparser_to_backend_config(cp_instance):
         return day_start
 
     def get_fact_min_delta():
-        return cp_instance.getint('Backend', 'fact_min_delta')
-
-    def get_db_engine():
-        return text_type(cp_instance.get('Backend', 'db_engine'))
-
-    def get_db_path():
-        return text_type(cp_instance.get('Backend', 'db_path'))
-
-    def get_db_host():
-        return text_type(cp_instance.get('Backend', 'db_host'))
-
-    def get_db_port():
-        return cp_instance.getint('Backend', 'db_port')
-
-    def get_db_name():
-        return text_type(cp_instance.get('Backend', 'db_name'))
-
-    def get_db_user():
-        return text_type(cp_instance.get('Backend', 'db_user'))
-
-    def get_db_password():
-        return text_type(cp_instance.get('Backend', 'db_password'))
+        return cp_instance_getint('Backend', 'fact_min_delta')
 
     def get_sql_log_level():
-        return text_type(cp_instance.get('Backend', 'sql_log_level'))
+        return text_type(cp_instance_get('Backend', 'sql_log_level'))
 
     def get_tz_aware():
-        return cp_instance.getboolean('Backend', 'tz_aware')
+        return cp_instance_getboolean('Backend', 'tz_aware', False)
 
     def get_default_tzinfo():
-        return text_type(cp_instance.get('Backend', 'default_tzinfo'))
+        return text_type(cp_instance_get('Backend', 'default_tzinfo', ''))
 
     result = {
         'store': get_store(),
