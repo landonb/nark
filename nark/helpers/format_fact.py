@@ -104,8 +104,11 @@ def friendly_str(
         # NOTE: The CLI's DATE_TO_DATE_SEPARATORS[0] is 'to'.
         prefix = colorize(' to ', 'grey_85') if times else ''
         if not fact.end:
-            # (lb): What's a good term here? '<ongoing>'? Or just 'now'?
-            end_time = _('<now>')
+            if not times:
+                end_time = ''
+            else:
+                # (lb): What's a good term here? '<ongoing>'? Or just 'now'?
+                end_time = _('<now>')
         elif not fact.localize:
             end_time = fact.end_fmt_utc
         else:
