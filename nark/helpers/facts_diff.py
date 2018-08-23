@@ -98,9 +98,13 @@ class FactsDiff(object):
             result += self.diff_attrs('activity_name', 'activity')
             result += self.diff_attrs('category_name', 'category')
             if not self.formatted:
-                result += self.diff_attrs('tags_inline', 'tags')
+                result += self.diff_attrs(
+                    'tags_inline', 'tags', colorful=True, underlined=True,
+                )
             else:
-                result += self.diff_attrs('tags_tuples', 'tags')
+                result += self.diff_attrs(
+                    'tags_tuples', 'tags', colorful=True, underlined=True,
+                )
             result += self.diff_attrs('description', 'description', truncate=truncate)
             return result
 

@@ -496,11 +496,15 @@ class Fact(BaseItem):
     def tagnames(self, *args, **kwargs):
         return format_fact.tags_inline(*args, **kwargs)
 
-    def tags_inline(self, underlined=True, **kwargs):
-        return format_fact.tags_inline(underlined=underlined, **kwargs)
+    def tags_inline(self, colorful=False, underlined=False, **kwargs):
+        return format_fact.tags_inline(
+            colorful=colorful, underlined=underlined, **kwargs
+        )
 
-    def tags_tuples(self, underlined=True, **kwargs):
-        return format_fact.tags_tuples(underlined=underlined, **kwargs)
+    def tags_tuples(self, colorful=False, underlined=False, **kwargs):
+        return format_fact.tags_tuples(
+            colorful=colorful, underlined=underlined, **kwargs
+        )
 
     # ***
 

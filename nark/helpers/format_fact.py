@@ -128,7 +128,7 @@ def friendly_str(
         # sign with tags, because quotes are less offensive than a slash,
         # and because the @ symbol makes me think of "at'ing someone".
         #   Nope:  hashtag_token = '@' if shellify else '#'
-        return fact.tags_inline(quote_tokens=shellify)
+        return fact.tags_inline(quote_tokens=shellify, underlined=colorful)
 
     # ***
 
@@ -205,13 +205,14 @@ def tags_inline(
     fact,
     hashtag_token='#',
     quote_tokens=False,
+    colorful=False,
     underlined=False,
 ):
     def format_tagname(tag):
         tagged = '{}{}'.format(
-# FIXME: Skinify these colors.
-            colorize(hashtag_token, 'grey_78'),
-            colorize(tag.name, 'dark_olive_green_1b'),
+            # FIXME: Skinify these colors.
+            colorize(hashtag_token, 'grey_78') if colorful else hashtag_token,
+            colorize(tag.name, 'dark_olive_green_1b') if colorful else tag.name,
         )
         # FIXME: Skinify underlined.
         if underlined:
@@ -233,16 +234,26 @@ def tags_tuples(
     fact,
     hashtag_token='#',
     quote_tokens=False,
+    colorful=False,
     underlined=False,
     split_lines=False,
 ):
     def format_tagname(tag):
-# FIXME: Skinify underlined.
-        uline = ' underline' if underlined else ''
+        # FIXME: Skinify underlined.
+        underline_fmt = ' underline' if underlined else ''
         tagged = []
-# FIXME: Skinify these colors.
-        tagged.append(('fg: #C6C6C6{}'.format(uline), hashtag_token))
-        tagged.append(('fg: #D7FF87{}'.format(uline), tag.name))
+        #
+        # FIXME: Skinify these colors.
+        token_fmt = 'fg: ' if (colorful or underline_fmt) else ''
+        token_fmt += '#C6C6C6' if colorful else ''
+        token_fmt += underline_fmt
+        tagged.append((token_fmt, hashtag_token))
+        #
+        tname_fmt = 'fg: ' if (colorful or underline_fmt) else ''
+        tname_fmt += '#D7FF87' if colorful else ''
+        tname_fmt += underline_fmt
+        tagged.append((tname_fmt, tag.name))
+        #
         if quote_tokens:
             fmt_quote = ('', '"')
             tagged.insert(0, fmt_quote)
