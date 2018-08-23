@@ -221,7 +221,9 @@ def parse_dated(dated, time_now, cruftless=False):
             return dated
         dt, type_dt, sep, rest = HamsterTimeSpec.discern(dated)
         if cruftless and rest:
-            return None
+            # (lb): This fcn. is very lenient. It returns the unparsed
+            # string if the string could not be parsed for time info.
+            return dated
         return datetime_from_discerned(dated, dt, type_dt)
 
     def datetime_from_discerned(dated, dt, type_dt):
