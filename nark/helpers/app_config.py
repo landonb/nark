@@ -262,12 +262,12 @@ def backend_config_to_configparser(config):
         return text_type(config.get('db_password'))
 
     def get_allow_momentaneous():
-        return config.getboolean('allow_momentaneous')
+        return text_type(bool(config.get('allow_momentaneous')))
 
     def get_day_start():
         day_start = config.get('day_start')
         if not day_start:
-            return ''
+            return text_type('')
         return day_start.strftime('%H:%M:%S')
 
     def get_fact_min_delta():
@@ -277,7 +277,8 @@ def backend_config_to_configparser(config):
         return text_type(config.get('sql_log_level'))
 
     def get_tz_aware():
-        return config.getboolean('tz_aware')
+        # Convert to a string, e.g., True => 'True'.
+        return text_type(bool(config.get('tz_aware')))
 
     def get_default_tzinfo():
         return text_type(config.get('default_tzinfo'))
