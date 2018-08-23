@@ -131,6 +131,7 @@ def format_delta(delta, style='%M'):
           Valid choices are:
             * ``'%M'``: As minutes, rounded down.
             * ``'%H:%M'``: As 'hours:minutes'. rounded down.
+            * ``HHhMMm``: As '{hours} hour(s) {minutes} minute(s)'.
             * ````: As human friendly time.
 
     Returns:

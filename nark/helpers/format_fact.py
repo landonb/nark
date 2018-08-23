@@ -174,7 +174,7 @@ def _actegory_string(fact, shellify=False, omit_empty_actegory=False):
                 fact.category_name,
             )
         )
-# FIXME: Skinify these colors.
+    # FIXME: Skinify these colors.
     act_cat = colorize(act_cat, 'cornflower_blue', 'bold', 'underlined')
     act_cat = '"{}"'.format(act_cat) if act_cat and shellify else act_cat
     return act_cat
@@ -213,7 +213,7 @@ def tags_inline(
             colorize(hashtag_token, 'grey_78'),
             colorize(tag.name, 'dark_olive_green_1b'),
         )
-# FIXME: Skinify underlined.
+        # FIXME: Skinify underlined.
         if underlined:
             tagged = '{}{}{}'.format(
                 attr('underlined'), tagged, attr('res_underlined'),

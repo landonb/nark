@@ -250,10 +250,11 @@ class Fact(BaseItem):
     @start.setter
     def start(self, start):
         """
-        Make sure that we receive a ``datetime.datetime`` instance.
+        Make sure that we receive a ``datetime.datetime`` instance,
+          or relative time string.
 
         Args:
-            start (datetime.datetime): Start datetime of this ``Fact``.
+            start (datetime.datetime, text_type): Start datetime of this ``Fact``.
 
         Raises:
             TypeError: If we receive something other than a ``datetime.datetime``

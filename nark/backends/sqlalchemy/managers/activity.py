@@ -260,10 +260,10 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             KeyError: if composite key can not be found in the db.
 
         Note:
-            As far as we understand the legacy code in ``__change_category`` and
-            ``__get_activity_by`` the combination of activity.name and
-            activity.category is unique. This is reflected in the uniqueness constraint
-            of the underlying table.
+            As far as we understand the legacy code in ``__change_category``
+            and ``__get_activity_by`` the combination of activity.name and
+            activity.category is unique. This is reflected in the uniqueness
+            constraint of the underlying table.
         """
 
         message = _(
@@ -272,6 +272,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         self.store.logger.debug(message)
 
         if category:
+            # EXPLAIN: (lb): Do we really need to cast?
             category = text_type(category.name)
             try:
                 alchemy_category = self.store.categories.get_by_name(category, raw=True)
@@ -430,9 +431,9 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         def _get_all_filter_by_category(query):
             if category is False:
                 return query
-    # FIXME/2018-05-15 22:30: (lb): MRU activities by category: GLOB:
-    #   do fuzzy search on name rather than PK, if special query,
-    #     e.g., ``if '*' in category.name: ...``
+            # FIXME/2018-05-15 22:30: (lb): MRU activities by category: GLOB:
+            #   do fuzzy search on name rather than PK, if special query,
+            #     e.g., ``if '*' in category.name: ...``
             if category:
                 category_name = None
                 if isinstance(category, text_type):

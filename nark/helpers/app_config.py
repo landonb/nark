@@ -26,7 +26,7 @@ The easiest way to make use of those helpers is to call ``load_config_file``
 (which will also handle creating a new one if none exists) and
 ``write_config_file``.
 
-Clients may use ``backend_config_to_configparser`` and its counter part
+Clients may use ``backend_config_to_configparser`` and its counterpart
 ``configparser_to_backend_config`` to delegate conversion between a backend
 config dict and a ``ConfigParser`` instance.
 
@@ -34,12 +34,6 @@ Note:
     Backend config key/value information:
         store: A ``string`` indicating which store to use.
             See: ``nark.REGISTERED_BACKENDS``
-
-        day_start: ``datetime.time`` cna be used to specify default start time.
-            (Weird Legacy Hamster feature; now disabled by default.)
-
-        fact_min_delta: ``int`` specifying minimal fact duration. Facts shorter
-            than this will be rejected.
 
         db_engine: ``string`` indicating which db-engine to use.
             Options depend on store choice.
@@ -61,18 +55,24 @@ Note:
         db_password: ``string`` indicating the password to access the db server.
             Depends on store/engine choice.
 
-        sql_log_level: ``string`` indicating the SQLAlchemy logging logger log level.
-
-        tz_aware: ``bool`` indicating if datetimes are relative UTC or not.
-
-        default_tzinfo: ``string`` default Timezone to use when storing time.
-
         allow_momentaneous: ``bool`` indicting if 0-length duration Facts allowed,
             e.g., start == end. Here's a little vocabulary lesson:
                 Fugacious: "lasting a short time"
                 Evanescent: "tending to vanish like vapor"
                 Momentaneous: "characterizing action begun, terminated in an instant"
                 See also: Vacant, Fleeting, Transient.
+
+        day_start: ``datetime.time`` cna be used to specify default start time.
+            (Weird Legacy Hamster feature; now disabled by default.)
+
+        fact_min_delta: ``int`` specifying minimal fact duration. Facts shorter
+            than this will be rejected.
+
+        sql_log_level: ``string`` indicating the SQLAlchemy logging logger log level.
+
+        tz_aware: ``bool`` indicating if datetimes are relative UTC or not.
+
+        default_tzinfo: ``string`` default Timezone to use when storing time.
 
     Please also note that a backend *config dict* does except ``None`` / ``empty``
     values, its ``ConfigParser`` representation does not include those however!
@@ -228,8 +228,9 @@ def backend_config_to_configparser(config):
         SafeConfigParser: SafeConfigParser instance representing config.
 
     Note:
-        We do not provide *any* validation about mandatory values what so ever.
+        We do not provide *any* validation about mandatory values whatsoever.
     """
+    # NOTE: config.get(k) returns None on key miss; but config[k] would KeyError.
     def get_store():
         return config.get('store')
 

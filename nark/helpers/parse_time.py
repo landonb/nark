@@ -210,6 +210,7 @@ class HamsterTimeSpec(object):
 
 # ***
 
+# FIXME: Use this fcn. to support relative/clock-time --since/--until.
 def parse_dated(dated, time_now, cruftless=False):
     """"""
     def _parse_dated():
@@ -225,6 +226,7 @@ def parse_dated(dated, time_now, cruftless=False):
         if dt is None:
             return dated
         if type_dt == 'datetime':
+            # FIXME: (lb): Implement timezone/local_tz.
             dt_suss = parse_datetime_iso8601(dt, must=True, local_tz=None)
         # else, relative time, or clock time; let caller handle.
         elif type_dt == 'clock_time':

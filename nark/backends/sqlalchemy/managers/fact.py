@@ -70,6 +70,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         start = self._get_sql_datetime(fact.start)
         query = self.store.session.query(AlchemyFact)
 
+        # FIXME: Only use func.datetime on SQLite store.
+        #
+        #   (lb): SQLite stores datetimes as strings, so what's in the store
+        #   might vary depending on, say, changes to this code. As such, some
+        #   start and end times might include seconds, and some times might not.
+        #   Here we use func.datetime and _get_sql_datetime to normalize the
+        #   comparison. But this is SQLite-specific, so we should abstract
+        #   the operation for other DBMSes (and probably do nothing, since most
+        #   other databases have an actual datetime data type).
         condition = and_(func.datetime(AlchemyFact.end) > start)
         if fact.end is not None:
             end = self._get_sql_datetime(fact.end)
@@ -120,6 +129,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         alchemy_fact = AlchemyFact(
             pk=None,
             activity=None,
+            # FIXME/2018-08-23 00:38: Is this still valid?
+            # FIXME: mircoseconds are being stored...
+            #        I modified fact_time.must_be_datetime_or_relative to strip
+            #        milliseconds. but they're still being saved (just as six 0's).
             start=fact.start,
             end=fact.end,
             description=fact.description,
@@ -160,7 +173,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             ValueError: If the the passed activity does not have a PK assigned.
             ValueError: If the timewindow is already occupied.
         """
-
         self.store.logger.debug(_("Received '{!r}', 'raw'={}.".format(fact, raw)))
 
         if not fact.pk:
@@ -267,7 +279,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             KeyError: If no fact with passed PK was found.
         """
-
         self.store.logger.debug(_("Received '{!r}'.".format(fact)))
 
         if not fact.pk:
@@ -317,7 +328,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         Raises:
             KeyError: If no Fact of given key was found.
         """
-
         self.store.logger.debug(_("Received PK: {}', 'raw'={}.".format(pk, raw)))
 
         if deleted is None:
@@ -403,7 +413,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             This method will *NOT* return facts that start before and end after
             (e.g. that span more than) the specified timeframe.
         """
-
         MAGIC_TAG_SEP = '%%%%,%%%%'
 
         def _get_all_facts():

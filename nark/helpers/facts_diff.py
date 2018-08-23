@@ -29,6 +29,11 @@ __all__ = [
 ]
 
 
+# MAYBE: (lb): Move this module (FactsDiff) to dob?
+#   And remove Fact.friendly_diff(), too?
+# Because it's only used by the CLI...
+
+
 @python_2_unicode_compatible
 class FactsDiff(object):
     """"""
@@ -185,6 +190,8 @@ class FactsDiff(object):
         )
 
     def beautify_pk(self, self_val, other_val):
+        # (lb): NOTE: This is the only dirty_reasons usage in nark
+        #               (most of its usage is in dob).
         if (
             'split' in self.edit_fact.dirty_reasons
             or 'split' in self.orig_fact.dirty_reasons
