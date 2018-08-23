@@ -75,15 +75,11 @@ Fact
    in. What shows up in your report and allows you to see what you did when.
 
 Ongoing fact
-   Legacy hamster allowed for facts without an end to be saved to the database.
-   We do not. However, to address the common use case that a client may want to
-   start tracking an activity, but does not know its end, we provide a
-   convenient solution so clients don't have to implement this each by anew.
-   We provide an API for creating one and only one persistent *ongoing fact*. A
-   fact without specified end. This fact is treated separately the others in
-   almost any regard internally.  As far as the client is concerned it is
-   however just a regular fact without specified end.  Fact manager methods
-   relevant to this carry ``tmp_fact`` in their name.
+   Legacy Hamster allowed for facts without an end to be saved to the database.
+   As many as you wanted. Modern Hamster only lets you save one such Fact.
+   This *ongoing fact* is also called an *endless fact*. (In ``hamster-lib``,
+   it was called a *temporary fact*, or *tmp_fact*, but it was pickled and
+   saved to a file on the file system, and we shall not speak of it further.)
 
 This documentation need to be expanded, but hopefully it is enough for now to
 get you started. For detail please see the module reference and tests.
