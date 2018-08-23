@@ -24,13 +24,13 @@ from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import query_apply_limit_offset, query_apply_true_or_not
+from . import query_apply_limit_offset, query_apply_true_or_not, BaseAlchemyManager
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 from ....managers.activity import BaseActivityManager
 
 
 @python_2_unicode_compatible
-class ActivityManager(BaseActivityManager):
+class ActivityManager(BaseAlchemyManager, BaseActivityManager):
     def get_or_create(self, activity, raw=False):
         """
         Custom version of the default method in order to provide access to
@@ -69,17 +69,7 @@ class ActivityManager(BaseActivityManager):
             ValueError: If the category/activity.name combination to be added is
                 already present in the db.
         """
-
-        message = _("Received {!r}, raw={}.".format(activity, raw))
-        self.store.logger.debug(message)
-
-        if activity.pk:
-            message = _(
-                "The activity ('{!r}') you are trying to add already has an PK."
-                " Are you sure you do not want to ``_update`` instead?".format(activity)
-            )
-            self.store.logger.error(message)
-            raise ValueError(message)
+        self.adding_item_must_not_have_pk(activity)
 
         try:
             self.get_by_composite(activity.name, activity.category)
@@ -112,12 +102,11 @@ class ActivityManager(BaseActivityManager):
         else:
             category = None
         alchemy_activity.category = category
-        self.store.session.add(alchemy_activity)
-        self.store.session.commit()
-        result = alchemy_activity
-        if not raw:
-            result = alchemy_activity.as_hamster(self.store)
-        self.store.logger.debug(_("Returning {!r}.").format(result))
+
+        result = self.add_and_commit(
+            alchemy_activity, raw=raw, skip_commit=skip_commit,
+        )
+
         return result
 
     def _update(self, activity):

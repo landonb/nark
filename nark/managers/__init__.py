@@ -42,6 +42,22 @@ class BaseManager(object):
 
     # ***
 
+    def adding_item_must_not_have_pk(self, hamster_item):
+        message = _("Adding item: {!r}.".format(hamster_item))
+        self.store.logger.debug(message)
+        if not hamster_item.pk:
+            return
+        message = _(
+            "The {} item ({!r}) cannot be added because it already has a PK."
+            " Perhaps call the ``_update`` method instead".format(
+                self.__class__.__name__, hamster_item,
+            )
+        )
+        self.store.logger.error(message)
+        raise ValueError(message)
+
+    # ***
+
     def save(self, item, cls=BaseItem, named=False, **kwargs):
         """
         Save a Nark object instance to user's selected backend.

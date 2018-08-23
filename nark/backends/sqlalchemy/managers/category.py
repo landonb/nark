@@ -23,13 +23,13 @@ from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import query_apply_limit_offset, query_apply_true_or_not
+from . import query_apply_limit_offset, query_apply_true_or_not, BaseAlchemyManager
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 from ....managers.category import BaseCategoryManager
 
 
 @python_2_unicode_compatible
-class CategoryManager(BaseCategoryManager):
+class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
     def get_or_create(self, category, raw=False):
         """
         Custom version of the default method in order to provide access
@@ -72,38 +72,20 @@ class CategoryManager(BaseCategoryManager):
             ValueError: If category passed already got an PK. Indicating that
                 update would be more apropiate.
         """
+        self.adding_item_must_not_have_pk(category)
 
-        message = _("Received {!r} and raw={}.".format(category, raw))
-        self.store.logger.debug(message)
-
-        if category.pk:
-            message = _(
-                "The category ('{!r}') you are trying to add already has an PK."
-                " Are you sure you do not want to ``_update`` instead?".format(category)
-            )
-            self.store.logger.error(message)
-            raise ValueError(message)
         alchemy_category = AlchemyCategory(
             pk=None,
             name=category.name,
             deleted=bool(category.deleted),
             hidden=bool(category.hidden),
         )
-        self.store.session.add(alchemy_category)
-        try:
-            self.store.session.commit()
-        except IntegrityError as e:
-            message = _(
-                "An error occured! Is category.name already present in the database?"
-                " / Error: '{}'.".format(e)
-            )
-            self.store.logger.error(message)
-            raise ValueError(message)
-        self.store.logger.debug(_("'{!r}' added.".format(alchemy_category)))
 
-        if not raw:
-            alchemy_category = alchemy_category.as_hamster(self.store)
-        return alchemy_category
+        result = self.add_and_commit(
+            alchemy_category, raw=raw, skip_commit=skip_commit,
+        )
+
+        return result
 
     def _update(self, category):
         """

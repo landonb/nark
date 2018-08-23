@@ -24,7 +24,7 @@ from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import query_apply_limit_offset, query_apply_true_or_not
+from . import query_apply_limit_offset, query_apply_true_or_not, BaseAlchemyManager
 from ..objects import (
     AlchemyActivity, AlchemyCategory, AlchemyFact, AlchemyTag, fact_tags,
 )
@@ -32,7 +32,7 @@ from ....managers.tag import BaseTagManager
 
 
 @python_2_unicode_compatible
-class TagManager(BaseTagManager):
+class TagManager(BaseAlchemyManager, BaseTagManager):
     def get_or_create(self, tag, raw=False):
         """
         Custom version of the default method in order to provide access to
@@ -75,38 +75,20 @@ class TagManager(BaseTagManager):
             ValueError: If tag passed already got an PK. Indicating that update
                 would be more apropiate.
         """
+        self.adding_item_must_not_have_pk(tag)
 
-        message = _("Received {!r} and raw={}.".format(tag, raw))
-        self.store.logger.debug(message)
-
-        if tag.pk:
-            message = _(
-                "The tag ('{!r}') being added already has a PK."
-                " Perhaps you want to ``_update`` instead?".format(tag)
-            )
-            self.store.logger.error(message)
-            raise ValueError(message)
         alchemy_tag = AlchemyTag(
             pk=None,
             name=tag.name,
             deleted=bool(tag.deleted),
             hidden=bool(tag.hidden),
         )
-        self.store.session.add(alchemy_tag)
-        try:
-            self.store.session.commit()
-        except IntegrityError as e:
-            message = _(
-                "An error occured! Are you sure that tag.name "
-                "is not already present? Error: '{}'.".format(e)
-            )
-            self.store.logger.error(message)
-            raise ValueError(message)
-        self.store.logger.debug(_("'{!r}' added.".format(alchemy_tag)))
 
-        if not raw:
-            alchemy_tag = alchemy_tag.as_hamster(self.store)
-        return alchemy_tag
+        result = self.add_and_commit(
+            alchemy_tag, raw=raw, skip_commit=skip_commit,
+        )
+
+        return result
 
     def _update(self, tag):
         """

@@ -25,7 +25,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import and_, or_
 
-from . import query_apply_limit_offset, query_apply_true_or_not
+from . import query_apply_limit_offset, query_apply_true_or_not, BaseAlchemyManager
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 
 from ..objects import AlchemyTag
@@ -35,7 +35,7 @@ from ....managers.fact import BaseFactManager
 
 
 @python_2_unicode_compatible
-class FactManager(BaseFactManager):
+class FactManager(BaseAlchemyManager, BaseFactManager):
     """
     """
     def __init__(self, *args, **kwargs):
@@ -113,16 +113,7 @@ class FactManager(BaseFactManager):
 
             ValueError: If the timewindow is already occupied.
         """
-
-        self.store.logger.debug(_("Received '{!r}', 'raw'={}.".format(fact, raw)))
-
-        if fact.pk:
-            message = _(
-                "The fact ('{!r}') you are trying to add already has an PK."
-                " Are you sure you do not want to ``_update`` instead?".format(fact)
-            )
-            self.store.logger.error(message)
-            raise ValueError(message)
+        self.adding_item_must_not_have_pk(fact)
 
         self.must_validate_datetimes(fact, ignore_pks=ignore_pks)
 
@@ -140,16 +131,11 @@ class FactManager(BaseFactManager):
         tags = [self.store.tags.get_or_create(tag, raw=True) for tag in fact.tags]
         alchemy_fact.tags = tags
 
-        self.store.session.add(alchemy_fact)
+        result = self.add_and_commit(
+            alchemy_fact, raw=raw, skip_commit=skip_commit,
+        )
 
-        if not skip_commit:
-            self.store.session.commit()
-            self.store.logger.debug(_("Added {!r}.".format(alchemy_fact)))
-
-        if not raw:
-            alchemy_fact = alchemy_fact.as_hamster(self.store)
-
-        return alchemy_fact
+        return result
 
     # ***
 
