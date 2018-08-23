@@ -271,7 +271,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         )
         self.store.logger.debug(message)
 
-        name = str(name)
         if category:
             category = text_type(category.name)
             try:
@@ -288,6 +287,11 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         else:
             alchemy_category = None
 
+        # EXPLAIN: (lb): Do we really need to cast? Why not to text_type?
+        #   (I realize text_type is str in Py3. I'm curious if this fails
+        #   in Py2 (dropping Py2 support anyway?). And I'm curious if name
+        #   is ever not a string.
+        name = str(name)
         try:
             query = self.store.session.query(AlchemyActivity)
             query = query.filter_by(name=name).filter_by(category=alchemy_category)
