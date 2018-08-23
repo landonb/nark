@@ -20,6 +20,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
+import re
 from six import text_type
 
 
@@ -30,6 +31,8 @@ __all__ = [
     'day_end_time',
     'must_be_datetime_or_relative',
     'must_not_start_after_end',
+    'RE_PATTERN_RELATIVE_CLOCK',
+    'RE_PATTERN_RELATIVE_DELTA',
 ]
 
 
@@ -122,20 +125,41 @@ def day_end_time(start_time):
 
 # ***
 
+# (lb) See comment atop pattern_date in parse_time about allowing
+#   \d{4} (without :colon). Here's the stricter pattern:
+#    '^(?P<hours>\d{2}):(?P<minutes>\d{2})$'
+RE_PATTERN_RELATIVE_CLOCK = re.compile(
+    '^(?P<hours>\d{1,2}):?(?P<minutes>\d{2})(:(?P<seconds>\d{2}))?$'
+)
+
+
+RE_PATTERN_RELATIVE_DELTA = re.compile(
+    '^(?P<signage>[-+])?((?P<hours>\d+)h)?((?P<minutes>\d{1,2})m?)?$'
+)
+
+
 def must_be_datetime_or_relative(dt):
     """FIXME: Document"""
-    if not dt or isinstance(dt, datetime.datetime) or isinstance(dt, text_type):
-        if isinstance(dt, datetime.datetime):
-            # FIXME: (lb): I've got milliseconds in my store data!!
-            #        So this little hack kludge-fixes the problem;
-            #        perhaps someday I'll revisit this and really
-            #        figure out what's going on.
-            return dt.replace(microsecond=0)
+    if isinstance(dt, datetime.datetime):
+        # FIXME: (lb): I've got milliseconds in my store data!!
+        #        So this little hack kludge-fixes the problem;
+        #        perhaps someday I'll revisit this and really
+        #        figure out what's going on.
+        return dt.replace(microsecond=0)
+    elif not dt or isinstance(dt, text_type):
+        if (
+            dt and not (
+                RE_PATTERN_RELATIVE_CLOCK.match(dt)
+                or RE_PATTERN_RELATIVE_DELTA.match(dt)
+            )
+        ):
+            raise TypeError(_(
+                'Expected Hamster time string to indicate relative time, not: {}.'
+            ).format(dt))
         return dt
     raise TypeError(_(
-        'Found {} rather than a datetime, string, or None, as expected.'
-        .format(type=type(dt))
-    ))
+        "Hamster time not `datetime`, relative string, or `None`, but: {}."
+    ).format(type(dt)))
 
 
 def must_not_start_after_end(range_tuple):

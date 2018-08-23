@@ -25,7 +25,9 @@ from six import text_type
 
 from .fact_time import (
     # datetime_from_clock_after,
-    datetime_from_clock_prior
+    datetime_from_clock_prior,
+    RE_PATTERN_RELATIVE_CLOCK,
+    RE_PATTERN_RELATIVE_DELTA
 )
 from .parse_errors import ParserInvalidDatetimeException
 
@@ -204,7 +206,7 @@ class HamsterTimeSpec(object):
         parts = re.split(r' |T', raw_dt)
         if len(parts) != 2:
             return False
-        assert re.match(RE_RELATIVE_CLOCK, parts[1]) is not None
+        assert re.match(RE_PATTERN_RELATIVE_CLOCK, parts[1]) is not None
         return True
 
 
@@ -243,17 +245,9 @@ def parse_dated(dated, time_now, cruftless=False):
 
 # ***
 
-# (lb) See comment atop pattern_date about allowing \d{4} (without :colon).
-#   Here's the stricter pattern:
-#    '^(?P<hours>\d{2}):(?P<minutes>\d{2})$'
-RE_RELATIVE_CLOCK = re.compile(
-    '^(?P<hours>\d{1,2}):?(?P<minutes>\d{2})(:(?P<seconds>\d{2}))?$'
-)
-
-
 def parse_clock_time(clock_time):
     parsed_ct = None
-    match = RE_RELATIVE_CLOCK.match(clock_time)
+    match = RE_PATTERN_RELATIVE_CLOCK.match(clock_time)
     if match:
         parts = match.groupdict()
         parsed_ct = (
@@ -283,17 +277,10 @@ def parse_datetime_iso8601(datepart, must=False, local_tz=None):
 
 # ***
 
-# FIXME: Add straight up XXXX or XX:XX relative time -- relative to fact's other time!
-
-RE_PATTERN_RELATIVE = re.compile(
-    '^(?P<signage>[-+])?((?P<hours>\d+)h)?((?P<minutes>\d{1,2})m?)?$'
-)
-
-
 def parse_relative_minutes(rel_time):
     rel_mins = None
     negative = None
-    match = RE_PATTERN_RELATIVE.match(rel_time)
+    match = RE_PATTERN_RELATIVE_DELTA.match(rel_time)
     if match:
         parts = match.groupdict()
         rel_mins = 0
