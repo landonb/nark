@@ -53,8 +53,8 @@ class Category(BaseItem):
 
     @name.setter
     def name(self, name):
-        if not name:
-            raise ValueError(_("You need to specify a Category name."))
+        if name is None:
+            raise ValueError(_('Category name must not be None.'))
         self._name = text_type(name)
 
     def as_tuple(self, include_pk=True):

@@ -68,6 +68,8 @@ class Activity(BaseItem):
     @name.setter
     def name(self, name):
         # NOTE: (lb): Unlike Category.name=, not requiring ``not name``.
+        if name is None:
+            raise ValueError(_('Activity name must not be None.'))
         self._name = text_type(name)
 
     @classmethod
