@@ -30,7 +30,7 @@ from ....managers.category import BaseCategoryManager
 
 @python_2_unicode_compatible
 class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
-    def get_or_create(self, category, raw=False):
+    def get_or_create(self, category, raw=False, skip_commit=False):
         """
         Custom version of the default method in order to provide access
         to alchemy instances.
@@ -49,10 +49,10 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         try:
             category = self.get_by_name(category.name, raw=raw)
         except KeyError:
-            category = self._add(category, raw=raw)
+            category = self._add(category, raw=raw, skip_commit=skip_commit)
         return category
 
-    def _add(self, category, raw=False):
+    def _add(self, category, raw=False, skip_commit=False):
         """
         Add a new category to the database.
 

@@ -33,7 +33,7 @@ from ....managers.tag import BaseTagManager
 
 @python_2_unicode_compatible
 class TagManager(BaseAlchemyManager, BaseTagManager):
-    def get_or_create(self, tag, raw=False):
+    def get_or_create(self, tag, raw=False, skip_commit=False):
         """
         Custom version of the default method in order to provide access to
         alchemy instances.
@@ -52,10 +52,10 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         try:
             tag = self.get_by_name(tag.name, raw=raw)
         except KeyError:
-            tag = self._add(tag, raw=raw)
+            tag = self._add(tag, raw=raw, skip_commit=skip_commit)
         return tag
 
-    def _add(self, tag, raw=False):
+    def _add(self, tag, raw=False, skip_commit=False):
         """
         Add a new tag to the database.
 

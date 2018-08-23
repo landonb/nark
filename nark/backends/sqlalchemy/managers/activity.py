@@ -31,7 +31,7 @@ from ....managers.activity import BaseActivityManager
 
 @python_2_unicode_compatible
 class ActivityManager(BaseAlchemyManager, BaseActivityManager):
-    def get_or_create(self, activity, raw=False):
+    def get_or_create(self, activity, raw=False, skip_commit=False):
         """
         Custom version of the default method in order to provide access to
         Alchemy instances.
@@ -50,11 +50,11 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         try:
             result = self.get_by_composite(activity.name, activity.category, raw=raw)
         except KeyError:
-            result = self._add(activity, raw=raw)
+            result = self._add(activity, raw=raw, skip_commit=skip_commit)
         self.store.logger.debug(_("Returning {!r}.").format(result))
         return result
 
-    def _add(self, activity, raw=False):
+    def _add(self, activity, raw=False, skip_commit=False):
         """
         Add a new ``Activity`` instance to the databasse.
 

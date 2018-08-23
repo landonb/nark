@@ -127,8 +127,11 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             split_from=fact.split_from,
         )
         get_or_create = self.store.activities.get_or_create
-        alchemy_fact.activity = get_or_create(fact.activity, raw=True)
-        tags = [self.store.tags.get_or_create(tag, raw=True) for tag in fact.tags]
+        alchemy_fact.activity = get_or_create(fact.activity, raw=True, skip_commit=True)
+        tags = [
+            self.store.tags.get_or_create(tag, raw=True, skip_commit=True)
+            for tag in fact.tags
+        ]
         alchemy_fact.tags = tags
 
         result = self.add_and_commit(
