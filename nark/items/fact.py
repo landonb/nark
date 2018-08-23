@@ -494,16 +494,16 @@ class Fact(BaseItem):
     # ***
 
     def tagnames(self, *args, **kwargs):
-        return format_fact.tags_inline(*args, **kwargs)
+        return format_fact.tags_inline(self, *args, **kwargs)
 
     def tags_inline(self, colorful=False, underlined=False, **kwargs):
         return format_fact.tags_inline(
-            colorful=colorful, underlined=underlined, **kwargs
+            self, colorful=colorful, underlined=underlined, **kwargs
         )
 
     def tags_tuples(self, colorful=False, underlined=False, **kwargs):
         return format_fact.tags_tuples(
-            colorful=colorful, underlined=underlined, **kwargs
+            self, colorful=colorful, underlined=underlined, **kwargs
         )
 
     # ***
@@ -547,7 +547,7 @@ class Fact(BaseItem):
         Returns:
             text_type: Canonical string encoding all available fact info.
         """
-        return format_fact.friendly_str(shellify=shellify)
+        return format_fact.friendly_str(self, shellify=shellify)
 
     @property
     def short(self):
@@ -556,7 +556,7 @@ class Fact(BaseItem):
 
         (lb): Not actually called by any code, but useful for debugging!
         """
-        return format_fact.friendly_str(include_id=True, cut_width=39)
+        return format_fact.friendly_str(self, include_id=True, cut_width=39)
 
     @property
     def html_notif(self):
