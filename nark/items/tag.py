@@ -113,7 +113,3 @@ class Tag(BaseItem):
     def __str__(self):
         return text_type('{name}'.format(name=self.name))
 
-    def __repr__(self):
-        """Return an instance representation containing additional information."""
-        return str('[{pk}] {name}'.format(pk=repr(self.pk), name=repr(self.name)))
-

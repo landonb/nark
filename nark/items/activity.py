@@ -156,15 +156,3 @@ class Activity(BaseItem):
                 name=self.name, category=self.category.name)
         return text_type(string)
 
-    def __repr__(self):
-        """Return an instance representation containing additional information."""
-        if self.category is None:
-            string = '[{pk}] {name}'.format(pk=repr(self.pk), name=repr(self.name))
-        else:
-            string = '[{pk}] {name} ({category})'.format(
-                pk=repr(self.pk),
-                name=repr(self.name),
-                category=repr(self.category.name),
-            )
-        return str(string)
-

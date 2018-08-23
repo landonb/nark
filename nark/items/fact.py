@@ -129,10 +129,32 @@ class Fact(BaseItem):
         return hash(self.as_tuple())
 
     def __str__(self):
-        return format_fact.friendly_str(text_type)
+        # MAYBE: (lb): __str__ used to pass fmttr=text_type to friendly_str,
+        #   and __repr__ used to pass fmttr=repr; and then friendly_str would
+        #   wrap all strings that it assembled with that formatter, e.g.,
+        #     fmttr(self.activity.name)
+        #   but I did not understand why (what's the difference between
+        #   text_type and repr? text_type is a no-op in py3, and converts
+        #   py2 string to unicode, right?). In any case, I don't think we
+        #   need to cast to text_type/repr anymore (especially if we drop
+        #   Python 2 support).
+        return format_fact.friendly_str(self)
 
     def __repr__(self):
-        return format_fact.friendly_str(repr)
+        parts = []
+        for key in sorted(self.__dict__.keys()):
+            if key == 'name':
+                assert self.name is None
+                continue  # Part of BaseItem, and not used by Fact.
+            elif key == 'tags':
+                val = repr(self.tags_sorted)
+            else:
+                val = repr(getattr(self, key))
+            parts.append(
+                "{key}={val}".format(key=key, val=val)
+            )
+        repred = "Fact({})".format(', '.join(parts))
+        return repred
 
     def as_tuple(self, include_pk=True):
         """

@@ -31,3 +31,14 @@ class BaseItem(object):
         self.pk = pk
         self.name = name
 
+    def __repr__(self):
+        parts = []
+        for key in sorted(self.__dict__.keys()):
+            parts.append(
+                "{key}={val}".format(key=key, val=repr(getattr(self, key)))
+            )
+        repred = "{cls}({parts})".format(
+            cls=self.__class__.__name__, parts=', '.join(parts),
+        )
+        return repred
+
