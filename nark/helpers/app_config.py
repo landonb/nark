@@ -201,17 +201,23 @@ def get_default_backend_config(appdirs):
     """
     return {
         'store': 'sqlalchemy',
-        'day_start': '',
-        'fact_min_delta': 0,
         'db_engine': 'sqlite',
         'db_path': os.path.join(
             appdirs.user_data_dir,
             '{}.sqlite'.format(appdirs.appname),
         ),
+        # Skipping:
+        #  'db_host': '',
+        #  'db_port': '',
+        #  'db_name': '',
+        #  'db_user': '',
+        #  'db_password': '',
+        'allow_momentaneous': False,
+        'day_start': '',
+        'fact_min_delta': 0,
         'sql_log_level': 'WARNING',
         'tz_aware': False,
         'default_tzinfo': '',
-        'allow_momentaneous': False,
     }
 
 
@@ -234,15 +240,6 @@ def backend_config_to_configparser(config):
     def get_store():
         return config.get('store')
 
-    def get_day_start():
-        day_start = config.get('day_start')
-        if not day_start:
-            return ''
-        return day_start.strftime('%H:%M:%S')
-
-    def get_fact_min_delta():
-        return text_type(config.get('fact_min_delta'))
-
     def get_db_engine():
         return text_type(config.get('db_engine'))
 
@@ -264,6 +261,18 @@ def backend_config_to_configparser(config):
     def get_db_password():
         return text_type(config.get('db_password'))
 
+    def get_allow_momentaneous():
+        return config.getboolean('allow_momentaneous')
+
+    def get_day_start():
+        day_start = config.get('day_start')
+        if not day_start:
+            return ''
+        return day_start.strftime('%H:%M:%S')
+
+    def get_fact_min_delta():
+        return text_type(config.get('fact_min_delta'))
+
     def get_sql_log_level():
         return text_type(config.get('sql_log_level'))
 
@@ -273,14 +282,9 @@ def backend_config_to_configparser(config):
     def get_default_tzinfo():
         return text_type(config.get('default_tzinfo'))
 
-    def get_allow_momentaneous():
-        return config.getboolean('allow_momentaneous')
-
     cp_instance = SafeConfigParser()
     cp_instance.add_section('Backend')
     cp_instance.set('Backend', 'store', get_store())
-    cp_instance.set('Backend', 'day_start', get_day_start())
-    cp_instance.set('Backend', 'fact_min_delta', get_fact_min_delta())
     cp_instance.set('Backend', 'db_engine', get_db_engine())
     cp_instance.set('Backend', 'db_path', get_db_path())
     cp_instance.set('Backend', 'db_host', get_db_host())
@@ -288,10 +292,12 @@ def backend_config_to_configparser(config):
     cp_instance.set('Backend', 'db_name', get_db_name())
     cp_instance.set('Backend', 'db_user', get_db_user())
     cp_instance.set('Backend', 'db_password', get_db_password())
+    cp_instance.set('Backend', 'allow_momentaneous', get_allow_momentaneous())
+    cp_instance.set('Backend', 'day_start', get_day_start())
+    cp_instance.set('Backend', 'fact_min_delta', get_fact_min_delta())
     cp_instance.set('Backend', 'sql_log_level', get_sql_log_level())
     cp_instance.set('Backend', 'tz_aware', get_tz_aware())
     cp_instance.set('Backend', 'default_tzinfo', get_default_tzinfo())
-    cp_instance.set('Backend', 'allow_momentaneous', get_allow_momentaneous())
 
     return cp_instance
 
@@ -320,6 +326,9 @@ def configparser_to_backend_config(cp_instance):
         if store not in REGISTERED_BACKENDS.keys():
             raise ValueError(_("Unrecognized store option."))
         return store
+
+    def get_allow_momentaneous():
+        return cp_instance.getboolean('Backend', 'allow_momentaneous')
 
     def get_day_start():
         day_start = cp_instance.get('Backend', 'day_start')
@@ -367,13 +376,8 @@ def configparser_to_backend_config(cp_instance):
     def get_default_tzinfo():
         return text_type(cp_instance.get('Backend', 'default_tzinfo'))
 
-    def get_allow_momentaneous():
-        return cp_instance.getboolean('Backend', 'allow_momentaneous')
-
     result = {
         'store': get_store(),
-        'day_start': get_day_start(),
-        'fact_min_delta': get_fact_min_delta(),
         'db_engine': get_db_engine(),
         'db_path': get_db_path(),
         'db_host': get_db_host(),
@@ -381,9 +385,13 @@ def configparser_to_backend_config(cp_instance):
         'db_name': get_db_name(),
         'db_user': get_db_user(),
         'db_password': get_db_password(),
+        'allow_momentaneous': get_allow_momentaneous(),
+        'day_start': get_day_start(),
+        'fact_min_delta': get_fact_min_delta(),
         'sql_log_level': get_sql_log_level(),
         'tz_aware': get_tz_aware(),
         'default_tzinfo': get_default_tzinfo(),
-        'allow_momentaneous': get_allow_momentaneous(),
     }
+
     return result
+
