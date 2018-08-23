@@ -247,4 +247,5 @@ class SQLAlchemyStore(BaseStore):
         self.activities = ActivityManager(self)
         self.tags = TagManager(self)
         self.facts = FactManager(self)
+        self.fact_cls = None
 

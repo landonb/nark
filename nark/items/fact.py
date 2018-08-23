@@ -169,7 +169,7 @@ class Fact(BaseItem):
     def copy(self, include_pk=True):
         """
         """
-        new_fact = Fact(
+        new_fact = self.__class__(
             activity=self.activity,
             start=self.start,
             end=self.end,

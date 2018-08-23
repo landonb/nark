@@ -206,7 +206,9 @@ class AlchemyFact(Fact):
         else:
             nark_tags = set([Tag(tag) for tag in tags])
 
-        return Fact(
+        fact_cls = store.fact_cls or Fact
+
+        return fact_cls(
             pk=self.pk,
             deleted=bool(self.deleted),
             split_from=self.split_from,
