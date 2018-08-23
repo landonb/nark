@@ -241,7 +241,7 @@ class BaseFactManager(BaseManager):
                 self.store.logger.debug(
                     _('Using midnight as clock time for `since` date.')
                 )
-                day_start = '00:00:00'
+                day_start = self.store.config['day_start']
                 since_dt = datetime.datetime.combine(since, day_start)
             elif isinstance(since, datetime.time):
                 since_dt = datetime.datetime.combine(datetime.date.today(), since)
