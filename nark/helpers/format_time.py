@@ -139,16 +139,19 @@ def format_delta(delta, style='%M'):
     """
     def _format_delta():
         seconds = delta.total_seconds() if delta is not None else 0
-        hours = int(seconds / 3600)
-        minutes = int((seconds % 3600) / 60)
-        if style == '%M':
-            return format_mins(minutes)
-        elif style == '%H:%M':
-            return format_hours_mins(hours, minutes)
-        elif style == 'HHhMMm':
-            return format_hours_h_mins_m(hours, minutes)
-        else:
+        if not style:
             return format_pedantic(seconds)
+        elif style == '%M':
+            minutes = int(seconds / 60)
+            return format_mins(minutes)
+        else:
+            hours = int(seconds / 3600)
+            minutes = int((seconds % 3600) / 60)
+            if style == '%H:%M':
+                return format_hours_mins(hours, minutes)
+            elif style == 'HHhMMm':
+                return format_hours_h_mins_m(hours, minutes)
+        raise ValueError(_("Invalid format_delta style ‘{}’.").format(style))
 
     def format_mins(minutes):
         return text_type(minutes)
