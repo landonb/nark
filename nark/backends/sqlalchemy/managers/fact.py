@@ -989,7 +989,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def surrounding(self, fact_time):
+    def surrounding(self, fact_time, inclusive=False):
         """
         Return the fact(s) at the given moment in time.
         Note that this excludes a fact that starts or ends at this time.
@@ -1009,14 +1009,24 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         cmp_time = self._get_sql_datetime(fact_time)
 
-        condition = and_(
-            func.datetime(AlchemyFact.start) < cmp_time,
-            # Find surrounding complete facts, or the ongoing fact.
-            or_(
-                func.datetime(AlchemyFact.end) > cmp_time,
-                AlchemyFact.end == None,
-            ),  # noqa: E711
-        )
+        if not inclusive:
+            condition = and_(
+                func.datetime(AlchemyFact.start) < cmp_time,
+                # Find surrounding complete facts, or the ongoing fact.
+                or_(
+                    AlchemyFact.end == None,  # noqa: E711
+                    func.datetime(AlchemyFact.end) > cmp_time,
+                ),
+            )
+        else:
+            condition = and_(
+                func.datetime(AlchemyFact.start) <= cmp_time,
+                # Find surrounding complete facts, or the ongoing fact.
+                or_(
+                    AlchemyFact.end == None,  # noqa: E711
+                    func.datetime(AlchemyFact.end) >= cmp_time,
+                ),
+            )
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
@@ -1030,12 +1040,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             )
         ))
 
-        n_facts = query.count()
-        if n_facts > 1:
-            message = 'Broken time frame found at "{}": {} facts found'.format(
-                fact_time, n_facts
-            )
-            raise IntegrityError(message)
+        if not inclusive:
+            n_facts = query.count()
+            if n_facts > 1:
+                message = 'Broken time frame found at "{}": {} facts found'.format(
+                    fact_time, n_facts
+                )
+                raise IntegrityError(message)
 
         facts = query.all()
         found_facts = [fact.as_hamster(self.store) for fact in facts]
