@@ -113,6 +113,12 @@ class Fact(BaseItem):
 
         return self.as_tuple() == other
 
+    def equal_sans_end(self, other):
+        if other is not None and not isinstance(other, FactTuple):
+            other = other.as_tuple(sans_end=True)
+
+        return self.as_tuple(sans_end=True) == other
+
     def __hash__(self):
         """Naive hashing method."""
         return hash(self.as_tuple())
@@ -157,7 +163,7 @@ class Fact(BaseItem):
         repred = "Fact({})".format(', '.join(parts))
         return repred
 
-    def as_tuple(self, include_pk=True):
+    def as_tuple(self, include_pk=True, sans_end=False):
         """
         Provide a tuple representation of this facts relevant attributes.
 
@@ -177,11 +183,13 @@ class Fact(BaseItem):
         sorted_tags = self.tags_sorted
         ordered_tags = [tag.as_tuple(include_pk=include_pk) for tag in sorted_tags]
 
+        end_time = -1 if sans_end else self.end
+
         return FactTuple(
             pk=pk,
             activity=activity_tup,
             start=self.start,
-            end=self.end,
+            end=end_time,
             description=self.description,
             tags=frozenset(ordered_tags),
             deleted=bool(self.deleted),
