@@ -392,7 +392,7 @@ class Fact(BaseItem):
 
         return end_time - self.start
 
-    def format_delta(self, formatting='%M'):
+    def format_delta(self, style='%M'):
         """
         Return a string representation of ``Fact().delta``.
 
@@ -402,12 +402,13 @@ class Fact(BaseItem):
               Valid choices are:
                 * ``'%M'``: As minutes, rounded down.
                 * ``'%H:%M'``: As 'hours:minutes'. rounded down.
+                * ``HHhMMm``: As '{hours} hour(s) {minutes} minute(s)'.
                 * ````: As human friendly time.
 
         Returns:
             str: Formatted string representing this fact's *duration*.
         """
-        return format_time.format_delta(self.delta())
+        return format_time.format_delta(self.delta(), style=style)
 
     # ***
 

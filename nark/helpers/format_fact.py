@@ -119,7 +119,7 @@ def friendly_str(
     def get_times_duration(fact):
         if not show_elapsed:
             return ''
-        duration = ' [{}]'.format(fact.format_delta(''))
+        duration = ' [{}]'.format(fact.format_delta(style=''))
         return colorize(duration, 'grey_78')
 
     def get_tags_string(fact):
@@ -145,7 +145,7 @@ def html_notif(fact):
     A briefer Fact one-liner using HTML. Useful for, e.g., notifier toast.
     """
     was_coloring = set_coloring(False)
-    duration = '[{}]'.format(fact.format_delta(''))
+    duration = '[{}]'.format(fact.format_delta(style=''))
     actegory = _actegory_string(fact, omit_empty_actegory=True)
     actegory = actegory or '<i>No activity</i>'
     description = _description_string(fact, cut_width=39, sep=': ')
