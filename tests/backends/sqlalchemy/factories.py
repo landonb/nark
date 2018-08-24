@@ -45,6 +45,9 @@ class AlchemyCategoryFactory(factory.alchemy.SQLAlchemyModelFactory):
         """Return a name that is guaranteed to be unique."""
         return '{name} - {key}'.format(name=faker.Faker().word(), key=n)
 
+    deleted = False
+    hidden = False
+
     class Meta:
         model = AlchemyCategory
         sqlalchemy_session = common.Session
@@ -58,6 +61,7 @@ class AlchemyActivityFactory(factory.alchemy.SQLAlchemyModelFactory):
     name = factory.Faker('sentence')
     category = factory.SubFactory(AlchemyCategoryFactory)
     deleted = False
+    hidden = False
 
     class Meta:
         model = AlchemyActivity
@@ -74,6 +78,9 @@ class AlchemyTagFactory(factory.alchemy.SQLAlchemyModelFactory):
     def name(n):  # NOQA
         """Return a name that is guaranteed to be unique."""
         return '{name} - {key}'.format(name=faker.Faker().word(), key=n)
+
+    deleted = False
+    hidden = False
 
     class Meta:
         model = AlchemyTag
@@ -94,6 +101,9 @@ class AlchemyFactFactory(factory.alchemy.SQLAlchemyModelFactory):
         model = AlchemyFact
         sqlalchemy_session = common.Session
         sqlalchemy_session_persistence = 'flush'
+
+    deleted = False
+    split_from = None
 
     @factory.post_generation
     def tags(self, create, extracted, **kwargs):
