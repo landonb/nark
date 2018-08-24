@@ -55,7 +55,6 @@ class BaseStore(object):
         self.tags = BaseTagManager(self)
         localize = self.config['tz_aware']
         self.facts = BaseFactManager(self, localize=localize)
-        self._now = None
 
     def standup(self):
         """
@@ -137,7 +136,11 @@ class BaseStore(object):
     def now_tz_aware(self):
         if self.config['tz_aware']:
             # FIXME/2018-05-23: (lb): Tests use utcnow(). Should they honor tz_aware?
-            return datetime.utcnow()
+            #   (Though if Freezegun being used, now() == utcnow().)
+            # Clear microseconds to avoid six digits of noise, e.g., 12:34:56.789012.
+            # (lb): I added seconds to hamster (was historically demarcated by minutes),
+            # because I think seconds could be useful to a developer. But not no more.
+            return datetime.utcnow().replace(microsecond=0)
         else:
-            return datetime.now()
+            return datetime.now().replace(microsecond=0)
 
