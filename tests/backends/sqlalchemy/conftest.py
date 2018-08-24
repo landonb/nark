@@ -278,6 +278,11 @@ def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     return store
 
 
+@pytest.fixture
+def alchemy_activity_deleted(alchemy_activity_factory):
+    alchemy_activity = alchemy_activity_factory()
+    alchemy_activity.deleted = True
+    return alchemy_activity
 
 
 # Instance sets
