@@ -36,6 +36,19 @@ faker = faker_.Faker()
 
 
 class TestCategory(object):
+    @classmethod
+    def as_repr(cls, category):
+        if category is None:
+            return repr(category)
+        repr_f = "Category(_name={name}, deleted={deleted}, hidden={hidden}, pk={pk})"
+        repred = repr_f.format(
+            pk=repr(category.pk),
+            name=repr(category.name),
+            deleted=repr(category.deleted),
+            hidden=repr(category.hidden),
+        )
+        return repred
+
     def test_init_valid(self, name_string_valid_parametrized, pk_valid_parametrized):
         """Make sure that Category constructor accepts all valid values."""
         category = Category(name_string_valid_parametrized, pk_valid_parametrized)
@@ -48,12 +61,24 @@ class TestCategory(object):
             Category(name_string_invalid_parametrized)
 
     def test_as_tuple_include_pk(self, category):
-        """Make sure categories tuple representation works as intended and pk is included."""
-        assert category.as_tuple() == (category.pk, category.name)
+        """
+        Make sure categories tuple representation works as intended and pk
+        is included.
+        """
+        deleted = False
+        hidden = False
+        assert category.as_tuple() == (category.pk, category.name, deleted, hidden)
 
     def test_as_tuple_exclude_pf(self, category):
-        """Make sure categories tuple representation works as intended and pk is excluded."""
-        assert category.as_tuple(include_pk=False) == (False, category.name)
+        """
+        Make sure categories tuple representation works as intended and pk
+        is excluded.
+        """
+        deleted = False
+        hidden = False
+        cat_tuple = category.as_tuple(include_pk=False)
+        our_tuple = (False, category.name, deleted, hidden)
+        assert cat_tuple == our_tuple
 
     def test_equal_fields_true(self, category):
         """
@@ -111,14 +136,34 @@ class TestCategory(object):
         """Test representation method."""
         result = repr(category)
         assert isinstance(result, str)
-        expectation = '[{pk}] {name}'.format(pk=repr(category.pk),
-            name=repr(category.name))
+        expectation = TestCategory.as_repr(category)
         assert result == expectation
 
 
 class TestActivity(object):
-    def test_init_valid(self, name_string_valid_parametrized, pk_valid_parametrized,
-            category_valid_parametrized, deleted_valid_parametrized):
+    @classmethod
+    def as_repr(cls, activity):
+        if activity is None:
+            return repr(activity)
+        repred = (
+            "Activity(_name={name}, category={category}, "
+            "deleted={deleted}, hidden={hidden}, pk={pk})"
+        ).format(
+            pk=repr(activity.pk),
+            name=repr(activity.name),
+            category=TestCategory.as_repr(activity.category),
+            deleted=repr(activity.deleted),
+            hidden=repr(activity.hidden),
+        )
+        return repred
+
+    def test_init_valid(
+        self,
+        name_string_valid_parametrized,
+        pk_valid_parametrized,
+        category_valid_parametrized,
+        deleted_valid_parametrized,
+    ):
         """Test that init accepts all valid values."""
         activity = Activity(
             name_string_valid_parametrized,
@@ -149,13 +194,35 @@ class TestActivity(object):
 
     def test_as_tuple_include_pk(self, activity):
         """Make sure that conversion to a tuple matches our expectations."""
-        assert activity.as_tuple() == (activity.pk, activity.name,
-            activity.category, activity.deleted)
+        expecting = (
+            activity.pk,
+            activity.name,
+            (
+                activity.category.pk,
+                activity.category.name,
+                activity.category.deleted,
+                activity.category.hidden,
+            ),
+            activity.deleted,
+            activity.hidden,
+        )
+        assert activity.as_tuple() == expecting
 
     def test_as_tuple_exclude_pk(self, activity):
         """Make sure that conversion to a tuple matches our expectations."""
-        assert activity.as_tuple(include_pk=False) == (False, activity.name,
-            (False, activity.category.name), activity.deleted)
+        expecting = (
+            False,
+            activity.name,
+            (
+                False,
+                activity.category.name,
+                activity.category.deleted,
+                activity.category.hidden,
+            ),
+            activity.deleted,
+            activity.hidden,
+        )
+        assert activity.as_tuple(include_pk=False) == expecting
 
     def test_equal_fields_true(self, activity):
         """
@@ -217,8 +284,7 @@ class TestActivity(object):
         """Make sure our debugging representation matches our expectations."""
         result = repr(activity)
         assert isinstance(result, str)
-        expectation = '[{pk}] {name} ({category})'.format(
-            pk=repr(activity.pk), name=repr(activity.name), category=repr(activity.category.name))
+        expectation = TestActivity.as_repr(activity)
         assert result == expectation
 
     def test__repr__without_category(self, activity):
@@ -226,29 +292,45 @@ class TestActivity(object):
         activity.category = None
         result = repr(activity)
         assert isinstance(result, str)
-        expectation = '[{pk}] {name}'.format(pk=repr(activity.pk), name=repr(activity.name))
+        expectation = TestActivity.as_repr(activity)
         assert result == expectation
 
 
 class TestTag(object):
-    def test_init_valid(self, name_string_valid_parametrized, pk_valid_parametrized):
+    @classmethod
+    def as_repr(cls, tag):
+        if tag is None:
+            return repr(tag)
+        repred = "Tag(_name={name}, deleted={deleted}, hidden={hidden}, pk={pk})".format(
+            pk=repr(tag.pk),
+            name=repr(tag.name),
+            deleted=repr(tag.deleted),
+            hidden=repr(tag.hidden),
+        )
+        return repred
+
+    def test_init_valid(self, name_string_valid_parametrized_tag, pk_valid_parametrized):
         """Make sure that Tag constructor accepts all valid values."""
-        tag = Tag(name_string_valid_parametrized, pk_valid_parametrized)
-        assert tag.name == name_string_valid_parametrized
+        tag = Tag(name_string_valid_parametrized_tag, pk_valid_parametrized)
+        assert tag.name == name_string_valid_parametrized_tag
         assert tag.pk == pk_valid_parametrized
 
-    def test_init_invalid(self, name_string_invalid_parametrized):
+    def test_init_invalid(self, name_string_invalid_parametrized_tag):
         """Make sure that Tag constructor rejects all invalid values."""
         with pytest.raises(ValueError):
-            Tag(name_string_invalid_parametrized)
+            Tag(name_string_invalid_parametrized_tag)
 
     def test_as_tuple_include_pk(self, tag):
         """Make sure tags tuple representation works as intended and pk is included."""
-        assert tag.as_tuple() == (tag.pk, tag.name)
+        deleted = False
+        hidden = False
+        assert tag.as_tuple() == (tag.pk, tag.name, deleted, hidden)
 
     def test_as_tuple_exclude_pf(self, tag):
         """Make sure tags tuple representation works as intended and pk is excluded."""
-        assert tag.as_tuple(include_pk=False) == (False, tag.name)
+        deleted = False
+        hidden = False
+        assert tag.as_tuple(include_pk=False) == (False, tag.name, deleted, hidden)
 
     def test_equal_fields_true(self, tag):
         """Make sure that two tags that differ only in their PK compare equal."""
@@ -334,14 +416,74 @@ class TestFact(object):
         tags = sorted(list(tags), key=attrgetter('name'))
         assert fact.tags_sorted == tags
 
-    def test_create_from_factoid_valid(self, valid_raw_fact_parametrized):
+    @pytest.mark.parametrize(
+        ('factoid', 'time_hint', 'lenient', 'should_err'),
+        [
+            (
+                '12:00 - 14:00 foo@bar, rumpelratz',
+                'verify_both',
+                False,
+                None,
+            ),
+            (
+                '12:00 - 14:00 foo',
+                'verify_both',
+                True,
+                'Expected to find an Activity name.',
+            ),
+            (
+                'foo@bar',
+                'verify_none',
+                True,
+                None,
+            ),
+            (
+                '12:00-14:00 foo@bar',
+                'verify_both',
+                False,
+                None,
+            ),
+            # Test seconds (2018-08-16: they no longer get truncated).
+            (
+                '12:00:11 - 14:00:59 baz@bat',
+                'verify_both',
+                False,
+                None,
+            ),
+            # Test just start and end, no activity, category, tags, nor description.
+            (
+                '12:00:11 - 13:01',
+                'verify_both',
+                True,
+                'Expected to find an Activity name.',
+            ),
+            # Test just a start time.
+            (
+                '13:01:22',
+                'verify_start',
+                True,
+                'Expected to find an Activity name.',
+            ),
+        ],
+    )
+    def test_create_from_factoid_valid(self, factoid, time_hint, lenient, should_err):
         """Make sure that a valid raw fact creates a proper Fact."""
-        assert Fact.create_from_factoid(valid_raw_fact_parametrized)
+        fact, err = Fact.create_from_factoid(
+            factoid, time_hint=time_hint, lenient=lenient,
+        )
+        assert fact
+        assert str(err) == str(should_err)
 
-    def test_create_from_factoid_invalid(self, invalid_raw_fact_parametrized):
-        """Make sure invalid string raises an exception."""
-        with pytest.raises(ValueError):
-            Fact.create_from_factoid(invalid_raw_fact_parametrized)
+# FIXME: The invalid_raw_fact_parametrized fixture won't fail anymore,
+#        because clock time is considered relative until explicitly closed --
+#
+# FIXME: We need to add fix_times to these nark tests!
+#
+#
+#    def test_create_from_factoid_invalid(self, invalid_raw_fact_parametrized):
+#        """Make sure invalid string raises an exception."""
+#        with pytest.raises(ValueError):
+#            fact, err = Fact.create_from_factoid(invalid_raw_fact_parametrized)
 
     @pytest.mark.parametrize(
         ('raw_fact', 'expectations'),
@@ -349,9 +491,22 @@ class TestFact(object):
             (
                 '-7 foo@bar, palimpalum',
                 {
-                    'start': datetime.datetime(2015, 5, 2, 18, 0, 0),
+                    'start': None,
                     'end': None,
-                    'activity': 'foo',
+                    'activity': '-7 foo',
+                    'category': 'bar',
+                    'description': 'palimpalum',
+                },
+            ),
+            (
+                # FIXME: (lb): This is not parsing correctly!
+                #   The Activity name is being set to '-7: foo'
+                #   Though maybe that's because no `time_hint`!
+                '-7: foo@bar, palimpalum',
+                {
+                    'start': None,
+                    'end': None,
+                    'activity': '-7: foo',
                     'category': 'bar',
                     'description': 'palimpalum',
                 },
@@ -359,51 +514,70 @@ class TestFact(object):
         ]
     )
     @freeze_time('2015-05-02 18:07')
-    def test_create_from_factoid_with_delta(self, raw_fact, expectations):
-        fact = Fact.create_from_factoid(raw_fact)
+    def test_create_from_factoid_with_delta_no_time_hint(self, raw_fact, expectations):
+        fact, err = Fact.create_from_factoid(raw_fact)
         assert fact.start == expectations['start']
+        assert fact.end == expectations['end']
+        assert fact.activity.name == expectations['activity']
+        assert fact.activity.category.name == expectations['category']
+        assert fact.description == expectations['description']
+        assert not err
 
-
-
-# FIXME: NEW
-    def test_create_from_factoid_valid(self, valid_factoid_parametrized):
-        """Make sure that a valid raw fact creates a proper Fact."""
-        assert Fact.create_from_factoid(valid_factoid_parametrized)
-
-    def test_create_from_factoid_invalid(self, invalid_factoid_parametrized):
-        """Make sure invalid string raises an exception."""
-        with pytest.raises(ValueError):
-            Fact.create_from_factoid(invalid_factoid_parametrized)
-
-    @pytest.mark.parametrize(('factoid', 'expectations'), [
-        ('-7 foo@bar, palimpalum',
-         {'start': datetime.datetime(2015, 5, 2, 18, 0, 0),
-          'end': None,
-          'activity': 'foo',
-          'category': 'bar',
-          'description': 'palimpalum'},
-         ),
-    ])
+    @pytest.mark.parametrize(
+        ('factoid', 'expectations'),
+        [
+            (
+                '-7 foo@bar, palimpalum',
+                {
+                    # FIXME/MAYBE: Should we make an intermediate time parser
+                    # that resolves relative times? Then we could expect:
+                    #   'start': datetime.datetime(2015, 5, 2, 18, 0, 0),
+                    'start': '-7',
+                    'end': None,
+                    'activity': 'foo',
+                    'category': 'bar',
+                    'description': 'palimpalum',
+                },
+            ),
+        ],
+    )
     @freeze_time('2015-05-02 18:07')
-    def test_create_from_factoid_with_delta(self, factoid, expectations):
-        fact = Fact.create_from_factoid(factoid)
+    def test_create_from_factoid_with_delta_time_hint_start(self, factoid, expectations):
+        fact, err = Fact.create_from_factoid(factoid, time_hint='verify_start')
         assert fact.start == expectations['start']
+        assert fact.end == expectations['end']
+        assert fact.activity.name == expectations['activity']
+        assert fact.activity.category.name == expectations['category']
+        assert fact.description == expectations['description']
+        assert not err
 
-
-
-
-
-
-    @pytest.mark.parametrize('start', [None, faker.date_time()])
+    @pytest.mark.parametrize(
+        'start',
+        [
+            None,
+            faker.date_time(),
+            '10',
+            '+10',
+            '-10h5m',
+        ],
+    )
     def test_start_valid(self, fact, start):
         """Make sure that valid arguments get stored by the setter."""
         fact.start = start
         assert fact.start == start
 
-    def test_start_invalid(self, fact):
+    @pytest.mark.parametrize(
+        'start',
+        [
+            faker.date_time().strftime('%y-%m-%d %H:%M'),  # string, not datetime
+            'not relative',
+            '+10d'  # Not supported
+        ],
+    )
+    def test_start_invalid(self, fact, start):
         """Make sure that trying to store dateimes as strings throws an error."""
         with pytest.raises(TypeError):
-            fact.start = faker.date_time().strftime('%y-%m-%d %H:%M')
+            fact.start = start
 
     @pytest.mark.parametrize('end', [None, faker.date_time()])
     def test_end_valid(self, fact, end):
@@ -425,28 +599,65 @@ class TestFact(object):
         """Make sure that valid arguments get stored by the setter."""
         assert fact.delta() == fact.end - fact.start
 
+    @freeze_time('2015-05-02 18:07')
     def test_delta_no_end(self, fact):
         """Make sure that a missing end datetime results in ``delta=None``."""
+        # See FactFactory for default start/end.
         fact.end = None
-        #assert fact.delta is None
-# FIXME: fix this test...
-        assert False  # FIXME: (lb): delta is until 'now' IRL.
+        # NOTE: With freezegun, both now() and utcnow() are the same.
+        assert fact.delta() == (datetime.datetime.now() - fact.start)
 
-    @pytest.mark.parametrize('offset', [
-        ( 15, {'%M':  '15', '%H:%M': '00:15'}),
-        (452, {'%M': '452', '%H:%M': '07:32'}),
-        (912, {'%M': '912', '%H:%M': '15:12'}),
-    ])
+    @pytest.mark.parametrize(
+        'offset',
+        [
+            (
+                15,
+                {
+                    '%M': '15',
+                    '%H:%M': '00:15',
+                    'HHhMMm': ' 0 hours 15 minutes',
+                    '': '15.00 mins.',
+                },
+            ),
+            (
+                452,
+                {
+                    '%M': '452',
+                    '%H:%M': '07:32',
+                    'HHhMMm': ' 7 hours 32 minutes',
+                    '': '7.53 hours',
+                },
+            ),
+            (
+                912,
+                {
+                    '%M': '912',
+                    '%H:%M': '15:12',
+                    'HHhMMm': '15 hours 12 minutes',
+                    '': '15.20 hours',
+                },
+            ),
+            (
+                61,
+                {
+                    '%M': '61',
+                    '%H:%M': '01:01',
+                    'HHhMMm': ' 1 hour   1 minute ',
+                    '': '1.02 hours',
+                },
+            ),
+        ],
+    )
     def test_format_delta_valid_style(
         self,
         fact,
         offset,
-        start_end_datetimes_from_offset,
+        start_end_datetimes_from_offset_now,
         string_delta_style_parametrized,
     ):
         """Make sure that the resulting string matches our expectation."""
-        offset, expectation = offset
-        fact.start, fact.end = start_end_datetimes_from_offset(offset)
+        end_offset, expectation = offset
+        fact.start, fact.end = start_end_datetimes_from_offset_now(end_offset)
         result = fact.format_delta(style=string_delta_style_parametrized)
         assert result == expectation[string_delta_style_parametrized]
 
@@ -455,19 +666,18 @@ class TestFact(object):
         with pytest.raises(ValueError):
             fact.format_delta(style='foobar')
 
-    def test_date(self, fact):
-        """Make sure the property returns just the date of ``Fact().start``."""
-        assert fact.date == fact.start.date()
-
     def test_category_property(self, fact):
         """Make sure the property returns this facts category."""
         assert fact.category == fact.activity.category
 
     def test_serialized_string(self, fact):
-        """Make sure that a serialized string with full information matches our expectation."""
-        expectation = '{start} - {end} {activity}@{category} #{tag}, {description}'.format(
-            start=fact.start.strftime('%Y-%m-%d %H:%M'),
-            end=fact.end.strftime('%Y-%m-%d %H:%M'),
+        """
+        Ensure a serialized string with full information matches our expectation.
+        """
+        expect_f = '{start} to {end} {activity}@{category}: #{tag}: {description}'
+        expectation = expect_f.format(
+            start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
+            end=fact.end.strftime('%Y-%m-%d %H:%M:%S'),
             activity=fact.activity.name,
             category=fact.category.name,
             tag=sorted(list(fact.tags), key=attrgetter('name'))[0].name,
@@ -478,70 +688,103 @@ class TestFact(object):
         assert result == expectation
 
     @pytest.mark.parametrize(('values', 'expectation'), (
-        ({'start': datetime.datetime(2016, 1, 1, 18),
-          'end': datetime.datetime(2016, 1, 1, 19),
-          'activity': Activity('homework', category=Category('school')),
-          'tags': set([Tag('math'), Tag('science')]),
-          'description': 'something clever ...',
-          },
-         '2016-01-01 18:00 - 2016-01-01 19:00 homework@school #math #science, something clever ...'
-         ),
-        ({'start': datetime.datetime(2016, 1, 1, 18),
-          'end': datetime.datetime(2016, 1, 1, 19),
-          'activity': Activity('homework', category=None),
-          'tags': set([Tag('math'), Tag('science'), Tag('science fiction')]),
-          'description': 'something',
-          },
-         '2016-01-01 18:00 - 2016-01-01 19:00 homework #math #science #science fiction, something'
-         ),
-        ({'start': datetime.datetime(2016, 1, 1, 18),
-          'end': datetime.datetime(2016, 1, 1, 19),
-          'activity': Activity('homework', category=Category('school')),
-          'tags': set(),
-          'description': 'something clever ...',
-          },
-         '2016-01-01 18:00 - 2016-01-01 19:00 homework@school, something clever ...'
-         ),
-        ({'start': datetime.datetime(2016, 1, 1, 18),
-          'end': datetime.datetime(2016, 1, 1, 19),
-          'activity': Activity('homework', category=Category('school')),
-          'tags': set([Tag('science'), Tag('math')]),
-          'description': '',
-          },
-         '2016-01-01 18:00 - 2016-01-01 19:00 homework@school #math #science'
-         ),
-        ({'start': datetime.datetime(2016, 1, 1, 18),
-          'end': datetime.datetime(2016, 1, 1, 19),
-          'activity': Activity('homework', category=Category('school')),
-          'tags': set(),
-          'description': '',
-          },
-         '2016-01-01 18:00 - 2016-01-01 19:00 homework@school'
-         ),
-        ({'start': None,
-          'end': datetime.datetime(2016, 1, 1, 19),
-          'activity': Activity('homework', category=Category('school')),
-          'tags': set([Tag('math'), Tag('science')]),
-          'description': 'something clever ...',
-          },
-         'homework@school #math #science, something clever ...'
-         ),
-        ({'start': None,
-          'end': None,
-          'activity': Activity('homework', category=Category('school')),
-          'tags': set([Tag('math'), Tag('science')]),
-          'description': 'something clever ...',
-          },
-         'homework@school #math #science, something clever ...'
-         ),
-        ({'start': datetime.datetime(2016, 1, 1, 18),
-          'end': None,
-          'activity': Activity('homework', category=Category('school')),
-          'tags': set([Tag('math'), Tag('science')]),
-          'description': 'something clever ...',
-          },
-         '2016-01-01 18:00 homework@school #math #science, something clever ...'
-         ),
+        (
+            {
+                'start': datetime.datetime(2016, 1, 1, 18),
+                'end': datetime.datetime(2016, 1, 1, 19),
+                'activity': Activity('homework', category=Category('school')),
+                'tags': set([Tag('math'), Tag('science')]),
+                'description': 'something clever ...',
+            },
+            '2016-01-01 18:00:00 to 2016-01-01 19:00:00 '
+            'homework@school: #math #science: something clever ...',
+        ),
+        (
+            {
+                'start': datetime.datetime(2016, 1, 1, 18),
+                'end': datetime.datetime(2016, 1, 1, 19),
+                'activity': Activity('homework', category=None),
+                'tags': set([Tag('math'), Tag('science'), Tag('science fiction')]),
+                'description': 'something',
+            },
+            '2016-01-01 18:00:00 to 2016-01-01 19:00:00 '
+            'homework@: #math #science #science fiction: something',
+        ),
+        (
+            {
+                'start': datetime.datetime(2016, 1, 1, 18),
+                'end': datetime.datetime(2016, 1, 1, 19),
+                'activity': Activity('homework', category=Category('school')),
+                'tags': set(),
+                'description': 'something clever ...',
+            },
+            '2016-01-01 18:00:00 to 2016-01-01 19:00:00 '
+            'homework@school: something clever ...',
+        ),
+        (
+            {
+                'start': datetime.datetime(2016, 1, 1, 18),
+                'end': datetime.datetime(2016, 1, 1, 19),
+                'activity': Activity('homework', category=Category('school')),
+                'tags': set([Tag('science'), Tag('math')]),
+                'description': '',
+            },
+            '2016-01-01 18:00:00 to 2016-01-01 19:00:00 '
+            'homework@school: #math #science',
+        ),
+        (
+            {
+                'start': datetime.datetime(2016, 1, 1, 18),
+                'end': datetime.datetime(2016, 1, 1, 19),
+                'activity': Activity('homework', category=Category('school')),
+                'tags': set(),
+                'description': '',
+            },
+            '2016-01-01 18:00:00 to 2016-01-01 19:00:00 '
+            'homework@school',
+        ),
+        (
+            {
+                'start': None,
+                'end': datetime.datetime(2016, 1, 1, 19),
+                'activity': Activity('homework', category=Category('school')),
+                'tags': set([Tag('math'), Tag('science')]),
+                'description': 'something clever ...',
+            },
+            # FIXME/2018-08-17 12:25: Update factoid parse to recognize
+            # 'to' and 'at' prefix to distinguish between verify_end, verify_start?
+            # and then anything else is verify_both or verify_none?? hrmmmm...
+            # maybe the answer is a 2nd parse-factoid wrapper, i.e.,
+            #   one parser for verify_hint, and one parser for unknown-hint...
+            '2016-01-01 19:00:00 homework@school: #math #science: something clever ...',
+        ),
+        (
+            {
+                'start': None,
+                'end': None,
+                'activity': Activity('homework', category=Category('school')),
+                'tags': set([Tag('math'), Tag('science')]),
+                'description': 'something clever ...',
+            },
+            # FIXME: Make new parse wrapper that checks for 'to' 'at', or date.
+            #   Then look for 'to <date>', 'at <date>', etc.
+            #   Fall back to what? Expect no dates? Both dates?
+            #   Problem really is that I feel a Fact with no start or end
+            #     is really an invalid Fact!! So this Factoid should be a
+            #     problem, right?:
+            'homework@school: #math #science: something clever ...',
+        ),
+        (
+            {
+                'start': datetime.datetime(2016, 1, 1, 18),
+                'end': None,
+                'activity': Activity('homework', category=Category('school')),
+                'tags': set([Tag('math'), Tag('science')]),
+                'description': 'something clever ...',
+            },
+            '2016-01-01 18:00:00 to <now> '
+            'homework@school: #math #science: something clever ...',
+        ),
     ))
     def test_serialized_string_various_missing_values(self, fact, values, expectation):
         """
@@ -553,14 +796,29 @@ class TestFact(object):
 
     def test_as_tuple_include_pk(self, fact):
         """Make sure that conversion to a tuple matches our expectations."""
-        assert fact.as_tuple() == (fact.pk, fact.activity.as_tuple(include_pk=True),
-            fact.start, fact.end, fact.description, frozenset(fact.tags))
+        assert fact.as_tuple() == (
+            fact.pk,
+            fact.activity.as_tuple(include_pk=True),
+            fact.start,
+            fact.end,
+            fact.description,
+            frozenset(fact.tags),
+            fact.deleted,
+            fact.split_from,
+        )
 
     def test_as_tuple_exclude_pk(self, fact):
         """Make sure that conversion to a tuple matches our expectations."""
-        assert fact.as_tuple(include_pk=False) == (False, fact.activity.as_tuple(include_pk=False),
-            fact.start, fact.end, fact.description,
-            frozenset([tag.as_tuple(include_pk=False) for tag in fact.tags]))
+        assert fact.as_tuple(include_pk=False) == (
+            False,
+            fact.activity.as_tuple(include_pk=False),
+            fact.start,
+            fact.end,
+            fact.description,
+            frozenset([tag.as_tuple(include_pk=False) for tag in fact.tags]),
+            fact.deleted,
+            fact.split_from,
+        )
 
     def test_equal_fields_true(self, fact):
         """Make sure that two facts that differ only in their PK compare equal."""
@@ -606,7 +864,8 @@ class TestFact(object):
         assert hash(fact_factory()) != hash(fact_factory())
 
     def test__str__(self, fact):
-        expectation = '{start} to {end} {activity}@{category}{tags}, {description}'.format(
+        expect_f = '{start} to {end} {activity}@{category}: {tags}: {description}'
+        expectation = expect_f.format(
             start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
             end=fact.end.strftime('%Y-%m-%d %H:%M:%S'),
             activity=fact.activity.name,
@@ -618,7 +877,8 @@ class TestFact(object):
 
     def test__str__no_end(self, fact):
         fact.end = None
-        expectation = '{start} {activity}@{category}{tags}, {description}'.format(
+        expect_f = "{start} to <now> {activity}@{category}: {tags}: {description}"
+        expectation = expect_f.format(
             start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
             activity=fact.activity.name,
             category=fact.category.name,
@@ -630,7 +890,7 @@ class TestFact(object):
     def test__str__no_start_no_end(self, fact):
         fact.start = None
         fact.end = None
-        expectation = '{activity}@{category}{tags}, {description}'.format(
+        expectation = '{activity}@{category}: {tags}: {description}'.format(
             activity=fact.activity.name,
             category=fact.category.name,
             tags=fact.tagnames(),
@@ -638,58 +898,77 @@ class TestFact(object):
         )
         assert text(fact) == expectation
 
-    def test__repr__(self, fact):
-        """Make sure our debugging representation matches our expectations."""
-        expectation = '{start} to {end} {activity}@{category}{tags}, {description}'.format(
-            start=repr(fact.start.strftime('%Y-%m-%d %H:%M:%S')),
-            end=repr(fact.end.strftime('%Y-%m-%d %H:%M:%S')),
-            activity=repr(fact.activity.name),
-            category=repr(fact.category.name),
-            tags=fact.tagnames(repr),
-            description=repr(fact.description),
+    # (lb): It might be nice to do snapshot testing. However, that won't
+    # work unless we disable the random string generator we use to make up
+    # item names.
+    #
+    # Here's what a snapshot test might look like:
+    #
+    #   def test__repr__snapshot(self, snapshot, fact):
+    #       """
+    #       Test repr() against snapshot. Save time not writing test expectation.
+    #       """
+    #       result = repr(fact)
+    #       snapshot.assert_match(result)
+    #
+    # In lieu of that, we re-generate the repr() herein. Which makes me
+    # feel weird, like we're just duplicating what Fact.__repr__ already
+    # does.
+
+    def assert_fact_repr(self, the_fact):
+        # (lb): I feel somewhat dirty with the test__repr__ methods.
+        #   I feel like these should be snapshot tests, and not tests
+        #   that require manual labor to maintain a tedious string
+        #   builder that basically mimics the behavior of the methods
+        #   that we're testing. Blech.
+        tag_parts = []
+        for tag in the_fact.tags:
+            tag_parts.append(TestTag.as_repr(tag))
+        tags = ', '.join(tag_parts)
+        expect_f = (
+            "Fact("
+            "_description={description}, "
+            "_end={end}, "
+            "_start={start}, "
+            "activity={activity}, "
+            "deleted={deleted}, "
+            "pk={pk}, "
+            "split_from={split_from}, "
+            "tags=[{tags}]"
+            ")"
         )
-        result = repr(fact)
+        expectation = expect_f.format(
+            pk=repr(the_fact.pk),
+            split_from=repr(the_fact.split_from),
+            start=repr(the_fact.start),
+            end=repr(the_fact.end),
+            activity=TestActivity.as_repr(the_fact.activity),
+            tags=tags,
+            description=repr(the_fact.description),
+            deleted=repr(the_fact.deleted),
+        )
+        result = repr(the_fact)
         assert isinstance(result, str)
         assert result == expectation
+
+    def test__repr__(self, fact):
+        """Make sure our debugging representation matches our expectations."""
+        self.assert_fact_repr(fact)
 
     def test__repr__no_end(self, fact):
         """Test that facts without end datetime are represented properly."""
         result = repr(fact)
         assert isinstance(result, str)
         fact.end = None
-        expectation = '{start} {activity}@{category}{tags}, {description}'.format(
-            start=repr(fact.start.strftime('%Y-%m-%d %H:%M:%S')),
-            activity=repr(fact.activity.name),
-            category=repr(fact.category.name),
-            tags=fact.tagnames(repr),
-            description=repr(fact.description),
-        )
-        result = repr(fact)
-        assert isinstance(result, str)
-        assert result == expectation
+        self.assert_fact_repr(fact)
 
     def test__repr__no_start_no_end(self, fact):
-        """Test that facts without timeinfo are represented properly."""
+        """Test that facts without times are represented properly."""
         fact.start = None
         fact.end = None
-        expectation = '{activity}@{category}{tags}, {description}'.format(
-            activity=repr(fact.activity.name),
-            category=repr(fact.category.name),
-            tags=fact.tagnames(repr),
-            description=repr(fact.description),
-        )
-        result = repr(fact)
-        assert isinstance(result, str)
-        assert result == expectation
+        self.assert_fact_repr(fact)
 
     def test__str__no_tags(self, fact):
         fact.tags = []
-        expectation = '{start} to {end} {activity}@{category}, {description}'.format(
-            start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
-            end=fact.end.strftime('%Y-%m-%d %H:%M:%S'),
-            activity=fact.activity.name,
-            category=fact.category.name,
-            description=fact.description,
-        )
-        assert text(fact) == expectation
+        self.assert_fact_repr(fact)
 

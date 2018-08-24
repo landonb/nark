@@ -235,22 +235,23 @@ class TestTagManager():
             basestore.tags.get_all()
 
 
+# ***
+
 class TestFactManager:
-
-
-# FIXME: Change to save-current...
-    def test_save_tmp_fact(self, basestore, fact, mocker):
+    def test_save_endless_fact(self, basestore, fact, mocker):
         """
-        Make sure that passing a fact without end (aka 'ongoing fact') triggers the right method.
+        Make sure that passing a fact without end (aka 'endless, ongoing fact')
+        triggers the right method.
         """
-        basestore.facts._start_tmp_fact = mocker.MagicMock()
+        magic_fact = {}
+        basestore.facts._add = mocker.MagicMock(return_value=magic_fact)
         fact.end = None
-        basestore.facts.save(fact)
-        assert basestore.facts._start_tmp_fact.called
+        new_fact = basestore.facts.save(fact)
+        assert basestore.facts._add.called
+        assert new_fact is magic_fact
 
     def test_save_to_brief_fact(self, basestore, fact):
         """Ensure that a fact with too small of a time delta raises an exception."""
-# FIXME/2018-06-08: (lb): I probably changed the behavior of this.
         delta = datetime.timedelta(seconds=(basestore.config['fact_min_delta'] - 1))
         fact.end = fact.start + delta
         with pytest.raises(ValueError):
@@ -303,15 +304,27 @@ class TestFactManager:
     ):
         """Test that time conversion matches expectations."""
         basestore.facts._get_all = mocker.MagicMock()
-        basestore.facts.get_all(since=since, until=, search_term=filter_term)
+        basestore.facts.get_all(since=since, until=until, search_term=filter_term)
         assert basestore.facts._get_all.called
-        assert basestore.facts._get_all.call_args[0] == (expectation['since'], expectation['until'],
-            filter_term)
+        assert basestore.facts._get_all.call_args[1] == {
+            'since': expectation['since'],
+            'until': expectation['until'],
+            'search_term': filter_term,
+        }
 
-    @pytest.mark.parametrize(('since', 'until'), [
-        (datetime.date(2015, 4, 5), datetime.date(2012, 3, 4)),
-        (datetime.datetime(2015, 4, 5, 18, 0, 0), datetime.datetime(2012, 3, 4, 19, 0, 0)),
-    ])
+    @pytest.mark.parametrize(
+        ('since', 'until'),
+        [
+            (
+                datetime.date(2015, 4, 5),
+                datetime.date(2012, 3, 4),
+            ),
+            (
+                datetime.datetime(2015, 4, 5, 18, 0, 0),
+                datetime.datetime(2012, 3, 4, 19, 0, 0),
+            ),
+        ],
+    )
     def test_get_all_until_before_since(self, basestore, mocker, since, until):
         """Test that we throw an exception if passed until time is before since time."""
         with pytest.raises(ValueError):
@@ -333,53 +346,18 @@ class TestFactManager:
         result = basestore.facts.get_today()
         assert result == []
         assert (
-            basestore.facts.get_all.call_args[0] == (
-                datetime.datetime(2015, 10, 3, 5, 30, 0),
-                datetime.datetime(2015, 10, 4, 5, 29, 59),
-            )
+            basestore.facts.get_all.call_args[1] == {
+                'since': datetime.datetime(2015, 10, 3, 5, 30, 0),
+                'until': datetime.datetime(2015, 10, 4, 5, 29, 59),
+            }
+        )
 
     def test__get_all(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts._get_all()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# FIXME: (lb): Remove tmp_fact_file stuff.
-#        Replace with start_ongoing_fact et al...
-    if True:
-        def test_start_tmp_fact_new(self, basestore, fact):
-            """Make sure that a valid new fact creates persistent file with proper content."""
-            fact.end = None
-            basestore.facts._start_tmp_fact(fact)
-# FIXME: (lb): get_tmp_fact is replaced with get_current_fact...
-#            with open(basestore.facts._get_tmp_fact_path(), 'rb') as fobj:
-#                new_fact = pickle.load(fobj)
-#                assert isinstance(new_fact, Fact)
-#                assert new_fact == fact
-
-    def test_start_tmp_fact_existsing(self, basestore, fact, tmp_fact):
-        """Make sure that starting an new 'ongoing fact' if we already got one throws error."""
-        fact.end = None
-        with pytest.raises(ValueError):
-            basestore.facts._start_tmp_fact(fact)
-
-    def test_start_tmp_fact_with_end(self, basestore, fact):
-        """Make sure that starting an new 'ongoing fact' if we already got one throws error."""
-        with pytest.raises(ValueError):
-            basestore.facts._start_tmp_fact(fact)
-
+    # FIXME: See comment in function docstring: there's a problem with Fact.start
+    #   that's being masked -- for now -- with the (currently) future freeze_time.
     @freeze_time('2019-02-01 18:00')
     @pytest.mark.parametrize('hint', (
         None,
@@ -390,110 +368,110 @@ class TestFactManager:
         datetime.datetime(2019, 2, 1, 19),
         datetime.datetime(2019, 2, 1, 17, 59),
     ))
-# FIXME: stop_tmp_fact => stop_current_fact
-    def test_stop_tmp_fact(self, basestore, base_config, tmp_fact, fact, hint, mocker):
+    def test_stop_current_fact_with_hint(
+        self, basestore, base_config, endless_fact, hint, mocker,
+    ):
         """
         Make sure we can stop an 'ongoing fact' and that it will have an end set.
 
         Please note that ever so often it may happen that the factory generates
-        a tmp_fact with ``Fact.start`` after our mocked today-date. In order to avoid
+        a endless_fact with ``Fact.start`` after our mocked today-date. In order to avoid
         confusion the easies fix is to make sure the mock-today is well in the future.
         """
+        # NOTE: The `fact` fixture simply adds a second Fact to the db, after
+        #       having added the endless_fact Fact.
         if hint:
             if isinstance(hint, datetime.datetime):
                 expected_end = hint
             else:
                 expected_end = datetime.datetime(2019, 2, 1, 18) + hint
         else:
-            # MAYBE: Use controller.store.now ?
-            #expected_end = datetime.datetime.now()
-            expected_end = datetime.datetime.utcnow()
-
+            # NOTE: Because freeze_time, datetime.now() === datetime.utcnow().
+            expected_end = datetime.datetime.now().replace(microsecond=0)
+        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
         basestore.facts._add = mocker.MagicMock()
-# FIXME: stop_tmp_fact => stop_current_fact
-        basestore.facts.stop_tmp_fact(hint)
+        basestore.facts.stop_current_fact(hint)
+        assert basestore.facts.endless.called
         assert basestore.facts._add.called
         fact_to_be_added = basestore.facts._add.call_args[0][0]
         assert fact_to_be_added.end == expected_end
         fact_to_be_added.end = None
-        assert fact_to_be_added == tmp_fact
-# FIXME: tmp_fact...
-#        assert os.path.exists(basestore.facts._get_tmp_fact_path()) is False
+        assert fact_to_be_added == endless_fact
 
-# FIXME: stop_tmp_fact => stop_current_fact
-    def test_stop_tmp_fact_invalid_offset_hint(self, basestore, tmp_fact):
-        """Make sure that stopping with an offset hint that results in end>start raises error."""
-        # MAYBE: Use controller.store.now ?
-        #offset = (datetime.datetime.now() - tmp_fact.start).total_seconds() + 100
-        offset = (datetime.datetime.utcnow() - tmp_fact.start).total_seconds() + 100
+    def test_stop_current_fact_invalid_offset_hint(
+        self, basestore, endless_fact, mocker,
+    ):
+        """
+        Make sure that stopping with an offset hint that results in end > start
+        raises an error.
+        """
+        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        now = datetime.datetime.now().replace(microsecond=0)
+        offset = (now - endless_fact.start).total_seconds() + 100
         offset = datetime.timedelta(seconds=-1 * offset)
         with pytest.raises(ValueError):
-            basestore.facts.stop_tmp_fact(offset)
+            basestore.facts.stop_current_fact(offset)
 
-# FIXME: stop_tmp_fact => stop_current_fact
-    def test_stop_tmp_fact_invalid_datetime_hint(self, basestore, tmp_fact):
-        """Make sure that stopping with a datetime hint that results in end>start raises error."""
+    def test_stop_current_fact_invalid_datetime_hint(
+        self, basestore, endless_fact, mocker,
+    ):
+        """
+        Make sure that stopping with a datetime hint that results in end > start
+        raises an error.
+        """
+        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
         with pytest.raises(ValueError):
-            basestore.facts.stop_tmp_fact(tmp_fact.start - datetime.timedelta(minutes=30))
+            basestore.facts.stop_current_fact(
+                endless_fact.start - datetime.timedelta(minutes=30),
+            )
 
-# FIXME: stop_tmp_fact => stop_current_fact
-    def test_stop_tmp_fact_invalid_hint_type(self, basestore, tmp_fact):
+    def test_stop_current_fact_invalid_hint_type(
+        self, basestore, endless_fact, mocker,
+    ):
         """Make sure that passing an invalid hint type raises an error."""
+        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
         with pytest.raises(TypeError):
-            basestore.facts.stop_tmp_fact(str())
+            basestore.facts.stop_current_fact(str())
 
-# FIXME: stop_tmp_fact => stop_current_fact
-    def test_stop_tmp_fact_non_existing(self, basestore):
-        """Make sure that trying to call stop when there is no 'ongoing fact' raises error."""
-        with pytest.raises(ValueError):
-            basestore.facts.stop_tmp_fact()
+    def test_stop_current_fact_non_existing(self, basestore, mocker):
+        """
+        Make sure that trying to call stop when there is no 'endless fact'
+        raises an error.
+        """
+        basestore.facts.endless = mocker.MagicMock(return_value=[])
+        with pytest.raises(KeyError):
+            basestore.facts.stop_current_fact()
+            # KeyError: 'No ongoing Fact found.'
 
-    def test_get_tmp_fact(self, basestore, tmp_fact, fact):
+    def test_get_endless_fact_with_ongoing_fact(
+        self, basestore, endless_fact, fact, mocker,
+    ):
         """Make sure we return the 'ongoing_fact'."""
-        fact = basestore.facts.get_tmp_fact()
+        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        fact = basestore.facts.endless()
         assert fact == fact
+        assert fact is fact
 
-    def test_get_tmp_fact_without_ongoing_fact(self, basestore):
+    def test_get_endless_fact_without_ongoing_fact(self, basestore, mocker):
         """Make sure that we raise a KeyError if ther is no 'ongoing fact'."""
-        with pytest.raises(KeyError):
-            basestore.facts.get_tmp_fact()
+        basestore.facts.endless = mocker.MagicMock(return_value=[])
+        fact = basestore.facts.endless()
+        assert fact == []
 
-#    def test_update_tmp_fact(self, basestore, tmp_fact, new_fact_values):
-#        """Make sure the updated fact has the new values."""
-#        updated_fact = Fact(**new_fact_values(tmp_fact))
-#        result = basestore.facts.update_tmp_fact(updated_fact)
-#        assert result == updated_fact
-
-#    def test_update_tmp_fact_invalid_type(self, basestore):
-#        """Make sure that passing a non-Fact instances raises a ``TypeError``."""
-#        with pytest.raises(TypeError):
-#            basestore.facts.update_tmp_fact(dict())
-
-#    def test_update_tmp_fact_end(self, basestore, fact):
-#        """Make sure updating with a fact that has ``Fact.end`` raises ``ValueError."""
-#        # MAYBE: Use controller.store.now ?
-#        #fact.end = datetime.datetime.now()
-#        fact.end = datetime.datetime.utcnow()
-#        with pytest.raises(ValueError):
-#            basestore.facts.update_tmp_fact(fact)
-
-# FIXME/2018-06-08: Renamed/Reworked: cancel_tmp_fact => cancel_current_fact
-    def test_cancel_tmp_fact(self, basestore, tmp_fact, fact):
+    def test_cancel_current_fact(self, basestore, endless_fact, fact, mocker):
         """Make sure we return the 'ongoing_fact'."""
-        result = basestore.facts.cancel_tmp_fact()
-        assert result is None
-#        assert os.path.exists(basestore.facts._get_tmp_fact_path()) is False
+        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        basestore.facts.remove = mocker.MagicMock()
+        result = basestore.facts.cancel_current_fact()
+        assert basestore.facts.endless.called
+        assert basestore.facts.remove.called
+        assert result is endless_fact  # Because mocked.
+        # FIXME: Where's the test that actually tests FactManager.endless()?
 
-# FIXME/2018-06-08: Renamed/Reworked: cancel_tmp_fact => cancel_current_fact
-    def test_cancel_tmp_fact_without_ongoing_fact(self, basestore):
-        """Make sure that we raise a KeyError if ther is no 'ongoing fact'."""
+    def test_cancel_current_fact_without_endless_fact(self, basestore, mocker):
+        """Make sure that we raise a KeyError if there is no 'ongoing fact'."""
+        basestore.facts.endless = mocker.MagicMock(return_value=[])
         with pytest.raises(KeyError):
-            basestore.facts.cancel_tmp_fact()
+            basestore.facts.cancel_current_fact()
+        assert basestore.facts.endless.called
 
-#    def test_get_tmp_fact_path(self, basestore):
-#        """Make sure the returned path matches our expectation."""
-#        # [TODO]
-#        # Would be nice to avoid the code replication. However, we can not
-#        # simply use fixed strings as path composition is platform dependent.
-#        expectation = basestore.config['tmpfile_path']
-#        assert basestore.facts._get_tmp_fact_path() == expectation

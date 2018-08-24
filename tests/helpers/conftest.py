@@ -75,10 +75,6 @@ def configparser_instance(request):
     config = SafeConfigParser()
     config.add_section('Backend')
     config.set('Backend', 'store', 'sqlalchemy')
-    config.set('Backend', 'day_start', '05:00:00')
-    #config.set('Backend', 'day_start', '')
-    config.set('Backend', 'fact_min_delta', '60')
-    #config.set('Backend', 'fact_min_delta', '0')
     config.set('Backend', 'db_engine', 'sqlite')
     config.set('Backend', 'db_path', '/tmp/hamster.db')
     config.set('Backend', 'db_host', 'www.example.com')
@@ -86,12 +82,20 @@ def configparser_instance(request):
     config.set('Backend', 'db_name', 'hamster')
     config.set('Backend', 'db_user', 'hamster')
     config.set('Backend', 'db_password', 'hamster')
+    config.set('Backend', 'day_start', '05:00:00')
+    config.set('Backend', 'fact_min_delta', '60')
     config.set('Backend', 'sql_log_level', 'WARNING')
+    # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
+    # in specific tests and leaving them set to factory defaults here.
+    #   config.set('Backend', 'day_start', '')
+    #   config.set('Backend', 'fact_min_delta', '0')
+    # Also consider the other settings not being set here.
+    #   config.set('Backend', 'allow_momentaneous', 'False')
+    #   config.set('Backend', 'tz_aware', 'False')
+    #   config.set('Backend', 'default_tzinfo', '')
 
     expectation = {
         'store': text_type('sqlalchemy'),
-#        'day_start': datetime.datetime.strptime('05:00:00', '%H:%M:%S').time(),
-        'fact_min_delta': 0,
         'db_engine': text_type('sqlite'),
         'db_path': text_type('/tmp/hamster.db'),
         'db_host': text_type('www.example.com'),
@@ -99,7 +103,16 @@ def configparser_instance(request):
         'db_name': text_type('hamster'),
         'db_user': text_type('hamster'),
         'db_password': text_type('hamster'),
+        'allow_momentaneous': False,
+        'day_start': datetime.datetime.strptime('05:00:00', '%H:%M:%S').time(),
+        'fact_min_delta': 60,
+        # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
+        # in specific tests and leaving them set to factory defaults here:
+        #   'day_start': '',
+        #   'fact_min_delta': 0,
         'sql_log_level': text_type('WARNING'),
+        'tz_aware': False,
+        'default_tzinfo': '',
     }
 
     return config, expectation

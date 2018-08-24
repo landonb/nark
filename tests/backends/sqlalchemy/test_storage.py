@@ -137,7 +137,11 @@ class TestCategoryManager():
         self, alchemy_store, alchemy_category_factory, new_category_values,
     ):
         """Test that updateing a alchemy_category works as expected."""
-        alchemy_store.session.query(AlchemyCategory).count() == 0
+        assert alchemy_store.session.query(AlchemyCategory).count() == 0
+        # (lb): NOTE_TO_SELF: The alchemy_category_factory fixture was created
+        # when conftest.py called `register(lib_factories.CategoryFactory)`,
+        # which, AFAICT, is the same as calling the factory directly:
+        #   alchemy_category_factory = factories.AlchemyCategoryFactory
         category = alchemy_category_factory().as_hamster(alchemy_store)
         new_values = new_category_values(category)
         for key, value in new_values.items():
@@ -464,6 +468,26 @@ class TestActivityManager():
         assert result == alchemy_activity
         assert result is alchemy_activity
 
+    # FIXME: Add deleted/hidden tests...
+    # FIXME: Split this file into one file for each item type.
+    def test_get_existing_deleted_false(self, alchemy_store, alchemy_activity):
+        """
+        Make sure that retrieving an existing alchemy_activity by
+        deleted=False works as intended.
+        """
+        result = alchemy_store.activities.get(alchemy_activity.pk, deleted=False)
+        assert result == alchemy_activity.as_hamster(alchemy_store)
+        assert result is not alchemy_activity
+
+    def test_get_existing_deleted_true(self, alchemy_store, alchemy_activity_deleted):
+        """
+        Make sure that retrieving an existing alchemy_activity by
+        deleted=True works as intended.
+        """
+        result = alchemy_store.activities.get(alchemy_activity_deleted.pk, deleted=True)
+        assert result == alchemy_activity_deleted.as_hamster(alchemy_store)
+        assert result is not alchemy_activity_deleted
+
     def test_get_non_existing(self, alchemy_store):
         """Make sure quering for a non existent PK raises error."""
         with pytest.raises(KeyError):
@@ -783,8 +807,21 @@ class TestFactManager():
         new_values = new_fact_values(fact)
         fact.tags = new_values['tags']
         result = alchemy_store.facts._update(fact)
+        # Because split_from, fact will have been marked deleted.
+        assert fact.deleted
+        # And the new Fact will have a larger PK.
+        # (lb): We really don't need to impose a strictly increasing order
+        # property on the PK, but it's how our code happens to work, so might
+        # as well check it.
+        assert result.pk > fact.pk
+        fact.deleted = False
+        assert result.split_from.pk == fact.pk
+        # Note that the split-from is not the same because it contains previous tags.
+        assert result.split_from != fact
         db_instance = alchemy_store.session.query(AlchemyFact).get(result.pk)
-        assert db_instance.as_hamster(alchemy_store).equal_fields(fact)
+        assert db_instance.as_hamster(alchemy_store).equal_fields(result)
+        result.split_from = None
+        assert result.equal_fields(fact)
 
     def test_update_nonexisting_fact(self, alchemy_store, alchemy_fact, new_fact_values):
         """Make sure that trying to update a fact that does not exist raises error."""
@@ -819,7 +856,7 @@ class TestFactManager():
         count_before = alchemy_store.session.query(AlchemyFact).count()
         tags_before = alchemy_store.session.query(AlchemyTag).count()
         fact = alchemy_fact.as_hamster(alchemy_store)
-        result = alchemy_store.facts.remove(fact)
+        result = alchemy_store.facts.remove(fact, purge=True)
         count_after = alchemy_store.session.query(AlchemyFact).count()
         assert count_after < count_before
         assert result is True
@@ -850,13 +887,15 @@ class TestFactManager():
         end_filter,
     ):
         """Make sure that a valid timeframe returns an empty list."""
-        start, end = None, None
+        since, until = None, None
         if start_filter:
-            start = alchemy_fact.start + datetime.timedelta(days=start_filter)
+            since = alchemy_fact.start + datetime.timedelta(days=start_filter)
         if end_filter:
-            end = alchemy_fact.start + datetime.timedelta(days=end_filter)
+            until = alchemy_fact.start + datetime.timedelta(days=end_filter)
 
-        result = alchemy_store.facts._get_all(start, end, partial=bool_value_parametrized)
+        result = alchemy_store.facts._get_all(
+            since=since, until=until, partial=bool_value_parametrized,
+        )
         assert result == []
 
     @pytest.mark.parametrize(('start_filter', 'end_filter'), (
@@ -874,13 +913,15 @@ class TestFactManager():
         end_filter,
     ):
         """Ensure a fact fully within the timeframe is returned."""
-        start, end = None, None
+        since, until = None, None
         if start_filter:
-            start = alchemy_fact.start + datetime.timedelta(days=start_filter)
+            since = alchemy_fact.start + datetime.timedelta(days=start_filter)
         if end_filter:
-            end = alchemy_fact.start + datetime.timedelta(days=end_filter)
+            until = alchemy_fact.start + datetime.timedelta(days=end_filter)
 
-        result = alchemy_store.facts._get_all(start, end, partial=bool_value_parametrized)
+        result = alchemy_store.facts._get_all(
+            since=since, until=until, partial=bool_value_parametrized,
+        )
         # ANSWER/2018-05-05: (lb): This test is failing. When did it break?
         #   assert result == [alchemy_fact]
         assert len(result) == 1
@@ -894,7 +935,6 @@ class TestFactManager():
         (5, None),
         (5, 900),
     ))
-        start, end = None, None
     def test_get_all_existing_fact_partialy_in_timerange(
         self,
         alchemy_store,
@@ -907,12 +947,15 @@ class TestFactManager():
         Test that a fact partially within timeframe is returned with
         ``partial=True`` only.
         """
+        since, until = None, None
         if start_filter:
-            start = alchemy_fact.start + datetime.timedelta(minutes=start_filter)
+            since = alchemy_fact.start + datetime.timedelta(minutes=start_filter)
         if end_filter:
-            end = alchemy_fact.start + datetime.timedelta(minutes=end_filter)
+            until = alchemy_fact.start + datetime.timedelta(minutes=end_filter)
 
-        result = alchemy_store.facts._get_all(start, end, partial=bool_value_parametrized)
+        result = alchemy_store.facts._get_all(
+            since=since, until=until, partial=bool_value_parametrized,
+        )
         if bool_value_parametrized:
             assert len(result) == 1
             assert str(result[0]) == str(alchemy_fact)
@@ -924,19 +967,17 @@ class TestFactManager():
         """Make sure facts with ``Fact.activity.name`` matching the term are returned."""
         search_term = set_of_alchemy_facts[1].activity.name
         result = alchemy_store.facts._get_all(search_term=search_term)
-        # FIXME/2018-05-05: (lb): Another broken test to EXPLAIN.
-        #assert result == [set_of_alchemy_facts[1]]
         assert len(result) == 1
         assert len(set_of_alchemy_facts) == 5
         assert str(result[0]) == str(set_of_alchemy_facts[1])
+        assert result == [set_of_alchemy_facts[1]]
 
     def test_get_all_search_matches_category(self, alchemy_store, set_of_alchemy_facts):
         """Make sure facts with ``Fact.category.name`` matching the term are returned."""
         search_term = set_of_alchemy_facts[1].category.name
         result = alchemy_store.facts._get_all(search_term=search_term)
-        # FIXME/2018-05-05: (lb): Another broken test to EXPLAIN.
-        #assert result == [set_of_alchemy_facts[1]]
         assert len(result) == 1
         assert len(set_of_alchemy_facts) == 5
         assert str(result[0]) == str(set_of_alchemy_facts[1])
+        assert result == [set_of_alchemy_facts[1]]
 

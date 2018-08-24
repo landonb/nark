@@ -26,7 +26,9 @@ class TestSetupHandler(object):
     def test_get_formatter_basic(self, mocker):
         """Test formatter fetcher."""
         formatter = logging_helpers.formatter_basic()
-        assert 'levelname' in formatter
+        # (lb): Is this legit, or a little too _intimate?
+        expected = '[%(levelname)s] %(asctime)s %(name)s %(funcName)s: %(message)s'
+        assert formatter._fmt == expected
 
     def test_setup_handler_stream_handler(self, mocker):
         """Test logging setup."""

@@ -147,8 +147,7 @@ def list_of_facts(fact_factory):
     def get_list_of_facts(number_of_facts):
         facts = []
         # MAYBE: Use controller.store.now ?
-        #old_start = datetime.datetime.now()
-        old_start = datetime.datetime.utcnow()
+        old_start = datetime.datetime.utcnow().replace(microsecond=0)
         offset = datetime.timedelta(hours=4)
         for i in range(number_of_facts):
             start = old_start + offset
@@ -158,8 +157,8 @@ def list_of_facts(fact_factory):
     return get_list_of_facts
 
 
-@pytest.fixture(params=('%M', '%H:%M'))
-def string_delta_format_parametrized(request):
+@pytest.fixture(params=('%M', '%H:%M', 'HHhMMm', ''))
+def string_delta_style_parametrized(request):
     """Provide all possible format option for ``Fact().format_delta()``."""
     return request.param
 
@@ -186,29 +185,10 @@ def not_today_fact(fact_factory):
 def current_fact(fact_factory):
     """Provide a ``ongoing fact``. That is a fact that has started but not ended yet."""
     # MAYBE: Use controller.store.now ?
-    #return fact_factory(start=datetime.datetime.now(), end=None)
-    return fact_factory(start=datetime.datetime.utcnow(), end=None)
-
-
-@pytest.fixture(params=[
-    '12:00 - 14:00 foo@bar, rumpelratz',
-    '12:00 - 14:00 foo',
-    'foo@bar',
-    # For the following there should not be successful start/end parsing but
-    # instead just one big "activity.name, but it still constitutes a formally
-    # valid fact. If we want to be more accurate we need to work with clear
-    # expectations.
-    '12:00-14:00 foo@bar',
-    # Test seconds (they get truncated).
-    '12:00:11 - 14:00:59 baz@bat',
-    # Test just start and end, no activity, category, tags, nor description.
-    '12:00:11 - 13:01',
-    # Test just a start time.
-    '13:01:22',
-])
-def valid_raw_fact_parametrized(request):
-    """Return various invalid ``raw fact`` strings."""
-    return request.param
+    return fact_factory(
+        start=datetime.datetime.utcnow().replace(microsecond=0),
+        end=None,
+    )
 
 
 @pytest.fixture(params=[

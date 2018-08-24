@@ -21,8 +21,6 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import fauxfactory
-import os.path
-import pickle
 import pytest
 from pytest_factoryboy import register
 
@@ -37,17 +35,16 @@ register(lib_factories.TagFactory)
 register(lib_factories.FactFactory)
 
 
-## This fixture is used by ``test_helpers`` and ``test_storage``.
-#@pytest.fixture
-#def tmp_fact(base_config, fact_factory):
-#    """Provide an existing 'ongoing fact'."""
-#    # For reasons unknow ``fact.tags`` would be empty when using the ``fact``
-#    # fixture.
-#    fact = fact_factory()
-#    fact.end = None
-#    with open(base_config['tmpfile_path'], 'wb') as fobj:
-#        pickle.dump(fact, fobj)
-#    return fact
+# This fixture is used by ``test_helpers`` and ``test_storage``.
+@pytest.fixture
+def endless_fact(base_config, fact_factory):
+    """Provide an existing 'ongoing fact'."""
+    # (lb): Comment from hamster-lib:
+    #   For reasons unknow ``fact.tags`` would be empty
+    #   when using the ``fact`` fixture.
+    fact = fact_factory()
+    fact.end = None
+    return fact
 
 
 @pytest.fixture
@@ -55,24 +52,36 @@ def base_config(tmpdir):
     """Provide a generic baseline configuration."""
     return {
         'store': 'sqlalchemy',
-        'day_start': datetime.time(hour=5, minute=30, second=0),
-        #'day_start': '',
-        'fact_min_delta': 60,
-        #'fact_min_delta': 0,
         'db_engine': 'sqlite',
         'db_path': ':memory:',
+        # FIXME: (lb): Make special tests for these less used options
+        #        and then just set to default values here, e.g.,
+        #           'day_start': '',
+        #           'fact_min_delta': 0,
+        'day_start': datetime.time(hour=5, minute=30, second=0),
+        'fact_min_delta': 60,
         'sql_log_level': 'WARNING',
     }
 
 
-# Helper fixtures
 @pytest.fixture
-def start_end_datetimes_from_offset():
+def start_end_datetimes_from_offset_now():
     """Generate start/end datetime tuple with given offset in minutes."""
     def generate(offset):
-        # MAYBE: Use controller.store.now ?
-        #end = datetime.datetime.now()
-        end = datetime.datetime.utcnow()
+        # MAYBE: Use controller.store.now?
+        end = datetime.datetime.now().replace(microsecond=0)
+        start = end - datetime.timedelta(minutes=offset)
+        return (start, end)
+    return generate
+
+
+@pytest.fixture
+# (lb): If shouldn't matter if we use now() or utcnow(). Right?
+def start_end_datetimes_from_offset_utcnow():
+    """Generate start/end datetime tuple with given offset in minutes."""
+    def generate(offset):
+        # MAYBE: Use controller.store.now?
+        end = datetime.datetime.utcnow().replace(microsecond=0)
         start = end - datetime.timedelta(minutes=offset)
         return (start, end)
     return generate
@@ -96,19 +105,16 @@ def name():
 
 
 @pytest.fixture
-def start_end_datetimes(start_end_datetimes_from_offset):
+def start_end_datetimes(start_end_datetimes_from_offset_now):
     """Return a start/end-datetime-tuple."""
-    return start_end_datetimes_from_offset(15)
+    return start_end_datetimes_from_offset_now(15)
 
 
 @pytest.fixture
 def start_datetime():
     """Provide an arbitrary datetime."""
-    # [TODO]
-    # Fixtures using this could propably be refactored using a cleaner way.
-    # MAYBE: Use controller.store.now ?
-    #return datetime.datetime.now()
-    return datetime.datetime.utcnow()
+    # (lb): Because Freezegun, datetime.now() is datetime.utcnow().
+    return datetime.datetime.utcnow().replace(microsecond=0)
 
 
 @pytest.fixture
@@ -157,15 +163,29 @@ def new_fact_values(tag_factory, activity_factory):
 
 
 # Valid attributes parametrized
-@pytest.fixture(params='cyrillic utf8'.split())
+@pytest.fixture(params=('', 'cyrillic', 'utf8', ))
 def name_string_valid_parametrized(request):
-    """Provide a variety of strings that should be valid *names*."""
+    """Provide a variety of strings that should be valid non-tag *names*."""
+    if not request.param:
+        return request.param
     return fauxfactory.gen_string(request.param)
 
 
-@pytest.fixture(params=(None, ''))
+@pytest.fixture(params=('cyrillic', 'utf8',))
+def name_string_valid_parametrized_tag(request):
+    """Provide a variety of strings that should be valid tag *names*."""
+    return fauxfactory.gen_string(request.param)
+
+
+@pytest.fixture(params=(None,))
 def name_string_invalid_parametrized(request):
-    """Provide a variety of strings that should be valid *names*."""
+    """Provide a variety of strings that should be valid non-tag *names*."""
+    return request.param
+
+
+@pytest.fixture(params=(None, ''))
+def name_string_invalid_parametrized_tag(request):
+    """Provide a variety of strings that should be valid tag *names*."""
     return request.param
 
 

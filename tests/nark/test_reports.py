@@ -107,10 +107,11 @@ class TestTSVWriter(object):
         expectations = (
             'start time',
             'end time',
+            'duration minutes',
             'activity',
             'category',
             'description',
-            'duration minutes',
+            'deleted',
         )
 
         tsv_writer._close()
@@ -145,7 +146,7 @@ class TestTSVWriter(object):
             line = next(reader)
             for field, expectation in zip(line, fact_tuple):
                 if isinstance(field, text_type):
-                    assert field == expectation
+                    assert field == text_type(expectation)
                 else:
                     assert field.decode('utf-8') == expectation
 
