@@ -854,16 +854,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         query = self.store.session.query(AlchemyFact)
 
         if fact is not None:
-            if fact.start and isinstance(fact.start, datetime):
-                ref_time = fact.start
-            elif fact.end and isinstance(fact.end, datetime):
+            if fact.end and isinstance(fact.end, datetime):
                 ref_time = fact.end
+            elif fact.start and isinstance(fact.start, datetime):
+                ref_time = fact.start
         if not isinstance(ref_time, datetime):
             raise ValueError(_('No reference time for antecedent(fact).'))
 
         ref_time = self._get_sql_datetime(ref_time)
 
-        condition = and_(func.datetime(AlchemyFact.start) < ref_time)
+        condition = and_(func.datetime(AlchemyFact.end) <= ref_time)
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
@@ -904,19 +904,18 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         query = self.store.session.query(AlchemyFact)
 
         if fact is not None:
-            if fact.end and isinstance(fact.end, datetime):
-                ref_time = self._get_sql_datetime(fact.end)
-            elif fact.start and isinstance(fact.start, datetime):
-                ref_time = self._get_sql_datetime(fact.start)
+            if fact.start and isinstance(fact.start, datetime):
+                ref_time = fact.start
+            elif fact.end and isinstance(fact.end, datetime):
+                ref_time = fact.end
         if ref_time is None:
             raise ValueError(_('No reference time for subsequent(fact).'))
 
-        condition = and_(func.datetime(AlchemyFact.end) > ref_time)
+        ref_time = self._get_sql_datetime(ref_time)
+
+        condition = and_(func.datetime(AlchemyFact.start) >= ref_time)
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
-
-        if fact is not None and fact.pk:
-            condition = and_(condition, AlchemyFact.pk != fact.pk)
 
         query = query.filter(condition)
 
