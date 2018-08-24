@@ -196,27 +196,39 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             self.store.logger.error(message)
             raise ValueError(message)
 
-        if not fact.deleted:
+        if (
+            (
+                (fact.deleted and (fact.end == alchemy_fact.end))
+                or (fact.end and not alchemy_fact.end)
+            )
+            and fact.equal_sans_end(alchemy_fact)
+        ):
+            # Don't bother with split_from entry.
+            # MAYBE: (lb): Go full wiki and store edit times? Ug...
+            new_fact = alchemy_fact
+            alchemy_fact.deleted = fact.deleted
+            alchemy_fact.end = fact.end
+        else:
             assert alchemy_fact.pk == fact.pk
+            was_split_from = fact.split_from
             fact.split_from = alchemy_fact
             # Clear the ID so that a new ID is assigned.
             fact.pk = None
             new_fact = self._add(fact, raw=True, skip_commit=True, ignore_pks=ignore_pks)
             # NOTE: _add() calls:
             #       self.store.session.commit()
-            # Restore the ID to not confuse the caller!
+            # The fact being split from is deleted/historic.
+            alchemy_fact.deleted = True
             assert new_fact.pk > alchemy_fact.pk
+            # Restore the ID to not confuse the caller!
+            # The caller will still have a handle on Fact. Rather than
+            # change its pk to new_fact's, have it reflect its new
+            # split_from status.
             fact.pk = alchemy_fact.pk
-        else:
-            # (lb): else, fact is being deleted. Note that we _could_ check all
-            # the fact attrs against alchemy_fact to see if the user edited any
-            # fields (e.g., verify fact.description == alchemy_fact.description).
-            # But that use case seems unlikely; and tedious to code.
-            new_fact = alchemy_fact
-
-        alchemy_fact.deleted = True
-        # Should the caller use the old, deleted fact object, reflect its new state.
-        fact.deleted = True
+            fact.split_from = was_split_from
+            # The `alchemy_fact` is what gets saved, but the `fact`
+            # is what the caller passed us, so update it, too.
+            fact.deleted = True
 
         self.store.session.commit()
 
