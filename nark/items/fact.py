@@ -20,6 +20,7 @@ from future.utils import python_2_unicode_compatible
 
 from collections import namedtuple
 from datetime import datetime
+from math import inf
 from operator import attrgetter
 from six import text_type
 
@@ -115,6 +116,18 @@ class Fact(BaseItem):
     def __hash__(self):
         """Naive hashing method."""
         return hash(self.as_tuple())
+
+    def __gt__(self, other):
+        return self.sorty_tuple > other.sorty_tuple
+
+    def __lt__(self, other):
+        return self.sorty_tuple < other.sorty_tuple
+
+    @property
+    def sorty_tuple(self):
+        fact_end = self.end if self.end is not None else datetime(9999, 6, 12)
+        fact_pk = self.pk if self.pk is not None else -inf
+        return (self.start, fact_end, fact_pk)
 
     def __str__(self):
         # MAYBE: (lb): __str__ used to pass fmttr=text_type to friendly_str,
