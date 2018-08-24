@@ -22,6 +22,7 @@ from datetime import datetime
 from future.utils import python_2_unicode_compatible
 
 from .helpers import logging as logging_helpers
+from .helpers.app_dirs import NarkAppDirs
 
 from .managers.activity import BaseActivityManager
 from .managers.category import BaseCategoryManager
@@ -47,6 +48,7 @@ class BaseStore(object):
 
     def __init__(self, config):
         self.config = config
+        self.init_config()
         self.init_logger()
         self.categories = BaseCategoryManager(self)
         self.activities = BaseActivityManager(self)
@@ -69,8 +71,32 @@ class BaseStore(object):
         """
         raise NotImplementedError
 
+    def init_config(self):
+        self.config.setdefault('store', 'sqlalchemy')
+        self.config.setdefault('db_engine', 'sqlite')
+        app_dirs = NarkAppDirs('nark')
+        db_path = os.path.join(
+            app_dirs.user_data_dir,
+            # (lb): Whatever client is using the nark library
+            # will generally setup db_path specially; this is
+            # just a default filename for completeness.
+            'dob.sqlite',
+        )
+        self.config.setdefault('db_path', db_path)
+        self.config.setdefault('db_host', '')
+        self.config.setdefault('db_port', '')
+        self.config.setdefault('db_name', '')
+        self.config.setdefault('db_user', '')
+        self.config.setdefault('db_password', '')
+        self.config.setdefault('allow_momentaneous', False)
+        self.config.setdefault('day_start', '')
+        self.config.setdefault('fact_min_delta', '0')
+        self.config.setdefault('sql_log_level', 'WARNING')
+        self.config.setdefault('tz_aware', False)
+        self.config.setdefault('default_tzinfo', '')
+
     def init_logger(self):
-        self.logger = logging.getLogger('nark.storage')
+        self.logger = logging.getLogger('nark.store')
         self.logger.addHandler(logging.NullHandler())
         # (lb): BIZARRE: On a 14.04 machine, parent.handlers has StreamHandler
         #   in it, so it prints to console. This does not happen on a 16.04
