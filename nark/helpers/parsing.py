@@ -22,6 +22,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 import os
 import re
+from six import text_type
 
 from .strings import comma_or_join
 from .parse_errors import (
@@ -266,9 +267,13 @@ class Parser(object):
         # FIXME/2018-05-22 20:42: (lb): Implement: tz_local
         local_tz=None,  # Default to None, i.e., naive
     ):
-        # The user can get here on an empty --ask, e.g.,
-        #   ``nark on --ask``
-        factoid = factoid or ('',)
+        if isinstance(factoid, text_type):
+            # Path from tests/nark/test_objects.py, but not from dob.
+            factoid = (factoid,)
+        else:
+            # The user can get here on an empty --ask, e.g.,
+            #   ``nark on --ask``
+            factoid = factoid or ('',)
 
         # Parse a flat copy of the args.
         full = ' '.join(factoid)
