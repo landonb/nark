@@ -605,7 +605,7 @@ class Fact(BaseItem):
     def create_from_factoid(
         cls,
         factoid,
-        time_hint='',
+        time_hint='verify_none',
         separators=None,
         lenient=False,
     ):

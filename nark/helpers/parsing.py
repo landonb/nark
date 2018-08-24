@@ -259,7 +259,7 @@ class Parser(object):
     def setup_rules(
         self,
         factoid,
-        time_hint='',
+        time_hint='verify_none',
         separators=None,
         hash_stamps=None,
         lenient=False,
