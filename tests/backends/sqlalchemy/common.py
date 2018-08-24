@@ -24,5 +24,8 @@ This way it can be referencecd by fixtures and factories.
 
 from sqlalchemy import orm
 
+# (lb): Haha, here's what factoryboi says about this putrid global:
+#   "A global (test-only?) file holds the scoped_session"
+# test-only? Sure, why not. Anything goes in testland.
 Session = orm.scoped_session(orm.sessionmaker())
 

@@ -24,18 +24,14 @@ import fauxfactory
 import os
 import pytest
 from pytest_factoryboy import register
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 
-
-
-# FIXME:
 from nark.backends.sqlalchemy import objects
 from nark.backends.sqlalchemy.storage import SQLAlchemyStore
 from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact
 from nark.items.tag import Tag
-
 
 from . import common, factories
 
@@ -46,34 +42,106 @@ register(factories.AlchemyTagFactory)
 register(factories.AlchemyFactFactory)
 
 
-# SQLAlchemy fixtures
-@pytest.fixture
+# *** SQLAlchemy fixtures
+
+
+def implement_transactional_support_fully(engine):
+    """
+    (lb): A hack to make SQLite SAVEPOINTs work, so that
+    session.begin_nested() works, so that if code under
+    test calls session.commit(), we can still rollback().
+    See the madness explained at:
+
+      http://docs.sqlalchemy.org/en/rel_1_0/dialects/sqlite.html#pysqlite-serializable
+    """
+
+    @event.listens_for(engine, "connect")
+    def do_connect(dbapi_connection, connection_record):
+        # disable pysqlite's emitting of the BEGIN statement entirely.
+        # also stops it from emitting COMMIT before any DDL.
+        dbapi_connection.isolation_level = None
+
+    @event.listens_for(engine, "begin")
+    def do_begin(conn):
+        # emit our own BEGIN
+        conn.execute("BEGIN")
+
+
+# (lb): Use 'module' scope so that the Session is only configured once
+# for all tests. (Note: I also tried `scope='session'`, which seemed to
+# work similarly.)
+@pytest.fixture(scope='module')
 def alchemy_runner(request):
     """
-    Provide a dedicated mock-db bound to a session object.
+    Bind an in-memory mock-db to the session object.
 
-    The session object we refer to here is loaded at global test start as import
-    and is also used by our ``AlchemyFactories``.
+    The session object, common.Session, is a global that this module-scoped
+    function sets up just once. And then for each test, we'll create a clean
+    session to use for testing that we clean up after.
 
-    After each testrun the ``Session.remove()`` makes sure that each test gets a new
-    session and there is only one at a time.
+    This is pretty much straight from the factoryboi docs:
 
-    We do not actually clear any tables (for example with ``self.session.rollback()``
-    but simply provide a all new database as part of this fixture. This is surely
-    wasteful but does for now.
+      https://factoryboy.readthedocs.io/en/latest/orms.html#sqlalchemy
 
-    Note:
-        [Reference](http://factoryboy.readthedocs.org/en/latest/orms.html#sqlalchemy)
     """
     engine = create_engine('sqlite:///:memory:')
+    implement_transactional_support_fully(engine)
     objects.metadata.bind = engine
     objects.metadata.create_all(engine)
     common.Session.configure(bind=engine)
 
+
+@pytest.fixture
+def alchemy_session(request):
+    """
+    Create a new session for each test.
+
+    Reset the database and remove it after each test.
+
+    As suggested by the docs:
+
+        [Using factory_boy with ORMs](
+            http://factoryboy.readthedocs.org/en/latest/orms.html#sqlalchemy
+        )
+    """
+    # (lb): 2018-08-22: If we don't create a new Session() for each test,
+    # there's one test that triggers a warning, TestFactManager.test_get_all:
+    #   /home/user/.virtualenvs/dob/lib/python3.5/site-packages/
+    #     sqlalchemy/orm/scoping.py:102: SAWarning: At least one scoped session
+    #     is already present.  configure() can not affect sessions that have
+    #     already been created.
+    # Prepare a new, clean session for each test, lest SQLAlchemy complain.
+    session = common.Session()
+
+    # Rather than mock session.commit, use a nested transaction, otherwise
+    # items' PK attrs will not be updated.
+    # (lb): NOTE: I tried using subtransactions but those didn't work (albeit
+    #   that was before I added the implement_transactional_support_fully hack).
+    #       session.begin(subtransactions=True)  # (lb): Didn't work for me.
+    # This works, but only after having hacked pysqlite to emit BEGIN ourselves.
+    session.begin_nested()
+
     def fin():
+        # "Rollback the session => no changes to the database."
+        session.rollback()
+        # (lb): Call rollback() twice. (For some reason one test,
+        # TestFactManager.test_get_all, has five of each item in
+        # the db after it runs, and after we can rollback once.
+        # Which to me doesn't make sense. But whatever I'm only
+        # human, I don't need to understand _everything_.)
+        #
+        # You can see for yourself with a conditional breakpoint, e.g.,
+        #
+        #   if session.query('name from categories;').all(): import pdb;pdb.set_trace()
+        #
+        # (lb): I'm not sure that we need to close, but so far hasn't hurt.
+        session.close()
+        # "Remove it, so that the next test gets a new Session()."
         common.Session.remove()
 
     request.addfinalizer(fin)
+
+    return session
 
 
 @pytest.fixture(params=[
@@ -179,15 +247,25 @@ def alchemy_config_missing_store_config_parametrized(request, alchemy_config):
 
 
 @pytest.fixture
-# [TODO] We probably want this to autouse=True
-def alchemy_store(request, alchemy_runner, alchemy_config):
+def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     """
     Provide a SQLAlchemyStore that uses our test-session.
 
     Note:
         The engine created as part of the store.__init__() goes simply unused.
     """
-    return SQLAlchemyStore(alchemy_config, common.Session)
+    # (lb): There was a note from hamster-lib:
+    #   "probably want this to autouse=True"
+    # but after reviewing the docs, I'm guessing there's no point, because an
+    # autouse fixture does not return a value, and the code we'd be replacing
+    # -- alchemy_session -- creates the common.Session() object that each test
+    # uses. So if we removed alchemy_session from the parameters for each test,
+    # each test would still have to find the session object somehow.
+    #   https://docs.pytest.org/en/latest/fixture.html#autouse-fixtures-xunit-setup-on-steroids
+    store = SQLAlchemyStore(alchemy_config)
+    store.standup(alchemy_session)
+    return store
+
 
 
 # We are sometimes tempted not using nark.objects at all. but as our tests
