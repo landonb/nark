@@ -36,7 +36,9 @@ from . import common
 class AlchemyCategoryFactory(factory.alchemy.SQLAlchemyModelFactory):
     """Factory class for generic ``AlchemyCategory`` instances."""
 
-    pk = factory.Sequence(lambda n: n)
+    # (lb): factoryboy starts step.sequence at 0,
+    #   and we want positive PKs, so add one.
+    pk = factory.Sequence(lambda n: n + 1)
 
     @factory.sequence
     def name(n):  # NOQA
@@ -52,7 +54,7 @@ class AlchemyCategoryFactory(factory.alchemy.SQLAlchemyModelFactory):
 class AlchemyActivityFactory(factory.alchemy.SQLAlchemyModelFactory):
     """Factory class for generic ``AlchemyActivity`` instances."""
 
-    pk = factory.Sequence(lambda n: n)
+    pk = factory.Sequence(lambda n: n + 1)
     name = factory.Faker('sentence')
     category = factory.SubFactory(AlchemyCategoryFactory)
     deleted = False
@@ -66,7 +68,7 @@ class AlchemyActivityFactory(factory.alchemy.SQLAlchemyModelFactory):
 class AlchemyTagFactory(factory.alchemy.SQLAlchemyModelFactory):
     """Factory class for generic ``AlchemyTag`` instances."""
 
-    pk = factory.Sequence(lambda n: n)
+    pk = factory.Sequence(lambda n: n + 1)
 
     @factory.sequence
     def name(n):  # NOQA
@@ -82,7 +84,7 @@ class AlchemyTagFactory(factory.alchemy.SQLAlchemyModelFactory):
 class AlchemyFactFactory(factory.alchemy.SQLAlchemyModelFactory):
     """Factory class for generic ``AlchemyFact`` instances."""
 
-    pk = factory.Sequence(lambda n: n)
+    pk = factory.Sequence(lambda n: n + 1)
     activity = factory.SubFactory(AlchemyActivityFactory)
     start = factory.Faker('date_time')
     end = factory.LazyAttribute(lambda o: o.start + datetime.timedelta(hours=3))
