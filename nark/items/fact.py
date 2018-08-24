@@ -62,7 +62,6 @@ class Fact(BaseItem):
         tags=None,
         deleted=False,
         split_from=None,
-        ephemeral=None,
     ):
         """
         Initiate our new instance.
@@ -104,19 +103,8 @@ class Fact(BaseItem):
         # To preserve history, let's instead mark edited Facts deleted.
         # FIXME/2018-05-23 10:56: (lb): Add column to record new Facts ID?
         self.deleted = bool(deleted)
+
         self.split_from = split_from
-
-        # For state changes.
-        # LATER/2018-05-23: (lb): Either make use of this, or remove.
-        #   I'm not sure I need, other than for debugging/developing
-        #   currently. And even then, edited facts are currently passed
-        #   around in a conflicts collection with their original fact,
-        #   so it's easy to tell what changed.
-        self.dirty_reasons = set()
-
-        # (lb): I feel a little dirty about this, but it lets us easily
-        # ride some meta data along the fact during the import command.
-        self.ephemeral = ephemeral
 
     def __eq__(self, other):
         if other is not None and not isinstance(other, FactTuple):
@@ -185,7 +173,6 @@ class Fact(BaseItem):
             tags=frozenset(ordered_tags),
             deleted=bool(self.deleted),
             split_from=self.split_from,
-            # SKIP: self.ephemeral
         )
 
     def copy(self, include_pk=True):
@@ -202,10 +189,7 @@ class Fact(BaseItem):
             tags=list(self.tags),
             deleted=bool(self.deleted),
             split_from=self.split_from,
-            # If this is an AlchemyFact object, it won't have non-table
-            # attrs, like dirty_reasons or ephemeral.
         )
-        new_fact.dirty_reasons = set(list(self.dirty_reasons))
         if include_pk:
             new_fact.pk = self.pk
         return new_fact
@@ -643,16 +627,8 @@ class Fact(BaseItem):
             lenient=lenient,
         )
 
-        # COUPLING: Note that this object is used by dob, and not by nark;
-        #   nark is being nice and helping out the the CLI by setting this.
-        # MAYBE: Move ephemeral back to CLI (and, e.g., use wrapper class around Fact).
-        ephemeral = {
-            'line_num': 1,
-            'line_raw': ' '.join(factoid),
-        }
-
         new_fact = cls.create_from_parsed_fact(
-            parsed_fact, lenient=lenient, ephemeral=ephemeral,
+            parsed_fact, lenient=lenient,
         )
 
         return new_fact, err
