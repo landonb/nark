@@ -18,6 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import logging
+import os
 from datetime import datetime
 from future.utils import python_2_unicode_compatible
 
@@ -50,6 +51,13 @@ class BaseStore(object):
         self.config = config
         self.init_config()
         self.init_logger()
+        self._now = None
+        self.add_pytest_managers()
+
+    def add_pytest_managers(self):
+        if not os.environ.get('PYTEST_CURRENT_TEST', None):
+            return
+        # The following intermediate classes are solely used for testing!
         self.categories = BaseCategoryManager(self)
         self.activities = BaseActivityManager(self)
         self.tags = BaseTagManager(self)
