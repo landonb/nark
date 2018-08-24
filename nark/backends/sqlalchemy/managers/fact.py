@@ -663,7 +663,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
-                query = _get_all_order_by_times(query, direction)
+                query = self._get_all_order_by_times(query, direction)
             elif sort_col == 'time':
                 assert include_usage and span_col is not None
                 direction = desc if not sort_order else direction
@@ -680,16 +680,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # etc., are acceptable here, if not simply ignored.
                 assert sort_col in ('', 'name', 'tag', 'fact')
                 direction = desc if not sort_order else direction
-                query = _get_all_order_by_times(query, direction)
-            return query
-
-        def _get_all_order_by_times(query, direction):
-            # Include end so that momentaneous Facts are sorted properly.
-            query = query.order_by(
-                direction(AlchemyFact.start),
-                direction(AlchemyFact.end),
-                direction(AlchemyFact.pk),
-            )
+                query = self._get_all_order_by_times(query, direction)
             return query
 
         def _get_all_with_entities(query, span_col, tags_col):
@@ -710,6 +701,35 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         return _get_all_facts()
+
+    # ***
+
+    def _get_all_order_by_times(self, query, direction, fact=None, ref_time=None):
+        if (fact is not None) and (fact.pk is not None):
+            if direction is desc:
+                condition = and_(
+                    AlchemyFact.pk != fact.pk,
+                    or_(
+                        func.datetime(AlchemyFact.end) < ref_time,
+                        AlchemyFact.pk < fact.pk,
+                    ),
+                )
+            else:
+                condition = and_(
+                    AlchemyFact.pk != fact.pk,
+                    or_(
+                        func.datetime(AlchemyFact.start) > ref_time,
+                        AlchemyFact.pk > fact.pk,
+                    ),
+                )
+            query = query.filter(condition)
+        # Include end so that momentaneous Facts are sorted properly.
+        query = query.order_by(
+            direction(AlchemyFact.start),
+            direction(AlchemyFact.end),
+            direction(AlchemyFact.pk),
+        )
+        return query
 
     # ***
 
@@ -752,10 +772,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
-        if fact.pk:
-            condition = and_(condition, AlchemyFact.pk != fact.pk)
-
         query = query.filter(condition)
+
+        query = self._get_all_order_by_times(query, asc, fact, start_at)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -796,10 +815,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
-        if fact.pk:
-            condition = and_(condition, AlchemyFact.pk != fact.pk)
-
         query = query.filter(condition)
+
+        query = self._get_all_order_by_times(query, desc, fact, end_at)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -849,10 +867,11 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
-        if fact is not None and fact.pk:
-            condition = and_(condition, AlchemyFact.pk != fact.pk)
+        query = query.filter(condition)
 
-        query = query.filter(condition).order_by(desc(AlchemyFact.start)).limit(1)
+        query = self._get_all_order_by_times(query, desc, fact, ref_time)
+
+        query = query.limit(1)
 
         self.store.logger.debug(_(
             'fact: {} / ref_time: {} / query: {}'
@@ -899,7 +918,11 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         if fact is not None and fact.pk:
             condition = and_(condition, AlchemyFact.pk != fact.pk)
 
-        query = query.filter(condition).order_by(asc(AlchemyFact.end)).limit(1)
+        query = query.filter(condition)
+
+        query = self._get_all_order_by_times(query, asc, fact, ref_time)
+
+        query = query.limit(1)
 
         self.store.logger.debug(_(
             'fact: {} / ref_time: {} / query: {}'
@@ -939,6 +962,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
         query = query.filter(condition)
+
+        query = self._get_all_order_by_times(query, asc)
 
         self.store.logger.debug(_(
             'since: {} / until: {} / query: {}'
@@ -997,6 +1022,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
         query = query.filter(condition)
+
+        query = self._get_all_order_by_times(query, asc)
 
         self.store.logger.debug(_(
             'fact_time: {} / query: {}'.format(
