@@ -289,6 +289,9 @@ class BaseFactManager(BaseManager):
         partial=False,
         include_usage=True,
         count_results=False,
+        # QUESTION: (lb): Would a Fact ever be "hidden"?
+        #   (Other than what momentaneous toggles.)
+        hidden=False,
         deleted=False,
         key=None,
         search_term='',
