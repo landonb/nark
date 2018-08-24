@@ -25,7 +25,7 @@ import pytest
 from pytest_factoryboy import register
 
 from nark.control import HamsterControl
-from nark.storage import BaseStore
+from nark.manager import BaseStore
 
 from . import factories
 
@@ -47,7 +47,6 @@ def convert_time_to_datetime(time_string):
     """
     return datetime.datetime.combine(
         # MAYBE: Use controller.store.now ?
-        #datetime.datetime.now().date(),
         datetime.datetime.utcnow().date(),
         datetime.datetime.strptime(time_string, "%H:%M").time()
     )
@@ -74,7 +73,9 @@ def basestore(base_config):
 
 # Categories
 @pytest.fixture(params=(None, True,))
-def category_valid_parametrized(request, category_factory, name_string_valid_parametrized):
+def category_valid_parametrized(
+    request, category_factory, name_string_valid_parametrized,
+):
     """Provide a variety of valid category fixtures."""
     if request.param:
         result = category_factory(name=name_string_valid_parametrized)
@@ -84,8 +85,9 @@ def category_valid_parametrized(request, category_factory, name_string_valid_par
 
 
 @pytest.fixture
-def category_valid_parametrized_without_none(request, category_factory,
-        name_string_valid_parametrized):
+def category_valid_parametrized_without_none(
+    request, category_factory, name_string_valid_parametrized,
+):
     """
     Provide a parametrized category fixture but not ``None``.
 
@@ -97,11 +99,19 @@ def category_valid_parametrized_without_none(request, category_factory,
 
 # Activities
 @pytest.fixture
-def activity_valid_parametrized(request, activity_factory, name_string_valid_parametrized,
-        category_valid_parametrized, deleted_valid_parametrized):
+def activity_valid_parametrized(
+    request,
+    activity_factory,
+    name_string_valid_parametrized,
+    category_valid_parametrized,
+    deleted_valid_parametrized,
+):
     """Provide a huge array of possible activity versions. Including None."""
-    return activity_factory(name=name_string_valid_parametrized,
-            category=category_valid_parametrized, deleted=deleted_valid_parametrized)
+    return activity_factory(
+        name=name_string_valid_parametrized,
+        category=category_valid_parametrized,
+        deleted=deleted_valid_parametrized,
+    )
 
 
 @pytest.fixture
@@ -158,7 +168,6 @@ def string_delta_format_parametrized(request):
 def today_fact(fact_factory):
     """Return a ``Fact`` instance that start and ends 'today'."""
     # MAYBE: Use controller.store.now ?
-    #start = datetime.datetime.now()
     start = datetime.datetime.utcnow()
     end = start + datetime.timedelta(minutes=30)
     return fact_factory(start=start, end=end)
@@ -168,7 +177,6 @@ def today_fact(fact_factory):
 def not_today_fact(fact_factory):
     """Return a ``Fact`` instance that neither start nor ends 'today'."""
     # MAYBE: Use controller.store.now ?
-    #start = datetime.datetime.now() - datetime.timedelta(days=2)
     start = datetime.datetime.utcnow() - datetime.timedelta(days=2)
     end = start + datetime.timedelta(minutes=30)
     return fact_factory(start=start, end=end)

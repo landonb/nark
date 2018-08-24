@@ -63,8 +63,10 @@ class TestNarkAppDirs(object):
     def test_user_config_dir_returns_directoy(self, tmpdir, mocker):
         """Make sure method returns directory."""
         path = tmpdir.strpath
-        mocker.patch('nark.helpers.app_dirs.appdirs.user_config_dir',
-                    return_value=path)
+        mocker.patch(
+            'nark.helpers.app_dirs.appdirs.user_config_dir',
+            return_value=path,
+        )
         appdir = NarkAppDirs('nark')
         assert appdir.user_config_dir == path
 
@@ -136,7 +138,10 @@ class TestGetConfigPath(object):
 
     def test_get_config_path(self, appdirs):
         """Make sure the config target path is constructed to our expectations."""
-        expectation = os.path.join(appdirs.user_config_dir, app_config.DEFAULT_CONFIG_FILENAME)
+        expectation = os.path.join(
+            appdirs.user_config_dir,
+            app_config.DEFAULT_CONFIG_FILENAME,
+        )
         result = app_config.get_config_path()
         assert result == expectation
 
@@ -187,3 +192,4 @@ class TestConfigParserToBackendConfig(object):
         cp_instance, expectation = configparser_instance
         result = app_config.configparser_to_backend_config(cp_instance)
         assert result == expectation
+

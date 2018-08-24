@@ -20,7 +20,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 import pytest
 
-from nark.storage import BaseStore
+from nark.manager import BaseStore
 
 
 class TestController:

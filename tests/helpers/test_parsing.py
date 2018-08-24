@@ -17,12 +17,12 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import datetime
-import pytest
-from freezegun import freeze_time
+# import datetime
+# import pytest
+# from freezegun import freeze_time
 
-from nark.helpers import parsing as parsing_helpers
-from nark.helpers.parsing import FactArgs
+# from nark.helpers import parsing as parsing_helpers
+# from nark.helpers.parsing import parse_factoid
 
 
 # FIXME/2018-05-12: (lb): I'll add unit tests, I swear!

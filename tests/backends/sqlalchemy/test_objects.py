@@ -79,3 +79,4 @@ class TestAlchemyFact(object):
         """Make sure that conversion into a ``nark.Fact```works as expected."""
         fact = alchemy_fact.as_hamster(alchemy_store)
         assert fact.equal_fields(alchemy_fact)
+

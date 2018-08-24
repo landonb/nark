@@ -97,3 +97,4 @@ class AlchemyFactFactory(factory.alchemy.SQLAlchemyModelFactory):
     def tags(self, create, extracted, **kwargs):
         """Add new random tags after instance creation."""
         self.tags = list([AlchemyTagFactory() for i in range(4)])
+

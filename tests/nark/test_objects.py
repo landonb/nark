@@ -26,13 +26,10 @@ from freezegun import freeze_time
 from operator import attrgetter
 from six import text_type
 
-
-# FIXME:
 from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact
 from nark.items.tag import Tag
-
 
 
 faker = faker_.Faker()
@@ -59,13 +56,18 @@ class TestCategory(object):
         assert category.as_tuple(include_pk=False) == (False, category.name)
 
     def test_equal_fields_true(self, category):
-        """Make sure that two categories that differ only in their PK compare equal."""
+        """
+        Make sure that two categories that differ only in their PK compare equal.
+        """
         other_category = copy.deepcopy(category)
         other_category.pk = 1
         assert category.equal_fields(other_category)
 
     def test_equal_fields_false(self, category):
-        """Make sure that two categories that differ not only in their PK compare unequal."""
+        """
+        Make sure that two categories that differ not only in their PK
+        compare unequal.
+        """
         other_category = copy.deepcopy(category)
         other_category.pk = 1
         other_category.name += 'foobar'
@@ -118,8 +120,12 @@ class TestActivity(object):
     def test_init_valid(self, name_string_valid_parametrized, pk_valid_parametrized,
             category_valid_parametrized, deleted_valid_parametrized):
         """Test that init accepts all valid values."""
-        activity = Activity(name_string_valid_parametrized, pk=pk_valid_parametrized,
-            category=category_valid_parametrized, deleted=deleted_valid_parametrized)
+        activity = Activity(
+            name_string_valid_parametrized,
+            pk=pk_valid_parametrized,
+            category=category_valid_parametrized,
+            deleted=deleted_valid_parametrized,
+        )
         assert activity.name == name_string_valid_parametrized
         assert activity.pk == pk_valid_parametrized
         assert activity.category == category_valid_parametrized
@@ -152,13 +158,18 @@ class TestActivity(object):
             (False, activity.category.name), activity.deleted)
 
     def test_equal_fields_true(self, activity):
-        """Make sure that two activities that differ only in their PK compare equal."""
+        """
+        Make sure that two activities that differ only in their PK compare equal.
+        """
         other = copy.deepcopy(activity)
         other.pk = 1
         assert activity.equal_fields(other)
 
     def test_equal_fields_false(self, activity):
-        """Make sure that two activities that differ not only in their PK compare unequal."""
+        """
+        Make sure that two activities that differ not only in their PK
+        compare unequal.
+        """
         other = copy.deepcopy(activity)
         other.pk = 1
         other.name += 'foobar'
@@ -290,14 +301,19 @@ class TestTag(object):
         """Test representation method."""
         result = repr(tag)
         assert isinstance(result, str)
-        expectation = '[{pk}] {name}'.format(pk=repr(tag.pk),
-            name=repr(tag.name))
+        expectation = TestTag.as_repr(tag)
         assert result == expectation
 
 
 class TestFact(object):
-    def test_fact_init_valid(self, activity, start_end_datetimes, pk_valid_parametrized,
-            description_valid_parametrized, tag_list_valid_parametrized):
+    def test_fact_init_valid(
+        self,
+        activity,
+        start_end_datetimes,
+        pk_valid_parametrized,
+        description_valid_parametrized,
+        tag_list_valid_parametrized,
+    ):
         """Make sure valid values instaniate a Fact."""
         fact = Fact(
             activity,
@@ -312,8 +328,7 @@ class TestFact(object):
         assert fact.description == description_valid_parametrized
         assert fact.start == start_end_datetimes[0]
         assert fact.end == start_end_datetimes[1]
-        # FIXME/2018-05-05: (lb): Another broken test to EXPLAIN.
-        #assert fact.tags == tag_list_valid_parametrized
+        # tag_list_valid_parametrized is a set() of name strings.
         names = list(tag_list_valid_parametrized)
         tags = set([Tag(pk=None, name=name) for name in names])
         tags = sorted(list(tags), key=attrgetter('name'))
@@ -529,7 +544,9 @@ class TestFact(object):
          ),
     ))
     def test_serialized_string_various_missing_values(self, fact, values, expectation):
-        """Make sure the serialized string is correct even if some information is missing."""
+        """
+        Make sure the serialized string is correct even if some information is missing.
+        """
         for attribute, value in values.items():
             setattr(fact, attribute, value)
         assert fact.get_serialized_string() == expectation

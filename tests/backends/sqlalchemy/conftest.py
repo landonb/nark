@@ -170,23 +170,31 @@ def alchemy_config(request, base_config):
     return config
 
 
-@pytest.fixture(params=(
-    # sqlite
-    {'db_engine': 'sqlite',
-     'db_path': ':memory:'},
-    # Non-sqlite
-    {'db_engine': 'postgres',
-     'db_host': fauxfactory.gen_ipaddr(),
-     'db_port': fauxfactory.gen_integer(),
-     'db_name': fauxfactory.gen_utf8(),
-     'db_user': fauxfactory.gen_utf8(),
-     'db_password': fauxfactory.gen_utf8()},
-    {'db_engine': 'postgres',
-     'db_host': fauxfactory.gen_ipaddr(),
-     'db_name': fauxfactory.gen_utf8(),
-     'db_user': fauxfactory.gen_utf8(),
-     'db_password': fauxfactory.gen_utf8()},
-))
+@pytest.fixture(
+    params=(
+        # SQLite
+        {
+            'db_engine': 'sqlite',
+            'db_path': ':memory:',
+        },
+        # Non-SQLite
+        {
+            'db_engine': 'postgres',
+            'db_host': fauxfactory.gen_ipaddr(),
+            'db_port': fauxfactory.gen_integer(),
+            'db_name': fauxfactory.gen_utf8(),
+            'db_user': fauxfactory.gen_utf8(),
+            'db_password': fauxfactory.gen_utf8(),
+        },
+        {
+            'db_engine': 'postgres',
+            'db_host': fauxfactory.gen_ipaddr(),
+            'db_name': fauxfactory.gen_utf8(),
+            'db_user': fauxfactory.gen_utf8(),
+            'db_password': fauxfactory.gen_utf8(),
+        },
+    ),
+)
 def alchemy_config_parametrized(request, alchemy_config):
     """
     Provide a parametrized config that is suitable for sqlalchemy stores.
@@ -240,7 +248,10 @@ def alchemy_config_parametrized(request, alchemy_config):
      'db_password': ''}
 ))
 def alchemy_config_missing_store_config_parametrized(request, alchemy_config):
-    """Provide an alchemy config containing invalid key/value pairs for store initialization."""
+    """
+    Provide an alchemy config containing invalid key/value pairs for
+    store initialization.
+    """
     config = alchemy_config.copy()
     config.update(request.param)
     return config
@@ -268,8 +279,6 @@ def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
 
 
 
-# We are sometimes tempted not using nark.objects at all. but as our tests
-# expect them as input we need them!
 
 # Instance sets
 # Convenience fixtures that provide multitudes of certain alchemy instances.
@@ -354,7 +363,9 @@ def activity(request, activity_factory):
 
 
 @pytest.fixture
-def fact_factory(request, activity_factory, tag_factory, start_end_datetimes, description):
+def fact_factory(
+    request, activity_factory, tag_factory, start_end_datetimes, description,
+):
     """
     Provide a ``nark.Fact`` factory.
 
@@ -376,3 +387,4 @@ def fact_factory(request, activity_factory, tag_factory, start_end_datetimes, de
 def fact(request, fact_factory):
     """Return a randomized ``nark.Fact`` instance."""
     return fact_factory()
+

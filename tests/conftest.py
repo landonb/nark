@@ -29,6 +29,8 @@ from pytest_factoryboy import register
 from .nark import factories as lib_factories
 
 
+# Make factory fixtures, like alchemy_category_factory.
+#   ((lb) At least this is where I think it happens.)
 register(lib_factories.CategoryFactory)
 register(lib_factories.ActivityFactory)
 register(lib_factories.TagFactory)
@@ -199,3 +201,4 @@ def description_valid_parametrized(request):
 def tag_list_valid_parametrized(request):
     """Provide a variety of strings that should be valid *descriptions*."""
     return set([fauxfactory.gen_string(request.param) for i in range(4)])
+

@@ -24,7 +24,10 @@ import factory
 import fauxfactory
 from future.utils import python_2_unicode_compatible
 
-from nark.items import *
+from nark.items.activity import Activity
+from nark.items.category import Category
+from nark.items.fact import Fact
+from nark.items.tag import Tag
 
 
 @python_2_unicode_compatible

@@ -29,7 +29,6 @@ from six import text_type
 
 from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
-#from nark.helpers.time import TimeFrame
 
 
 @pytest.fixture
@@ -115,29 +114,26 @@ def config_instance(request):
 @pytest.fixture
 def config_file(backend_config, appdirs):
     """Provide a config file stored under our fake config dir."""
-    with codecs.open(os.path.join(appdirs.user_config_dir, 'config.conf'),
-            'w', encoding='utf-8') as fobj:
+    config_conf = os.path.join(appdirs.user_config_dir, 'config.conf')
+    with codecs.open(config_conf, 'w', encoding='utf-8') as fobj:
         app_config.backend_config_to_configparser(backend_config).write(fobj)
         config_instance.write(fobj)
 
 
 @pytest.fixture(params=[
     ('foobar', {
-#        'timeinfo': TimeFrame(None, None, None, None, None),
         'timeinfo': None,
         'activity': 'foobar',
         'category': None,
         'description': None,
     }),
     ('11:00 12:00 foo@bar', {
-#        'timeinfo': TimeFrame(None, datetime.time(11), None, None, None),
         'timeinfo': '11:00',
         'activity': '12:00 foo',
         'category': 'bar',
         'description': None,
     }),
     ('rumpelratz foo@bar', {
-#        'timeinfo': TimeFrame(None, None, None, None, None),
         'timeinfo': None,
         'start': None,
         'end': None,
@@ -146,28 +142,24 @@ def config_file(backend_config, appdirs):
         'description': None,
     }),
     ('foo@bar', {
-#        'timeinfo': TimeFrame(None, None, None, None, None),
         'timeinfo': '',
         'activity': 'foo',
         'category': 'bar',
         'description': None,
     }),
     ('foo@bar, palimpalum', {
-#        'timeinfo': TimeFrame(None, None, None, None, None),
         'timeinfo': None,
         'activity': 'foo',
         'category': 'bar',
         'description': 'palimpalum',
     }),
     ('12:00 foo@bar, palimpalum', {
-#        'timeinfo': TimeFrame(None, datetime.time(12), None, None, None),
         'timeinfo': '12:00',
         'activity': 'foo',
         'category': 'bar',
         'description': 'palimpalum',
     }),
     ('12:00 - 14:14 foo@bar, palimpalum', {
-#        'timeinfo': TimeFrame(None, datetime.time(12), None, datetime.time(14, 14), None),
         'timeinfo': '12:00 to 14:14',
         'activity': 'foo',
         'category': 'bar',
@@ -175,7 +167,6 @@ def config_file(backend_config, appdirs):
     }),
     # Missing whitespace around ``-`` will prevent timeinfo from being parsed.
     ('12:00-14:14 foo@bar, palimpalum', {
-#        'timeinfo': TimeFrame(None, None, None, None, None),
         'timeinfo': '',
         'activity': '12:00-14:14 foo',
         'category': 'bar',
@@ -185,3 +176,4 @@ def config_file(backend_config, appdirs):
 def raw_fact_parametrized(request):
     """Provide a variety of raw facts as well as a dict of its proper components."""
     return request.param
+

@@ -18,19 +18,19 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
-import os.path
-import pickle
 import pytest
 from freezegun import freeze_time
 
-from nark.items.fact import Fact
 
+# ***
 
 class TestBaseStore():
     def test_cleanup(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.cleanup()
 
+
+# ***
 
 class TestCategoryManager():
     def test_add(self, basestore, category):
@@ -102,6 +102,8 @@ class TestCategoryManager():
             basestore.categories.get_all()
 
 
+# ***
+
 class TestActivityManager:
     def test_save_new(self, basestore, activity, mocker):
         """Make sure that saving an new activity calls ``_add``."""
@@ -160,6 +162,8 @@ class TestActivityManager:
         with pytest.raises(NotImplementedError):
             basestore.activities.get_all()
 
+
+# ***
 
 class TestTagManager():
     def test_add(self, basestore, tag):
@@ -272,7 +276,7 @@ class TestFactManager:
         (None, None, '', {
             'since': None,
             'until': None}),
-        # Various since info
+        # Various since info.
         (datetime.date(2014, 4, 1), None, '', {
             'since': datetime.datetime(2014, 4, 1, 5, 30, 0),
             'until': None}),
@@ -282,7 +286,7 @@ class TestFactManager:
         (datetime.datetime(2014, 4, 1, 13, 40, 25), None, '', {
             'since': datetime.datetime(2014, 4, 1, 13, 40, 25),
             'until': None}),
-        # Various until info
+        # Various until info.
         (None, datetime.date(2014, 2, 1), '', {
             'since': None,
             'until': datetime.datetime(2014, 2, 2, 5, 29, 59)}),
