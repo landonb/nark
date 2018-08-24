@@ -533,9 +533,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             return query, span_col
 
         def _get_all_prepare_joins(query):
-            if include_usage or (activity is not False) or (category is not False):
+            if (
+                include_usage
+                or (activity is not False)
+                or (category is not False)
+                or search_term
+            ):
                 query = query.outerjoin(AlchemyFact.activity)  # Same as: AlchemyActivity
-            if category is not False:
+            if (category is not False) or search_term:
                 query = query.outerjoin(AlchemyCategory)
             return query
 
@@ -624,10 +629,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_filter_by_search_term(query):
             if search_term:
-                query = filter_search_term(query, search_term)
+                query = filter_search_term(query)
             return query
 
-        def filter_search_term(query, term):
+        def filter_search_term(query):
             """
             Limit query to facts that match the search terms.
 
@@ -635,13 +640,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             The matching is not case-sensitive.
             """
             # FIXME/2018-06-09: (lb): Now with activity and category filters,
-            # search_term makes less sense. Unless we apply to all parts?
-            # E.g., match tags, and match description.
+            #   search_term makes less sense. Unless we apply to all parts?
+            #   E.g., match tags, and match description.
             query = query.filter(
-                or_(AlchemyActivity.name.ilike('%{}%'.format(search_term)),
-                    AlchemyCategory.name.ilike('%{}%'.format(search_term))
-                    )
+                or_(
+                    AlchemyActivity.name.ilike('%{}%'.format(search_term)),
+                    AlchemyCategory.name.ilike('%{}%'.format(search_term)),
+                )
             )
+
             return query
 
         def _get_all_filter_by_ongoing(query):
