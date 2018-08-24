@@ -56,7 +56,7 @@ logger = logging.getLogger('nark.log')
 #        From a "globals" module?
 #        From a function-scoped sub-function?
 #        Or is here fine?
-DATE_TO_DATE_SEPARATORS = ['to', 'until', '\-']
+DATE_TO_DATE_SEPARATORS__RAW = ['to', 'until', '-']
 
 
 FACT_METADATA_SEPARATORS = [",", ":"]
@@ -176,7 +176,7 @@ class Parser(object):
 
     def re_setup_datatimes_separator(self):
         Parser.RE_DATE_TO_DATE_SEP = re.compile(
-            r'\s({})\s'.format('|'.join(DATE_TO_DATE_SEPARATORS))
+            r'\s(to|until|\-)\s|(?<=\d)(\-)(?=\d)'
         )
 
     def re_setup_category_and_tags(self):
@@ -318,14 +318,23 @@ class Parser(object):
             raise
         strictly_two = (minmax[0] == 2)
         # The next token in rest could be the ' to '/' until ' sep.
-        match = Parser.RE_DATE_TO_DATE_SEP.match(rest)
-        if match:
-            parts = Parser.RE_DATE_TO_DATE_SEP.split(rest, 1)
-            assert len(parts) == 3
+        parts = Parser.RE_DATE_TO_DATE_SEP.split(rest, 1)
+        if len(parts) != 1:
+            # There are four capture groups:
+            #   1. The stuff before the times;
+            #   2. The 'to'/'until'/'-', if separator matched on word boundary,
+            #        e.g., "X to Y"; otherwise, None.
+            #   3. The '-', if separator matched on digit boundary,
+            #        e.g., "9-5"; otherwise, None.
+            #   4. The stuff after the times.
+            assert len(parts) == 4
             assert parts[0].strip() == ''
-            assert parts[1].strip() in DATE_TO_DATE_SEPARATORS
+            assert (parts[1] is None) ^ (parts[2] is None)
+            separator = parts[1] or parts[2]
+            assert separator in DATE_TO_DATE_SEPARATORS__RAW
+
             after_dt2 = self.must_parse_datetime_from_rest(
-                parts[2], 'datetime2', ok_if_missing=(not strictly_two),
+                parts[3], 'datetime2', ok_if_missing=(not strictly_two),
             )
             if after_dt2 is not None:
                 rest = after_dt2
@@ -403,12 +412,16 @@ class Parser(object):
         assert two_is_okay or (not strictly_two)
 
         if two_is_okay:
-            # Look for separator, e.g., " to ", or " until ", or " - ", etc.
+            # Look for separator, e.g., " to ", or " until ", or " - "/"-", etc.
             parts = Parser.RE_DATE_TO_DATE_SEP.split(datetimes, 1)
             if len(parts) > 1:
-                assert len(parts) == 3  # middle part is the match
+                assert len(parts) == 4  # middle 2 parts are the separator
+                assert (parts[1] is None) ^ (parts[2] is None)
+                separator = parts[1] or parts[2]
+                assert separator in DATE_TO_DATE_SEPARATORS__RAW
+
                 self.raw_datetime1 = parts[0]  # first datetime
-                self.raw_datetime2 = parts[2]  # other datetime
+                self.raw_datetime2 = parts[3]  # other datetime
             elif strictly_two:
                 self.raise_missing_datetime_two()
 
@@ -430,9 +443,13 @@ class Parser(object):
             # Look for separator, e.g., " to ", or " until ", or " - ", etc.
             parts = Parser.RE_DATE_TO_DATE_SEP.split(datetimes_and_act, 1)
             if len(parts) > 1:
-                assert len(parts) == 3
+                assert len(parts) == 4
+                assert (parts[1] is None) ^ (parts[2] is None)
+                separator = parts[1] or parts[2]
+                assert separator in DATE_TO_DATE_SEPARATORS__RAW
+
                 self.raw_datetime1 = parts[0]
-                dt_and_act = parts[2]
+                dt_and_act = parts[3]
                 dt_attr = 'datetime2'
             elif strictly_two:
                 self.raise_missing_datetime_two()
@@ -636,7 +653,7 @@ class Parser(object):
         raise ParserMissingDatetimeOneException(msg)
 
     def raise_missing_datetime_two(self):
-        sep_str = comma_or_join(DATE_TO_DATE_SEPARATORS)
+        sep_str = comma_or_join(DATE_TO_DATE_SEPARATORS__RAW)
         msg = _(
             'Expected to find the two datetimes separated by one of: {}.'
             .format(sep_str)
