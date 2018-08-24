@@ -429,7 +429,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_facts():
             message = _(
-                'since: {} / until: {} / term: {} / col: {} / order: {}'
+                'since: {} / until: {} / srch_term: {} / srt_col: {} / srt_ordr: {}'
                 .format(since, until, search_term, sort_col, sort_order)
             )
             self.store.logger.debug(message)
