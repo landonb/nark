@@ -452,6 +452,7 @@ class BaseFactManager(BaseManager):
         def ensure_one_or_more_ongoing(facts):
             if facts:
                 return
+            # See also: NO_ACTIVE_FACT_HELP
             message = _("No ongoing Fact found.")
             self.store.logger.debug(message)
             raise KeyError(message)
