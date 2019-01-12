@@ -187,7 +187,9 @@ class TestICALWriter(object):
         assert result.get('dtstart').dt == fact_tuple.start
         assert result.get('dtend').dt == fact_tuple.end + datetime.timedelta(seconds=1)
         assert result.get('summary') == fact_tuple.activity
-        assert result.get('categories') == fact_tuple.category
+        # Make lists of [vText] and [str], else comparison fails.
+        #  NO: assert result.get('categories') == fact_tuple.category
+        assert list(result.get('categories').cats) == list(fact_tuple.category)
         assert result.get('description') == fact_tuple.description
 
     def test__close(self, ical_writer, fact, path):
