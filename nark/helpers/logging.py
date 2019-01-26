@@ -73,6 +73,35 @@ def resolve_log_level(level):
     return log_level, error
 
 
+def set_logger_level(logger_name, logger_log_level):
+    logger = logging.getLogger(logger_name)
+    logger.addHandler(logging.NullHandler())
+
+    # (lb): BIZARRE: On a 14.04 machine, parent.handlers has StreamHandler
+    #   in it, so it prints to console. This does not happen on a 16.04
+    #   machine I also use. And I cannot determine the reason (both
+    #   machines use a virtualenv configured exactly the same way, and
+    #   the Python version is merely off by one PATCH).
+    logger.parent.handlers = []
+    logger.parent.addHandler(logging.NullHandler())
+
+    log_level, warn_name = resolve_log_level(logger_log_level)
+
+    try:
+        logger.setLevel(int(log_level))
+    except ValueError:
+        warn_name = True
+        logger.setLevel(logging.WARNING)
+
+    if warn_name:
+        logger.warning(
+            _('Unknown log_level specified for ‘{}’: {}')
+            .format(logger_name, logger_log_level)
+        )
+
+    return logger
+
+
 def setup_handler(handler, formatter, *loggers):
     handler.setFormatter(formatter)
     for logger in loggers:

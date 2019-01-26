@@ -20,10 +20,10 @@ from future.utils import python_2_unicode_compatible
 
 import gettext
 import importlib
-import logging
 import sys
 from collections import namedtuple
 
+from .helpers import logging as logging_helpers
 from .helpers.dev.profiling import timefunc
 
 
@@ -122,8 +122,10 @@ class HamsterControl(object):
         itself.
         """
 
-        lib_logger = logging.getLogger('nark.log')
-        lib_logger.addHandler(logging.NullHandler())
+        lib_log_level = self.config['lib_log_level']
+        lib_logger = logging_helpers.set_logger_level(
+            'nark.log', lib_log_level,
+        )
         return lib_logger
 
     def _sql_logger(self):

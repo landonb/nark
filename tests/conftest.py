@@ -60,6 +60,7 @@ def base_config(tmpdir):
         #           'fact_min_delta': 0,
         'day_start': datetime.time(hour=5, minute=30, second=0),
         'fact_min_delta': 60,
+        'lib_log_level': 'WARNING',
         'sql_log_level': 'WARNING',
     }
 

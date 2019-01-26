@@ -68,6 +68,8 @@ Note:
         fact_min_delta: ``int`` specifying minimal fact duration. Facts shorter
             than this will be rejected.
 
+        lib_log_level: ``string`` indicating the nark library logging logger log level.
+
         sql_log_level: ``string`` indicating the SQLAlchemy logging logger log level.
 
         tz_aware: ``bool`` indicating if datetimes are relative UTC or not.
@@ -215,6 +217,7 @@ def get_default_backend_config(appdirs):
         'allow_momentaneous': False,
         'day_start': '',
         'fact_min_delta': 0,
+        'lib_log_level': 'WARNING',
         'sql_log_level': 'WARNING',
         'tz_aware': False,
         'default_tzinfo': '',
@@ -273,6 +276,9 @@ def backend_config_to_configparser(config):
     def get_fact_min_delta():
         return text_type(config.get('fact_min_delta'))
 
+    def get_lib_log_level():
+        return text_type(config.get('lib_log_level'))
+
     def get_sql_log_level():
         return text_type(config.get('sql_log_level'))
 
@@ -296,6 +302,7 @@ def backend_config_to_configparser(config):
     cp_instance.set('Backend', 'allow_momentaneous', get_allow_momentaneous())
     cp_instance.set('Backend', 'day_start', get_day_start())
     cp_instance.set('Backend', 'fact_min_delta', get_fact_min_delta())
+    cp_instance.set('Backend', 'lib_log_level', get_lib_log_level())
     cp_instance.set('Backend', 'sql_log_level', get_sql_log_level())
     cp_instance.set('Backend', 'tz_aware', get_tz_aware())
     cp_instance.set('Backend', 'default_tzinfo', get_default_tzinfo())
@@ -392,6 +399,9 @@ def configparser_to_backend_config(cp_instance):
     def get_fact_min_delta():
         return cp_instance_getint('Backend', 'fact_min_delta')
 
+    def get_lib_log_level():
+        return text_type(cp_instance_get('Backend', 'lib_log_level'))
+
     def get_sql_log_level():
         return text_type(cp_instance_get('Backend', 'sql_log_level'))
 
@@ -413,6 +423,7 @@ def configparser_to_backend_config(cp_instance):
         'allow_momentaneous': get_allow_momentaneous(),
         'day_start': get_day_start(),
         'fact_min_delta': get_fact_min_delta(),
+        'lib_log_level': get_lib_log_level(),
         'sql_log_level': get_sql_log_level(),
         'tz_aware': get_tz_aware(),
         'default_tzinfo': get_default_tzinfo(),

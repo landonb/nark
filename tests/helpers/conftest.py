@@ -84,6 +84,7 @@ def configparser_instance(request):
     config.set('Backend', 'db_password', 'hamster')
     config.set('Backend', 'day_start', '05:00:00')
     config.set('Backend', 'fact_min_delta', '60')
+    config.set('Backend', 'lib_log_level', 'WARNING')
     config.set('Backend', 'sql_log_level', 'WARNING')
     # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
     # in specific tests and leaving them set to factory defaults here.
@@ -110,6 +111,7 @@ def configparser_instance(request):
         # in specific tests and leaving them set to factory defaults here:
         #   'day_start': '',
         #   'fact_min_delta': 0,
+        'lib_log_level': text_type('WARNING'),
         'sql_log_level': text_type('WARNING'),
         'tz_aware': False,
         'default_tzinfo': '',

@@ -17,7 +17,6 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import logging
 import os
 from datetime import datetime
 from future.utils import python_2_unicode_compatible
@@ -39,12 +38,6 @@ class BaseStore(object):
     """
     A controller store defines the interface to interact with stored entities,
     regardless of the backend being used.
-
-    ``self.logger`` provides a dedicated logger instance for any storage
-    related logging. If you want to make use of it, just setup and attach your
-    handlers and you are ready to go. Be advised though, ``self.logger`` will
-    be very verbose as on ``debug`` it will log any method call and often even
-    their returned instances.
     """
 
     def __init__(self, config):
@@ -98,35 +91,16 @@ class BaseStore(object):
         self.config.setdefault('allow_momentaneous', False)
         self.config.setdefault('day_start', '')
         self.config.setdefault('fact_min_delta', '0')
+        self.config.setdefault('lib_log_level', 'WARNING')
         self.config.setdefault('sql_log_level', 'WARNING')
         self.config.setdefault('tz_aware', False)
         self.config.setdefault('default_tzinfo', '')
 
     def init_logger(self):
-        self.logger = logging.getLogger('nark.store')
-        self.logger.addHandler(logging.NullHandler())
-        # (lb): BIZARRE: On a 14.04 machine, parent.handlers has StreamHandler
-        #   in it, so it prints to console. This does not happen on a 16.04
-        #   machine I also use. And I cannot determine the reason (both
-        #   machines use a virtualenv configured exactly the same way, and
-        #   the Python version is merely off by one PATCH).
-        self.logger.parent.handlers = []
-        self.logger.parent.addHandler(logging.NullHandler())
-
         sql_log_level = self.config['sql_log_level']
-        log_level, warn_name = logging_helpers.resolve_log_level(sql_log_level)
-
-        try:
-            self.logger.setLevel(int(log_level))
-        except ValueError:
-            warn_name = True
-            self.logger.setLevel(logging.WARNING)
-
-        if warn_name:
-            self.logger.warning(
-                _('Unknown Backend.sql_log_level specified: {}')
-                .format(sql_log_level)
-            )
+        self.logger = logging_helpers.set_logger_level(
+            'nark.store', sql_log_level,
+        )
 
     @property
     def now(self):
