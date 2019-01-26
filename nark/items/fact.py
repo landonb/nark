@@ -35,6 +35,20 @@ from ..helpers.facts_diff import FactsDiff
 from ..helpers.parsing import parse_factoid
 
 
+__all__ = [
+    'SinceTimeBegan',
+    'UntilTimeStops',
+    'FactTuple',
+    'Fact',
+]
+
+
+SinceTimeBegan = datetime(1, 1, 1)
+
+
+UntilTimeStops = datetime(9999, 12, 31, 23, 59, 59)
+
+
 FactTuple = namedtuple(
     'FactTuple',
     (
@@ -131,7 +145,7 @@ class Fact(BaseItem):
 
     @property
     def sorty_tuple(self):
-        fact_end = self.end if self.end is not None else datetime(9999, 6, 12)
+        fact_end = self.end if self.end is not None else UntilTimeStops
         fact_pk = self.pk if self.pk is not None else -inf
         return (self.start, fact_end, fact_pk)
 
