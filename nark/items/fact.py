@@ -175,7 +175,19 @@ class Fact(BaseItem):
             elif key == 'tags':
                 val = repr(self.tags_sorted)
             else:
-                val = repr(getattr(self, key))
+                # Not that nark knows anything about this, but dob's derived
+                # class, PlaceableFact, has a next_fact and prev_fact pointer.
+                # To avoid a deadly RecursionError by following pointers of a
+                # doubly-linked list, check that the attribute value is not
+                # another Fact. (For the sake of coupling, PlaceableFact could
+                # just supply its own __repr__() function, but this function
+                # is already doing a lot, so might as well toss in the kitchen
+                # sink.)
+                raw = getattr(self, key)
+                if isinstance(raw, self.__class__):
+                    val = id(raw)
+                else:
+                    val = repr(raw)
             parts.append(
                 "{key}={val}".format(key=key, val=val)
             )
