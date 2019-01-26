@@ -144,6 +144,11 @@ class Fact(BaseItem):
         return self.sorty_tuple < other.sorty_tuple
 
     @property
+    def sorty_times(self):
+        fact_end = self.end if self.end is not None else UntilTimeStops
+        return (self.start, fact_end)
+
+    @property
     def sorty_tuple(self):
         fact_end = self.end if self.end is not None else UntilTimeStops
         fact_pk = self.pk if self.pk is not None else -inf
