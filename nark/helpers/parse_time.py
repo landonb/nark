@@ -192,10 +192,13 @@ class HamsterTimeSpec(object):
             .format(pattern_date, pattern_time, pattern_zone)
         )
 
-        hamster_pattern = '(^|\s)({}|{}|{})(?P<sep>[,:]?)(?=\s|$)(?P<rest>.*)'.format(
-            pattern_relative,
-            pattern_just_clock,
-            pattern_datetime,
+        hamster_pattern = (
+            '(^|\s)({}|{}|{})(?P<sep>[,:]?)(?=\s|$)(?P<rest>.*)'
+            .format(
+                pattern_relative,
+                pattern_just_clock,
+                pattern_datetime,
+            )
         )
 
         # Use re.DOTALL to match newlines, which might be part
