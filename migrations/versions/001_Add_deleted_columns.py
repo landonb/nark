@@ -19,7 +19,7 @@ from __future__ import absolute_import, unicode_literals
 
 from migrate import *
 from sqlalchemy import *
-from sqlalchemy import Table, MetaData, Column, Integer
+from sqlalchemy import Column, Integer, MetaData, Table
 
 # USAGE: You could run this script manually, invoking SQLAlchemy-migrate, e.g.,
 #
