@@ -287,8 +287,19 @@ class Parser(object):
             separators = FACT_METADATA_SEPARATORS
         assert len(separators) > 0
         sep_group = '|'.join(separators)
-        # C✗P✗: re.compile('(?:,|:)(?=\\s|$)')
-        re_item_sep = re.compile(r'(?:{})(?=\s|$)'.format(sep_group))
+        # Gobble whitespace as part of separator, to make it easier to pull
+        # data apart and then part it back together if we need. E.g., if user
+        # puts description on same line as meta data, and if description contains
+        # separators, we'll split the line first to parse out the meta data, and
+        # then we'll put it back together, so if a separator is part of the
+        # description, we want to be sure to retain the whitespace around the
+        # separator if we have to patch the description back together from its
+        # parts that did not turn out to be meta data (like #tags).
+        # This is how parser originally split, leaving whitespace in the last part:
+        #   # C✗P✗: re.compile('(?:,|:)(?=\\s|$)')
+        #   ..._sep = re.compile(r'({})(?=\s|$)'.format(sep_group))
+        # We can pull whitespace into the separator with two Levenshtein moves.
+        re_item_sep = re.compile(r'({}(?=\s+|$))'.format(sep_group))
 
         if not hash_stamps:
             hash_stamps = '#@'
@@ -389,9 +400,10 @@ class Parser(object):
         # used as the delimiter -- even though it's used to delimit time --
         # because the item separator must be the last character of a word.)
         parts = self.re_item_sep.split(datetimes_and_act, 1)
-        if len(parts) == 2:
+        if len(parts) == 3:
             datetimes = parts[0]
-            self.activity_name = parts[1]
+            # parts[1] is the sep, e.g., ',' or ':'.
+            self.activity_name = parts[2]
         else:
             assert len(parts) == 1
             datetimes = None
@@ -523,6 +535,7 @@ class Parser(object):
         #       was of form ``act @ cat``, not ``act@cat`` or ``act @cat``.
         # Split on any delimiter: ,|:|\n
         parts = self.re_item_sep.split(cat_and_remainder, 2)
+        tags_description_sep = ''
         description_prefix = ''
         if len(parts) == 1:
             cat_and_tags = parts[0]
@@ -530,11 +543,25 @@ class Parser(object):
         else:
             self.category_name = parts[0]
             cat_and_tags = None
-            unseparated_tags = parts[1]
-            if len(parts) == 3:
-                remainder = parts[2].strip()
-                if remainder:
-                    description_prefix = remainder
+            # parts[1] and parts[3] are the separators, e.g., ',' or ':'.
+            unseparated_tags = parts[2]
+            if len(parts) == 5:
+                # If there's a description with a separator on same line as
+                # meta data, tags_description_sep may really be description
+                # prefix. So keep whitespace until we know for sure (which
+                # self.re_item_sep.split accomplishes -- it puts the whitespace
+                # in tags_description_sep, not the last part).
+                tags_description_sep = parts[3]
+                # Any whitespace between parts should be part of the former,
+                # and the last part can have any of its ending whitespace
+                # stripped. (Or maybe don't strip at all? Don't really care
+                # if user has trailing whitespace or not, I shouldn't think!
+                # We only care to remove whitespace between separators/meta.)
+                #   #description_prefix = parts[4].strip()
+                #   #description_prefix = parts[4].rstrip()
+                description_prefix = parts[4]
+            else:
+                assert len(parts) == 3
 
         if cat_and_tags:
             cat_tags = Parser.RE_SPLIT_TAGS_AND_TAGS.split(cat_and_tags, 1)
@@ -542,17 +569,24 @@ class Parser(object):
             if len(cat_tags) == 2:
                 unseparated_tags = self.hash_stamps[0] + cat_tags[1]
 
-        self.consume_tags_and_description_prefix(unseparated_tags, description_prefix)
+        self.consume_tags_and_description_prefix(
+            unseparated_tags, tags_description_sep, description_prefix,
+        )
 
     def parse_tags_and_remainder(self, tags_and_remainder):
         parts = self.re_item_sep.split(tags_and_remainder, 1)
+        tags_description_sep = ''
         description_middle = ''
-        if len(parts) == 2:
-            description_middle = parts[1]
-        self.consume_tags_and_description_prefix(parts[0], description_middle)
+        if len(parts) == 3:
+            # parts[1] is the sep, e.g., ',' or ':'.
+            tags_description_sep = parts[1]
+            description_middle = parts[2]
+        self.consume_tags_and_description_prefix(
+            parts[0], tags_description_sep, description_middle,
+        )
 
     def consume_tags_and_description_prefix(
-        self, unseparated_tags, description_middle='',
+        self, unseparated_tags, tags_description_sep='', description_middle='',
     ):
         description_prefix = ''
         if unseparated_tags:
@@ -562,9 +596,9 @@ class Parser(object):
                 self.consume_tags(split_tags)
             else:
                 description_prefix = unseparated_tags
+                description_prefix += tags_description_sep
 
         self.description = description_prefix
-        self.description += " " if description_middle else ""
         self.description += description_middle
         self.description += "\n" if self.rest else ""
         self.description += self.rest
