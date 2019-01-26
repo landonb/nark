@@ -44,6 +44,9 @@ class FactsDiff(object):
         self.include_newlines = False
         self.exclude_attrs = None
 
+    def __str__(self):
+        return 'orig: {} / edit: {}'.format(self.orig_fact, self.edit_fact)
+
     # ***
 
     def friendly_diff(
