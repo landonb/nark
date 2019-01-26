@@ -54,8 +54,11 @@ def friendly_str(
         was_coloring = set_coloring(colorful)
         meta = assemble_parts(fact)
         result = format_result(fact, meta)
+
         # (lb): EXPLAIN: Why do we cast here?
+        #   (Was this meant to call repr(result) for orig __repr__ implementation?)
         result = text_type(result)
+
         set_coloring(was_coloring)
         return result
 
