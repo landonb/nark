@@ -857,7 +857,27 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         ref_time = self._get_sql_datetime(ref_time)
 
-        condition = and_(func.datetime(AlchemyFact.end) <= ref_time)
+        condition = or_(
+            # Include ongoing fact and check its start.
+            and_(
+                AlchemyFact.end == None,  # noqa: E711
+                # Except rather than <=, use less than, otherwise
+                # penultimate_fact.antecedent might find the ultimate
+                # fact, if that final fact is ongoing.
+                #   E.g., considering
+                #     fact  1: time-a to time-b
+                #     ...
+                #     fact -2: time-x to time-y
+                #     fact -1: time-y to <now>
+                #   antecedent of fact -2 should check time-y < time-y and
+                #   not <= otherwise antecedent of fact -2 would be fact -1.
+                #   (The subsequent function will see it, though, as it
+                #   looks for AlchemyFact.start >= ref_time.)
+                func.datetime(AlchemyFact.start) < ref_time,
+            ),
+            # Be most inclusive and compare against facts' ends.
+            func.datetime(AlchemyFact.end) <= ref_time,
+        )
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
@@ -951,7 +971,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         condition = and_(
             func.datetime(AlchemyFact.start) >= self._get_sql_datetime(since),
-            func.datetime(AlchemyFact.end) <= self._get_sql_datetime(until),
+            or_(
+                and_(
+                    AlchemyFact.end != None,  # noqa: E711
+                    func.datetime(AlchemyFact.end) <= self._get_sql_datetime(until),
+                ),
+                and_(
+                    AlchemyFact.end == None,  # noqa: E711
+                    func.datetime(AlchemyFact.start) <= self._get_sql_datetime(until),
+                ),
+            ),
         )
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
