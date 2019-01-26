@@ -42,3 +42,7 @@ class BaseItem(object):
         )
         return repred
 
+    @property
+    def unstored(self):
+        return (not self.pk) or (self.pk < 0)
+
