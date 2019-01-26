@@ -6,6 +6,7 @@
 
 # Fakers and Factories.
 factory-boy==2.10.0
+Faker==1.0.1
 fauxfactory==3.0.2
 pytest-factoryboy==2.0.1
 pytest-faker==2.0.0
