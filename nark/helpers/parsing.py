@@ -317,7 +317,7 @@ class Parser(object):
     def parse_datetimes_easy(self):
         rest = self.flat
         if self.time_hint == 'verify_end':
-            rest = self.must_parse_datetime_from_rest(rest, 'datetime2')
+            rest, _sep = self.must_parse_datetime_from_rest(rest, 'datetime2')
         elif self.time_hint != 'verify_none':
             minmax = TIME_HINT_CLUE[self.time_hint]
             rest = self.parse_datetimes_easy_both(rest, minmax)
@@ -326,34 +326,39 @@ class Parser(object):
 
     def parse_datetimes_easy_both(self, rest, minmax):
         try:
-            rest = self.must_parse_datetime_from_rest(rest, 'datetime1')
+            rest, sep = self.must_parse_datetime_from_rest(rest, 'datetime1')
         except ParserMissingDatetimeOneException:
             if minmax[0] == 0:
                 return rest
             raise
         strictly_two = (minmax[0] == 2)
-        # The next token in rest could be the ' to '/' until ' sep.
-        parts = Parser.RE_DATE_TO_DATE_SEP.split(rest, 1)
-        if len(parts) != 1:
-            # There are four capture groups:
-            #   1. The stuff before the times;
-            #   2. The 'to'/'until'/'-', if separator matched on word boundary,
-            #        e.g., "X to Y"; otherwise, None.
-            #   3. The '-', if separator matched on digit boundary,
-            #        e.g., "9-5"; otherwise, None.
-            #   4. The stuff after the times.
-            assert len(parts) == 4
-            assert parts[0].strip() == ''
-            assert (parts[1] is None) ^ (parts[2] is None)
-            separator = parts[1] or parts[2]
-            assert separator in DATE_TO_DATE_SEPARATORS__RAW
-
-            after_dt2 = self.must_parse_datetime_from_rest(
-                parts[3], 'datetime2', ok_if_missing=(not strictly_two),
-            )
-            if after_dt2 is not None:
-                rest = after_dt2
-            # else, was not a datetime, so re-include DATE_TO_DATE_SEPARATOR.
+        # If sep is nonempty (e.g., ':', or ','), do not expect datetime2.
+        if not sep:
+            # The next token in rest could be the "to"/"until"/"-" sep.
+            parts = Parser.RE_DATE_TO_DATE_SEP.split(rest, 1)
+            # ... however, the RE_DATE_TO_DATE_SEP regex matches anywhere in line.
+            # So verify that first part of split is empty, otherwise to/until sep
+            # does not start the rest of the factoid.
+            if (parts[0].strip() == '') and (len(parts) > 1):
+                # There are four capture groups:
+                #   1. The stuff before the times;
+                #   2. The 'to'/'until'/'-', if separator matched on word boundary,
+                #        e.g., "X to Y"; otherwise, None.
+                #   3. The '-', if separator matched on digit boundary,
+                #        e.g., "9-5"; otherwise, None.
+                #   4. The stuff after the (2.) or (3.) separator.
+                assert len(parts) == 4
+                assert (parts[1] is None) ^ (parts[2] is None)
+                separator = parts[1] or parts[2]
+                assert separator in DATE_TO_DATE_SEPARATORS__RAW
+                after_dt2, _sep = self.must_parse_datetime_from_rest(
+                    parts[3], 'datetime2', ok_if_missing=(not strictly_two),
+                )
+                if after_dt2 is not None:
+                    rest = after_dt2
+                # else, was not a datetime, so re-include DATE_TO_DATE_SEPARATOR.
+            elif strictly_two:
+                self.raise_missing_datetime_two()
         elif strictly_two:
             self.raise_missing_datetime_two()
         return rest
@@ -477,7 +482,7 @@ class Parser(object):
             else:
                 dt_attr = 'datetime1'
 
-        rest = self.must_parse_datetime_from_rest(dt_and_act, dt_attr)
+        rest, _sep = self.must_parse_datetime_from_rest(dt_and_act, dt_attr)
         self.activity_name = rest
 
     def must_parse_datetime_from_rest(
@@ -504,7 +509,7 @@ class Parser(object):
             self.raise_missing_datetime_two()
         else:
             rest = None
-        return rest
+        return rest, sep
 
     def warn_if_datetime_missing_clock_time(self, raw_dt, after_dt):
         if HamsterTimeSpec.has_time_of_day(raw_dt):
