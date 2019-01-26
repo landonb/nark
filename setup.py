@@ -9,7 +9,8 @@ Packaging instruction for setup tools.
 
 import os
 import re
-from gettext import gettext as _  # Because exec(init_py): noqa: EXXX
+# Because exec(init_py) import _.
+from gettext import gettext as _   # noqa: F401
 
 try:
     from setuptools import setup, find_packages
@@ -107,8 +108,9 @@ def import_business_vars(package_dir):
     init_py = top_level_package_file_read(pckpath)
     source = top_level_package_file_strip_imports(init_py)
     exec(source)
-    cfg = { key: val for (key, val) in locals().items() if key.startswith('__') }
+    cfg = {key: val for (key, val) in locals().items() if key.startswith('__')}
     return cfg
+
 
 # Import variables from nark/__init__.py,
 # without triggering that files' imports.
