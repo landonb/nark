@@ -84,7 +84,12 @@ def friendly_str(
     def get_id_string(fact):
         if not include_id:
             return ''
-        return colorize('(${})'.format(fact.pk), 'grey_78')
+        # Format the 🏭 🆔 width to be consistent. Assume lifetime of facts?
+        # - 999,999 facts over 100 years would be ~27 facts per day.
+        return colorize(
+            '(🆔{})'.format(fact.pk and '{:5d}'.format(fact.pk) or 'None'),
+            'grey_78',
+        )
 
     def get_times_string(fact):
         times = ''
