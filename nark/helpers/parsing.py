@@ -105,7 +105,6 @@ class Parser(object):
     def reset_result(self):
         self.datetime1 = None
         self.datetime2 = None
-        # MAYBE/2018-05-20 17:39: (lb): Not sure the dt meta is necessary.
         self.raw_datetime1 = None
         self.raw_datetime2 = None
         self.type_datetime1 = None
