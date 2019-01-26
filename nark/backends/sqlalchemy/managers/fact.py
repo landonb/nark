@@ -22,7 +22,6 @@ from builtins import str
 from datetime import datetime
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import and_, or_
 
 from . import query_apply_limit_offset, query_apply_true_or_not, BaseAlchemyManager
@@ -382,11 +381,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         sort_order='',
         raw=False,
         exclude_ongoing=None,
-
-        # FIXME/2018-06-25: (lb): Use lazy_tags fix export slowness,
-        #   if I re-introduced it inadvertently.
+        # (lb): IMPOSSIBLE_BRANCH: We should always be able to preload tags
+        # (eager loading), which is a lot quicker than lazy-loading tags,
+        # especially when exporting all Facts. I.e., when eager loading,
+        # there's only one SELECT call; but if lazy loading, there'd be one
+        # SELECT to get all the Facts, and then one SELECT to get the tags
+        # for each Fact; inefficient!). In any case, if there are problems
+        # with pre-loading, you can flip this switch to sample the other
+        # behavior, which is SQLAlchemy's "default", which is to lazy-load.
         lazy_tags=False,
-
         # kwargs: limit, offset
         **kwargs
     ):
@@ -413,7 +416,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 all.
             partial (bool):
                 If ``False`` only facts which start *and* end within the
-                timeframe will be considered. If ``False`` facts with
+                timeframe will be considered. If ``True`` facts with
                 either ``start``, ``end`` or both within the timeframe
                 will be returned.
             order (string, optional): 'asc' or 'desc'; re: Fact.start.
@@ -454,7 +457,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_filter_by_ongoing(query)
 
-            query = _get_all_order_by(query, span_col)
+            query = _get_all_order_by(query, span_col, tags_col)
 
             query = query_apply_limit_offset(query, **kwargs)
 
@@ -481,7 +484,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             results = []
             for fact, *cols in records:
                 new_tags = None
-                if lazy_tags is None:
+                if not lazy_tags:
                     tags = cols.pop()
                     new_tags = tags.split(MAGIC_TAG_SEP) if tags else []
 
@@ -514,12 +517,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             query = query.outerjoin(fact_tags)
             query = query.outerjoin(AlchemyTag)
             query = query.group_by(AlchemyFact.pk)
-            if lazy_tags is False:
-                # FIXME/2018-06-25: (lb): Not quite sure this'll work...
-                # http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html
-                #   #joined-eager-loading
-                query = query.options(joinedload(AlchemyFact.tags))
-                tags_col = None
+            # (lb): 2019-01-22: Old comment re: joinedload. Leaving here as
+            # documentation in case I try using joinedload again in future.
+            #   # FIXME/2018-06-25: (lb): Not quite sure this'll work...
+            #   # http://docs.sqlalchemy.org/en/latest/orm/loading_relationships.html
+            #   #   # joined-eager-loading
+            #   from sqlalchemy.orm import joinedload
+            #   # 2019-01-22: Either did not need, or did not work, !remember which!
+            #   query = query.options(joinedload(AlchemyFact.tags))
             return query, tags_col
 
         def _get_all_prepare_span_col(query):
@@ -658,8 +663,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query = query.filter(AlchemyFact.end != None)  # noqa: E711
             return query
 
-        # FIXME/2018-06-09: (lb): DRY: Combing each manager's _get_all_order_by.
-        def _get_all_order_by(query, span_col=None):
+        # FIXME/2018-06-09: (lb): DRY: Combine each manager's _get_all_order_by.
+        def _get_all_order_by(query, span_col=None, tags_col=None):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
@@ -685,15 +690,18 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_with_entities(query, span_col, tags_col):
             columns = []
+
             if span_col is not None:
                 # Throw in the count column, which act/cat/tag fetch, so we can
                 # use the same utility functions (that except a count column).
                 static_count = '1'
                 columns.append(static_count)
                 columns.append(span_col)
+
             if tags_col is not None:
-                assert lazy_tags is None
+                assert not lazy_tags
                 columns.append(tags_col)
+
             query = query.with_entities(AlchemyFact, *columns)
 
             return query
