@@ -704,26 +704,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def _get_all_order_by_times(self, query, direction, fact=None, ref_time=None):
-        if (fact is not None) and (fact.pk is not None):
-            if direction is desc:
-                condition = and_(
-                    AlchemyFact.pk != fact.pk,
-                    or_(
-                        func.datetime(AlchemyFact.end) < ref_time,
-                        AlchemyFact.pk < fact.pk,
-                    ),
-                )
-            else:
-                condition = and_(
-                    AlchemyFact.pk != fact.pk,
-                    or_(
-                        func.datetime(AlchemyFact.start) > ref_time,
-                        AlchemyFact.pk > fact.pk,
-                    ),
-                )
-            query = query.filter(condition)
+    def _get_all_order_by_times(self, query, direction, fact=None):
+        if fact and not fact.unstored:
+            query = query.filter(AlchemyFact.pk != fact.pk)
+
         # Include end so that momentaneous Facts are sorted properly.
+        # - And add PK, too, so momentaneous Facts are sorted predictably.
         query = query.order_by(
             direction(AlchemyFact.start),
             direction(AlchemyFact.end),
@@ -774,7 +760,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, asc, fact, start_at)
+        query = self._get_all_order_by_times(query, asc, fact=fact)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -817,7 +803,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, desc, fact, end_at)
+        query = self._get_all_order_by_times(query, desc, fact=fact)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -869,7 +855,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, desc, fact, ref_time)
+        # Exclude fact.pk from results.
+        query = self._get_all_order_by_times(query, desc, fact=fact)
 
         query = query.limit(1)
 
@@ -919,7 +906,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, asc, fact, ref_time)
+        # Exclude fact.pk from results.
+        query = self._get_all_order_by_times(query, asc, fact=fact)
 
         query = query.limit(1)
 
