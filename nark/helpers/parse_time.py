@@ -104,7 +104,7 @@ class HamsterTimeSpec(object):
 
     def __init__(self):
         """Not implemented: Use class as static/global, not instantiated."""
-        raise NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def discern(hamster_time):
