@@ -171,6 +171,8 @@ class HamsterTimeSpec(object):
             '(?:(\d{8}|\d{4}-\d{1,2}(-\d{1,2})?))'
         )
         pattern_time = (  # noqa: E131
+            # (lb): We could allow 3-digit times... but, no.
+            #   '(?:\d{1,2})'
             '(?:\d{2})'
             '(?::?\d{2}'
                 '(?::?\d{2}'
