@@ -17,9 +17,7 @@
 
 from __future__ import absolute_import, unicode_literals
 
-from migrate import *
-from sqlalchemy import *
-from sqlalchemy import Column, Integer, MetaData, Table
+from sqlalchemy import Column, ForeignKey, Integer, MetaData, Table
 
 # USAGE: You could run this script manually, invoking SQLAlchemy-migrate, e.g.,
 #
@@ -65,6 +63,7 @@ from sqlalchemy import Column, Integer, MetaData, Table
 #                      \n\tPRIMARY KEY (id), \n\tCHECK (deleted IN (0, 1))\n)\n\n']
 #       (Background on this error at: http://sqlalche.me/e/e3q8)
 
+
 def upgrade(migrate_engine):
     meta = MetaData(bind=migrate_engine)
 
@@ -91,6 +90,7 @@ def upgrade(migrate_engine):
     # SKIP: Facts.hidden probably does not compute.
     #       (Hidden is for auto-complete/MRU lists.)
 
+
 def downgrade(migrate_engine):
     meta = MetaData(bind=migrate_engine)
 
@@ -109,6 +109,7 @@ def downgrade(migrate_engine):
     tags.c.hidden.drop()
     categories.c.hidden.drop()
     activities.c.hidden.drop()
+
 
 def upgrade_add_column_boolean(table, column):
     # NOTE: (lb): SQLite3 is weird. It preserves the whitespace of
