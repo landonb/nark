@@ -275,12 +275,12 @@ def parse_datetime_iso8601(datepart, must=False, local_tz=None):
         # NOTE: Defaults to datetime.timezone.utc.
         #       Uses naive if we set default_timezone=None.
         parsed = iso8601.parse_date(datepart, default_timezone=local_tz)
-    except iso8601.iso8601.ParseError:
+    except iso8601.iso8601.ParseError as err:
         parsed = None
         if must:
             raise ParserInvalidDatetimeException(_(
-                'Unable to parse iso8601 datetime: {}.'
-                .format(datepart)
+                'Unable to parse iso8601 datetime: {} [{}]'
+                .format(datepart, str(err))
             ))
     return parsed
 
