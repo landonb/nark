@@ -226,9 +226,12 @@ def parse_dated(dated, time_now, cruftless=False):
             return dated
         dt, type_dt, sep, rest = HamsterTimeSpec.discern(dated)
         if cruftless and rest:
-            # (lb): This fcn. is very lenient. It returns the unparsed
-            # string if the string could not be parsed for time info.
-            return dated
+            msg = _('Found more than datetime in')
+            plus_sep = sep and ' + ‘{}’'.format(sep) or ''
+            raise ParserInvalidDatetimeException(_(
+                '{} “{}”: ‘{}’{} + ‘{}’'
+                .format(msg, dated, str(dt), plus_sep, rest)
+            ))
         return datetime_from_discerned(dated, dt, type_dt)
 
     def datetime_from_discerned(dated, dt, type_dt):
