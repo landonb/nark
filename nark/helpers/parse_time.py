@@ -228,15 +228,17 @@ def parse_dated(dated, time_now, cruftless=False):
         if cruftless and rest:
             msg = _('Found more than datetime in')
             plus_sep = sep and ' + ‘{}’'.format(sep) or ''
-            raise ParserInvalidDatetimeException(_(
+            raise ParserInvalidDatetimeException(
                 '{} “{}”: ‘{}’{} + ‘{}’'
                 .format(msg, dated, str(dt), plus_sep, rest)
-            ))
+            )
+        if dt is None:
+            raise ParserInvalidDatetimeException(
+                '{}: “{}”'.format(_('Unparseable datetime'), dated)
+            )
         return datetime_from_discerned(dated, dt, type_dt)
 
     def datetime_from_discerned(dated, dt, type_dt):
-        if dt is None:
-            return dated
         if type_dt == 'datetime':
             # FIXME: (lb): Implement timezone/local_tz.
             dt_suss = parse_datetime_iso8601(dt, must=True, local_tz=None)
