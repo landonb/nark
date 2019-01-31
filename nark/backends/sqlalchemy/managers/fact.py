@@ -21,7 +21,6 @@ from future.utils import python_2_unicode_compatible
 from builtins import str
 from datetime import datetime
 from sqlalchemy import asc, desc, func
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import and_, or_
 
 from . import query_apply_limit_offset, query_apply_true_or_not, BaseAlchemyManager
@@ -754,7 +753,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             nark.Fact: The found Fact, or None if none found.
 
         Raises:
-            IntegrityError: If more than one Fact found at given time.
+            ValueError: If more than one Fact found at given time.
         """
         query = self.store.session.query(AlchemyFact)
 
@@ -777,7 +776,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             message = 'More than one fact found starting at "{}": {} facts found'.format(
                 fact.start, n_facts
             )
-            raise IntegrityError(message)
+            raise ValueError(message)
 
         found = query.one_or_none()
         found_fact = found.as_hamster(self.store) if found else None
@@ -797,7 +796,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             nark.Fact: The found Fact, or None if none found.
 
         Raises:
-            IntegrityError: If more than one Fact found at given time.
+            ValueError: If more than one Fact found at given time.
         """
         query = self.store.session.query(AlchemyFact)
 
@@ -818,9 +817,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         n_facts = query.count()
         if n_facts > 1:
             message = 'More than one fact found ending at "{}": {} facts found'.format(
-                fact.end, n_facts
+                fact.end, n_facts,
             )
-            raise IntegrityError(message)
+            raise ValueError(message)
 
         found = query.one_or_none()
         found_fact = found.as_hamster(self.store) if found else None
@@ -1028,7 +1027,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             list: List of ``nark.Facts`` instances.
 
         Raises:
-            IntegrityError: If more than one Fact found at given time.
+            ValueError: If more than one Fact found at given time.
         """
         query = self.store.session.query(AlchemyFact)
 
@@ -1071,7 +1070,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 message = 'Broken time frame found at "{}": {} facts found'.format(
                     fact_time, n_facts
                 )
-                raise IntegrityError(message)
+                raise ValueError(message)
 
         facts = query.all()
         found_facts = [fact.as_hamster(self.store) for fact in facts]
