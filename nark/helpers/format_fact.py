@@ -52,6 +52,7 @@ def friendly_str(
     """
     def _friendly_str(fact):
         was_coloring = set_coloring(colorful)
+        # MAYBE/2019-01-28: Truncate meta per cut_width or similar.
         meta = assemble_parts(fact)
         result = format_result(fact, meta)
 
