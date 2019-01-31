@@ -45,7 +45,9 @@ class FactsDiff(object):
         self.exclude_attrs = None
 
     def __str__(self):
-        return 'orig: {} / edit: {}'.format(self.orig_fact, self.edit_fact)
+        return 'FactsDiff:\n- orig: {}\n- edit: {}'.format(
+            self.orig_fact.short, self.edit_fact.short,
+        )
 
     # ***
 

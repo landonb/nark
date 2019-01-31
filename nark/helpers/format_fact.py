@@ -88,7 +88,7 @@ def friendly_str(
         # Format the 🏭 🆔 width to be consistent. Assume lifetime of facts?
         # - 999,999 facts over 100 years would be ~27 facts per day.
         return colorize(
-            '(🆔{})'.format(fact.pk and '{:5d}'.format(fact.pk) or 'None'),
+            '(🏭 {})'.format(fact.pk and '{:6d}'.format(fact.pk) or 'None'),
             'grey_78',
         )
 
