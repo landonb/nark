@@ -22,6 +22,7 @@ import pytest
 from freezegun import freeze_time
 
 from nark.helpers import fact_time, parse_time
+from nark.helpers.parse_errors import ParserInvalidDatetimeException
 
 
 class TestGetDayEnd(object):
@@ -72,10 +73,12 @@ class TestParseTime(object):
     @pytest.mark.parametrize('time', ['18 55', '18:555', '2014 01 04 12:30'])
     def test_parse_dated_invalid_times(self, time):
         """Ensure that invalid times throw an exception."""
-        parsed = parse_time.parse_dated(
-            time, time_now=datetime.datetime.now(), cruftless=True,
-        )
-        assert parsed == time
+        with pytest.raises(ParserInvalidDatetimeException):
+            # F841 local variable 'parsed_' is assigned to but never used
+            parsed_ = parse_time.parse_dated(  # noqa: F841
+                time, time_now=datetime.datetime.now(), cruftless=True,
+            )
+            assert False  # Unreachable.
 
 
 class TestValidateStartEndRange(object):
