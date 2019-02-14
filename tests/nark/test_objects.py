@@ -19,18 +19,17 @@ from __future__ import absolute_import, unicode_literals
 
 import copy
 import datetime
+from builtins import str as text
+from operator import attrgetter
+
 import faker as faker_
 import pytest
-from builtins import str as text
 from freezegun import freeze_time
-from operator import attrgetter
-from six import text_type
-
 from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact
 from nark.items.tag import Tag
-
+from six import text_type
 
 faker = faker_.Faker()
 

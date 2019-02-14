@@ -84,12 +84,12 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import os
-from configparser import NoOptionError, SafeConfigParser
-from six import string_types
-from six import text_type
 
-from .app_dirs import NarkAppDirs
+from configparser import NoOptionError, SafeConfigParser
+from six import string_types, text_type
+
 from ..control import REGISTERED_BACKENDS
+from .app_dirs import NarkAppDirs
 
 # NOTE: (lb): This file is unused by nark/dob.
 #       It's used by hamster-gtk, which is broke

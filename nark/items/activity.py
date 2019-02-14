@@ -25,7 +25,6 @@ from six import text_type
 from .category import Category
 from .item_base import BaseItem
 
-
 ActivityTuple = namedtuple(
     'ActivityTuple', ('pk', 'name', 'category', 'deleted', 'hidden'),
 )

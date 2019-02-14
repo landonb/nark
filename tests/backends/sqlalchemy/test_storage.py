@@ -18,8 +18,8 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
-import pytest
 
+import pytest
 from nark.backends.sqlalchemy.objects import (
     AlchemyActivity,
     AlchemyCategory,

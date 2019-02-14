@@ -31,11 +31,11 @@ import sys
 from collections import namedtuple
 from io import open
 
+import lazy_import
 from future.utils import python_2_unicode_compatible
 from six import text_type
 
 # Profiling: load icalendar: ~ 0.008 secs.
-import lazy_import
 icalendar = lazy_import.lazy_module('icalendar')
 
 # SYNC_ME: FactTuple and PlaintextWriter's headers.

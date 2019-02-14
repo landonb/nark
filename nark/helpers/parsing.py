@@ -22,21 +22,22 @@ from __future__ import absolute_import, unicode_literals
 import logging
 import os
 import re
+
+import lazy_import
 from six import text_type
 
-from .strings import comma_or_join
 from .parse_errors import (
     ParserException,
+    ParserInvalidDatetimeException,
+    ParserMissingActivityException,
     ParserMissingDatetimeOneException,
     ParserMissingDatetimeTwoException,
-    ParserInvalidDatetimeException,
-    ParserMissingSeparatorActivity,
-    ParserMissingActivityException
+    ParserMissingSeparatorActivity
 )
 from .parse_time import HamsterTimeSpec, parse_datetime_iso8601
+from .strings import comma_or_join
 
 # Profiling: `import dateparser` takes ~ 0.2 seconds.
-import lazy_import
 dateparser = lazy_import.lazy_module('dateparser')
 
 

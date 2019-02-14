@@ -17,9 +17,9 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import colored
 import sys
 
+import colored
 
 __all__ = [
     'disable_colors',

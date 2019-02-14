@@ -16,9 +16,10 @@
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-from future.utils import python_2_unicode_compatible
 
 import datetime
+
+from future.utils import python_2_unicode_compatible
 
 from . import BaseManager
 from ..helpers import fact_time

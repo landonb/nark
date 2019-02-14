@@ -16,13 +16,13 @@
 # along with 'nark'. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-from future.utils import python_2_unicode_compatible
 
 from collections import namedtuple
+
+from future.utils import python_2_unicode_compatible
 from six import text_type
 
 from .item_base import BaseItem
-
 
 TagTuple = namedtuple(
     'TagTuple', ('pk', 'name', 'deleted', 'hidden'),

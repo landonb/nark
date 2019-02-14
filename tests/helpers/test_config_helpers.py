@@ -18,9 +18,9 @@
 from __future__ import absolute_import, unicode_literals
 
 import os
+
 import pytest
 from configparser import SafeConfigParser
-
 from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
 

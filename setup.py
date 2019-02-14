@@ -10,7 +10,7 @@ Packaging instruction for setup tools.
 import os
 import re
 # Because exec(init_py) import _.
-from gettext import gettext as _   # noqa: F401
+from gettext import gettext as _  # noqa: F401
 
 try:
     from setuptools import setup, find_packages

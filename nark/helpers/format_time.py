@@ -19,13 +19,14 @@
 
 from __future__ import absolute_import, unicode_literals
 
-from pedantic_timedelta import PedanticTimedelta
-from six import text_type
-
 import datetime
 import math
 
 import lazy_import
+from six import text_type
+
+from pedantic_timedelta import PedanticTimedelta
+
 # Profiling: load pytz: ~ 0.002 secs.
 pytz = lazy_import.lazy_module('pytz')
 

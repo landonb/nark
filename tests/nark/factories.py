@@ -20,10 +20,10 @@
 from __future__ import unicode_literals
 
 import datetime
+
 import factory
 import fauxfactory
 from future.utils import python_2_unicode_compatible
-
 from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact

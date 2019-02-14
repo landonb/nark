@@ -16,19 +16,24 @@
 # along with 'nark'.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-from future.utils import python_2_unicode_compatible
 
 from builtins import str
+
+from future.utils import python_2_unicode_compatible
 from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import query_apply_limit_offset, query_apply_true_or_not, BaseAlchemyManager
-from ..objects import (
-    AlchemyActivity, AlchemyCategory, AlchemyFact, AlchemyTag, fact_tags,
-)
+from . import BaseAlchemyManager, query_apply_limit_offset, query_apply_true_or_not
 from ....managers.tag import BaseTagManager
+from ..objects import (
+    AlchemyActivity,
+    AlchemyCategory,
+    AlchemyFact,
+    AlchemyTag,
+    fact_tags
+)
 
 
 @python_2_unicode_compatible

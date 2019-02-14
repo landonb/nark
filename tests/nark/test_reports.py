@@ -20,12 +20,12 @@ from __future__ import absolute_import, unicode_literals
 import csv
 import datetime
 import os.path
-import pytest
 import xml
-from icalendar import Calendar
-from six import text_type
 
+import pytest
+from icalendar import Calendar
 from nark import reports
+from six import text_type
 
 
 # Fixtures

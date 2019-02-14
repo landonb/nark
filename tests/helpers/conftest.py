@@ -21,14 +21,14 @@ from __future__ import absolute_import, unicode_literals
 
 import codecs
 import datetime
-import fauxfactory
 import os
+
+import fauxfactory
 import pytest
 from configparser import SafeConfigParser
-from six import text_type
-
 from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
+from six import text_type
 
 
 @pytest.fixture

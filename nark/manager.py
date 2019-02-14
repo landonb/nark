@@ -19,16 +19,15 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 from datetime import datetime
+
 from future.utils import python_2_unicode_compatible
 
 from .helpers import logging as logging_helpers
 from .helpers.app_dirs import NarkAppDirs
-
 from .managers.activity import BaseActivityManager
 from .managers.category import BaseCategoryManager
 from .managers.fact import BaseFactManager
 from .managers.tag import BaseTagManager
-
 
 __all__ = ['BaseStore', ]
 

@@ -21,17 +21,17 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 from datetime import timedelta
+
+import lazy_import
 from six import text_type
 
 from .fact_time import (
-    # datetime_from_clock_after,
-    datetime_from_clock_prior,
     RE_PATTERN_RELATIVE_CLOCK,
-    RE_PATTERN_RELATIVE_DELTA
+    RE_PATTERN_RELATIVE_DELTA,
+    datetime_from_clock_prior
 )
 from .parse_errors import ParserInvalidDatetimeException
 
-import lazy_import
 # Profiling: load iso8601: ~ 0.004 secs.
 iso8601 = lazy_import.lazy_module('iso8601')
 

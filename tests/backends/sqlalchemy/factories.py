@@ -20,14 +20,14 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
+
 import factory
 import faker
-
 from nark.backends.sqlalchemy.objects import (
     AlchemyActivity,
     AlchemyCategory,
     AlchemyFact,
-    AlchemyTag,
+    AlchemyTag
 )
 
 from . import common

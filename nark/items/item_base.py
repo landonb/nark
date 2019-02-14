@@ -18,6 +18,7 @@
 """Base class for Nark item instances."""
 
 from __future__ import absolute_import, unicode_literals
+
 from future.utils import python_2_unicode_compatible
 
 __all__ = ['BaseItem', ]

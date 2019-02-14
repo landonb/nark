@@ -18,9 +18,9 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
+
 import pytest
 from freezegun import freeze_time
-
 from nark.helpers import fact_time, parse_time
 from nark.helpers.parse_errors import ParserInvalidDatetimeException
 

@@ -20,7 +20,8 @@
 from __future__ import absolute_import, unicode_literals
 
 import logging
-from colored import fg, attr
+
+from colored import attr, fg
 
 
 def formatter_basic(color=False):

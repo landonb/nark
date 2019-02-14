@@ -18,10 +18,10 @@
 """``nark`` object store."""
 
 from __future__ import absolute_import, unicode_literals
-from future.utils import python_2_unicode_compatible
 
 import os.path
 
+from future.utils import python_2_unicode_compatible
 # Profiling: load create_engine: ~ 0.100 secs.
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
@@ -29,12 +29,12 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
 from . import objects
+from ...manager import BaseStore
 from .managers.activity import ActivityManager
 from .managers.category import CategoryManager
-from .managers.migrate import MigrationsManager
 from .managers.fact import FactManager
+from .managers.migrate import MigrationsManager
 from .managers.tag import TagManager
-from ...manager import BaseStore
 
 __all__ = ['SQLAlchemyStore']
 

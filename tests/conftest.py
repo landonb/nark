@@ -20,12 +20,12 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
+
 import fauxfactory
 import pytest
 from pytest_factoryboy import register
 
 from .nark import factories as lib_factories
-
 
 # Make factory fixtures, like alchemy_category_factory.
 #   ((lb) At least this is where I think it happens.)

@@ -21,8 +21,8 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import re
-from six import text_type
 
+from six import text_type
 
 __all__ = [
     'datetime_from_clock_prior',

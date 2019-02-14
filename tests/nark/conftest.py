@@ -20,15 +20,14 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
+
 import faker as faker_
 import pytest
-from pytest_factoryboy import register
-
 from nark.control import HamsterControl
 from nark.manager import BaseStore
+from pytest_factoryboy import register
 
 from . import factories
-
 
 register(factories.CategoryFactory)
 register(factories.ActivityFactory)

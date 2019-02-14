@@ -20,21 +20,20 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
-import fauxfactory
 import os
-import pytest
-from pytest_factoryboy import register
-from sqlalchemy import create_engine, event
 
+import fauxfactory
+import pytest
 from nark.backends.sqlalchemy import objects
 from nark.backends.sqlalchemy.storage import SQLAlchemyStore
 from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact
 from nark.items.tag import Tag
+from pytest_factoryboy import register
+from sqlalchemy import create_engine, event
 
 from . import common, factories
-
 
 register(factories.AlchemyCategoryFactory)
 register(factories.AlchemyActivityFactory)

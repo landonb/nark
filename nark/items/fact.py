@@ -16,23 +16,22 @@
 # along with 'nark'. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
-from future.utils import python_2_unicode_compatible
 
 from collections import namedtuple
 from datetime import datetime
-from math import inf
 from operator import attrgetter
+
+from future.utils import python_2_unicode_compatible
+from math import inf
 from six import text_type
 
+from ..helpers import fact_time, format_fact, format_time
+from ..helpers.facts_diff import FactsDiff
+from ..helpers.parsing import parse_factoid
 from .activity import Activity
 from .category import Category
 from .item_base import BaseItem
 from .tag import Tag
-from ..helpers import fact_time
-from ..helpers import format_fact
-from ..helpers import format_time
-from ..helpers.facts_diff import FactsDiff
-from ..helpers.parsing import parse_factoid
 
 
 __all__ = [
