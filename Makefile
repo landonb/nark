@@ -124,6 +124,16 @@ docs:
 
 isort:
 	isort --recursive setup.py nark/ tests/
+	# DX: End files with blank line.
+	git ls-files | while read file; do \
+		if [ -n "$$(tail -n1 $$file)" ]; then \
+			echo "Blanking: $$file"; \
+			echo >> $$file; \
+		else \
+			echo "DecentOk: $$file"; \
+		fi \
+	done
+	@echo "ça va"
 
 servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
