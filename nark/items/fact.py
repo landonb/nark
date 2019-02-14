@@ -22,7 +22,6 @@ from datetime import datetime
 from operator import attrgetter
 
 from future.utils import python_2_unicode_compatible
-from math import inf
 from six import text_type
 
 from ..helpers import fact_time, format_fact, format_time
@@ -33,6 +32,11 @@ from .category import Category
 from .item_base import BaseItem
 from .tag import Tag
 
+try:
+    from math import inf
+except ImportError:
+    # < Python 3.5.
+    inf = float('inf')
 
 __all__ = [
     'SinceTimeBegan',
