@@ -70,8 +70,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'hamster-lib'
-copyright = '2015-2016, Eric Goller'
-author = 'Eric Goller'
+copyright = '2018-2019, HotOffThe Hamster'
+author = 'HotOffThe Hamster'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -255,9 +255,9 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'hamster-lib.tex',
+    ('index', 'nark.tex',
      'hamster-lib Documentation',
-     'Eric Goller', 'manual'),
+     'HotOffThe Hamster', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -288,7 +288,7 @@ latex_documents = [
 man_pages = [
     ('index', 'hamster-lib',
      'hamster-lib Documentation',
-     ['Eric Goller'], 1)
+     ['HotOffThe Hamster'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -303,7 +303,7 @@ man_pages = [
 texinfo_documents = [
     ('index', 'hamster-lib',
      'hamster-lib Documentation',
-     'Eric Goller',
+     'HotOffThe Hamster',
      'hamster-lib',
      'One line description of project.',
      'Miscellaneous'),
