@@ -632,10 +632,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_filter_by_search_term(query):
             if search_term:
-                query = filter_search_term(query)
+                query = _filter_search_term(query)
             return query
 
-        def filter_search_term(query):
+        def _filter_search_term(query):
             """
             Limit query to facts that match the search terms.
 
