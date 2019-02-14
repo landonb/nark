@@ -855,26 +855,45 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         ref_time = self._get_sql_datetime(ref_time)
 
+        before_ongoing_fact_start = and_(
+            AlchemyFact.end == None,  # noqa: E711
+            # Except rather than <=, use less than, otherwise
+            # penultimate_fact.antecedent might find the ultimate
+            # fact, if that final fact is ongoing.
+            #   E.g., considering
+            #     fact  1: time-a to time-b
+            #     ...
+            #     fact -2: time-x to time-y
+            #     fact -1: time-y to <now>
+            #   antecedent of fact -2 should check time-y < time-y and
+            #   not <= otherwise antecedent of fact -2 would be fact -1.
+            #   (The subsequent function will see it, though, as it
+            #   looks for AlchemyFact.start >= ref_time.)
+            func.datetime(AlchemyFact.start) < ref_time,
+        )
+
+        if fact is None:
+            before_closed_fact_end = and_(
+                AlchemyFact.end != None,  # noqa: E711
+                # Special case for ongoing fact (check its start).
+                # Be most inclusive and compare against facts' ends.
+                func.datetime(AlchemyFact.end) <= ref_time,
+            )
+        else:
+            before_closed_fact_end = and_(
+                AlchemyFact.end != None,  # noqa: E711
+                or_(
+                    func.datetime(AlchemyFact.end) < ref_time,
+                    and_(
+                        func.datetime(AlchemyFact.end) == ref_time,
+                        AlchemyFact.pk < fact.pk,
+                    ),
+                ),
+            )
+
         condition = or_(
-            # Include ongoing fact and check its start.
-            and_(
-                AlchemyFact.end == None,  # noqa: E711
-                # Except rather than <=, use less than, otherwise
-                # penultimate_fact.antecedent might find the ultimate
-                # fact, if that final fact is ongoing.
-                #   E.g., considering
-                #     fact  1: time-a to time-b
-                #     ...
-                #     fact -2: time-x to time-y
-                #     fact -1: time-y to <now>
-                #   antecedent of fact -2 should check time-y < time-y and
-                #   not <= otherwise antecedent of fact -2 would be fact -1.
-                #   (The subsequent function will see it, though, as it
-                #   looks for AlchemyFact.start >= ref_time.)
-                func.datetime(AlchemyFact.start) < ref_time,
-            ),
-            # Be most inclusive and compare against facts' ends.
-            func.datetime(AlchemyFact.end) <= ref_time,
+            before_ongoing_fact_start,
+            before_closed_fact_end,
         )
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
@@ -926,7 +945,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         ref_time = self._get_sql_datetime(ref_time)
 
-        condition = and_(func.datetime(AlchemyFact.start) >= ref_time)
+        if fact is None:
+            condition = and_(func.datetime(AlchemyFact.start) >= ref_time)
+        else:
+            condition = or_(
+                func.datetime(AlchemyFact.start) > ref_time,
+                and_(
+                    func.datetime(AlchemyFact.start) == ref_time,
+                    AlchemyFact.pk > fact.pk,
+                ),
+            )
 
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
 
