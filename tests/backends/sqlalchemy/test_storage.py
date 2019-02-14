@@ -952,9 +952,18 @@ class TestFactManager():
             since = alchemy_fact.start + datetime.timedelta(minutes=start_filter)
         if end_filter:
             until = alchemy_fact.start + datetime.timedelta(minutes=end_filter)
-
         result = alchemy_store.facts._get_all(
-            since=since, until=until, partial=bool_value_parametrized,
+            since=since,
+            until=until,
+            partial=bool_value_parametrized,
+            # 2019-02-14: (lb): When lazy_tags=False, the `result == [alchemy_fact]`
+            # fails because result[0].tags != alchemy_fact.tags, because it seems
+            # query.all() loads Tag objects with proper PKs, but lazy_tags uses
+            # query-coalesce magic to assemble Tag labels without PKs, so PK=None.
+            # FIXME/TESTME/2019-02-14: (lb): What's behavior on, say, dob-list?
+            #   py.test --pdb -vv \
+            #       -k test_get_all_existing_fact_partialy_in_timerange tests/
+            lazy_tags=True,
         )
         if bool_value_parametrized:
             assert len(result) == 1
@@ -966,7 +975,7 @@ class TestFactManager():
     def test_get_all_search_matches_activity(self, alchemy_store, set_of_alchemy_facts):
         """Make sure facts with ``Fact.activity.name`` matching the term are returned."""
         search_term = set_of_alchemy_facts[1].activity.name
-        result = alchemy_store.facts._get_all(search_term=search_term)
+        result = alchemy_store.facts._get_all(search_term=search_term, lazy_tags=True)
         assert len(result) == 1
         assert len(set_of_alchemy_facts) == 5
         assert str(result[0]) == str(set_of_alchemy_facts[1])
@@ -975,7 +984,7 @@ class TestFactManager():
     def test_get_all_search_matches_category(self, alchemy_store, set_of_alchemy_facts):
         """Make sure facts with ``Fact.category.name`` matching the term are returned."""
         search_term = set_of_alchemy_facts[1].category.name
-        result = alchemy_store.facts._get_all(search_term=search_term)
+        result = alchemy_store.facts._get_all(search_term=search_term, lazy_tags=True)
         assert len(result) == 1
         assert len(set_of_alchemy_facts) == 5
         assert str(result[0]) == str(set_of_alchemy_facts[1])
