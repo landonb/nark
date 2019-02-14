@@ -503,7 +503,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_prepare_tags_col(query):
             if lazy_tags:
-                return
+                return query, None
             # (lb): Always include tags. We could let SQLAlchemy lazy load,
             # but this can be slow. E.g., on 15K Facts, calling fact.tags on
             # each -- triggering lazy load -- takes 7 seconds on my machine.
