@@ -368,7 +368,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         partial=False,
         include_usage=False,
         count_results=False,
-        # FIXME/2018-06-20: (lb): Implement since/until.
         since=None,
         until=None,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
@@ -961,7 +960,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 End datetime of facts to find.
 
             result_limit (int):
-                Maximum number of facts to find, else raise OverflowError.
+                Maximum number of facts to find, else log warning message.
 
         Returns:
             list: List of ``nark.Facts`` instances.
@@ -1000,6 +999,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # can at least warn, I suppose.
         during_count = query.count()
         if during_count > result_limit:
+            # (lb): hamster-lib would `raise OverflowError`,
+            # but that seems drastic.
             message = (_(
                 'This is your alert that lots of Facts were found between '
                 'the two dates specified: found {}.'
