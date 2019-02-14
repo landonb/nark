@@ -561,7 +561,7 @@ class BaseFactManager(BaseManager):
 
     # ***
 
-    def strictly_during(self, start, end, result_limit=10):
+    def strictly_during(self, start, end, result_limit=1000):
         """
         Return the fact(s) strictly contained within a start and end time.
 
@@ -573,7 +573,7 @@ class BaseFactManager(BaseManager):
                 End datetime of facts to find.
 
             result_limit (int):
-                Maximum number of facts to find, else raise OverflowError.
+                Maximum number of facts to find, else log warning message.
 
         Returns:
             list: List of ``nark.Facts`` instances.
