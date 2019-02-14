@@ -1,67 +1,94 @@
-============
+############
 Contributing
-============
+############
+
+.. |virtualenvwrapper| replace:: ``virtualenvwrapper``
+.. _virtualenvwrapper: https://pypi.org/project/virtualenvwrapper/
+
+.. |flake8| replace:: ``flake8``
+.. _flake8: http://flake8.pycqa.org/en/latest/
+
+.. |pytest| replace:: ``pytest``
+.. _pytest: https://docs.pytest.org/en/latest/
+
+.. |tox| replace:: ``tox``
+.. _tox: https://tox.readthedocs.io/en/latest/
+
+.. contents:: Contributing Contents
+   :depth: 2
+   :local:
 
 Contributions are welcome, and they are greatly appreciated!
 
 Every little bit helps, and credit will always be given (if so desired).
 
-.. contents::
-   :depth: 2
-
-Types of Contributions
-----------------------
+=================
+How to Contribute
+=================
 
 You can contribute in many ways:
 
 Report Bugs
-~~~~~~~~~~~
+-----------
 
 Report bugs at https://github.com/hotoffthehamster/nark/issues.
 
-If you are reporting a bug, please include:
+When reporting a bug, please include:
 
-* Your operating system name and version; and the Python version you are using.
+* Your operating system name and version, and the Python version you are using.
 
 * Any details about your local setup that might be helpful for troubleshooting.
 
 * Detailed steps to reproduce the bug.
 
 Fix Bugs
-~~~~~~~~
+--------
 
-Look through the GitHub issues for bugs.
-Anything tagged with "bug" is open to whoever wants to implement it.
+Look through the GitHub issues for anything tagged with "bug".
+Pick one, assign yourself to it, and work on the issue.
 
 Implement Features
-~~~~~~~~~~~~~~~~~~
+------------------
 
-Look through the GitHub issues for features.
-Anything tagged with "feature" is open to whoever wants to implement it.
+Look through the GitHub issues for anything tagged with "feature".
+Pick one, assign yourself to it, and work on the issue.
 
 Write Documentation
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
-``nark`` can always use more-better docs, whether as part of the official
-user or developer READMEs, in the code as docstrings, or even on the web
-as blog posts, articles, etc.
+If you find documentation out of date, missing, or confusing,
+please help improve it. This includes the official user documenation,
+the README, other developer documenation, and documentation.
+
+We also appreciate reference from blog posts, articles, and other projects.
 
 Submit Feedback
-~~~~~~~~~~~~~~~
+---------------
 
 The best way to send feedback is to file an issue at
 https://github.com/hotoffthehamster/nark/issues.
 
+See above for reporting bugs.
+
 If you are proposing a feature:
 
-* Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
+* Explain in detail how the feature should work.
+* Unless you expect to work on the code yourself, your chances of having a
+  feature implemented are greater if you keep the scope focused and narrow
+  such that it's as simple as possible for a developer to work on.
+  That, or a monetary contribution speaks volumes.
 * Remember that this is a volunteer-driven project, and that contributions
-  are welcome!
-* Be nice, please, and don't expect premium service!!
+  are welcome! You are encouraged to fork the project, hack away, and submit
+  pull requests for new features (and bug fixes).
+* Above all else, please be considerate and kind.
+  A few nice words can go a long way!
 
-Get Started!
-------------
+Please also feel free to email the author directly if you have any other
+questions or concerns. Response times may vary depending on season.
+
+===============
+Getting Started
+===============
 
 Ready to contribute? Here's how to set up ``nark`` for local development.
 
@@ -124,17 +151,17 @@ Otherwise, if you want just the bare library, continue reading!
     (nark) $ git rebase upstream/develop
     (nark) $ git push origin HEAD
 
-5. Create a branch for local development. If you are working on an
-   known issue, reference the Issue number in the branch name, e.g.,::
+5. Create a branch for local development. If you are working on an known issue,
+   you may want to reference the Issue number in the branch name, e.g.,::
 
-    (nark) $ git checkout -b feature/ISSUE-123-name-of-your-issue
+    $ git checkout -b feature/ISSUE-123-name-of-your-issue
 
    Now you can add and edit code in your local working directory.
 
 6. Do your work and make one or more sane, concise commits::
 
-    (nark) $ git add -p
-    (nark) $ git commit -m "<Category>: <Short description of changes.>
+    $ git add -p
+    $ git commit -m "<Category>: <Short description of changes.>
 
     - <Longer description, if necessary.>"
 
@@ -191,12 +218,14 @@ Otherwise, if you want just the bare library, continue reading!
 7. Throughout development, run tests and the linter -- and definitely before
    you submit a Pull Request.
 
-   ``nark`` uses |flake8|_ for linting, |pytest|_ for unit testing,
-   and |tox|_ for verifying against the many versions of Python.
+   ``nark`` uses
+   |flake8|_ for linting,
+   |pytest|_ for unit testing, and
+   |tox|_ for verifying against the many versions of Python.
 
    You can run all of these tools with one command::
 
-    (nark) $ make test-all
+    $ make test-all
 
    .. _rebase_and_squash:
 
@@ -217,7 +246,7 @@ Otherwise, if you want just the bare library, continue reading!
 
    For example, pretend that I have the following git history::
 
-    (nark) $ git log --oneline | head -3
+    $ git log --oneline | head -3
 
     b1c07a4 Regression: Fix some old bug.
     17d1e38 Feature: Add my new feature.
@@ -228,12 +257,12 @@ Otherwise, if you want just the bare library, continue reading!
 
    First, add the linting fix::
 
-    (nark) $ git add -A
-    (nark) $ git ci -m "Squash me!"
+    $ git add -A
+    $ git ci -m "Squash me!"
 
    Next, start a rebase::
 
-    (nark) $ git rebase -i 2e888c3
+    $ git rebase -i 2e888c3
 
    (*Note:* Use the SHA1 hash of the commit *after* the one you want squash into.)
 
@@ -271,11 +300,11 @@ Otherwise, if you want just the bare library, continue reading!
    bugfix works, and rebasing, and committing your changes, push them to
    the branch on your GitHub account::
 
-    (nark) $ git push origin feature/ISSUE-123-name-of-your-issue
+    $ git push origin feature/ISSUE-123-name-of-your-issue
 
    *Note:* If you pushed your work and then rebased, you may have to force-push::
 
-    (nark) $ git push origin feature/ISSUE-123-name-of-your-issue --force
+    $ git push origin feature/ISSUE-123-name-of-your-issue --force
 
    .. _rebase_atop_develop:
 
@@ -287,27 +316,16 @@ Otherwise, if you want just the bare library, continue reading!
     merge conflicts, so that the main project maintainer does not have
     to do so themselves. E.g.,::
 
-     (nark) $ git checkout feature/ISSUE-123-name-of-your-issue
-     (nark) $ git fetch upstream
-     (nark) $ git rebase upstream/develop
+     $ git checkout feature/ISSUE-123-name-of-your-issue
+     $ git fetch upstream
+     $ git rebase upstream/develop
      # Resolve any conflicts, then force-push.
-     (nark) $ git push origin HEAD --force
+     $ git push origin HEAD --force
      # And then open the Pull Request.
 
-.. |virtualenvwrapper| replace:: ``virtualenvwrapper``
-.. _virtualenvwrapper: https://pypi.org/project/virtualenvwrapper/
-
-.. |flake8| replace:: ``flake8``
-.. _flake8: http://flake8.pycqa.org/en/latest/
-
-.. |pytest| replace:: ``pytest``
-.. _pytest: https://docs.pytest.org/en/latest/
-
-.. |tox| replace:: ``tox``
-.. _tox: https://tox.readthedocs.io/en/latest/
-
+=======================
 Pull Request Guidelines
------------------------
+=======================
 
 Before you submit a pull request, check that it meets these guidelines:
 
@@ -346,8 +364,9 @@ Before you submit a pull request, check that it meets these guidelines:
 
    * 'nough said.
 
+==============
 Debugging Tips
---------------
+==============
 
 To run one test or a subset of tests, you can specify a substring
 expression using the ``-k`` option with ``make test``::
@@ -358,10 +377,11 @@ The substring will be Python-evaluated. As such, you can test multiple
 tests using ``or``, e.g., ``-k 'test_method or test_other'``.
 Or you can exclude tests using ``not``, e.g., ``-k 'not test_method'``.
 
-If you want to run a particular ``tox`` environment, you can run
-``tox`` with the ``envlist`` option::
-
-    $ tox -e NAME_OR_ENVIRONMENT
+Note that ``readline`` functionality will not work from any breakpoint
+you encounter under ``make test``. (For example, pressing the Up arrow
+will print a control character sequence to the terminal, rather than
+showing the last command you ran.) If you want to interact with the code
+at runtime, run ``py.test`` instead (see next).
 
 If you'd like to break into a debugger when a test fails, run ``pytest``
 directly and have it start the interactive Python debugger on errors::
@@ -389,6 +409,17 @@ Simply add a line like this:
 .. code-block:: python
 
     import pdb; pdb.set_trace()
+
+To test against other Python versions than what is setup in your ``virtualenv``,
+you can use ``tox`` and name an environment with the ``envlist`` option::
+
+    $ tox -e NAME_OR_ENVIRONMENT
+
+===============
+Code of Conduct
+===============
+
+Please respect and adhere to the `Code of Conduct <code-of-conduct.html>`_.
 
 And that's it!
 
