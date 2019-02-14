@@ -214,3 +214,4 @@ def raw_fact_with_persistent_activity(persistent_activity):
             'description': None,
         },
     )
+

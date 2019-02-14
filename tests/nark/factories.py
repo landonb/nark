@@ -90,3 +90,4 @@ class FactFactory(factory.Factory):
     def tags(self, create, extracted, **kwargs):
         """Add new random tags after instance creation."""
         self.tags = set([TagFactory() for i in range(1)])
+

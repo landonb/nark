@@ -243,3 +243,4 @@ class TestXMLWriter(object):
         with open(path, 'rb') as fobj:
             result = xml.dom.minidom.parse(fobj)
             assert result.toxml()
+

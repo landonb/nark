@@ -175,4 +175,3 @@ def format_delta(delta, style='%M'):
 
     return _format_delta()
 
-

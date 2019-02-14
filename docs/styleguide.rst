@@ -126,3 +126,4 @@ issue will be created.
 
 Every pull request has to be approved by at least one other developer before
 merging.
+
