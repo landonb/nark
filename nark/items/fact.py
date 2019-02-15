@@ -25,7 +25,6 @@ from future.utils import python_2_unicode_compatible
 from six import text_type
 
 from ..helpers import fact_time, format_fact, format_time
-from ..helpers.facts_diff import FactsDiff
 from ..helpers.parsing import parse_factoid
 from .activity import Activity
 from .category import Category
@@ -591,12 +590,6 @@ class Fact(BaseItem):
         A briefer Fact one-liner using HTML. Useful for, e.g., notifier toast.
         """
         return format_fact.html_notif(self)
-
-    # ***
-
-    def friendly_diff(self, other, formatted=False, **kwargs):
-        facts_diff = FactsDiff(self, other, formatted=formatted)
-        return facts_diff.friendly_diff(**kwargs)
 
     # ***
 
