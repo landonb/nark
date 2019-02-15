@@ -21,9 +21,9 @@ import os
 
 import appdirs
 
-__all__ = [
+__all__ = (
     'NarkAppDirs',
-]
+)
 
 
 class NarkAppDirs(appdirs.AppDirs):

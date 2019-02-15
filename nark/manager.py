@@ -29,7 +29,7 @@ from .managers.category import BaseCategoryManager
 from .managers.fact import BaseFactManager
 from .managers.tag import BaseTagManager
 
-__all__ = ['BaseStore', ]
+__all__ = ('BaseStore', )
 
 
 @python_2_unicode_compatible

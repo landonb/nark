@@ -22,11 +22,11 @@ from __future__ import absolute_import, unicode_literals
 from future.utils import python_2_unicode_compatible
 from sqlalchemy.exc import IntegrityError
 
-__all__ = [
+__all__ = (
     'BaseAlchemyManager',
     'query_apply_limit_offset',
     'query_apply_true_or_not',
-]
+)
 
 
 def query_apply_limit_offset(query, **kwargs):

@@ -41,10 +41,10 @@ from .strings import comma_or_join
 dateparser = lazy_import.lazy_module('dateparser')
 
 
-__all__ = [
+__all__ = (
     'parse_factoid',
     'Parser',
-]
+)
 
 
 # FIXME/MAYBE: (lb): New pattern? Can modules just get the logger here?

@@ -30,7 +30,7 @@ from future.utils import python_2_unicode_compatible
 
 from ..items.item_base import BaseItem
 
-__all__ = ['BaseManager', ]
+__all__ = ('BaseManager', )
 
 
 @python_2_unicode_compatible

@@ -29,7 +29,7 @@ from ....managers.migrate import BaseMigrationsManager
 migrate_exceptions = lazy_import.lazy_module('migrate.exceptions')
 migrate_versioning_api = lazy_import.lazy_module('migrate.versioning.api')
 
-__all__ = ['MigrationsManager']
+__all__ = ('MigrationsManager')
 
 
 @python_2_unicode_compatible

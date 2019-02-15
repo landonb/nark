@@ -23,7 +23,7 @@ from six import text_type
 from ..helpers.colored import attr, colorize, set_coloring
 from ..helpers.strings import format_value_truncate
 
-__all__ = [
+__all__ = (
     'friendly_str',
     'html_notif',
     'tags_inline',
@@ -32,7 +32,7 @@ __all__ = [
     #  '_actegory_string',
     #  '_description_string',
     #  '_ordered_tagnames',
-]
+)
 
 
 def friendly_str(

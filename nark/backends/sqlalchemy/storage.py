@@ -36,7 +36,7 @@ from .managers.fact import FactManager
 from .managers.migrate import MigrationsManager
 from .managers.tag import TagManager
 
-__all__ = ['SQLAlchemyStore']
+__all__ = ('SQLAlchemyStore')
 
 
 @python_2_unicode_compatible

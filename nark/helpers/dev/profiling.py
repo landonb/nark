@@ -24,12 +24,12 @@ from functools import update_wrapper
 
 from ... import __PROFILING__, __time_0__
 
-__all__ = [
+__all__ = (
     'profile_elapsed',
     'timefunc',
     'timefunct',
     'timewith',
-]
+)
 
 
 MSGS_FUNC = []

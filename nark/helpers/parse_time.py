@@ -35,13 +35,13 @@ from .parse_errors import ParserInvalidDatetimeException
 # Profiling: load iso8601: ~ 0.004 secs.
 iso8601 = lazy_import.lazy_module('iso8601')
 
-__all__ = [
+__all__ = (
     'HamsterTimeSpec',
     'parse_dated',
     'parse_clock_time',
     'parse_datetime_iso8601',
     'parse_relative_minutes',
-]
+)
 
 
 # =================

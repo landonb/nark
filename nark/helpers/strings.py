@@ -22,9 +22,9 @@ from __future__ import absolute_import, unicode_literals
 import click
 from six import text_type
 
-__all__ = [
+__all__ = (
     'comma_or_join',
-]
+)
 
 
 def comma_or_join(seq):

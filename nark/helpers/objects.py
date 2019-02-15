@@ -19,9 +19,9 @@
 
 from __future__ import absolute_import, unicode_literals
 
-__all__ = [
+__all__ = (
     'resolve_attr_or_method',
-]
+)
 
 
 def resolve_attr_or_method(self, prop, **kwargs):

@@ -19,7 +19,7 @@
 
 from __future__ import absolute_import, unicode_literals
 
-__all__ = [
+__all__ = (
     'ParserException',
     'ParserMissingDatetimeException',
     'ParserMissingDatetimeOneException',
@@ -27,7 +27,7 @@ __all__ = [
     'ParserInvalidDatetimeException',
     'ParserMissingSeparatorActivity',
     'ParserMissingActivityException',
-]
+)
 
 
 class ParserException(Exception):

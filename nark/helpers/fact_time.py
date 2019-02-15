@@ -24,7 +24,7 @@ import re
 
 from six import text_type
 
-__all__ = [
+__all__ = (
     'datetime_from_clock_prior',
     'datetime_from_clock_after',
     'day_end_datetime',
@@ -33,7 +33,7 @@ __all__ = [
     'must_not_start_after_end',
     'RE_PATTERN_RELATIVE_CLOCK',
     'RE_PATTERN_RELATIVE_DELTA',
-]
+)
 
 
 # ***

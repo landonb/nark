@@ -21,10 +21,10 @@ from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime
 
-__all__ = [
+__all__ = (
     'antecedent_fact',
     'subsequent_fact',
-]
+)
 
 
 def antecedent_fact(facts_mgr, new_facts, now_time):

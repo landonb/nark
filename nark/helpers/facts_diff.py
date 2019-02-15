@@ -24,9 +24,9 @@ from ..helpers.colored import attr, fg
 from ..helpers.objects import resolve_attr_or_method
 from ..helpers.strings import format_value_truncate
 
-__all__ = [
+__all__ = (
     'FactsDiff',
-]
+)
 
 
 # MAYBE: (lb): Move this module (FactsDiff) to dob?

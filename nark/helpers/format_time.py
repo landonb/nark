@@ -31,11 +31,11 @@ from pedantic_timedelta import PedanticTimedelta
 pytz = lazy_import.lazy_module('pytz')
 
 
-__all__ = [
+__all__ = (
     'isoformat',
     'isoformat_tzinfo',
     'isoformat_tzless',
-]
+)
 
 
 # ***

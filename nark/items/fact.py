@@ -38,12 +38,13 @@ except ImportError:
     # < Python 3.5.
     inf = float('inf')
 
-__all__ = [
+
+__all__ = (
     'SinceTimeBegan',
     'UntilTimeStops',
     'FactTuple',
     'Fact',
-]
+)
 
 
 SinceTimeBegan = datetime(1, 1, 1)

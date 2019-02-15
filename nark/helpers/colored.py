@@ -21,7 +21,7 @@ import sys
 
 import colored
 
-__all__ = [
+__all__ = (
     'disable_colors',
     'enable_colors',
     'coloring',
@@ -32,7 +32,7 @@ __all__ = [
     'colorize',
     # Private:
     #  'map_color'
-]
+)
 
 
 # (lb): Retrieve pointer to module object instance, so functions can set

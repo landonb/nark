@@ -28,9 +28,9 @@ __PROFILING__ = False
 __time_0__ = time.time()
 
 
-__all__ = [
+__all__ = (
     '__version__',
-]
+)
 
 
 # SYNC_UP: nark/__init__.py <=> dob/__init__.py
