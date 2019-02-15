@@ -19,7 +19,6 @@
 
 from __future__ import absolute_import, unicode_literals
 
-import click
 from six import text_type
 
 __all__ = (
@@ -47,11 +46,8 @@ def format_value_truncate(val, trunc_width=None):
     # but replacing newlines with representation of same
     # is more meaningful, and less confusing to end user.
     val = '\\n'.join(text_type(val).splitlines())
-    if trunc_width is None:
-        # (lb): What's a good value? A third of the terminal?
-        term_width = click.get_terminal_size()[0]
-        trunc_width = int(term_width * (1 / 3.))
-    if len(val) > trunc_width and trunc_width >= 0:
-        val = val[:trunc_width - 3] + '...'
+    if trunc_width is not None:
+        if len(val) > trunc_width and trunc_width >= 0:
+            val = val[:trunc_width - 3] + '...'
     return val
 
