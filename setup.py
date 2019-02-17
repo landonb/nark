@@ -163,7 +163,7 @@ setup(
     long_description_content_type="text/x-rst",
     packages=find_packages(),
     install_requires=requirements,
-    license="GPL3",
+    license='GPLv3',
     zip_safe=False,
     keywords=cfg['__keywords__'],
     classifiers=[
