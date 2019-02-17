@@ -30,6 +30,10 @@ Refs:
 
 import os
 import re
+# Because runtime import, else:
+#   NameError: name 'time' is not defined
+# F401 '...' imported but unused
+import time  # noqa: F401
 # Because exec(init_py) import _.
 from gettext import gettext as _  # noqa: F401
 
