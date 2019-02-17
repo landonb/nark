@@ -19,7 +19,6 @@ Contents:
    API reference <modules>
    labels
    styleguide
-   notes
    authors
    history
 
