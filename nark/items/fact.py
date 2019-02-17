@@ -415,8 +415,8 @@ class Fact(BaseItem):
               Valid choices are:
                 * ``'%M'``: As minutes, rounded down.
                 * ``'%H:%M'``: As 'hours:minutes'. rounded down.
-                * ``HHhMMm``: As '{hours} hour(s) {minutes} minute(s)'.
-                * ````: As human friendly time.
+                * ``'HHhMMm'``: As '{hours} hour(s) {minutes} minute(s)'.
+                * ``''``: As human friendly time.
 
         Returns:
             str: Formatted string representing this fact's *duration*.

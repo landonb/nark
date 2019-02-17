@@ -70,10 +70,10 @@ def upgrade_legacy_db_hamster_applet(db_path):
                     "ERROR: Expected Legacy DB Version “9”, but found: {}"
                 ).format(db_version))
 
-    TABLE_NAMES = ['activities', 'categories', 'tags', 'facts', 'fact_tags']
+    table_names = ['activities', 'categories', 'tags', 'facts', 'fact_tags']
 
     def rename_old_tables(curs):
-        for table in TABLE_NAMES:
+        for table in table_names:
             curs.execute(
                 'ALTER TABLE {table} RENAME TO temp_{table}'
                 .format(table=table)
@@ -236,7 +236,7 @@ def upgrade_legacy_db_hamster_applet(db_path):
         drop_legacy_goo(curs)
 
     def drop_tmp_tables(curs):
-        for table in reversed(TABLE_NAMES):
+        for table in reversed(table_names):
             curs.execute(
                 'DROP TABLE temp_{table}'
                 .format(table=table)

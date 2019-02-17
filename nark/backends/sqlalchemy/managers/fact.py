@@ -429,7 +429,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             This method will *NOT* return facts that start before and end after
             (e.g. that span more than) the specified timeframe.
         """
-        MAGIC_TAG_SEP = '%%%%,%%%%'
+        magic_tag_sep = '%%%%,%%%%'
 
         def _get_all_facts():
             message = _(
@@ -487,7 +487,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 new_tags = None
                 if not lazy_tags:
                     tags = cols.pop()
-                    new_tags = tags.split(MAGIC_TAG_SEP) if tags else []
+                    new_tags = tags.split(magic_tag_sep) if tags else []
 
                 if not raw:
                     new_fact = fact.as_hamster(self.store, new_tags)
@@ -512,7 +512,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # each -- triggering lazy load -- takes 7 seconds on my machine.
             # As opposed to 0 seconds (rounded down) when preloading tags.
             tags_col = func.group_concat(
-                AlchemyTag.name, MAGIC_TAG_SEP,
+                AlchemyTag.name, magic_tag_sep,
             ).label("facts_tags")
             query = query.add_columns(tags_col)
             query = query.outerjoin(fact_tags)

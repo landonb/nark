@@ -44,8 +44,10 @@ def isoformat(dt, sep='T', timespec='auto', include_tz=False):
     """
     FIXME: Document
 
-    Based loosely on
+    Based loosely on::
+
         datetime.isoformat(sep='T', timespec='auto')
+
     in Python 3.6 (which added timespec).
 
     The optional argument sep (default 'T') is a one-character separator,
@@ -59,7 +61,7 @@ def isoformat(dt, sep='T', timespec='auto', include_tz=False):
     'minutes': Include hour and minute in HH:MM format.
     'seconds': Include hour, minute, and second in HH:MM:SS format.
     'milliseconds': Include full time, but truncate fractional second part
-        to milliseconds. HH:MM:SS.sss format.
+    to milliseconds. HH:MM:SS.sss format.
     'microseconds': Include full time in HH:MM:SS.mmmmmm format.
 
     Note: Excluded time components are truncated, not rounded.

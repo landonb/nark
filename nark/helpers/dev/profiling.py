@@ -28,7 +28,7 @@ __all__ = (
     'profile_elapsed',
     'timefunc',
     'timefunct',
-    'timewith',
+    'TimeWith',
 )
 
 
@@ -85,7 +85,7 @@ def timefunct(text=None):
     return _timefunc
 
 
-class timewith():
+class TimeWith():
     """"""
     def __init__(self, name='', start=None):
         self.name = name
@@ -114,9 +114,10 @@ if __PROFILING__:
     def exit_elapsed():
         profile_elapsed('To dob:   exit')
         for msg in MSGS_SPAN:
-            print(msg)
+            # T001 print found.
+            print(msg)  # noqa: T001
         for msg in MSGS_FUNC:
-            print(msg)
+            print(msg)  # noqa: T001
 
     import atexit
     atexit.register(exit_elapsed)
