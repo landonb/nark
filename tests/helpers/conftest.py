@@ -25,7 +25,7 @@ import os
 
 import fauxfactory
 import pytest
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
 from six import text_type
@@ -72,7 +72,7 @@ def backend_config(appdirs):
 @pytest.fixture
 def configparser_instance(request):
     """Provide a ``ConfigParser`` instance and its expected config dict."""
-    config = SafeConfigParser()
+    config = ConfigParser()
     config.add_section('Backend')
     config.set('Backend', 'store', 'sqlalchemy')
     config.set('Backend', 'db_engine', 'sqlite')
@@ -122,8 +122,8 @@ def configparser_instance(request):
 
 @pytest.fixture
 def config_instance(request):
-    """A dummy instance of ``SafeConfigParser``."""
-    return SafeConfigParser()
+    """A dummy instance of ``ConfigParser``."""
+    return ConfigParser()
 
 
 @pytest.fixture

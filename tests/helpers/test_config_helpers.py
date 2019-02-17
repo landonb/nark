@@ -20,7 +20,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 
 import pytest
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
 
@@ -160,9 +160,9 @@ class TestWriteConfigFile(object):
         assert os.path.lexists(expected_location)
 
     def test_return_config_instance(self, config_instance, appdirs):
-        """Make sure we return a ``SafeConfigParser`` instance."""
+        """Make sure we return a ``ConfigParser`` instance."""
         result = app_config.write_config_file(config_instance)
-        assert isinstance(result, SafeConfigParser)
+        assert isinstance(result, ConfigParser)
 
 
 class TestLoadConfigFile(object):
@@ -181,7 +181,7 @@ class TestLoadConfigFile(object):
     def test_file_present(self, config_instance, backend_config):
         """Make sure we try parsing a found config file."""
         result = app_config.load_config_file()
-        assert isinstance(result, SafeConfigParser)
+        assert isinstance(result, ConfigParser)
 
 
 class TestConfigParserToBackendConfig(object):
