@@ -59,8 +59,8 @@ requirements = [
     #  https://pypi.org/project/future/
     #  https://python-future.org/
     'future',
-    # Human Friendly timedelta formatter, e.g., "1 day, 4 hours, 4 mins."
-    'human-friendly_pedantic-timedelta',
+    # Elapsed timedelta formatter, e.g., "1.25 days".
+    'human-friendly_pedantic-timedelta >= 0.0.3',
     # https://github.com/collective/icalendar
     'icalendar',
     # https://bitbucket.org/micktwomey/pyiso8601
