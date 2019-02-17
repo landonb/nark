@@ -39,7 +39,7 @@ Code-style
   reader to figure out which parts of the code are relevant to his/her needs
   and which are internal details.
 * Try to minimize use of return statements with a method/function while using
-  exceptions wherever suitable.  While this may not allways improve readability
+  exceptions wherever suitable.  While this may not always improve readability
   it tends to make debugging easier as it provides one central breaking point.
 * Methods should have the following order: special (``__foo__``) > public  >
   private (`_foo``).

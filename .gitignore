@@ -74,3 +74,9 @@ docs/modules.rst
 # ‘quickfix’ make task for Vim development.
 .make.out
 
+# `make docs` Sphinx autodocs-generated.
+docs/nark.backends.sqlalchemy.managers.rst
+docs/nark.helpers.dev.rst
+docs/nark.items.rst
+docs/nark.managers.rst
+

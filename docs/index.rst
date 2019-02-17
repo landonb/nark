@@ -1,31 +1,19 @@
-.. hamsterlib documentation master file, created by
-   sphinx-quickstart on Tue Jul  9 22:26:36 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to hamsterlib's documentation!
-======================================
-
-Contents:
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :hidden:
 
-   readme
+   README <readme>
    installation
    usage
-   contributing
-   packaging
-   API reference <modules>
+
+   API Reference <modules>
+   Help Us Improve <contributing>
+   Code of Conduct <code-of-conduct>
+   Developer Credits <authors>
+   Project History <history>
+
    labels
    styleguide
-   authors
-   history
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. include:: ../README.rst
 
