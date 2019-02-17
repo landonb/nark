@@ -77,11 +77,11 @@ clean-test:
 
 develop:
 	pip install -U pip setuptools wheel
-	pip install -U -e .
 	pip install -U -r requirements/dev.pip
+	pip install -U -e .
 
 lint:
-	flake8 nark tests
+	flake8 setup.py nark/ tests/
 
 test: test-local quickfix
 
@@ -93,7 +93,9 @@ test-all:
 	tox
 
 test-one:
-	# You can obviously also: TEST_ARGS=-x make test
+	# You can also obviously: TEST_ARGS=-x make test
+	# See also, e.g.,:
+	#   py.test --pdb -vv -k test_function tests/
 	py.test $(TEST_ARGS) -x tests/
 
 coverage:
@@ -114,7 +116,6 @@ quickfix:
 	sed -r "s#^(.* .*):([0-9]+):#\1∷\2:#" -i .make.out
 
 docs:
-	@echo "FIXME: docs task broken 'til fixed" && exit 1
 	/bin/rm -f docs/nark.rst
 	/bin/rm -f docs/modules.rst
 	sphinx-apidoc -o docs/ nark
