@@ -3,7 +3,8 @@
 .git/
 .pytest_cache/
 .tox/
+build/
 docs/_build
-nark*.egg-info/
 htmlcov/
+nark*.egg-info/
 
