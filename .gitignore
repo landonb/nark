@@ -43,6 +43,9 @@ pip-log.txt
 htmlcov
 .pytest_cache/
 
+# pytest-cov / coverage / https://codecov.io
+coverage.xml
+
 # Translations
 *.mo
 

@@ -1,38 +1,26 @@
 codecov:
   branch: develop
-  notify:
-    require_ci_to_pass: yes
-  archive:
-    uploads: yes
+  # (lb): With setting disable_default_path_fixes, I see:
+  #   "There was an error processing coverage reports."
+  # Strangely, I find exactly 7 hits when I Goggle this keyname.
+  # And they all point to a codecov issue comment:
+  #   https://github.com/codecov/support/issues/396#issuecomment-300879528
+  # which is a dead link!
+  # There are a few score more hits on GitHub proper:
+  #   https://github.com/search?l=&q=disable_default_path_fixes&type=Code
+  # but still solely yaml results. I.e., cannot find application source
+  # that reads/uses this value.
+  # - Is this an undocumented, proprietary https://codecov.io setting?
+  disable_default_path_fixes: true
+
+# Specify the GitHub project directory path prefix so that clicking source
+# files in codecov.io opens the coverage browser.
+fixes:
+  - "::nark/"
 
 coverage:
-  precision: 2
-  round: down
-  range: "70...100"
-
-  notify:
-    irc:
-      default:
-        server: freenode.net
-        branches: develop
-
-  status:
-    project:
-      default:
-        target: auto
-        threshold: 0.1%
-        branches: null
-        base: auto
-        set_pending: yes
-        if_no_uploads: error
-        if_not_found: success
-        if_ci_failed: error
-
-
-comment:
-  layout: "header, diff, changes, uncovered"
-  branches: null
-  behavior: default
-  flags: null
-  paths: null
+  # precision: 0 | 2
+  precision: 0
+  # round: down | up | nearest
+  range: 70...100
 
