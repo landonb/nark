@@ -160,6 +160,7 @@ setup(
     url=cfg['__projurl__'],
     description=cfg['__briefly__'],
     long_description=long_description,
+    long_description_content_type="text/x-rst",
     packages=find_packages(),
     install_requires=requirements,
     license="GPL3",
