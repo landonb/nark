@@ -85,7 +85,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import os
 
-from configparser import NoOptionError, SafeConfigParser
+from configparser import NoOptionError, ConfigParser
 from six import string_types, text_type
 
 from ..control import REGISTERED_BACKENDS
@@ -139,7 +139,7 @@ def write_config_file(
         ``DEFAULT_CONFIG_FILENAME``.
 
     Returns:
-        SafeConfigParser: Instance written to file.
+        ConfigParser: Instance written to file.
     """
 
     path = get_config_path(appdirs, file_name)
@@ -170,7 +170,7 @@ def load_config_file(
             pre-existing one can be found.
 
     Returns:
-        SafeConfigParser: Config loaded from file, either from the the
+        ConfigParser: Config loaded from file, either from the the
             pre-existing config file or the one created with fallback values.
     """
     if not fallback_config_instance:
@@ -178,7 +178,7 @@ def load_config_file(
             get_default_backend_config(appdirs)
         )
 
-    config = SafeConfigParser()
+    config = ConfigParser()
     path = get_config_path(appdirs, file_name)
     if not config.read(path):
         config = write_config_file(
@@ -234,7 +234,7 @@ def backend_config_to_configparser(config):
         config (dict): Dictionary of config key/value pairs.
 
     Returns:
-        SafeConfigParser: SafeConfigParser instance representing config.
+        ConfigParser: ConfigParser instance representing config.
 
     Note:
         We do not provide *any* validation about mandatory values whatsoever.
@@ -289,7 +289,7 @@ def backend_config_to_configparser(config):
     def get_default_tzinfo():
         return text_type(config.get('default_tzinfo'))
 
-    cp_instance = SafeConfigParser()
+    cp_instance = ConfigParser()
     cp_instance.add_section('Backend')
     cp_instance.set('Backend', 'store', get_store())
     cp_instance.set('Backend', 'db_engine', get_db_engine())
