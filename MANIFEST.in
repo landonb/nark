@@ -1,12 +1,32 @@
-include AUTHORS.rst
-include CONTRIBUTING.rst
-include HISTORY.rst
+include Makefile
+
 include LICENSE
-include README.rst
+include *.rst
+
+# Skipping:
+#   include .coveragerc
+#   include .editorconfig
+#   include .gitignore
+#   include .ignore
+#   include .travis.yml
+#   include MANIFEST.in
+#   include tox.ini
+
+recursive-include requirements *.pip
 
 recursive-include tests *
+
+include docs/*.bat
+include docs/*.png
+include docs/*.py
+include docs/*.rst
+include docs/Makefile
+include docs/assets/*.png
+recursive-include docs/_static/images *.png
+recursive-exclude docs nark*.rst
+
+recursive-include migrations *
+
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
-
-recursive-include docs *.rst conf.py Makefile make.bat
 
