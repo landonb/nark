@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# hamster-lib documentation build configuration file, created by
+# nark documentation build configuration file, created by
 # sphinx-quickstart on Tue Jul  9 22:26:36 2013.
 #
 # This file is execfile()d with the current directory set to its
@@ -19,6 +19,7 @@ import datetime
 import alabaster
 import shlex
 
+import nark
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
@@ -34,8 +35,6 @@ project_root = os.path.dirname(cwd)
 # This lets us ensure that the source package is imported, and that its
 # version is used.
 sys.path.insert(0, project_root)
-
-import hamster_lib
 
 # -- General configuration ---------------------------------------------
 
