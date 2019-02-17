@@ -38,7 +38,7 @@ import time  # noqa: F401
 from gettext import gettext as _  # noqa: F401
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import find_packages, setup
 except ImportError:
     from distutils.core import setup
 
