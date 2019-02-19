@@ -480,9 +480,30 @@ by running various developer tasks.
       # Generate the reST docs (peruse the output for errors and warnings):
       $ make docs
 
+.. note:: 2019-02-19: The project's docstrings are no longer linting.
+          (Because the author did not follow docstrings convention during
+          development, nor run the pep257 linter; because the author does
+          not value docstrings as highly as writing tests, and providing
+          coverage, and writing readable code, so now we find ourselves
+          with imperfect docstrings littered throughout the code.)
+
+          As such, feel free to run the pep257 linter,
+          but also feel free not to. It's noisy.
+
+.. note:: The ``nark/items/__init__.py`` module provides abbreviated Item class
+          references, so more-than-one-target errors in make-docs are acceptable,
+          e.g.,::
+
+            $ make docs
+            ...
+            /path/to/nark/nark/items/activity.py:docstring
+               of nark.items.activity.Activity.create_from_composite::
+                  WARNING: more than one target found for cross-reference 'Activity':
+                     nark.items.activity.Activity, nark.items.Activity
+
 .. _verify-import-statement-order:
 
-3. Verify import statement order.
+3. You can verify import statement order manually.
 
    Imports are grouped by classification, and then ordered alphabetically
    within each group.
