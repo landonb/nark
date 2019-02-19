@@ -53,6 +53,18 @@ Current Hamsterriah
   does not get in your way (check out the ``Vim``-*esque* key bindings), and
   is beautiful (with a pleasing, artful, customizable *UX*/user interface).
 
+Information Cat
+---------------
+
+.. |infocat| replace:: *Information Cat*
+.. _infocat: https://github.com/hotoffthehamster/nark/blob/develop/docs/_static/images/information-cat.png
+
+|infocat|_
+illustration by `Landon Bouma <https://github.com/landonb>`_
+derived from `information Cat <https://thenounproject.com/iconka/collection/cat-commerce/?i=232268>`__
+by `Denis Sazhin <https://thenounproject.com/iconka/>`__
+from `the Noun Project <https://thenounproject.com>`__.
+
 “Hamster 2.0” Rewrite (circa 2015 to 2017)
 ==========================================
 
