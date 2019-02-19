@@ -138,7 +138,8 @@ Create a *Fact* instance from a *Factoid* string::
 
 |
 
-.. image:: https://github.com/hotoffthehamster/nark/raw/develop/docs/_static/images/information-cat.png
+.. image:: https://raw.githubusercontent.com/hotoffthehamster/nark/develop/docs/_static/images/information-cat.png
+   :target: https://nark.readthedocs.io/en/latest/authors.html#information-cat
    :align: center
    :alt: "Information Cat"
 
