@@ -52,7 +52,7 @@ gettext.install('nark', **kwargs)
 
 
 @python_2_unicode_compatible
-class HamsterControl(object):
+class NarkControl(object):
     """
     All mandatory config options are set as part of the controller setup.
     Any client may overwrite those values. but we can always asume that the

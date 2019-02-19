@@ -23,7 +23,7 @@ import datetime
 
 import faker as faker_
 import pytest
-from nark.control import HamsterControl
+from nark.control import NarkControl
 from nark.manager import BaseStore
 from pytest_factoryboy import register
 
@@ -58,7 +58,7 @@ def convert_time_to_datetime(time_string):
 def controller(base_config):
     """Provide a basic controller."""
     # [TODO] Parametrize over all available stores.
-    controller = HamsterControl(base_config)
+    controller = NarkControl(base_config)
     yield controller
     controller.store.cleanup()
 
