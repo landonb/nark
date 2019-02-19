@@ -16,7 +16,11 @@ nark
 
 .. image:: https://img.shields.io/github/release/hotoffthehamster/nark.svg?style=flat
   :target: https://github.com/hotoffthehamster/nark/releases
-  :alt: Release Status
+  :alt: GitHub Release Status
+
+.. image:: https://img.shields.io/pypi/v/nark.svg
+  :target: https://pypi.org/project/nark/
+  :alt: PyPI Release Status
 
 .. image:: https://img.shields.io/github/license/hotoffthehamster/nark.svg?style=flat
   :target: https://github.com/hotoffthehamster/nark/blob/develop/LICENSE
