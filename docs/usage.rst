@@ -43,8 +43,10 @@ refer to the docstrings documentation in the source for more information.
 
 Or, better yet, look at the code for the reference client, ``dob``,
 to see how best to work with nark. Start by reading the
+.. `class Controller
+.. <https://github.com/landonb/dob/blob/develop/dob/XXX/controller.py>`__,
 `class Controller
-<https://github.com/landonb/dob/blob/develop/dob/controller.py>`__,
+<https://github.com/landonb/dob/blob/alpha-28-2019-02-15/dob/controller.py>`__,
 which descends from ``nark.NarkControl``
 and runs through the complete setup process.
 
