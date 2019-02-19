@@ -1,71 +1,37 @@
+# Building/Packaging/Distributing.
+build/
+dist/
+*.egg-info/
+
+# Byte-compiled/Optimized Python and Library/DLL files.
 *.py[cod]
-*~
-.python-version
 __pycache__
 
-# C extensions
-*.so
-
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
-lib
-lib64
-
-# envdirs
-envs/*
-!envs/dev
-
-# Django
-kmncms/media/*
-!kmncms/media/.gitkeep
-kmncms/static_root/*
-!kmncms/static_root/.gitkeep
-
-# Logs
-*.log
-*.log.*
-pip-log.txt
-
-# Unit test files / coverage reports
-.cache
-.coverage
-.tox
-htmlcov
+# Testing and CI tasks.
 .pytest_cache/
+.tox
+
+# `make coverage-html` output
+.coverage
+htmlcov/
 
 # pytest-cov / coverage / https://codecov.io
 coverage.xml
 
-# Translations
-*.mo
-
-# Complexity
-output/*.html
-output/*/index.html
-
-# Bower and npm
-bower_components
-node_modules
-
 # Sphinx
 docs/_build
-!docs/_static/.gitkeep
-# 2018-04-11: (lb): After `make docs`:
+# After `make docs`:
+docs/modules.rst
+# FIXME: CLEANUP:
+docs/nark.rst
 docs/nark.backends.rst
 docs/nark.backends.sqlalchemy.rst
 docs/nark.helpers.rst
-docs/nark.rst
-docs/modules.rst
+# `make docs` Sphinx autodocs-generated.
+docs/nark.backends.sqlalchemy.managers.rst
+docs/nark.helpers.dev.rst
+docs/nark.items.rst
+docs/nark.managers.rst
 
 # In lieu of a personalizable, secondary Grep/Silver Searcher/RipGrep ignore,
 # like .gitignore's .git/info/exclude, the repo contains an .ignore.example.
@@ -74,9 +40,6 @@ docs/modules.rst
 # ‘quickfix’ make task for Vim development.
 .make.out
 
-# `make docs` Sphinx autodocs-generated.
-docs/nark.backends.sqlalchemy.managers.rst
-docs/nark.helpers.dev.rst
-docs/nark.items.rst
-docs/nark.managers.rst
+# Translations
+*.mo
 
