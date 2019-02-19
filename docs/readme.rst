@@ -1,2 +1,4 @@
+:orphan:
+
 .. include:: ../README.rst
 
