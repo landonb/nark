@@ -5,6 +5,7 @@
    README <readme>
    installation
    usage
+   concepts
 
    API Reference <modules>
    Help Us Improve <contributing>

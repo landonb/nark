@@ -1,95 +1,50 @@
-=====
-Usage
-=====
+###########
+Basic Usage
+###########
 
-To use hamsterlib in a project::
+To use nark in a project, import it into your project::
 
-    import hamsterlib
+    import nark
 
-The main point of entry is ``hamsterlib.HamsterControl``. Your friendly time tracking
-controller. All that is required to initialize it is that you pass it a ``dict`` with basic
-configuration information. Right now, all that is needed are the following key/value
-pairs::
+You can play around with items without setting anything up,
+but to be useful, you'll want to setup a basic config to tell
+``nark`` where to store items that you want to persist.
 
-    'work_dir': ``path``; Where to store any temporary data
-    'store': 'sqlalchemy'; refer to ``hamsterlib.control.REGISTERED_BACKENDS``
-    'db_path': ``sqlalchemy db path``,
-    'fact_min_delta': integer; Amount of seconds under which fact creation will be prohibited.
-    'sql_log_level': string; SQLAlchemy logger level: DEBUG, INFO, WARNING, ERROR, etc.
-    'tmpfile_name': filename; under which any 'ongoing fact' will be saved
+Wire something along the lines of:
 
-``hamsterlib.HamsterControl`` initializes the store and provides a general
-logger. Besides that ``HamsterControl.categories``,
-``HamsterControl.activities`` and ``HamsterControl.facts`` are the main
-interfaces to communicate with the storage backend.
+.. code-block:: Python
 
-The second cornerstone are the dedicated classes ``Category``, ``Activity`` and
-``Fact`` which, for convenience, can be imported right from ``hamsterlib``. In
-particular ``Fact.create_from_factoid`` might be of interest They provide
-easy and consistent facilities to create, store and manage data relevant to
-your time tracking needs. Of particular interest is
-``hamsterlib.Fact.create_from_raw`` which allows you to pass a ``raw_fact``
-string and receive a fully populated ``Fact`` instance in return. The class
-will take care of all the tedious parsing and normalizing of data present in
-the ``raw_fact``.
+   import nark
 
-For clients aiming to utilize the new and sanitized backend API a look into
-``hamsterlib.storage`` may be worthwhile. These classes describe our baseline
-API that is to be implemented by any valid backend of ours. Note that some
-general methods are provided on this level already, so backend developers don't
-have to each time anew.  Of cause they are always free to overload them in
-order to implement solutions optimized to their concrete backend
-infrastructure.
+   nark_config = {
+      'db_engine' = 'sqlite',
+      'db_path' = 'path/to/nark.sqlite',
+   }
+   controller = nark.control.NarkControl(nark_config)
+   controller.standup_store()
 
-Besides this general controller ``hamsterlib.helpers`` provides convenience
-functions that help with normalization and general intermediate computation
-clients may have need for.
+Now you can read from the data store, e.g.,
 
-Basic Terminology
------------------
+.. code-block:: Python
 
-The following is intended as a rough description of the basic semantics of terminology used
-as part of this project. For technical details please refer to the module reference, in
-particular ``hamsterlib.objects``.
+   records = controller.facts.get_all()
 
-Category
-   What it says on the tin. A user friendly way to group activities that
-   relate to each other. Their names are unique.
+As well as being able to write to it, e.g.,
 
-Activity
-   'What you are doing'. This is a brief and easy to remember description of
-   the (you guessed it) 'activity' you want to track. An *activity* can be
-   filed under a category in order to provide some structure or just stay
-   *uncategrized*.  While one 'activity name' can be used with multiple
-   *categories* it will be considered as a different thing all together as far
-   as we are concerned. E.g. an activity called 'meeting' filed under the
-   'private' category will be absolutely separate from an activity named
-   'meeting' filed under 'business'. Within each *category*, activity names
-   will be unique.
+.. code-block:: Python
 
-Fact
-   An actually time tracked activity. That is, an entry about 'what did you do
-   from start to end'. As such it connects an general *Activity* with
-   time tracking information as well as additional optional context infos (tags
-   and description).  A *fact* is usually what you are ultimately interested
-   in. What shows up in your report and allows you to see what you did when.
+   fact = nark.items.Fact()
+   controller.facts.save(fact)
 
-Ongoing fact
-   Legacy Hamster allowed for facts without an end to be saved to the database.
-   As many as you wanted. Modern Hamster only lets you save one such Fact.
-   This *ongoing fact* is also called an *endless fact*. (In ``hamster-lib``,
-   it was called a *temporary fact*, or *tmp_fact*, but it was pickled and
-   saved to a file on the file system, and we shall not speak of it further.)
+This is just a taste of the action.
 
-This documentation need to be expanded, but hopefully it is enough for now to
-get you started. For detail please see the module reference and tests.
+Because code will naturally outpace any effort to document it, please
+refer to the docstrings documentation in the source for more information.
 
-
-Assumptions and Premisses
---------------------------
-As any software, we make assumptions and work on premises. Here we try to make
-them transparent.
-
-* There can be only one fact any given point in time. We do not support
-  multiple concurrent facts.
+Or, better yet, look at the code for the reference client, ``dob``,
+to see how best to work with nark. Start by reading the
+`class Controller
+<https://github.com/landonb/dob/blob/develop/dob/controller.py>`__,
+which descends from ``nark.NarkControl``
+and runs through the complete setup process.
 
