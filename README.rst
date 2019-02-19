@@ -26,15 +26,27 @@ nark
   :target: https://github.com/hotoffthehamster/nark/blob/develop/LICENSE
   :alt: License Status
 
+.. |dob| replace:: ``dob``
+.. _dob: https://github.com/hotoffthehamster/dob
+
+.. |nark| replace:: ``nark``
+.. _nark: https://github.com/hotoffthehamster/nark
+
+.. |hamster-lib| replace:: ``hamster-lib``
+.. _hamster-lib: https://github.com/projecthamster/hamster-lib
+
+.. |pip| replace:: ``pip``
+.. _pip: https://pip.pypa.io/en/stable/
+
 Some might call it timesheet software, or dismiss it as simply time tracking,
 but I call it extreme-journaling, a back end framework for thrill-seeking, time
 travelling interval junkies, a/k/a *dobbers*.
 
 **NOTE:** You probably want to install the *client application*,
 `dob <https://github.com/hotoffthehamster/dob>`__!
--- ``nark`` is a *support library*.
+-- Nark is a *support library*.
 
-Install with ``pip``::
+Install with |pip|_::
 
     pip3 install nark
 
@@ -45,23 +57,22 @@ For more options, read the
 Ethos
 =====
 
-``nark`` is inspired by
+|nark|_ is inspired by
 `Hamster <https://projecthamster.wordpress.com/>`__,
 a beloved but aged time tracking application for
 `GNOME <https://en.wikipedia.org/wiki/GNOME>`__.
 
-``nark`` is
+|nark|_ is
 `Hamster <https://github.com/projecthamster/hamster>`__-compatible.
-Grab your existing Hamster database and start using ``nark`` today!
+Grab your existing Hamster database and start using |nark|_ today!
 
-``nark`` is a fork of the sensible but incomplete
-modern `hamster-lib <https://github.com/projecthamster/hamster-lib>`__
-code rewrite. Now it's done?
+|nark|_ is a fork of the sensible but incomplete
+modern |hamster-lib|_ code rewrite. Now it's done?
 
-``nark`` is plainly a database-agnostic *Fact* storage API.
+|nark|_ is plainly a database-agnostic *Fact* storage API.
 It does one thing, (hopefully) well!
 
-As developers, our goal with ``nark`` is naturally to provide stable,
+As developers, our goal with |nark|_ is naturally to provide stable,
 reliable code. But we also want to provide easily hackable code. Code
 that is approachable to any Python developer with a few extra minutes
 and a sense of adventure. Code that is welcoming, so that a developer
