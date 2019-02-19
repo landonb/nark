@@ -8,26 +8,53 @@ Hamster 3.0 Renascence (circa 2018 - Present)
 Current Hamsterriah
 -------------------
 
+.. |dob| replace:: ``dob``
+.. _dob: https://github.com/hotoffthehamster/dob
+
+.. |nark| replace:: ``nark``
+.. _nark: https://github.com/hotoffthehamster/nark
+
+.. |hamster-lib| replace:: ``hamster-lib``
+.. _hamster-lib: https://github.com/projecthamster/hamster-lib
+
 .. |jrnl.sh| replace:: ``jrnl.sh``
 .. _jrnl.sh: http://jrnl.sh
 
 * `HotOffThe Hamster <https://github.com/hotoffthehamster>`_
+  is the current project maintainer.
 
-  With a ton of gratitude to Eric Goller for reinvigorating
-  the project with a beautiful rewrite, rearchitecting Hamster
-  into independent, well-defined lightweight microservices (and
-  such test coverage!). Anyone should find the code quick to grok,
-  easy to follow, and fun to hack on.
+  HOTH owes a ton of gratitude to
+  `Eric Goller <https://github.com/elbenfreund>`_
+  for breathing new life into Hamster with |hamster-lib|_,
+  reinvigorating the project with a beautiful rewrite,
+  and for rearchitecting Hamster into separate, independent,
+  well-defined lightweight microservices (and such test coverage!).
+  Anyone should find their code quick to grok, easy to follow,
+  and fun to hack.
+  Which is why there's now |nark|_.
 
-  My goal is make the Hamster CLI I've always wanted -- which is sorta
-  like how |jrnl.sh|_ works -- that allows for human-friendly datetimes
-  (like, ``"yesterday @ 2 PM"``) -- but also sorta like how I work, which
-  is from within a terminal, using robust UIs with splashes of color.
+  As a multi-year Legacy Hamster user, my goal is make the *Hamster CLI*
+  I've always wanted. This was originally thought to be a juiced-up prompt
+  using `Bash completion
+  <https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion>`__,
+  à la |jrnl.sh|_.
+  But then I stumbled upon the wonderful
+  `Python Prompt Toolkit
+  <https://github.com/prompt-toolkit/python-prompt-toolkit>`__
+  and built a colorful, robust, interactive terminal application
+  instead (namely, |dob|_).
 
-  I want a Hamster that's fun to use, doesn't get in your way, and is art.
+  The goal of this project, |nark|_, is mostly to serve the needs of |dob|_,
+  and to allow for separation of responsibilities. So you'll mostly see new
+  features implemented in |nark|_ at the behest of |dob|_.
 
-Hamster 2.0 Rewrite (circa 2015 to 2017)
-========================================
+  I want a Hamster that's fun to use,
+  incorporates seamlessly into your workflow (hello, terminal!),
+  does not get in your way (check out the ``Vim``-*esque* key bindings), and
+  is beautiful (with a pleasing, artful, customizable *UX*/user interface).
+
+“Hamster 2.0” Rewrite (circa 2015 to 2017)
+==========================================
 
 Eric Goller rewrote Hamster with best practices in mind.
 Welcome to modern dev, Hamster!
