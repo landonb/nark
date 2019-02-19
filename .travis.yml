@@ -40,8 +40,6 @@ matrix:
       python: '3.7'
     - env: TOXENV=flake8
       python: '3.7'
-    - env: TOXENV=pep257
-      python: '3.7'
 
 install:
   - pip install -U tox
