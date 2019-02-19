@@ -12,9 +12,5 @@
    Developer Credits <authors>
    Project History <history>
 
-.. Labels and Milesones <labels>
-
-.. Style Guide <styleguide>
-
 .. include:: ../README.rst
 
