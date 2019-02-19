@@ -2,17 +2,35 @@
 Contributing
 ############
 
-.. |virtualenvwrapper| replace:: ``virtualenvwrapper``
-.. _virtualenvwrapper: https://pypi.org/project/virtualenvwrapper/
+.. |dob| replace:: ``dob``
+.. _dob: https://github.com/hotoffthehamster/dob
+
+.. |nark| replace:: ``nark``
+.. _nark: https://github.com/hotoffthehamster/nark
+
+.. |envlist| replace:: ``envlist``
+.. _envlist: https://tox.readthedocs.io/en/latest/config.html#conf-envlist
 
 .. |flake8| replace:: ``flake8``
 .. _flake8: http://flake8.pycqa.org/en/latest/
+
+.. |isort| replace:: ``isort``
+.. _isort: https://github.com/timothycrosley/isort
+
+.. |pdb| replace:: ``pdb``
+.. _pdb: https://docs.python.org/3/library/pdb.html
 
 .. |pytest| replace:: ``pytest``
 .. _pytest: https://docs.pytest.org/en/latest/
 
 .. |tox| replace:: ``tox``
 .. _tox: https://tox.readthedocs.io/en/latest/
+
+.. |virtualenv| replace:: ``virtualenv``
+.. _virtualenv: https://virtualenv.pypa.io/en/latest/
+
+.. |virtualenvwrapper| replace:: ``virtualenvwrapper``
+.. _virtualenvwrapper: https://pypi.org/project/virtualenvwrapper/
 
 .. contents:: Contributing Contents
    :depth: 2
@@ -90,16 +108,16 @@ questions or concerns. Response times may vary depending on season.
 Getting Started
 ===============
 
-Ready to contribute? Here's how to set up ``nark`` for local development.
+Ready to contribute? Here's how to set up |nark|_ for local development.
 
-*Note:* You might find it helpful to also install ``dob``, so that you
-can develop ``nark`` using a CLI. Otherwise, you'll just be developing against
-the bare library. To setup both ``nark`` and ``dob``, follow
+*Note:* You might find it helpful to also install |dob|_, so that you
+can develop |nark|_ using a CLI. Otherwise, you'll just be developing against
+the bare library. To setup both |nark|_ and |dob|_, follow
 the `setup instructions for the CLI
 <https://github.com/hotoffthehamster/dob/blob/working/CONTRIBUTING.rst#get-started>`_.
 Otherwise, if you want just the bare library, continue reading!
 
-1. Fork the ``nark`` repo on GitHub.
+1. Fork the |nark|_ repo on GitHub.
 
    * Visit `<https://github.com/hotoffthehamster/nark>`_ and click *Fork*.
 
@@ -110,7 +128,7 @@ Otherwise, if you want just the bare library, continue reading!
 
     $ git clone git@github.com:<your_login>/nark.git
 
-3. Install ``nark`` into a Python virtual instance, or ``virtualenv``.
+3. Install |nark|_ into a Python virtual instance, or |virtualenv|_.
 
    First, ensure that you have |virtualenvwrapper|_ installed.
 
@@ -218,14 +236,16 @@ Otherwise, if you want just the bare library, continue reading!
 7. Throughout development, run tests and the linter -- and definitely before
    you submit a Pull Request.
 
-   ``nark`` uses
+   |nark|_ uses
    |flake8|_ for linting,
    |pytest|_ for unit testing, and
    |tox|_ for verifying against the many versions of Python.
 
    You can run all of these tools with one command::
 
-    $ make test-all
+     $ make test-all
+
+   which simply executes |tox|_.
 
    .. _rebase_and_squash:
 
@@ -239,7 +259,7 @@ Otherwise, if you want just the bare library, continue reading!
    (*Note:* Rebasing is an intermediate Git skill, but you needn't be
    afraid. Just bear in mind that you should not rebase any branch that
    other developers are working on (which should not apply to your working
-   branch, unless you are collaborating with others, which you're probably
+   branch, unless you are collaborating with others, which you are probably
    not). And know that ``git rebase --abort`` is your friend (though you might
    want to make a copy of your local working directory before rebasing, just
    to be safe; or at least make a new branch from the current ``HEAD``).)
@@ -344,8 +364,9 @@ Before you submit a pull request, check that it meets these guidelines:
      test. Or they should be called explicitly, because you added new
      tests for them.
 
-   * We strive for 100% test coverage, but we do not enforce it.
-     In the least, your code should not reduce coverage.
+   * We strive for upwards of 100% test coverage (too tedious to hit
+     all branches), but we do not enforce it. In the least, your code
+     should not reduce coverage.
 
 3. Commit sensibly.
 
@@ -403,25 +424,268 @@ Put it all together to quickly debug a broken test. ::
 
     $ py.test --pdb -vv -k <test_name> tests/
 
-You can also set breakpoints in the code with ``pdb``.
+You can also set breakpoints in the code with |pdb|_.
 Simply add a line like this:
 
 .. code-block:: python
 
     import pdb; pdb.set_trace()
 
-To test against other Python versions than what is setup in your ``virtualenv``,
-you can use ``tox`` and name an environment with the ``envlist`` option::
+To test against other Python versions than what is setup in your |virtualenv|_,
+you can use |tox|_ and name an environment with the |envlist|_ option::
 
     $ tox -e NAME_OR_ENVIRONMENT
+
+===========
+Style Guide
+===========
+
+Code style should be readily apparent by reading existing code.
+
+Style Enforcement
+-----------------
+
+The style of new code can be easily and incontrovertibly verified
+by running various developer tasks.
+
+1. You can lint the code easily with one command.
+
+   But you have your choice of which one command to run.
+
+   The following three commands are essentially equivalent, and run the code linter:
+
+   .. code-block:: Bash
+
+      # The Makefile lint task:
+      $ make lint
+
+      # is similar to the tox task:
+      $ tox -e flake8
+
+      # is just like running flake8:
+      $ flake8 setup.py nark/ tests/
+
+2. You can lint the docs easily with one or two commands.
+
+   The inline docstrings used to create the documentation can be verified with
+   the docstrings linter, which returns nonzero on error. (You can also build
+   the docs, but the builder is a little more forgiving and doesn't complain
+   as much as the linter.)
+
+   .. code-block:: Bash
+
+      # Run the docstrings linter:
+      $ tox -e pep257
+
+      # Generate the reST docs (peruse the output for errors and warnings):
+      $ make docs
+
+.. _verify-import-statement-order:
+
+3. Verify import statement order.
+
+   Imports are grouped by classification, and then ordered alphabetically
+   within each group.
+
+   The |isort|_ tool will automatically fix import statements to conform.
+
+   But |isort|_ also commits certain atrocities such as removing comments
+   from ``setup.cfg`` and removing trailing file blank lines, the former
+   of which is not easy to work-around, so |isort|_ is not a part of the
+   default |tox|_ tasks. You must be run |isort|_ manually.
+
+   .. code-block:: Bash
+
+      $ tox -e isort
+
+   You will likely find that |isort|_ makes unintended changes, and you will
+   have to do a selective commit, e.g., ``git add -p <file>``, while reverting
+   other changes, e.g., ``git checkout -- setup.cfg``.
+
+Style Reference
+---------------
+
+The project style tracks as closely as possible to community conventions,
+mostly established in 2001 by Python's creator, Guido van Rossum, and others:
+
+* `PEP 8 -- Style Guide for Python Code <https://www.python.org/dev/peps/pep-0008/>`_
+
+* `PEP 257 -- Docstring Conventions <https://www.python.org/dev/peps/pep-0257/>`_
+
+In lieu of
+`PEP 287 -- reStructuredText Docstring Format
+<https://www.python.org/dev/peps/pep-0287/>`_,
+the project prefers Google-style docstrings, as defined in the
+`Google Python Style Guide
+<https://google.github.io/styleguide/pyguide.html>`__:
+
+* `Google-style docstrings convention
+  <https://google.github.io/styleguide/pyguide.html#381-docstrings>`__
+
+When building the HTML documentation from the sources,
+Google-style docstrings are recognized by a
+`Sphinx <http://www.sphinx-doc.org/en/master/>`__
+extension:
+
+* `napoleon
+  <http://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html>`_:
+  Support for NumPy and Google style docstrings.
+
+Conventional Deviations
+-----------------------
+
+The conventions outlined in `PEP 8 <https://www.python.org/dev/peps/pep-0008/>`_
+are enforced by the `Flake8 <http://flake8.pycqa.org/en/latest/>`__ linter, with
+the following custom rules:
+
+* Use a maximum line length of 89 characters.
+
+  This accommodates two files side-by-side in an editor on a small laptop screen.
+
+  It also makes code more quickly readable, e.g., think of the width of columns
+  in a newspaper or magazine.
+
+* *Disabled:* "**W391**: blank line at end of file".
+
+  Ending every file with a blank line accommodates the developer jumping
+  their cursor to the bottom of a file in a text editor (say, by pressing
+  ``<Ctrl-End>``) and knowing the cursor will always land in the same
+  column (rather than landing at the end of some arbitrary-length line).
+
+* *Disabled:* "**W503**: line break before binary operator".
+
+  This produces, IMO, more readable code.
+
+  For instance, write this:
+
+  .. code-block:: Python
+
+      if (some_thing
+          and another):
+          and another_thing):
+
+  instead of this:
+
+  .. code-block:: Python
+
+      if (some_thing and
+          another and
+          another_thing):
+
+* *Disabled:* "**W605**: invalid escape sequence".
+
+  This rules incorrectly fires on some regex expression,
+  such as ``\d{2}``, so shunned.
+
+There are some unwritten rules (because there are unenforceable by
+the existing linters, by way of not being features), including:
+
+* Keep methods *small and focused*.
+
+  Use function-level scoping to break up a long method into many
+  smaller pieces.
+
+  When you use lots of smaller methods rather than one larger method,
+  it has the side effect of forcing you to better document the code,
+  by forcing you to consider and assign method names to each function.
+
+  While this project does not need to be strict about method length --
+  in Ruby, for instance, the `RuboCop <https://docs.rubocop.org/en/latest/>`__
+  linter enforces a `maximum method length
+  <https://docs.rubocop.org/en/latest/cops_metrics/#metricsmethodlength>`__
+  of 10 lines, by default --
+  it's a good idea to strive for shorter methods, and it's not all that
+  difficult to do, once you develop your own tricks.
+
+  (This author likes to write a long function at first, and then to break
+  it up into smaller, more coherent pieces, selecting multiple lines of code
+  at once, hitting ``<Tab>`` to indent all lines one stop, and then adding
+  ``def`` lines to each grouping of code, and assigning descriptive method
+  names.)
+
+* *Prefer* single quotes over double quotes. (This is a loose rule).
+
+  In other programming languages, like Bash and Ruby, double-quoted strings
+  are interpolated, but single-quoted strings are not. This affects whether
+  or not certain characters need to be escaped with a delimiter. And it
+  can cause unintended consequences, e.g., a developer uses double quotation
+  marks but forgets to escape characters within the string.
+
+  One rule we could enforce is to use double quotes for human-readable
+  strings, and to use single quotes for all other strings. But human-
+  readable strings should already be encased in the localization method,
+  e.g., ``_("I'm human-readable!")``, so this demarcation has little
+  additional utility.
+
+  So do what feels right in the moment. Oftentimes, using single quotes
+  is easiest, because the developer can avoid the Shift key and type the
+  quotation mark with one finger.
+
+* Use a single underscore prefix to indicate *private* functions and methods.
+
+  E.g.,: ``def _my_private_method(): ...``.
+
+* Do not worry about Python 2 compatibility.
+
+  (It's 2019, and Python 2 end-of-life has been announced for 2020.)
+
+  You may want to mimic these conventions in new code, but it should
+  no longer be necessary to adhere to the following:
+
+  * Declare the encoding at the top of every file: ``-*- coding: utf-8 -*-``
+
+  * Use *absolute_import* and *unicode_literals* from the ``__future__`` package.
+
+  * Use *six.text_type* to cast a Unicode string under Python 2 and 3.
+
+Of Readability
+--------------
+
+Concerning Writing Tests, Docstrings, Comments, and Documentation:
+
+* Strive to write code that is self-documenting.
+
+  Use *expressive* variable and methods names (and use long names, if they need to be).
+
+  Break long functions into a bunch of small methods, which forces you to document
+  how the long function works by giving each smaller unit of work a descriptive
+  method name.
+
+  Use well-named, intermediate variables to make code more readable, rather than
+  writing a long one-liner. By naming intermediate values, you will provide
+  inherent documentation to the code.
+
+* Prefer *tests and coverage* over docstrings and documentation.
+
+  You are encouraged to spend your time writing self-documenting code, and to
+  develop tests that are illustrative of the usage of the new code, rather than
+  worrying about writing docstrings and documentation, which can be tedious and
+  time consuming to write (and to read! if you made it this far, dear
+  reader!). Written documentation is also likely to become outdated quickly,
+  as new code is added and old code is changed, and documents lie in the dust.
+
+Altogether Now
+--------------
+
+Save for running |isort|_ (`see above`__),
+you can run all linter and test tasks with one 3-letter command:
+
+__ verify-import-statement-order_
+
+.. code-block:: Bash
+
+   $ tox
+
+Once this command is passing, you should be good to commit (or rebase) your
+work and to submit a `Pull Request`__.
+
+__ `Pull Request Guidelines`_
 
 ===============
 Code of Conduct
 ===============
 
 Please respect and adhere to the `Code of Conduct <code-of-conduct.html>`_.
-
-And that's it!
 
 **🐹appy 🐹amster 🐹acking!!1**
 
