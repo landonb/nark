@@ -1,6 +1,14 @@
-=====================================================
-hamster-lib History [from before ``nark`` was forked]
-=====================================================
+:orphan:
+
+.. |nark| replace:: ``nark``
+.. _nark: https://github.com/hotoffthehamster/nark
+
+.. |hamster-lib| replace:: ``hamster-lib``
+.. _hamster-lib: https://github.com/projecthamster/hamster-lib
+
+=======================================================
+|hamster-lib|_ History [from before |nark|_ was forked]
+=======================================================
 
 .. :changelog:
 
