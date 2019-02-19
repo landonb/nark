@@ -5,19 +5,30 @@ General
 
 * Follow `PEP 8 <https://www.python.org/dev/peps/pep-0008/>`_ and
   `PEP 257 <https://www.python.org/dev/peps/pep-0257/>`_.
+
+Basic ``flake8`` linting, with maximum line length set to 89.
+
+Ideally, use single quotes unless interpolating, but whatever.
+
+Keep methods small, and scope-group when possible.
+
+
+How does this document compare to CONTRIBUTING.rst?
+
+
 * Try to stick to 79 chars. When this is not enough you may use up to 99 chars.
   This is more tolerable for code than for documentation.
 * Use double quotes for human readable strings and single quotes for all other strings.
 * Private functions and methods are prefixed with a single underscore: ``_method``.
 
-Python 2 and 3 compability
----------------------------
+Python 2 and 3 compatibility
+----------------------------
 
 .. class:: compact
 
 * Declare encoding in first line: ``-*- coding: utf-8 -*-``
 * Use *absolute_import* and *unicode_literals* from the ``__future__`` package.
-* Use *six.text_type* to cast a unicode string under python 2 and 3.
+* Use *six.text_type* to cast a Unicode string under Python 2 and 3.
 
 Code-style
 --------------
