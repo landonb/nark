@@ -113,7 +113,8 @@ class SQLAlchemyStore(BaseStore):
         For any other engine ``db_host`` and ``db_name`` are mandatory.
 
         Note:
-            * `SQLAlchemy docs <http://docs.sqlalchemy.org/en/latest/core/engines.html>`_
+            * `SQLAlchemy docs
+              <https://docs.sqlalchemy.org/en/latest/core/engines.html>`__
 
         Returns:
             str: ``database_url`` suitable to be consumed by ``create_engine``.

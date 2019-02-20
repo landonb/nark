@@ -66,7 +66,7 @@
 --------------------
 * Renamed this package to ``hamster-lib`` as it now an official part of
   `projecthamster <https://github.com/projecthamster>`_. It was previously
-  named and distributed as `hamsterlib <https://pypi.python.org/pypi/hamsterlib/0.1.0>`_
+  named and distributed as `hamsterlib <https://pypi.org/project/hamsterlib>`_
 * Add documentation checker ``pep257`` to test suite.
 * Fixed docstrings.
 * Removed ``hamster_lib.objects.Fact.serialized_name``.
@@ -86,10 +86,10 @@
 -------------------
 * Add ``ical`` export facilities. Brand new writer using the ``icalendar`` library.
 * Add ``xml`` export facilities.
-* Switch to `semantic versioning <http://semver.org>`_
+* Switch to `semantic versioning <https://semver.org>`_
 * Added GPL3 boilerplate
 * Provide documentation on packaging and ``requirements.txt``.
-* Add support for `editorconfig <http://editorconfig.org>`_
+* Add support for `editorconfig <https://editorconfig.org/>`_
 * Introduce fine grained, storage backend dependent config options.
 
 0.0.3 (2016-04-08)

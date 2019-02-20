@@ -113,13 +113,14 @@ Ready to contribute? Here's how to set up |nark|_ for local development.
 *Note:* You might find it helpful to also install |dob|_, so that you
 can develop |nark|_ using a CLI. Otherwise, you'll just be developing against
 the bare library. To setup both |nark|_ and |dob|_, follow
-the `setup instructions for the CLI
-<https://github.com/hotoffthehamster/dob/blob/working/CONTRIBUTING.rst#get-started>`_.
+the
+`setup instructions for the CLI
+<https://github.com/landonb/dob/blob/alpha-28-2019-02-15/CONTRIBUTING.rst#get-started>`__.
 Otherwise, if you want just the bare library, continue reading!
 
 1. Fork the |nark|_ repo on GitHub.
 
-   * Visit `<https://github.com/hotoffthehamster/nark>`_ and click *Fork*.
+   * Visit `<https://github.com/hotoffthehamster/nark>`__ and click *Fork*.
 
 2. Clone your fork locally.
 
@@ -535,7 +536,7 @@ mostly established in 2001 by Python's creator, Guido van Rossum, and others:
 
 In lieu of
 `PEP 287 -- reStructuredText Docstring Format
-<https://www.python.org/dev/peps/pep-0287/>`_,
+<https://www.python.org/dev/peps/pep-0287/>`__,
 the project prefers Google-style docstrings, as defined in the
 `Google Python Style Guide
 <https://google.github.io/styleguide/pyguide.html>`__:
@@ -549,7 +550,7 @@ Google-style docstrings are recognized by a
 extension:
 
 * `napoleon
-  <http://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html>`_:
+  <http://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html>`__:
   Support for NumPy and Google style docstrings.
 
 Conventional Deviations
@@ -706,7 +707,7 @@ __ `Pull Request Guidelines`_
 Code of Conduct
 ===============
 
-Please respect and adhere to the `Code of Conduct <code-of-conduct.html>`_.
+Please respect and adhere to the `Code of Conduct <code-of-conduct.html>`__.
 
 **🐹appy 🐹amster 🐹acking!!1**
 
