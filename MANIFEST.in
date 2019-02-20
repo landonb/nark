@@ -3,18 +3,20 @@ include Makefile
 include LICENSE
 include *.rst
 
-# Skipping:
-#   include .coveragerc
-#   include .editorconfig
-#   include .gitignore
-#   include .ignore
-#   include .travis.yml
-#   include MANIFEST.in
-#   include tox.ini
-
-recursive-include requirements *.pip
-
-recursive-include tests *
+# NOTE: While we do not have to explicitly exclude files (they will not be
+# packaged regardless), doing so means we do not have to add the filename
+# to the --ignore option in the `check-manifest` call in `tox -e manifest`.
+exclude codecov.yml
+exclude .coveragerc
+exclude .editorconfig
+exclude .gitignore
+exclude .ignore
+exclude .ignore.example
+exclude .isort.cfg
+exclude .readthedocs.yml
+exclude tox.ini
+exclude .travis.yml
+exclude MANIFEST.in
 
 include docs/*.bat
 include docs/*.png
@@ -23,9 +25,16 @@ include docs/*.rst
 include docs/Makefile
 include docs/assets/*.png
 recursive-include docs/_static/images *.png
+# Ignore Sphinx-/`make docs`-generated files.
+exclude docs/_config.yml
+exclude docs/modules.rst
 recursive-exclude docs nark*.rst
 
 recursive-include migrations *
+
+recursive-include requirements *.pip
+
+recursive-include tests *
 
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
