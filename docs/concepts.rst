@@ -106,7 +106,7 @@ Ongoing Fact
      Also, when upgrading a legacy database, ``nark`` will close any open Facts
      it finds (making them *momentaneous* Facts instead).
 
-   - In stalled ``hamster-lib``, the ongoing Fact was instead called the
+   - In stalled |hamster-lib|_, the ongoing Fact was instead called the
      *temporary fact*, or *tmp_fact*, and it was pickled and saved to a file
      on the file system, rather than stored in the database alongside other
      Facts. We shall speak of this imprudence no further.
