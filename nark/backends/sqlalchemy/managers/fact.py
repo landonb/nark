@@ -875,7 +875,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             func.datetime(AlchemyFact.start) < ref_time,
         )
 
-        if fact is None:
+        if fact is None or fact.pk is None:
             before_closed_fact_end = and_(
                 AlchemyFact.end != None,  # noqa: E711
                 # Special case for ongoing fact (check its start).
@@ -948,7 +948,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         ref_time = self._get_sql_datetime(ref_time)
 
-        if fact is None:
+        if fact is None or fact.pk is None:
             condition = and_(func.datetime(AlchemyFact.start) >= ref_time)
         else:
             condition = or_(
