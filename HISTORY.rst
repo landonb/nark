@@ -15,5 +15,12 @@ History
 
 - Hamster Renascence: Total Metempsychosis.
 
+3.0.0.beta.1 (2018-06-09)
+=========================
+
+* Rewrite parser. Use more regex. Offload datetime parsing to iso8601.
+* Add database migration framework.
+  * Include migration from legacy database.
+
 View the :doc:`hamster-lib History <history-hamster-lib>` (pre-fork, pre-|nark|_).
 
