@@ -81,10 +81,6 @@ project = 'nark'
 copyright = '2018-9, HotOffThe Hamster'
 author = 'HotOffThe Hamster'
 
-# (lb): Only one source of Version Truth: AFAICT, sphinx_rtd_theme ignores version
-# and release. So the only version we must bump each release lives in setup.py,
-# and we can ignore the values here.
-#
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
 # the built documents.
@@ -196,7 +192,7 @@ html_context = {
 # A shorter title for the navigation bar.  Default is the same as
 # html_title.
 #html_short_title = None
-html_short_title = 'Nk'
+html_short_title = 'Nark'
 
 # The name of an image file (relative to this directory) to place at the
 # top of the sidebar.
@@ -232,7 +228,7 @@ html_sidebars = {
         'navigation.html',
         'relations.html',
         'searchbox.html',
-        #'donate.html',
+        'donate.html',
     ]
 }
 
