@@ -102,7 +102,9 @@ to the project.
 Example
 =======
 
-Create a *Fact* instance from a *Factoid* string::
+Create a *Fact* instance from a *Factoid* string:
+
+.. code-block:: Bash
 
     $ python3
     >>> from nark.items import Fact
