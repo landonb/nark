@@ -70,6 +70,19 @@ requirements = [
     # Daylight saving time-aware timezone library.
     #  https://pythonhosted.org/pytz/
     'pytz',
+    # For testing with dateparser,
+    #   https://bitbucket.org/mrabarnett/mrab-regex
+    #   https://pypi.org/project/regex/
+    # FIXME/2019-02-19 18:13: Latest regex is broken.
+    #   https://pypi.org/project/regex/2019.02.20/
+    #   https://bitbucket.org/mrabarnett/mrab-regex/commits/
+    #       5d8b8bb2b64b696cdbaa7bdc0dce4b462d311134#Lregex_3/regex.pyF400
+    # Because of recent change to import line (was made self-referential):
+    #      .tox/py37/lib/python3.7/site-packages/regex.py:400: in <module>
+    #          import regex._regex_core as _regex_core
+    #      E   ModuleNotFoundError: No module named 'regex._regex_core';
+    #       'regex' is not a package
+    'regex == 2019.02.18',
     # https://pythonhosted.org/six/
     'six',
     # https://www.sqlalchemy.org/
