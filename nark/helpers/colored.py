@@ -19,7 +19,7 @@ from __future__ import absolute_import, unicode_literals
 
 import sys
 
-import colored
+import ansi_escape_room
 
 __all__ = (
     'disable_colors',
@@ -66,27 +66,30 @@ def set_coloring(new_coloring):
 def fg(color):
     if not coloring():
         return ''
-    return colored.fg(map_color(color))
+    return ansi_escape_room.fg(map_color(color))
 
 
 def bg(color):
     if not coloring():
         return ''
-    return colored.bg(map_color(color))
+    return ansi_escape_room.bg(map_color(color))
 
 
 def attr(color):
     if not coloring():
         return ''
-    return colored.attr(map_color(color))
+    return ansi_escape_room.attr(map_color(color))
 
 
 def colorize(text, color, *args):
     if not coloring():
         return text
-    more_attrs = ''.join([colored.attr(attr) for attr in args])
+    more_attrs = ''.join([ansi_escape_room.attr(attr) for attr in args])
     return '{}{}{}{}'.format(
-        colored.fg(color), more_attrs, text, colored.attr('reset'),
+        ansi_escape_room.fg(color),
+        more_attrs,
+        text,
+        ansi_escape_room.attr('reset'),
     )
 
 

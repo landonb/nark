@@ -21,7 +21,7 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-from colored import attr, fg
+from ansi_escape_room import attr, fg
 
 
 def formatter_basic(color=False):

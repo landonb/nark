@@ -44,11 +44,15 @@ except ImportError:
 
 
 requirements = [
+    # "Very simple Python library for color and formatting in terminal."
+    # Forked (for italic "support") to:
+    #  https://github.com/hotoffthehamster/ansi-escape-room
+    # Forked from:
+    #  https://gitlab.com/dslackw/colored
+    'ansi-escape-room',
     # Platform-specific directory magic.
     #  https://github.com/ActiveState/appdirs
     'appdirs',
-    # https://gitlab.com/dslackw/colored
-    'colored',
     # Basic INI parser.
     #  https://pypi.org/project/configparser/
     #  https://docs.python.org/3/library/configparser.html
