@@ -94,7 +94,8 @@ requirements = [
     # Database gooser/versioner.
     #  https://pypi.org/project/sqlalchemy-migrate/
     #  https://sqlalchemy-migrate.readthedocs.io/en/latest/
-    'sqlalchemy-migrate',
+    # 2019-02-21: (lb): Forked again! Package alt. that accepts static config.
+    'sqlalchemy-migrate-dob',
     # https://github.com/regebro/tzlocal
     'tzlocal',
 ]
