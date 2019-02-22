@@ -49,17 +49,10 @@ import nark
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
-    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
-
-
-
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
-
-
 
 # Prevent non local immage warnings from showing.
 suppress_warnings = ['image.nonlocal_uri']
