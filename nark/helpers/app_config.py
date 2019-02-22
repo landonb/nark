@@ -85,7 +85,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import os
 
-from configparser import NoOptionError, ConfigParser
+from configparser import ConfigParser, NoOptionError
 from six import string_types, text_type
 
 from ..control import REGISTERED_BACKENDS
