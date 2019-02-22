@@ -97,5 +97,22 @@ requirements = [
 setup(
     install_requires=requirements,
     packages=find_packages(),
+    # Tell setuptools to determine the version
+    # from the latest SCM (git) version tags.
+    #
+    # Without the following two lines, e.g.,
+    #   $ python setup.py --version
+    #   3.0.0a31
+    # But with 'em, e.g.,
+    #   $ python setup.py --version
+    #   3.0.0a32.dev3+g6f93d8c.d20190221
+    # Or, if the latest commit is tagged,
+    # and your working directory is clean,
+    # then the version reported (and, e.g.,
+    # used on make-dist) will be from tag.
+    # Ref:
+    #   https://github.com/pypa/setuptools_scm
+    setup_requires=['setuptools_scm'],
+    use_scm_version=True,
 )
 
