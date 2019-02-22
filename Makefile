@@ -83,10 +83,17 @@ develop:
 lint:
 	flake8 setup.py nark/ tests/
 
-test: test-local quickfix
+test:
+	@echo "Use the PYTEST_ADDOPTS environment variable to add extra command line options."
+	py.test $(TEST_ARGS) tests/
+
+test-debug: test-local quickfix
 
 test-local:
-	@echo "Use the PYTEST_ADDOPTS environment variable to add extra command line options."
+	# If you want Make to fail if py.test fails, you want pipefail.
+	# Put this at the top of the Makefile:
+	#     SHELL = /bin/bash -o pipefail
+	# or don't call tasks that pipe from Travis CI (so not false positives).
 	py.test $(TEST_ARGS) tests/ | tee .make.out
 
 test-all:
