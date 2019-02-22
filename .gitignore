@@ -2,6 +2,7 @@
 build/
 dist/
 *.egg-info/
+.eggs/
 
 # Byte-compiled/Optimized Python and Library/DLL files.
 *.py[cod]
@@ -22,16 +23,17 @@ coverage.xml
 docs/_build
 # After `make docs`:
 docs/modules.rst
-# FIXME: CLEANUP:
-docs/nark.rst
-docs/nark.backends.rst
-docs/nark.backends.sqlalchemy.rst
-docs/nark.helpers.rst
 # `make docs` Sphinx autodocs-generated.
+docs/nark.backends.rst
 docs/nark.backends.sqlalchemy.managers.rst
+docs/nark.backends.sqlalchemy.rst
 docs/nark.helpers.dev.rst
+docs/nark.helpers.rst
 docs/nark.items.rst
 docs/nark.managers.rst
+docs/nark.migrations.rst
+docs/nark.migrations.versions.rst
+docs/nark.rst
 
 # In lieu of a personalizable, secondary Grep/Silver Searcher/RipGrep ignore,
 # like .gitignore's .git/info/exclude, the repo contains an .ignore.example.
