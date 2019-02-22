@@ -28,20 +28,9 @@ Refs:
   https://github.com/pypa/sampleproject
 """
 
-import os
-import re
-# Because runtime import, else:
-#   NameError: name 'time' is not defined
-# F401 '...' imported but unused
-import time  # noqa: F401
-# Because exec(init_py) import _.
-from gettext import gettext as _  # noqa: F401
+from setuptools import find_packages, setup
 
-try:
-    from setuptools import find_packages, setup
-except ImportError:
-    from distutils.core import setup
-
+# *** Package requirements.
 
 requirements = [
     # "Very simple Python library for color and formatting in terminal."
@@ -100,106 +89,13 @@ requirements = [
     'tzlocal',
 ]
 
+# *** Minimal setup() function -- Prefer using config where possible.
 
-# *** Boilerplate setuptools helper fcns.
-
-# Source values from the top-level {package}/__init__.py,
-# to avoid hardcoding herein.
-
-# (lb): I was inspired by PPT's get_version() to write this mess.
-# Thank you, PPT!
-
-def top_level_package_file_path(package_dir):
-    """Return path of {package}/__init__.py file, relative to this module."""
-    path = os.path.join(
-        os.path.dirname(__file__),
-        package_dir,
-        '__init__.py',
-    )
-    return path
-
-
-def top_level_package_file_read(path):
-    """Read the file at path, and decode as UTF-8."""
-    with open(path, 'rb') as f:
-        init_py = f.read().decode('utf-8')
-    return init_py
-
-
-def looks_like_app_code(line):
-    """Return True if the line looks like `key = ...`."""
-    matches = re.search("^\S+ = \S+", line)
-    return matches is not None
-
-
-def top_level_package_file_strip_imports(init_py):
-    """Stip passed array of leading entries not identified as `key = ...` code."""
-    # Expects comments, docstrings, and imports up top; ``key = val`` lines below.
-    culled = []
-    past_imports = False
-    for line in init_py.splitlines():
-        if not past_imports:
-            past_imports = looks_like_app_code(line)
-        if past_imports:
-            culled.append(line)
-    return "\n".join(culled)
-
-
-def import_business_vars(package_dir):
-    """Source the top-level __init__.py file, minus its import statements."""
-    pckpath = top_level_package_file_path(package_dir)
-    init_py = top_level_package_file_read(pckpath)
-    source = top_level_package_file_strip_imports(init_py)
-    exec(source)
-    cfg = {key: val for (key, val) in locals().items() if key.startswith('__')}
-    return cfg
-
-
-# Import variables from nark/__init__.py,
-# without triggering that files' imports.
-cfg = import_business_vars('nark')
-
-# *** Local file content.
-
-long_description = open(
-    os.path.join(
-        os.path.dirname(__file__),
-        'README.rst'
-    )
-).read()
-
-# *** Package definition.
+# (lb): All settings are in setup.cfg, except identifying packages.
+# (We could find-packages from within setup.cfg, but it's convoluted.)
 
 setup(
-    name=cfg['__pipname__'],
-    version=cfg['__version__'],
-    author=cfg['__author__'],
-    author_email=cfg['__author_email__'],
-    url=cfg['__projurl__'],
-    description=cfg['__briefly__'],
-    long_description=long_description,
-    long_description_content_type="text/x-rst",
-    packages=find_packages(),
     install_requires=requirements,
-    license='GPLv3',
-    zip_safe=False,
-    keywords=cfg['__keywords__'],
-    classifiers=[
-        # FIXME/2018-06-13: (lb): So, like, yeah, we'll get to Stable, even'ch.
-        # 'Development Status :: 2 - Pre-Alpha',
-        'Development Status :: 3 - Alpha',
-        # 'Development Status :: 4 - Beta',
-        # 'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
+    packages=find_packages(),
 )
 

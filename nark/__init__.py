@@ -20,40 +20,11 @@
 from __future__ import absolute_import, unicode_literals
 
 import time
-from gettext import gettext as _
 
 __PROFILING__ = True
 # DEVS: Comment this out to see load times summary.
 __PROFILING__ = False
 __time_0__ = time.time()
 
-
-__all__ = (
-    '__version__',
-)
-
-
-# SYNC_UP: nark/__init__.py <=> dob/__init__.py
-__author__ = 'HotOffThe Hamster'
-__author_email__ = 'hotoffthehamster+nark@gmail.com'
-__version__ = '3.0.0a31'
-__appname__ = 'nark'
-__pipname__ = __appname__
-__briefly__ = _(
-    'Robot backend for personal journaling and professional time tracking software'
-    ' (like `dob`).'
-)
-__projurl__ = 'https://github.com/hotoffthehamster/nark'
-__keywords__ = ' '.join([
-    'journal',
-    'diary',
-    'timesheet',
-    'timetrack',
-    'jrnl',
-    'rednotebook',
-    'todo.txt',
-    'prjct',
-    'hamster',
-    'fact',
-])
+__all__ = ()
 
