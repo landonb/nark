@@ -54,7 +54,7 @@ class MigrationsManager(BaseMigrationsManager):
             url = self.store.get_db_url()
             try:
                 migrate_versioning_api.version_control(
-                    url, self.basepath, self.config, version=version,
+                    url, self.basepath, version=version, config=self.config,
                 )
                 return True
             except migrate_exceptions.DatabaseAlreadyControlledError:
@@ -69,7 +69,9 @@ class MigrationsManager(BaseMigrationsManager):
         current_ver = self.version()
         if current_ver is None:
             return None
-        latest_ver = migrate_versioning_api.version(self.basepath, self.config)
+        latest_ver = migrate_versioning_api.version(
+            self.basepath, config=self.config,
+        )
         if not latest_ver:
             return None
         assert current_ver <= latest_ver
@@ -77,7 +79,7 @@ class MigrationsManager(BaseMigrationsManager):
             next_version = current_ver - 1
             url = self.store.get_db_url()
             migrate_versioning_api.downgrade(
-                url, self.basepath, self.config, version=next_version,
+                url, self.basepath, version=next_version, config=self.config,
             )
             return True
         else:
@@ -88,7 +90,9 @@ class MigrationsManager(BaseMigrationsManager):
         current_ver = self.version()
         if current_ver is None:
             return None
-        latest_ver = migrate_versioning_api.version(self.basepath, self.config)
+        latest_ver = migrate_versioning_api.version(
+            self.basepath, config=self.config,
+        )
         if not latest_ver:
             return None
         assert current_ver <= latest_ver
@@ -96,7 +100,7 @@ class MigrationsManager(BaseMigrationsManager):
             next_version = current_ver + 1
             url = self.store.get_db_url()
             migrate_versioning_api.upgrade(
-                url, self.basepath, self.config, version=next_version,
+                url, self.basepath, version=next_version, config=self.config,
             )
             return True
         else:
@@ -106,14 +110,18 @@ class MigrationsManager(BaseMigrationsManager):
         """Returns the current migration of the active database."""
         url = self.store.get_db_url()
         try:
-            return migrate_versioning_api.db_version(url, self.basepath, self.config)
+            return migrate_versioning_api.db_version(
+                url, self.basepath, config=self.config,
+            )
         except migrate_exceptions.DatabaseNotControlledError:
             return None
 
     def latest_version(self):
         """Returns the latest version defined by the application."""
         try:
-            repo_latest = migrate_versioning_api.version(self.basepath, self.config)
+            repo_latest = migrate_versioning_api.version(
+                self.basepath, config=self.config,
+            )
             return int(repo_latest.value)
         except migrate_exceptions.DatabaseNotControlledError:
             return None
