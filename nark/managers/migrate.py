@@ -44,8 +44,12 @@ class BaseMigrationsManager(BaseManager):
 
     # ***
 
-    def migration_repo(self):
-        """Return the path to the migration script."""
+    def migrations_config(self):
+        """Return sqlalchemy-migrate migrate.cfg as dictionary object."""
+        raise NotImplementedError
+
+    def migrations_path(self):
+        """Return the path to the migration versions/ base directory."""
         raise NotImplementedError
 
     def legacy_upgrade_from_hamster_applet(self, db_path):

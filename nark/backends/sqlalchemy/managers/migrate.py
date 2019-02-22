@@ -27,6 +27,7 @@ from ....managers.migrate import BaseMigrationsManager
 
 # Profiling: Loading `migrate` takes ~ 0.090 seconds.
 migrate_exceptions = lazy_import.lazy_module('migrate.exceptions')
+migrate_versioning_cfgparse = lazy_import.lazy_module('migrate.versioning.cfgparse')
 migrate_versioning_api = lazy_import.lazy_module('migrate.versioning.api')
 
 __all__ = ('MigrationsManager', )
@@ -34,6 +35,18 @@ __all__ = ('MigrationsManager', )
 
 @python_2_unicode_compatible
 class MigrationsManager(BaseMigrationsManager):
+    """"""
+
+    @property
+    def basepath(self):
+        return self.migrations_path()
+
+    @property
+    def config(self):
+        return self.migrations_config()
+
+    # ***
+
     def control(self, version=None):
         """Mark a database as under version control."""
         current_ver = self.version()
@@ -41,7 +54,7 @@ class MigrationsManager(BaseMigrationsManager):
             url = self.store.get_db_url()
             try:
                 migrate_versioning_api.version_control(
-                    url, self.migration_repo(), version=version,
+                    url, self.basepath, self.config, version=version,
                 )
                 return True
             except migrate_exceptions.DatabaseAlreadyControlledError:
@@ -56,7 +69,7 @@ class MigrationsManager(BaseMigrationsManager):
         current_ver = self.version()
         if current_ver is None:
             return None
-        latest_ver = migrate_versioning_api.version(self.migration_repo())
+        latest_ver = migrate_versioning_api.version(self.basepath, self.config)
         if not latest_ver:
             return None
         assert current_ver <= latest_ver
@@ -64,7 +77,7 @@ class MigrationsManager(BaseMigrationsManager):
             next_version = current_ver - 1
             url = self.store.get_db_url()
             migrate_versioning_api.downgrade(
-                url, self.migration_repo(), version=next_version,
+                url, self.basepath, self.config, version=next_version,
             )
             return True
         else:
@@ -75,7 +88,7 @@ class MigrationsManager(BaseMigrationsManager):
         current_ver = self.version()
         if current_ver is None:
             return None
-        latest_ver = migrate_versioning_api.version(self.migration_repo())
+        latest_ver = migrate_versioning_api.version(self.basepath, self.config)
         if not latest_ver:
             return None
         assert current_ver <= latest_ver
@@ -83,7 +96,7 @@ class MigrationsManager(BaseMigrationsManager):
             next_version = current_ver + 1
             url = self.store.get_db_url()
             migrate_versioning_api.upgrade(
-                url, self.migration_repo(), version=next_version,
+                url, self.basepath, self.config, version=next_version,
             )
             return True
         else:
@@ -93,27 +106,41 @@ class MigrationsManager(BaseMigrationsManager):
         """Returns the current migration of the active database."""
         url = self.store.get_db_url()
         try:
-            return migrate_versioning_api.db_version(url, self.migration_repo())
+            return migrate_versioning_api.db_version(url, self.basepath, self.config)
         except migrate_exceptions.DatabaseNotControlledError:
             return None
 
     def latest_version(self):
         """Returns the latest version defined by the application."""
         try:
-            return int(migrate_versioning_api.version(self.migration_repo()).value)
+            repo_latest = migrate_versioning_api.version(self.basepath, self.config)
+            return int(repo_latest.value)
         except migrate_exceptions.DatabaseNotControlledError:
             return None
 
     # ***
 
-    def migration_repo(self):
+    def migrations_config(self):
+        """Return sqlalchemy-migrate migrate.cfg a hot-n-ready config object."""
+        # See nark/migrations/migrate.cfg.example for descriptions.
+        config = migrate_versioning_cfgparse.Parser()
+        config['db_settings'] = {}
+        config['db_settings']['repository_id'] = 'nark-migrations'
+        config['db_settings']['version_table'] = 'migrate_version'
+        config['db_settings']['required_dbs'] = '[]'
+        config['db_settings']['use_timestamp_numbering'] = 'False'
+        return config
+
+    def migrations_path(self):
         # (lb): This is a little awkward. But there's not
         # another convenient way to do this, is there?
         path = os.path.abspath(
             os.path.join(
                 # Meh. We could also do dirname(nark.__file__) and use fewer ..'s.
+                #    path = os.path.join(os.path.dirname(nark.__file__), 'migrations')
+                # except that nark is not a package, it's this package!
                 os.path.dirname(__file__),
-                '../../../../migrations',
+                '../../../migrations',
             )
         )
         return path
