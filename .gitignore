@@ -19,9 +19,8 @@ htmlcov/
 # pytest-cov / coverage / https://codecov.io
 coverage.xml
 
-# Sphinx
+# Created by Sphinx on `make docs`:
 docs/_build
-# After `make docs`:
 docs/modules.rst
 # `make docs` Sphinx autodocs-generated.
 docs/nark.backends.rst

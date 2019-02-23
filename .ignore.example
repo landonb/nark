@@ -1,21 +1,22 @@
 # USAGE: `/bin/cp .ignore.example .ignore` and personalize.
 .git/
 
-nark*.egg-info/
+*.egg-info/
+*.eggs/
 
 .pytest_cache/
 .tox/
 
-# `make coverage` generated file
+# `make coverage` generated file.
 .coverage
 
-# `make coverage-html`
+# `make coverage-html`.
 htmlcov/
 
-# make dist
+# `make dist`.
 build/
 dist/
 
-# make docs
+# `make docs`.
 docs/_build
 
