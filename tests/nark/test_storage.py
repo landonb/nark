@@ -342,7 +342,7 @@ class TestFactManager:
 
     @freeze_time('2015-10-03 14:45')
     def test_get_today(self, basestore, mocker):
-        """Make sure that method uses apropiate timeframe."""
+        """Make sure that method uses appropriate timeframe."""
         basestore.facts.get_all = mocker.MagicMock(return_value=[])
         result = basestore.facts.get_today()
         assert result == []

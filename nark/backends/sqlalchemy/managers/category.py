@@ -70,7 +70,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         Raises:
             ValueError: If the name to be added is already present in the db.
             ValueError: If category passed already got an PK. Indicating that
-                update would be more apropiate.
+                update would be more appropriate.
         """
         self.adding_item_must_not_have_pk(category)
 
