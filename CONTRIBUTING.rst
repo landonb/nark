@@ -115,7 +115,7 @@ can develop |nark|_ using a CLI. Otherwise, you'll just be developing against
 the bare library. To setup both |nark|_ and |dob|_, follow
 the
 `setup instructions for the CLI
-<https://github.com/landonb/dob/blob/alpha-28-2019-02-15/CONTRIBUTING.rst#get-started>`__.
+<https://dob.readthedocs.io/en/latest/contributing.html#get-started>`__.
 Otherwise, if you want just the bare library, continue reading!
 
 1. Fork the |nark|_ repo on GitHub.
