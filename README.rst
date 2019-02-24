@@ -48,9 +48,9 @@ travelling interval junkies, a/k/a *dobbers*.
 
 Install with |pip|_::
 
-    pip3 install nark
+    pip install nark
 
-For more options, read the
+For other setup options, read the
 `installation guide <https://nark.readthedocs.io/en/latest/installation.html>`__.
 
 =====
@@ -84,9 +84,8 @@ when then see a place for improvement. Or to just trust that it works.
 Features
 ========
 
-* Compatible with all current Python releases (3.5, 3.6, and 3.7).
+* Compatible with all modern Python releases (3.5, 3.6, and 3.7).
 * Naturally Unicode compatible -- spice up your notes!
-* Fully Timezone-aware -- don't lose time traveling!
 * Can migrate legacy Hamster databases (and fix integrity issues, too).
 * Excellent coverage (to give you comfort knowing your Facts are safe).
 * Decent documentation (though really you should learn by doing).
