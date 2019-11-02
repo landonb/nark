@@ -79,7 +79,9 @@ requirements = [
     # https://pythonhosted.org/six/
     'six',
     # https://www.sqlalchemy.org/
-    'sqlalchemy',
+    # FIXME/2019-11-02: (lb): Migrate to SQLalchemy 1.3. Until then, stuck on 1.2.
+    # 'sqlalchemy',
+    'sqlalchemy >= 1.2.19, < 1.3',
     # Database gooser/versioner.
     #  https://pypi.org/project/sqlalchemy-migrate/
     #  https://sqlalchemy-migrate.readthedocs.io/en/latest/
