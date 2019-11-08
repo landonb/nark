@@ -38,6 +38,8 @@ requirements = [
     #  https://github.com/hotoffthehamster/ansi-escape-room
     # Forked from:
     #  https://gitlab.com/dslackw/colored
+    # See wrapper file:
+    #  nark/helpers/emphasis.py
     'ansi-escape-room',
     # Platform-specific directory magic.
     #  https://github.com/ActiveState/appdirs

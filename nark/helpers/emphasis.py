@@ -35,11 +35,16 @@ __all__ = (
 )
 
 
-# (lb): Retrieve pointer to module object instance, so functions can set
-# (otherwise function scope creates local variable). (I'll admit this feels a
-# little weird, but we need to gait access to a package -- colored -- and it's
-# either this; or use a module-level dictionary variable that module function
-# can set; or make a Singleton class. Or fork colored and move this there.)
+# (lb): Retrieve pointer to module object instance, so functions can set.
+# - If we did not do this, function scoping would create local variables.
+# - I'll admit this feels a little weird, but we need to gait access to the
+#   ansi_escape_room package. Using a fake "this", like we do here, is one
+#   way to gait access. Another would be to use a module-level dictionary
+#   variable that module functions could set. Or we could make a Singleton
+#   class. A fourth option would be to move features in this wrapper inside
+#   the ansi-escape-room package. (I created this file before creating
+#   ansi-escape-room (a fork of another user's package, named "colored"),
+#   and it works fine, and it's pretty simple, so keeping it... for now.)
 this = sys.modules[__name__]
 
 this.ENABLE_COLORS = True

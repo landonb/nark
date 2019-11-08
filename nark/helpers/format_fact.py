@@ -20,7 +20,7 @@ from __future__ import absolute_import, unicode_literals
 
 from six import text_type
 
-from ..helpers.colored import attr, colorize, set_coloring
+from ..helpers.emphasis import attr, colorize, set_coloring
 from ..helpers.strings import format_value_truncate
 
 __all__ = (
