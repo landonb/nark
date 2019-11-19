@@ -70,7 +70,11 @@ class NarkControl(object):
     provides general timetracking functions so that our clients do not have to.
     """
 
-    def __init__(self, config):
+    def __init__(self, config=None):
+        if config:
+            self.capture_config_lib(config)
+
+    def capture_config_lib(self, config):
         self.config = config
         self.lib_logger = self._get_logger()
         # Profiling: _get_store(): Observed: ~ 0.136 to 0.240 secs.
