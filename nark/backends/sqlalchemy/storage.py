@@ -127,13 +127,13 @@ class SQLAlchemyStore(BaseStore):
         # Contemplate if there are security implications that warrant sanitizing
         # config values.
 
-        engine = self.config.get('db_engine', '')
-        host = self.config.get('db_host', '')
-        name = self.config.get('db_name', '')
-        path = self.config.get('db_path', '')
-        port = self.config.get('db_port', '')
-        user = self.config.get('db_user', '')
-        password = self.config.get('db_password', '')
+        engine = self.config['db_engine']
+        host = self.config['db_host']
+        name = self.config['db_name']
+        path = self.config['db_path']
+        port = self.config['db_port']
+        user = self.config['db_user']
+        password = self.config['db_password']
 
         if not engine:
             message = _("No engine found in config!")
