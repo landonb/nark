@@ -96,7 +96,8 @@ class SQLAlchemyStore(BaseStore):
     def cleanup(self):
         pass
 
-    def get_db_url(self):
+    @property
+    def db_url(self):
         """
         Create a ``database_url`` from ``config`` suitable to be consumed
         by ``create_engine``
@@ -204,7 +205,7 @@ class SQLAlchemyStore(BaseStore):
         # It takes more deliberation to decide how to handle engine creation
         # if we receive a session. Should be require the session to bring
         # its own engine?
-        engine = create_engine(self.get_db_url())
+        engine = create_engine(self.db_url)
         self.logger.debug(_('Engine created.'))
         # NOTE: (lb): I succeeded at setting the ORM (Sqlite3) logger level,
         # but it didn't log anything (I was hoping to see all statements).

@@ -51,7 +51,7 @@ class MigrationsManager(BaseMigrationsManager):
         """Mark a database as under version control."""
         current_ver = self.version()
         if current_ver is None:
-            url = self.store.get_db_url()
+            url = self.store.db_url
             try:
                 migrate_versioning_api.version_control(
                     url, self.basepath, version=version, config=self.config,
@@ -77,7 +77,7 @@ class MigrationsManager(BaseMigrationsManager):
         assert current_ver <= latest_ver
         if current_ver > 0:
             next_version = current_ver - 1
-            url = self.store.get_db_url()
+            url = self.store.db_url
             migrate_versioning_api.downgrade(
                 url, self.basepath, version=next_version, config=self.config,
             )
@@ -98,7 +98,7 @@ class MigrationsManager(BaseMigrationsManager):
         assert current_ver <= latest_ver
         if current_ver < latest_ver:
             next_version = current_ver + 1
-            url = self.store.get_db_url()
+            url = self.store.db_url
             migrate_versioning_api.upgrade(
                 url, self.basepath, version=next_version, config=self.config,
             )
@@ -108,7 +108,7 @@ class MigrationsManager(BaseMigrationsManager):
 
     def version(self):
         """Returns the current migration of the active database."""
-        url = self.store.get_db_url()
+        url = self.store.db_url
         try:
             return migrate_versioning_api.db_version(
                 url, self.basepath, config=self.config,
