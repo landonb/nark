@@ -85,7 +85,25 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import os
 
+# (lb): The load_config_file method below is only called by the tests.
+# - The way hamster-cli and hamster-lib were originally built, the CLI
+#   had its own config loading code, which is still the case today. And
+#   now the CLI uses ConfigObj, which maintains config file ordering and
+#   comments, and no longer uses ConfigParser.
+# - But we don't need to change the code below at all, it can keep using
+#   the old ConfigParser, because it's just used for testing and showing
+#   how the config is laid out. (If we built another library client that
+#   needs to parse the config, we could either copypasta the ConfigObj
+#   code in dob; or we could move that code out of dob and make it more
+#   shareable/DRY, e.g., to a new component named `nark-conf`.)
+# MAYBE/2019-11-26: (lb): I might even go as far as to say that this file
+#   should be removed! The self.config.setdefault() calls in init_config
+#   are really all we need. This file is just noise. (And really nark does
+#   not care where the config is stored or how it's loaded; it just cares
+#   that it receives a config object, or maybe it doesn't care that much,
+#   because it can build its own config object with default values.)
 from configparser import ConfigParser, NoOptionError
+
 from six import string_types, text_type
 
 from ..control import REGISTERED_BACKENDS
@@ -94,9 +112,16 @@ from .app_dirs import NarkAppDirs
 # NOTE: (lb): This file is unused by nark/dob.
 #       It's used by hamster-gtk, which is broke
 #       against nark because of so much refactoring.
+#
 # FIXME: Fix this file to work with hamster-gtk again?
 #        (I'm not sure how much I care about the windowed app;
 #         I'm pretty happy with just the CLI....)
+#
+#        2019-11-26: (lb): This file is noise and could be removed.
+#        - If/when hamster-gtk upgraded to nark, move config code out of
+#          `dob` into new `nark-conf` library (or maybe just to `nark`)
+#          and use that code in hamster-gtk. (In dob, look for ConfigObj
+#          usage, and the ConfigDecorator and KeyChainedValue classes.)
 
 
 DEFAULT_APP_NAME = 'nark'
