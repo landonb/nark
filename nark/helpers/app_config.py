@@ -290,22 +290,22 @@ def backend_config_to_configparser(config):
         return text_type(config.get('default_tzinfo'))
 
     cp_instance = ConfigParser()
-    cp_instance.add_section('Backend')
-    cp_instance.set('Backend', 'store', get_store())
-    cp_instance.set('Backend', 'db_engine', get_db_engine())
-    cp_instance.set('Backend', 'db_path', get_db_path())
-    cp_instance.set('Backend', 'db_host', get_db_host())
-    cp_instance.set('Backend', 'db_port', get_db_port())
-    cp_instance.set('Backend', 'db_name', get_db_name())
-    cp_instance.set('Backend', 'db_user', get_db_user())
-    cp_instance.set('Backend', 'db_password', get_db_password())
-    cp_instance.set('Backend', 'allow_momentaneous', get_allow_momentaneous())
-    cp_instance.set('Backend', 'day_start', get_day_start())
-    cp_instance.set('Backend', 'fact_min_delta', get_fact_min_delta())
-    cp_instance.set('Backend', 'lib_log_level', get_lib_log_level())
-    cp_instance.set('Backend', 'sql_log_level', get_sql_log_level())
-    cp_instance.set('Backend', 'tz_aware', get_tz_aware())
-    cp_instance.set('Backend', 'default_tzinfo', get_default_tzinfo())
+    cp_instance.add_section('backend')
+    cp_instance.set('backend', 'store', get_store())
+    cp_instance.set('backend', 'db_engine', get_db_engine())
+    cp_instance.set('backend', 'db_path', get_db_path())
+    cp_instance.set('backend', 'db_host', get_db_host())
+    cp_instance.set('backend', 'db_port', get_db_port())
+    cp_instance.set('backend', 'db_name', get_db_name())
+    cp_instance.set('backend', 'db_user', get_db_user())
+    cp_instance.set('backend', 'db_password', get_db_password())
+    cp_instance.set('backend', 'allow_momentaneous', get_allow_momentaneous())
+    cp_instance.set('backend', 'day_start', get_day_start())
+    cp_instance.set('backend', 'fact_min_delta', get_fact_min_delta())
+    cp_instance.set('backend', 'lib_log_level', get_lib_log_level())
+    cp_instance.set('backend', 'sql_log_level', get_sql_log_level())
+    cp_instance.set('backend', 'tz_aware', get_tz_aware())
+    cp_instance.set('backend', 'default_tzinfo', get_default_tzinfo())
 
     return cp_instance
 
@@ -353,38 +353,38 @@ def configparser_to_backend_config(cp_instance):
         #   Though I'm not sure what's the ask. Should we
         #   check more than `store in REGISTERED_BACKENDS.keys`?
         # MAYBE: (lb): Use default 'sqlalchemy' if store not set?
-        store = cp_instance_get('Backend', 'store')
+        store = cp_instance_get('backend', 'store')
         if store not in REGISTERED_BACKENDS.keys():
             raise ValueError(_("Unrecognized store option."))
         return store
 
     def get_db_engine():
         # (lb): Use default 'sqlite' if db_engine not set?
-        return text_type(cp_instance_get('Backend', 'db_engine'))
+        return text_type(cp_instance_get('backend', 'db_engine'))
 
     def get_db_path():
-        return text_type(cp_instance_get('Backend', 'db_path'))
+        return text_type(cp_instance_get('backend', 'db_path'))
 
     def get_db_host():
-        return text_type(cp_instance_get('Backend', 'db_host'))
+        return text_type(cp_instance_get('backend', 'db_host'))
 
     def get_db_port():
-        return cp_instance_getint('Backend', 'db_port')
+        return cp_instance_getint('backend', 'db_port')
 
     def get_db_name():
-        return text_type(cp_instance_get('Backend', 'db_name'))
+        return text_type(cp_instance_get('backend', 'db_name'))
 
     def get_db_user():
-        return text_type(cp_instance_get('Backend', 'db_user'))
+        return text_type(cp_instance_get('backend', 'db_user'))
 
     def get_db_password():
-        return text_type(cp_instance_get('Backend', 'db_password'))
+        return text_type(cp_instance_get('backend', 'db_password'))
 
     def get_allow_momentaneous():
-        return cp_instance_getboolean('Backend', 'allow_momentaneous', False)
+        return cp_instance_getboolean('backend', 'allow_momentaneous', False)
 
     def get_day_start():
-        day_start = cp_instance_get('Backend', 'day_start')
+        day_start = cp_instance_get('backend', 'day_start')
         if not day_start:
             return ''
         try:
@@ -397,19 +397,19 @@ def configparser_to_backend_config(cp_instance):
         return day_start
 
     def get_fact_min_delta():
-        return cp_instance_getint('Backend', 'fact_min_delta')
+        return cp_instance_getint('backend', 'fact_min_delta')
 
     def get_lib_log_level():
-        return text_type(cp_instance_get('Backend', 'lib_log_level'))
+        return text_type(cp_instance_get('backend', 'lib_log_level'))
 
     def get_sql_log_level():
-        return text_type(cp_instance_get('Backend', 'sql_log_level'))
+        return text_type(cp_instance_get('backend', 'sql_log_level'))
 
     def get_tz_aware():
-        return cp_instance_getboolean('Backend', 'tz_aware', False)
+        return cp_instance_getboolean('backend', 'tz_aware', False)
 
     def get_default_tzinfo():
-        return text_type(cp_instance_get('Backend', 'default_tzinfo', ''))
+        return text_type(cp_instance_get('backend', 'default_tzinfo', ''))
 
     result = {
         'store': get_store(),
