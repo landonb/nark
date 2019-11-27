@@ -30,12 +30,12 @@ class TestController:
         # [TODO]
         # Once we got backend registration up and running this should be
         # improved to check actual store type for that backend.
-        controller.config['store'] = storetype
+        controller.config['db.store'] = storetype
         assert isinstance(controller._get_store(), BaseStore)
 
     def test_get_store_invalid(self, controller):
         """Make sure we get an exception if store retrieval fails."""
-        controller.config['store'] = None
+        controller.config['db.store'] = None
         with pytest.raises(KeyError):
             controller._get_store()
 

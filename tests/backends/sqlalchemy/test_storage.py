@@ -89,7 +89,7 @@ class TestStore(object):
 
     def test_init_with_unicode_path(self, alchemy_config, db_path_parametrized):
         """Test that Instantiating a store with a unicode path works."""
-        alchemy_config['db_path'] = db_path_parametrized
+        alchemy_config['db.path'] = db_path_parametrized
         assert SQLAlchemyStore(alchemy_config)
 
 

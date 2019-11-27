@@ -163,8 +163,8 @@ def alchemy_config(request, base_config):
     config = base_config.copy()
     config.update({
         'store': 'sqlalchemy',
-        'db_engine': 'sqlite',
-        'db_path': ':memory:',
+        'db.engine': 'sqlite',
+        'db.path': ':memory:',
     })
     return config
 
@@ -173,24 +173,24 @@ def alchemy_config(request, base_config):
     params=(
         # SQLite
         {
-            'db_engine': 'sqlite',
-            'db_path': ':memory:',
+            'db.engine': 'sqlite',
+            'db.path': ':memory:',
         },
         # Non-SQLite
         {
-            'db_engine': 'postgres',
-            'db_host': fauxfactory.gen_ipaddr(),
-            'db_port': fauxfactory.gen_integer(),
-            'db_name': fauxfactory.gen_utf8(),
-            'db_user': fauxfactory.gen_utf8(),
-            'db_password': fauxfactory.gen_utf8(),
+            'db.engine': 'postgres',
+            'db.host': fauxfactory.gen_ipaddr(),
+            'db.port': fauxfactory.gen_integer(),
+            'db.name': fauxfactory.gen_utf8(),
+            'db.user': fauxfactory.gen_utf8(),
+            'db.password': fauxfactory.gen_utf8(),
         },
         {
-            'db_engine': 'postgres',
-            'db_host': fauxfactory.gen_ipaddr(),
-            'db_name': fauxfactory.gen_utf8(),
-            'db_user': fauxfactory.gen_utf8(),
-            'db_password': fauxfactory.gen_utf8(),
+            'db.engine': 'postgres',
+            'db.host': fauxfactory.gen_ipaddr(),
+            'db.name': fauxfactory.gen_utf8(),
+            'db.user': fauxfactory.gen_utf8(),
+            'db.password': fauxfactory.gen_utf8(),
         },
     ),
 )
@@ -202,49 +202,49 @@ def alchemy_config_parametrized(request, alchemy_config):
     """
     config = alchemy_config.copy()
     config.update(request.param)
-    if request.param['db_engine'] == 'sqlite':
+    if request.param['db.engine'] == 'sqlite':
         expectation = '{engine}:///{path}'.format(
-            engine=request.param['db_engine'], path=request.param['db_path'])
+            engine=request.param['db.engine'], path=request.param['db.path'])
     else:
-        port = request.param.get('db_port', '')
+        port = request.param.get('db.port', '')
         if port:
             port = ':{}'.format(port)
         expectation = '{engine}://{user}:{password}@{host}{port}/{name}'.format(
-            engine=request.param['db_engine'], user=request.param['db_user'],
-            password=request.param['db_password'], host=request.param['db_host'],
-            port=port, name=request.param['db_name'])
+            engine=request.param['db.engine'], user=request.param['db.user'],
+            password=request.param['db.password'], host=request.param['db.host'],
+            port=port, name=request.param['db.name'])
     return (config, expectation)
 
 
 @pytest.fixture(params=(
-    {'db_engine': None,
-     'db_path': None},
+    {'db.engine': None,
+     'db.path': None},
     # sqlite
-    {'db_engine': 'sqlite',
-     'db_path': None},
-    {'db_engine': 'sqlite',
-     'db_path': ''},
+    {'db.engine': 'sqlite',
+     'db.path': None},
+    {'db.engine': 'sqlite',
+     'db.path': ''},
     # Non-sqlite
-    {'db_engine': 'postgres',
-     'db_host': None,
-     'db_name': fauxfactory.gen_utf8(),
-     'db_user': fauxfactory.gen_utf8(),
-     'db_password': fauxfactory.gen_alphanumeric()},
-    {'db_engine': 'postgres',
-     'db_host': fauxfactory.gen_ipaddr(),
-     'db_name': '',
-     'db_user': fauxfactory.gen_utf8(),
-     'db_password': fauxfactory.gen_alphanumeric()},
-    {'db_engine': 'postgres',
-     'db_host': fauxfactory.gen_ipaddr(),
-     'db_name': fauxfactory.gen_utf8(),
-     'db_user': '',
-     'db_password': fauxfactory.gen_alphanumeric()},
-    {'db_engine': 'postgres',
-     'db_host': fauxfactory.gen_ipaddr(),
-     'db_name': fauxfactory.gen_utf8(),
-     'db_user': fauxfactory.gen_utf8(),
-     'db_password': ''}
+    {'db.engine': 'postgres',
+     'db.host': None,
+     'db.name': fauxfactory.gen_utf8(),
+     'db.user': fauxfactory.gen_utf8(),
+     'db.password': fauxfactory.gen_alphanumeric()},
+    {'db.engine': 'postgres',
+     'db.host': fauxfactory.gen_ipaddr(),
+     'db.name': '',
+     'db.user': fauxfactory.gen_utf8(),
+     'db.password': fauxfactory.gen_alphanumeric()},
+    {'db.engine': 'postgres',
+     'db.host': fauxfactory.gen_ipaddr(),
+     'db.name': fauxfactory.gen_utf8(),
+     'db.user': '',
+     'db.password': fauxfactory.gen_alphanumeric()},
+    {'db.engine': 'postgres',
+     'db.host': fauxfactory.gen_ipaddr(),
+     'db.name': fauxfactory.gen_utf8(),
+     'db.user': fauxfactory.gen_utf8(),
+     'db.password': ''}
 ))
 def alchemy_config_missing_store_config_parametrized(request, alchemy_config):
     """

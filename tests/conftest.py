@@ -51,17 +51,17 @@ def endless_fact(base_config, fact_factory):
 def base_config(tmpdir):
     """Provide a generic baseline configuration."""
     return {
-        'store': 'sqlalchemy',
-        'db_engine': 'sqlite',
-        'db_path': ':memory:',
+        'db.orm': 'sqlalchemy',
+        'db.engine': 'sqlite',
+        'db.path': ':memory:',
         # FIXME: (lb): Make special tests for these less used options
         #        and then just set to default values here, e.g.,
         #           'day_start': '',
         #           'fact_min_delta': 0,
-        'day_start': datetime.time(hour=5, minute=30, second=0),
-        'fact_min_delta': 60,
-        'lib_log_level': 'WARNING',
-        'sql_log_level': 'WARNING',
+        'time.day_start': datetime.time(hour=5, minute=30, second=0),
+        'time.fact_min_delta': 60,
+        'dev.lib_log_level': 'WARNING',
+        'dev.sql_log_level': 'WARNING',
     }
 
 

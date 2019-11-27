@@ -34,7 +34,7 @@ class TestGetDayEnd(object):
     ])
     def test_various_day_start_times(self, base_config, day_start, expectation):
         """Ensure that resulting end times match our expectation given ``day_start``-"""
-        base_config['day_start'] = day_start
+        base_config['time.day_start'] = day_start
         assert fact_time.day_end_time(day_start) == expectation
 
 

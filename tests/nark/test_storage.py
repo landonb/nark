@@ -253,7 +253,7 @@ class TestFactManager:
 
     def test_save_to_brief_fact(self, basestore, fact):
         """Ensure that a fact with too small of a time delta raises an exception."""
-        delta = datetime.timedelta(seconds=(basestore.config['fact_min_delta'] - 1))
+        delta = datetime.timedelta(seconds=(basestore.config['time.fact_min_delta'] - 1))
         fact.end = fact.start + delta
         with pytest.raises(ValueError):
             basestore.facts.save(fact)

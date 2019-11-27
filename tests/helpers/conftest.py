@@ -62,11 +62,13 @@ def appdirs(mocker, tmpdir):
     return NarkAppDirs
 
 
-@pytest.fixture
-def backend_config(appdirs):
-    """Provide generic backend config."""
-    appdir = appdirs(app_config.DEFAULT_APP_NAME)
-    return app_config.get_default_backend_config(appdir)
+# FIXME/2019-11-27 15:07: Deleted: get_default_backend_config
+if False:
+    @pytest.fixture
+    def backend_config(appdirs):
+        """Provide generic backend config."""
+        appdir = appdirs(app_config.DEFAULT_APP_NAME)
+        return app_config.get_default_backend_config(appdir)
 
 
 @pytest.fixture
@@ -88,12 +90,12 @@ def configparser_instance(request):
     config.set('backend', 'sql_log_level', 'WARNING')
     # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
     # in specific tests and leaving them set to factory defaults here.
-    #   config.set('backend', 'day_start', '')
-    #   config.set('backend', 'fact_min_delta', '0')
+    #   config.set('time', 'day_start', '')
+    #   config.set('time', 'fact_min_delta', '0')
     # Also consider the other settings not being set here.
-    #   config.set('backend', 'allow_momentaneous', 'False')
-    #   config.set('backend', 'tz_aware', 'False')
-    #   config.set('backend', 'default_tzinfo', '')
+    #   config.set('time', 'allow_momentaneous', 'False')
+    #   config.set('time', 'tz_aware', 'False')
+    #   config.set('time', 'default_tzinfo', '')
 
     expectation = {
         'store': text_type('sqlalchemy'),
@@ -126,13 +128,15 @@ def config_instance(request):
     return ConfigParser()
 
 
-@pytest.fixture
-def config_file(backend_config, appdirs):
-    """Provide a config file stored under our fake config dir."""
-    config_conf = os.path.join(appdirs.user_config_dir, 'config.conf')
-    with codecs.open(config_conf, 'w', encoding='utf-8') as fobj:
-        app_config.backend_config_to_configparser(backend_config).write(fobj)
-        config_instance.write(fobj)
+# FIXME/2019-11-27 15:09: Deleted: backend_config_to_configparser
+if False:
+    @pytest.fixture
+    def config_file(backend_config, appdirs):
+        """Provide a config file stored under our fake config dir."""
+        config_conf = os.path.join(appdirs.user_config_dir, 'config.conf')
+        with codecs.open(config_conf, 'w', encoding='utf-8') as fobj:
+            app_config.backend_config_to_configparser(backend_config).write(fobj)
+            config_instance.write(fobj)
 
 
 @pytest.fixture(params=[
