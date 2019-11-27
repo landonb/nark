@@ -107,7 +107,7 @@ class NarkControl(object):
         instantiation as well as all additional configuration.
         """
 
-        backend = REGISTERED_BACKENDS.get(self.config['store'])
+        backend = REGISTERED_BACKENDS.get(self.config['db.orm'])
         if not backend:
             raise KeyError(_("No or invalid storage specified."))
         import_path, storeclass = tuple(backend.store_class.rsplit('.', 1))
@@ -126,7 +126,7 @@ class NarkControl(object):
         itself.
         """
 
-        lib_log_level = self.config['lib_log_level']
+        lib_log_level = self.config['dev.lib_log_level']
         lib_logger = logging_helpers.set_logger_level(
             'nark.log', lib_log_level,
         )

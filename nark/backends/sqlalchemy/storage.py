@@ -128,13 +128,13 @@ class SQLAlchemyStore(BaseStore):
         # Contemplate if there are security implications that warrant sanitizing
         # config values.
 
-        engine = self.config['db_engine']
-        host = self.config['db_host']
-        name = self.config['db_name']
-        path = self.config['db_path']
-        port = self.config['db_port']
-        user = self.config['db_user']
-        password = self.config['db_password']
+        engine = self.config['db.engine']
+        host = self.config['db.host']
+        name = self.config['db.name']
+        path = self.config['db.path']
+        port = self.config['db.port']
+        user = self.config['db.user']
+        password = self.config['db.password']
 
         if not engine:
             message = _("No engine found in config!")
@@ -248,7 +248,7 @@ class SQLAlchemyStore(BaseStore):
         self.categories = CategoryManager(self)
         self.activities = ActivityManager(self)
         self.tags = TagManager(self)
-        localize = self.config['tz_aware']
+        localize = self.config['time.tz_aware']
         self.facts = FactManager(self, localize=localize)
         self.fact_cls = None
 

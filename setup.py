@@ -44,10 +44,10 @@ requirements = [
     # Platform-specific directory magic.
     #  https://github.com/ActiveState/appdirs
     'appdirs',
-    # Basic INI parser.
-    #  https://pypi.org/project/configparser/
-    #  https://docs.python.org/3/library/configparser.html
-    'configparser >= 3.5.0b2',
+    # Better INI/conf parser (preserves order, comments) than ConfigParser.
+    #  https://github.com/DiffSK/configobj
+    #  https://configobj.readthedocs.io/en/latest/
+    'configobj >= 5.0.6',
     # https://github.com/scrapinghub/dateparser
     'dateparser',
     # Py2/3 support shim. (Higher-level than `six`.)

@@ -53,7 +53,7 @@ class BaseStore(object):
         self.categories = BaseCategoryManager(self)
         self.activities = BaseActivityManager(self)
         self.tags = BaseTagManager(self)
-        localize = self.config['tz_aware']
+        localize = self.config['time.tz_aware']
         self.facts = BaseFactManager(self, localize=localize)
 
     def standup(self):
@@ -71,27 +71,28 @@ class BaseStore(object):
         raise NotImplementedError
 
     def init_config(self):
-        self.config.setdefault('store', 'sqlalchemy')
-        self.config.setdefault('db_engine', 'sqlite')
-        self.config.setdefault('db_path', self.default_db_path)
-        self.config.setdefault('db_host', '')
-        self.config.setdefault('db_port', '')
-        self.config.setdefault('db_name', '')
-        self.config.setdefault('db_user', '')
-        self.config.setdefault('db_password', '')
-        self.config.setdefault('allow_momentaneous', False)
-        self.config.setdefault('day_start', '')
-        self.config.setdefault('fact_min_delta', '0')
-        self.config.setdefault('lib_log_level', 'WARNING')
-        self.config.setdefault('sql_log_level', 'WARNING')
-        self.config.setdefault('tz_aware', False)
-        self.config.setdefault('default_tzinfo', '')
+        self.config.setdefault('db.orm', 'sqlalchemy')
+        self.config.setdefault('db.engine', 'sqlite')
+        self.config.setdefault('db.path', self.default_db_path)
+        self.config.setdefault('db.host', '')
+        self.config.setdefault('db.port', '')
+        self.config.setdefault('db.name', '')
+        self.config.setdefault('db.user', '')
+        self.config.setdefault('db.password', '')
+        self.config.setdefault('time.allow_momentaneous', False)
+        self.config.setdefault('time.day_start', '')
+        self.config.setdefault('time.fact_min_delta', '0')
+        self.config.setdefault('dev.lib_log_level', 'WARNING')
+        self.config.setdefault('dev.sql_log_level', 'WARNING')
+        self.config.setdefault('time.tz_aware', False)
+        self.config.setdefault('time.default_tzinfo', '')
 
     @property
     def default_db_path(self):
-        app_dirs = NarkAppDirs('nark')
+        if NarkAppDirs.APP_DIRS is None:
+            return ''
         db_path = os.path.join(
-            app_dirs.user_data_dir,
+            NarkAppDirs.APP_DIRS.user_data_dir,
             # (lb): Whatever client is using the nark library
             # will generally setup db_path specially; this is
             # just a default filename for completeness.
@@ -100,7 +101,7 @@ class BaseStore(object):
         return db_path
 
     def init_logger(self):
-        sql_log_level = self.config['sql_log_level']
+        sql_log_level = self.config['dev.sql_log_level']
         self.logger = logging_helpers.set_logger_level(
             'nark.store', sql_log_level,
         )
@@ -119,7 +120,7 @@ class BaseStore(object):
         return self._now
 
     def now_tz_aware(self):
-        if self.config['tz_aware']:
+        if self.config['time.tz_aware']:
             # FIXME/2018-05-23: (lb): Tests use utcnow(). Should they honor tz_aware?
             #   (Though if Freezegun being used, now() == utcnow().)
             # Clear microseconds to avoid six digits of noise, e.g., 12:34:56.789012.

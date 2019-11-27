@@ -253,7 +253,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 invalid_range = True
             else:
                 # EXPERIMENTAL: Sneaky, "hidden", vacant, timeless Facts.
-                allow_momentaneous = self.store.config['allow_momentaneous']
+                allow_momentaneous = self.store.config['time.allow_momentaneous']
                 if not allow_momentaneous and fact.start >= fact.end:
                     invalid_range = True
 

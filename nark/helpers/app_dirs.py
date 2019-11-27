@@ -18,6 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import os
+import sys
 
 import appdirs
 
@@ -29,9 +30,23 @@ __all__ = (
 class NarkAppDirs(appdirs.AppDirs):
     """Custom class that ensure appdirs exist."""
 
+    # A hacky singleton. The code in nark needs access to an (the)
+    # instance of the AppDirs object, but nark requires the client
+    # (dob) to create this object (so it can set appname properly).
+    # So the first object of this class type to be created asserts
+    # that it's the only one of its kind, and then it'll set a ref-
+    # erence to self at the class level (for the benefit of nark).
+    APP_DIRS = None
+
     def __init__(self, *args, **kwargs):
         """Add create flag value to instance."""
+        # The AppDirs takes a number of parameters:
+        #   appname=None, appauthor=None, version=None,
+        #   roaming=False, multipath=False,
+        # but generally you just need to specify appname.
         super(NarkAppDirs, self).__init__(*args, **kwargs)
+        assert(NarkAppDirs.APP_DIRS is None)
+        NarkAppDirs.APP_DIRS = self
         # FIXME: (lb): I'm not super cool with this side-effect:
         #          Calling any property herein will cause its
         #          directory path to be created! Creating paths

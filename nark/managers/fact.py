@@ -52,7 +52,7 @@ class BaseFactManager(BaseManager):
 
         Raises:
             ValueError: If ``fact.delta`` is smaller than
-              ``self.store.config['fact_min_delta']``
+              ``self.config['time.fact_min_delta']``
         """
         def _save():
             enforce_fact_min_delta()
@@ -68,7 +68,7 @@ class BaseFactManager(BaseManager):
                 # The ongoing fact.
                 return
 
-            fact_min_delta = int(self.store.config['fact_min_delta'])
+            fact_min_delta = int(self.config['time.fact_min_delta'])
             if not fact_min_delta:
                 # User has not enabled min-delta behavior.
                 return
@@ -242,7 +242,7 @@ class BaseFactManager(BaseManager):
                 self.store.logger.debug(
                     _('Using midnight as clock time for `since` date.')
                 )
-                day_start = self.store.config['day_start']
+                day_start = self.config['time.day_start']
                 since_dt = datetime.datetime.combine(since, day_start)
             elif isinstance(since, datetime.time):
                 since_dt = datetime.datetime.combine(datetime.date.today(), since)
@@ -345,14 +345,14 @@ class BaseFactManager(BaseManager):
         self.store.logger.debug(_("Returning today's facts"))
 
         today = self.store.now.date()
-        since = datetime.datetime.combine(today, self.store.config['day_start'])
+        since = datetime.datetime.combine(today, self.config['time.day_start'])
         until = self.day_end_datetime(today)
         return self.get_all(since=since, until=until)
 
     def day_end_datetime(self, end_date=None):
         if end_date is None:
             end_date = self.store.now.date()
-        start_time = self.store.config['day_start']
+        start_time = self.config['time.day_start']
         return fact_time.day_end_datetime(end_date, start_time)
 
     # ***
