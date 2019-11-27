@@ -73,15 +73,7 @@ class BaseStore(object):
     def init_config(self):
         self.config.setdefault('store', 'sqlalchemy')
         self.config.setdefault('db_engine', 'sqlite')
-        app_dirs = NarkAppDirs('nark')
-        db_path = os.path.join(
-            app_dirs.user_data_dir,
-            # (lb): Whatever client is using the nark library
-            # will generally setup db_path specially; this is
-            # just a default filename for completeness.
-            'dob.sqlite',
-        )
-        self.config.setdefault('db_path', db_path)
+        self.config.setdefault('db_path', self.default_db_path)
         self.config.setdefault('db_host', '')
         self.config.setdefault('db_port', '')
         self.config.setdefault('db_name', '')
@@ -94,6 +86,18 @@ class BaseStore(object):
         self.config.setdefault('sql_log_level', 'WARNING')
         self.config.setdefault('tz_aware', False)
         self.config.setdefault('default_tzinfo', '')
+
+    @property
+    def default_db_path(self):
+        app_dirs = NarkAppDirs('nark')
+        db_path = os.path.join(
+            app_dirs.user_data_dir,
+            # (lb): Whatever client is using the nark library
+            # will generally setup db_path specially; this is
+            # just a default filename for completeness.
+            'dob.sqlite',
+        )
+        return db_path
 
     def init_logger(self):
         sql_log_level = self.config['sql_log_level']
