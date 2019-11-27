@@ -40,6 +40,10 @@ class BaseManager(object):
     def __init__(self, store):
         self.store = store
 
+    @property
+    def config(self):
+        return self.store.config
+
     # ***
 
     def adding_item_must_not_have_pk(self, hamster_item):
