@@ -889,7 +889,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                     func.datetime(AlchemyFact.end) < ref_time,
                     and_(
                         func.datetime(AlchemyFact.end) == ref_time,
-                        AlchemyFact.pk < fact.pk,
+                        AlchemyFact.pk != fact.pk,
                     ),
                 ),
             )
@@ -955,7 +955,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 func.datetime(AlchemyFact.start) > ref_time,
                 and_(
                     func.datetime(AlchemyFact.start) == ref_time,
-                    AlchemyFact.pk > fact.pk,
+                    AlchemyFact.pk != fact.pk,
                 ),
             )
 
