@@ -197,9 +197,9 @@ if False:
     class TestConfigParserToBackendConfig(object):
         """Make sure that conversion works expected."""
 
-        def test_regular_usecase(self, configparser_instance):
+        def test_regular_usecase(self, configobj_instance):
             """Make sure basic mechanics work and int/time types are created."""
-            cp_instance, expectation = configparser_instance
+            cp_instance, expectation = configobj_instance
             result = app_config.configparser_to_backend_config(cp_instance)
             assert result == expectation
 

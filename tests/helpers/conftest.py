@@ -25,10 +25,13 @@ import os
 
 import fauxfactory
 import pytest
+# FIXME/2019-11-27: (lb): Update to ConfigObj; remove ConfigParser.
+#  from configobj import ConfigObj
 from configparser import ConfigParser
+from six import text_type
+
 from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
-from six import text_type
 
 
 @pytest.fixture
