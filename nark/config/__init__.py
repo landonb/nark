@@ -274,9 +274,8 @@ class NarkConfigurableTime(Subscriptable):
         validate=validate_day_start,
     )
     def day_start(self):
-        # (lb): Disable this by default; I've never liked this logic!
-        #   In Legacy Hamster: '00:00:00'
-        return ''
+        # Same default as in Legacy Hamster, midnight, a sextuple zed double colon.
+        return '00:00:00'
 
     # ***
 
