@@ -29,7 +29,6 @@ import csv
 import datetime
 import sys
 from collections import namedtuple
-from io import open
 
 import lazy_import
 from future.utils import python_2_unicode_compatible
