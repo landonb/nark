@@ -98,6 +98,11 @@ class NarkConfigurableDb(Subscriptable):
 
     @property
     @ConfigRoot.setting(
+        # (lb): It's possible db.path could apply to something other than
+        # SQLite that also saves to a single file. But until I hear of someone
+        # who actually uses something other than SQLite, let's make the
+        # documentation more precise, and specifically say applies to SQLite.
+        # Also because I haven't tested anything other than SQLite.
         _("Path to SQLite database file"
             " (for ‘sqlite’ db.engine)."),
         # The db.path only applies for 'sqlite' DBMS.
@@ -203,6 +208,13 @@ class NarkConfigurableTime(Subscriptable):
 
     @property
     @ConfigRoot.setting(
+        # allow_momentaneous indictes if 0-length duration Facts allowed,
+        #   e.g., start == end.
+        # Here's a little vocabulary lesson:
+        #      Fugacious: "lasting a short time"
+        #     Evanescent: "tending to vanish like vapor"
+        #   Momentaneous: "characterizing action begun, terminated in an instant"
+        #   See also:     Vacant, Fleeting, Transient.
         _("If True, lets you save Facts that start and end"
             " at the exact same time, i.e., zero-length Facts."),
         # FIXME/2019-11-18: (lb): Hidden for now. Still testing.
@@ -240,7 +252,24 @@ class NarkConfigurableTime(Subscriptable):
 
     @property
     @ConfigRoot.setting(
-        # FIXME/2019-11-18: Explain this option better.
+        # hamster-lib described day_start as simply "can be used to specify
+        # default start time". I.e., when you create a new Fact, if there
+        # was no earlier completed Fact from that same day whose end time
+        # could be used as the default start time, hamster would set the
+        # start time to day_start. This could be useful if you did not dob
+        # all 24 hours of your day, and your day tended to start at the same
+        # time. E.g., if you always got to work at 7am, you could set day_start
+        # to 7am, and when you'd create that first Fact in the morning, the
+        # start time would default to 7am. Pretty straightforward. In dob it
+        # works the same, except dob defaults the start time to the end time
+        # of the most recent completed Fact, even if it's days or years before,
+        # because dob discourages users from leaving gaps in their facts.
+        #   The day_start serves additional purposes in dob, too. If the user
+        # specifies a datetime option using just a date, but no time, dob either
+        # defaults to midnight of that day, or it uses day_start. Also, when
+        # generating daily reports, dob either groups Facts each day from
+        # midnight to midnight, or from between day_start on consecutive days.
+        # (lb): This help is tricky to get right. This iteration feels okay:
         _("The time at which the day is considered started."),
         validate=validate_day_start,
     )
