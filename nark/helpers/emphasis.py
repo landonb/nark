@@ -47,7 +47,13 @@ __all__ = (
 #   and it works fine, and it's pretty simple, so keeping it... for now.)
 this = sys.modules[__name__]
 
-this.ENABLE_COLORS = True
+# (lb): We had been enabling colors until disabled, but it seems more
+# normal to assume no colors until at least the user's config is read
+# and the command line arguments are parsed! The one drawback is that
+# now some module- and class-scope strings can no longer be formatted
+# when sourced, but must be generated at runtime, after the config is
+# loaded.
+this.ENABLE_COLORS = False
 
 
 def disable_colors():
