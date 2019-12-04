@@ -178,7 +178,7 @@ class NarkConfigurableDev(Subscriptable):
 
     @property
     @ConfigRoot.setting(
-        _("The log level setting for library (nark) squaller"
+        _("The log level for library (nark) squaller"
             " (using Python logging library levels)"),
         validate=get_log_level_safe,
     )
@@ -187,7 +187,7 @@ class NarkConfigurableDev(Subscriptable):
 
     @property
     @ConfigRoot.setting(
-        _("The log level setting for database (SQL) squaller"
+        _("The log level for database (SQL) squaller"
             " (using Python logging library levels)"),
         validate=get_log_level_safe,
     )
@@ -270,7 +270,7 @@ class NarkConfigurableTime(Subscriptable):
         # generating daily reports, dob either groups Facts each day from
         # midnight to midnight, or from between day_start on consecutive days.
         # (lb): This help is tricky to get right. This iteration feels okay:
-        _("The time at which the day is considered started."),
+        _("Default start time for grouping by days, and for dates with no time."),
         validate=validate_day_start,
     )
     def day_start(self):
@@ -282,8 +282,7 @@ class NarkConfigurableTime(Subscriptable):
 
     @property
     @ConfigRoot.setting(
-        _("If nonzero, dob will not let you save a Fact"
-            " with a duration less than this number of seconds."),
+        _("A Fact being saved must have a duration of at least this many seconds."),
     )
     def fact_min_delta(self):
         # (lb): Disable this by default; I've never liked this logic!
