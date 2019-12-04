@@ -515,6 +515,7 @@ class Parser(object):
     def warn_if_datetime_missing_clock_time(self, raw_dt, after_dt):
         if HamsterTimeSpec.has_time_of_day(raw_dt):
             return
+        # NOTE: re.match checks for a match only at the beginning of the string.
         looks_like_clock_abbrev = re.match(r'\s*(\d:\d{2}|\d{3})(\s+|$)', after_dt)
         warn_msg = _('The identified datetime is missing the time of day.')
         if looks_like_clock_abbrev:
@@ -601,6 +602,7 @@ class Parser(object):
     ):
         description_prefix = ''
         if unseparated_tags:
+            # NOTE: re.match checks for a match only at the beginning of the string.
             match_tags = Parser.RE_SPLIT_CAT_AND_TAGS.match(unseparated_tags)
             if match_tags is not None:
                 split_tags = Parser.RE_SPLIT_TAGS_AND_TAGS.split(unseparated_tags)

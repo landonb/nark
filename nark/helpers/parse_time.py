@@ -292,6 +292,7 @@ def parse_datetime_iso8601(datepart, must=False, local_tz=None):
 def parse_relative_minutes(rel_time):
     rel_mins = None
     negative = None
+    # NOTE: re.match checks for a match only at the beginning of the string.
     match = RE_PATTERN_RELATIVE_DELTA.match(rel_time)
     if match:
         parts = match.groupdict()

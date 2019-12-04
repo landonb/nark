@@ -149,6 +149,7 @@ def must_be_datetime_or_relative(dt):
     elif not dt or isinstance(dt, text_type):
         if (
             dt and not (
+                # NOTE: re.match checks for a match only at the beginning of the string.
                 RE_PATTERN_RELATIVE_CLOCK.match(dt)
                 or RE_PATTERN_RELATIVE_DELTA.match(dt)
             )
