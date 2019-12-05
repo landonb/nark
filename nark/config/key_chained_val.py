@@ -33,6 +33,7 @@ class KeyChainedValue(object):
         name='',
         default_f=None,
         value_type=None,
+        allow_none=False,
         # Optional.
         choices='',
         doc='',
@@ -50,6 +51,7 @@ class KeyChainedValue(object):
         self._validate_f = validate
 
         self._value_type = self.deduce_value_type(value_type)
+        self._value_allow_none = allow_none
 
         # These attributes will only be set if some particular
         # source specifies a value:
@@ -123,6 +125,8 @@ class KeyChainedValue(object):
         return hasattr(self, '_val_config')
 
     def _typify(self, value):
+        if self._value_allow_none and value is None:
+            return value
         if self._value_type is bool:
             if value == 'True':
                 return True
