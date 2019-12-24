@@ -24,12 +24,13 @@ import os
 
 from gettext import gettext as _
 
+from config_decorator import section
+from config_decorator.subscriptable import Subscriptable
+
 from ..control import REGISTERED_BACKENDS
 from ..helpers.app_dirs import NarkAppDirs
 
-from .inify import section
 from .log_levels import get_log_level_safe
-from .subscriptable import Subscriptable
 
 __all__ = (
     'ConfigRoot',
