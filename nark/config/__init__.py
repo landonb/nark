@@ -25,7 +25,6 @@ import os
 from gettext import gettext as _
 
 from config_decorator import section
-from config_decorator.subscriptable import Subscriptable
 
 from ..control import REGISTERED_BACKENDS
 from ..helpers.app_dirs import NarkAppDirs
@@ -56,7 +55,7 @@ class ConfigRoot(object):
 
 
 @ConfigRoot.section('db')
-class NarkConfigurableDb(Subscriptable):
+class NarkConfigurableDb(object):
     """"""
 
     def __init__(self, *args, **kwargs):
@@ -169,7 +168,7 @@ class NarkConfigurableDb(Subscriptable):
 # ***
 
 @ConfigRoot.section('dev')
-class NarkConfigurableDev(Subscriptable):
+class NarkConfigurableDev(object):
     """"""
 
     def __init__(self, *args, **kwargs):
@@ -199,7 +198,7 @@ class NarkConfigurableDev(Subscriptable):
 # ***
 
 @ConfigRoot.section('time')
-class NarkConfigurableTime(Subscriptable):
+class NarkConfigurableTime(object):
     """"""
 
     def __init__(self, *args, **kwargs):
