@@ -26,6 +26,7 @@ docs/modules.rst
 docs/nark.backends.rst
 docs/nark.backends.sqlalchemy.managers.rst
 docs/nark.backends.sqlalchemy.rst
+docs/nark.config.rst
 docs/nark.helpers.dev.rst
 docs/nark.helpers.rst
 docs/nark.items.rst
