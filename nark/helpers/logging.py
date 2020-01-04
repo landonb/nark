@@ -48,7 +48,9 @@ def formatter_basic_color():
         '{light_blue}%(name)s '
         '%(funcName)s{reset}: '
         '{bold}{green}%(message)s{reset}'.format(
-            grey_54=fg('grey_54'),
+            # MAGIC: Use RGB not 'grey_54' because tmux 0-255 color issue.
+            #   grey_54=fg('grey_54'),
+            grey_54=fg('#8a8a8a'),
             underlined=attr('underlined'),
             magenta=fg('magenta'),
             reset=attr('reset'),
