@@ -20,6 +20,9 @@
 from __future__ import absolute_import, unicode_literals
 
 from future.utils import python_2_unicode_compatible
+
+from gettext import gettext as _
+
 from sqlalchemy.exc import IntegrityError
 
 __all__ = (

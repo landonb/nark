@@ -19,6 +19,8 @@ from __future__ import absolute_import, unicode_literals
 
 from future.utils import python_2_unicode_compatible
 
+from gettext import gettext as _
+
 from . import BaseManager
 from ..items.category import Category
 
