@@ -113,6 +113,7 @@ class Fact(BaseItem):
         self.end = end
         self.description = description
 
+        self.tags = []
         self.tags_replace(tags)
 
         # (lb): Legacy Hamster did not really have an edit-fact feature.
