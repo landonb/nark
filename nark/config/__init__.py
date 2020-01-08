@@ -270,18 +270,6 @@ class NarkConfigurableTime(object):
 
     @property
     @ConfigRoot.setting(
-        _('Generated value.'),
-        ephemeral=True,
-        hidden=True,
-    )
-    def day_start_time(self):
-        day_start = ''
-        if self is not None:
-            day_start = self['day_start']
-        return _day_start_strptime(day_start)
-
-    @property
-    @ConfigRoot.setting(
         # hamster-lib described day_start as simply "can be used to specify
         # default start time". I.e., when you create a new Fact, if there
         # was no earlier completed Fact from that same day whose end time
@@ -306,6 +294,18 @@ class NarkConfigurableTime(object):
     def day_start(self):
         # Same default as in Legacy Hamster, midnight, a sextuple zed double colon.
         return '00:00:00'
+
+    @property
+    @ConfigRoot.setting(
+        _('Generated value.'),
+        ephemeral=True,
+        hidden=True,
+    )
+    def day_start_time(self):
+        day_start = ''
+        if self is not None:
+            day_start = self['day_start']
+        return _day_start_strptime(day_start)
 
     # ***
 
