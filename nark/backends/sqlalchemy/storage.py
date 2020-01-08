@@ -105,15 +105,15 @@ class SQLAlchemyStore(BaseStore):
         by ``create_engine``
 
         Our config may include:
-            * ''db_engine``; Engine to be used.
-            * ``db_host``; Host to connect to.
-            * ``db_port``; Port to connect to.
-            * ``db_path``; Used if ``engine='sqlite'``.
-            * ``db_user``; Database user to be used for connection.
-            * ``db_password``; Database user passwort to authenticate user.
+            * ''db.engine``; Engine to be used.
+            * ``db.host``; Host to connect to.
+            * ``db.port``; Port to connect to.
+            * ``db.path``; Used if ``engine='sqlite'``.
+            * ``db.user``; Database user to be used for connection.
+            * ``db.password``; Database user passwort to authenticate user.
 
-        If ``db_engine='sqlite'`` you need to provide ``db_path`` as well.
-        For any other engine ``db_host`` and ``db_name`` are mandatory.
+        If ``db.engine='sqlite'`` you need to provide ``db.path`` as well.
+        For any other engine ``db.host`` and ``db.name`` are mandatory.
 
         Note:
             * `SQLAlchemy docs
@@ -124,12 +124,19 @@ class SQLAlchemyStore(BaseStore):
 
         Raises:
             ValueError: If a required config key/value pair is not present for
-                the choosen ``db_engine``.
+                the choosen ``db.engine``.
         """
         # [FIXME]
         # Contemplate if there are security implications that warrant sanitizing
         # config values.
 
+        # Because ConfigDecorator, we could access variables with
+        # dot-notation or by subscripting, e.g., these both work:
+        #   engine = self.config['db.engine']
+        #   engine = self.config['db']['engine']
+        # The code generally uses dot-notation because that's how
+        # the user sees it in `dob config dump` output; it's more
+        # concise; and it's easier to bang out in a search command.
         engine = self.config['db.engine']
         host = self.config['db.host']
         name = self.config['db.name']
@@ -150,7 +157,7 @@ class SQLAlchemyStore(BaseStore):
                 # SQLAlchemy default to ``:memory:``. But explicit is better
                 # than implicit. You can still create an in memory db by passing
                 # ``db_path=':memory:'`` deliberately.
-                message = _("No 'db_path' found in config! Sqlite requires one.")
+                message = _("No 'db.path' found in config! Sqlite requires one.")
                 self.logger.error(message)
                 raise ValueError(message)
             if path != ':memory:':
@@ -160,28 +167,28 @@ class SQLAlchemyStore(BaseStore):
         else:
             if not host:
                 message = _(
-                    "No 'db_host' found in config!"
+                    "No 'db.host' found in config!"
                     " Engines other than sqlite require one."
                 )
                 self.logger.error(message)
                 raise ValueError(message)
             if not name:
                 message = _(
-                    "No 'db_name' found in config!"
+                    "No 'db.name' found in config!"
                     " Engines other than sqlite require one."
                 )
                 self.logger.error(message)
                 raise ValueError(message)
             if not user:
                 message = _(
-                    "No 'db_user' found in config!"
+                    "No 'db.user' found in config!"
                     " Engines other than sqlite require one."
                 )
                 self.logger.error(message)
                 raise ValueError(message)
             if not password:
                 message = _(
-                    "No 'db_password' found in config!"
+                    "No 'db.password' found in config!"
                     " Engines other than sqlite require one."
                 )
                 self.logger.error(message)
