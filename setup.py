@@ -55,7 +55,7 @@ requirements = [
     #  https://python-future.org/
     'future',
     # Elapsed timedelta formatter, e.g., "1.25 days".
-    'human-friendly_pedantic-timedelta >= 0.0.5',
+    'human-friendly_pedantic-timedelta >= 0.0.5',  #  Imports as pedantic_timedelta.
     # https://github.com/collective/icalendar
     'icalendar',
     # https://bitbucket.org/micktwomey/pyiso8601
