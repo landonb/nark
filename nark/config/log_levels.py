@@ -24,6 +24,8 @@ from gettext import gettext as _
 
 __all__ = (
     'must_verify_log_level',
+    'get_log_level_safe',
+    'get_log_name_safe',
     # Private:
     #  'LOG_LEVELS',
 )
@@ -54,25 +56,25 @@ this.LOG_LEVELS = {
 #   but live.
 #     See also: nark/nark/control.py and nark/nark/helpers/logging.py
 #     have log_level functions, should probably consolidate this!
-def must_verify_log_level(log_level_name):
+def must_verify_log_level(level_name):
     try:
-        log_level = this.LOG_LEVELS[log_level_name.lower()]
+        log_level = this.LOG_LEVELS[level_name.lower()]
     except AttributeError:
         msg = _(
             "Unrecognized log level type in config: “{}”. Try a string from: {}."
-        ).format(log_level_name, ', '.join(this.LOG_LEVELS))
+        ).format(level_name, ', '.join(this.LOG_LEVELS))
         raise SyntaxError(msg)
     except KeyError:
         msg = _(
             "Unrecognized log level value in config: “{}”. Try one of: {}."
-        ).format(log_level_name, ', '.join(this.LOG_LEVELS))
+        ).format(level_name, ', '.join(this.LOG_LEVELS))
         raise SyntaxError(msg)
     return log_level
 
 
-def get_log_level_safe(log_level_name):
+def get_log_level_safe(level_name):
     try:
-        log_level = must_verify_log_level(log_level_name)
+        log_level = must_verify_log_level(level_name)
     except SyntaxError:
         # MAYBE: (lb): Complain to user that their config value is bad.
         log_level = logging.WARNING
@@ -87,4 +89,8 @@ def get_log_level_safe(log_level_name):
         # Disable for dob-complete.
         return logging.CRITICAL + 1
     return log_level
+
+
+def get_log_name_safe(level):
+    return logging.getLevelName(level)
 
