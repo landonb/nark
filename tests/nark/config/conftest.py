@@ -78,10 +78,6 @@ def configobj_instance(request):
         'time': {
             'allow_momentaneous': 'False',
             'day_start': '05:00:00',
-            # day_start_time is an ephemeral setting; not included in as_dict().
-            # (lb): Should we test for this another way? (Check coverage.)
-            #   'day_start_time': datetime.datetime.strptime(
-            #                       '05:00:00', '%H:%M:%S').time(),
             'fact_min_delta': '60',
             # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
             # in specific tests and leaving them set to factory defaults here:

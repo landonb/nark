@@ -210,34 +210,38 @@ class NarkConfigurableDev(object):
 
 # ***
 
-def _day_start_strptime(day_start_text):
-    day_start = None
-    if day_start_text:
+def _strptime_day_start(day_start_text):
+
+    def _parse_day_start():
+        if isinstance(day_start_text, datetime.time):
+            return day_start_text
+        if not day_start_text:
+            return datetime.time(0, 0, 0)
+        # Returns a datetime.time or raises a ValueError.
+        return _must_parse_text()
+
+    def _must_parse_text():
         try:
-            day_start = datetime.datetime.strptime(
-                day_start_text, '%H:%M:%S',
-            ).time()
+            return datetime.datetime.strptime(day_start_text, '%H:%M:%S').time()
         except ValueError:
-            raise
-    if not day_start:
-        day_start = datetime.time(0, 0, 0)
-    return day_start
+            warn_invalid()
+
+    def warn_invalid():
+        msg = _(" (Expected '%H:%M:%S'-formatted time of day, not ‘{}’.)".format(
+            day_start_text,
+        ))
+        raise ValueError(msg)
+
+    return _parse_day_start()
 
 
 def _validate_day_start(day_start_text):
-    def _get_day_start():
-        try:
-            _time = _day_start_strptime(day_start_text)
-        except ValueError:
-            warn_invalid(day_start_text)
-        return True
+    """Returns True if the day_start_text is valid, or raises ValueError."""
+    _strptime_day_start(day_start_text)
+    return True
 
-    def warn_invalid(day_start_text):
-        msg = _(" (Expected '%H:%M:%S'-formatted time of day.)")
-        raise SyntaxError(msg)
 
-    return _get_day_start()
-
+# ***
 
 @ConfigRoot.section('time')
 class NarkConfigurableTime(object):
@@ -289,23 +293,15 @@ class NarkConfigurableTime(object):
         # midnight to midnight, or from between day_start on consecutive days.
         # (lb): This help is tricky to get right. This iteration feels okay:
         _("Default start time for grouping by days, and for dates with no time."),
-        validate=_validate_day_start,
+        conform=_strptime_day_start,
+        # Because validate called after conform, and because _validate_day_start
+        # calls same parser method as _strptime_day_start, setting validate here
+        # would be redundant, so skipping:
+        #     validate=_validate_day_start,
     )
     def day_start(self):
         # Same default as in Legacy Hamster, midnight, a sextuple zed double colon.
         return '00:00:00'
-
-    @property
-    @ConfigRoot.setting(
-        _('Generated value.'),
-        ephemeral=True,
-        hidden=True,
-    )
-    def day_start_time(self):
-        day_start = ''
-        if self is not None:
-            day_start = self['day_start']
-        return _day_start_strptime(day_start)
 
     # ***
 
