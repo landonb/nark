@@ -21,23 +21,35 @@ from __future__ import absolute_import, unicode_literals
 
 import datetime
 import os
+from collections import namedtuple
 
 from gettext import gettext as _
 
 from config_decorator import section
 
-from ..control import REGISTERED_BACKENDS
 from ..helpers.app_dirs import NarkAppDirs
 
 from .log_levels import get_log_level_safe
 
 __all__ = (
+    'REGISTERED_BACKENDS',
     'ConfigRoot',
     # PRIVATE:
     # 'NarkConfigurableDb',
     # 'NarkConfigurableDev',
     # 'NarkConfigurableTime',
 )
+
+BackendRegistryEntry = namedtuple(
+    'BackendRegistryEntry', ('verbose_name', 'store_class'),
+)
+
+REGISTERED_BACKENDS = {
+    'sqlalchemy': BackendRegistryEntry(
+        'SQLAlchemy',
+        'nark.backends.sqlalchemy.SQLAlchemyStore',
+    ),
+}
 
 
 # ***

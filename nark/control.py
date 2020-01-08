@@ -20,24 +20,13 @@ from __future__ import absolute_import, unicode_literals
 import gettext
 import importlib
 import sys
-from collections import namedtuple
 
 from future.utils import python_2_unicode_compatible
 
+from .config import REGISTERED_BACKENDS
 from .helpers import logging as logging_helpers
 from .helpers.dev.profiling import timefunc
 
-BackendRegistryEntry = namedtuple(
-    'BackendRegistryEntry', ('verbose_name', 'store_class'),
-)
-
-
-REGISTERED_BACKENDS = {
-    'sqlalchemy': BackendRegistryEntry(
-        'SQLAlchemy',
-        'nark.backends.sqlalchemy.SQLAlchemyStore',
-    ),
-}
 
 
 # See: https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#gettext
