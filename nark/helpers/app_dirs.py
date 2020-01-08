@@ -21,20 +21,41 @@ import os
 
 import appdirs
 
+from .singleton import Singleton
+
 __all__ = (
     'NarkAppDirs',
 )
 
 
-class NarkAppDirs(appdirs.AppDirs):
-    """Custom class that ensure appdirs exist."""
+class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
+    """Application-specific AppDirs interface.
 
-    # A hacky singleton. The code in nark needs access to an (the)
-    # instance of the AppDirs object, but nark requires the client
-    # (dob) to create this object (so it can set appname properly).
-    # So the first object of this class type to be created asserts
-    # that it's the only one of its kind, and then it'll set a ref-
-    # erence to self at the class level (for the benefit of nark).
+    Note: This class is a Singleton, because its data is immutable, and it
+    represents global data (that's generated from the user name and
+    application details) that goes unchanged throughout the application
+    lifetime. *So it's appropriate and defensible to declare this class
+    as a Singleton (ALIMHO, -lb).*
+
+    (lb): One Pythonic alternate, if you're anti the Singleton pattern, is to
+    do away with the class and just have this be a simple module, i.e., expose
+    user_data_dir(), etc., as module-scope functions. But that's not really
+    that different, and then you end up with module-scope semi-global variables,
+    anyway. And the user has to explicitly import each method, rather than just
+    the class. It feels more simple, readable, and maintainable to encapsulate
+    the methods in a class, and to make that class a singleton; half a dozen of
+    one six of the other, if you ask me.
+
+    For a good discussion on ways to implement Singleton in Python, and whether
+    or not they're a good idea, read the classic *Creating a singleton in Python*:
+
+        https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+    """
+
+    # Although the class is a Singleton, nark needs to access the class
+    # without actually creating it -- because the client (dob) needs to
+    # create it (so it can set appname properly). So here's a (hacky)
+    # class member to indicate when the singleton instance is prepared.
     APP_DIRS = None
 
     def __init__(self, *args, **kwargs):
@@ -44,8 +65,12 @@ class NarkAppDirs(appdirs.AppDirs):
         #   roaming=False, multipath=False,
         # but generally you just need to specify appname.
         super(NarkAppDirs, self).__init__(*args, **kwargs)
+
+        # This constructor only called once, because Singleton.
         assert(NarkAppDirs.APP_DIRS is None)
+        # A hacky class variable so nark knows when the instance is ready.
         NarkAppDirs.APP_DIRS = self
+
         # FIXME: (lb): I'm not super cool with this side-effect:
         #          Calling any property herein will cause its
         #          directory path to be created! Creating paths
