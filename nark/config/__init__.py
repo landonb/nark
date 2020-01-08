@@ -193,7 +193,7 @@ class NarkConfigurableDev(object):
     @ConfigRoot.setting(
         _("The log level for library (nark) squaller"
             " (using Python logging library levels)"),
-        conform_value=get_log_level_safe,
+        conform=get_log_level_safe,
     )
     def lib_log_level(self):
         return 'WARNING'
@@ -202,7 +202,7 @@ class NarkConfigurableDev(object):
     @ConfigRoot.setting(
         _("The log level for database (SQL) squaller"
             " (using Python logging library levels)"),
-        conform_value=get_log_level_safe,
+        conform=get_log_level_safe,
     )
     def sql_log_level(self):
         return 'WARNING'
