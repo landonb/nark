@@ -129,6 +129,10 @@ class SQLAlchemyStore(BaseStore):
         # [FIXME]
         # Contemplate if there are security implications that warrant sanitizing
         # config values.
+        # (lb): This is an old hamster-lib comment. The user will be the ones
+        # deliberately setting their config, so if their was a security concern
+        # (SQL injection?), the user will have known what they've done.
+        # - Can probably delete both these comments now.
 
         # Because ConfigDecorator, we could access variables with
         # dot-notation or by subscripting, e.g., these both work:
