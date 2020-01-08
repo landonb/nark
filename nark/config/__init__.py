@@ -25,7 +25,7 @@ from collections import namedtuple
 
 from gettext import gettext as _
 
-from config_decorator import section
+from config_decorator import section, ConfigDecorator
 
 from ..helpers.app_dirs import NarkAppDirs
 
@@ -34,6 +34,7 @@ from .log_levels import get_log_level_safe
 __all__ = (
     'REGISTERED_BACKENDS',
     'ConfigRoot',
+    'decorate_config',
     # PRIVATE:
     # 'NarkConfigurableDb',
     # 'NarkConfigurableDev',
@@ -321,6 +322,27 @@ class NarkConfigurableTime(object):
     )
     def default_tzinfo(self):
         return ''
+
+
+# ***
+
+def decorate_config(config):
+    """Wraps or ensures the supplied config dict is a nark config decorator.
+
+    Note: This is mostly for the ``nark/tests``, as the dob client will
+    explicitly prepare a decorated config and pass that to nark. But to
+    make it easier to write fixtures for ``nark/tests``, this method
+    accepts a dictionary and returns a decorated config.
+    """
+    if isinstance(config, ConfigDecorator):
+        return config
+    # Caution: Remember that ConfigRoot is a weird Singleton.
+    # FIXME/2020-01-07: (lb): Can probably put ConfigRoot et al in a getter
+    #                         so that it doesn't have to be a module global.
+    config_root = ConfigRoot
+    config_root.forget_config_values()
+    config_root.update(config)
+    return config_root
 
 # ***
 

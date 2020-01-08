@@ -23,7 +23,7 @@ import sys
 
 from future.utils import python_2_unicode_compatible
 
-from .config import REGISTERED_BACKENDS
+from .config import REGISTERED_BACKENDS, decorate_config
 from .helpers import logging as logging_helpers
 from .helpers.dev.profiling import timefunc
 
@@ -64,7 +64,7 @@ class NarkControl(object):
             self.capture_config_lib(config)
 
     def capture_config_lib(self, config):
-        self.config = config
+        self.config = decorate_config(config)
         self.lib_logger = self._get_logger()
         # Profiling: _get_store(): Observed: ~ 0.136 to 0.240 secs.
         self.store = self._get_store()
@@ -82,9 +82,10 @@ class NarkControl(object):
         self.tags = self.store.tags
         self.facts = self.store.facts
 
+    # 2020-01-07: (lb): Only called by 1 test.
     def update_config(self, config):
         """Use a new config dictionary and apply its settings."""
-        self.config = config
+        self.config = decorate_config(config)
         self.store = self._get_store()
 
     @timefunc
@@ -102,6 +103,7 @@ class NarkControl(object):
         import_path, storeclass = tuple(backend.store_class.rsplit('.', 1))
         # Profiling: importlib.import_module: ~ 0.265 secs.
         backend_module = importlib.import_module(import_path)
+        # storeclass, typically 'SQLAlchemyStore'.
         cls = getattr(backend_module, storeclass)
         store = cls(self.config)
         return store

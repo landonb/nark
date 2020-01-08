@@ -22,6 +22,7 @@ from datetime import datetime
 
 from future.utils import python_2_unicode_compatible
 
+from .config import ConfigRoot, decorate_config
 from .helpers import logging as logging_helpers
 from .helpers.app_dirs import NarkAppDirs
 from .managers.activity import BaseActivityManager
@@ -40,7 +41,7 @@ class BaseStore(object):
     """
 
     def __init__(self, config):
-        self.config = config
+        self.config = decorate_config(config)
         self.init_config()
         self.init_logger()
         self._now = None
