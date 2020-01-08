@@ -319,7 +319,7 @@ class NarkConfigurableTime(object):
         #   In Modern Hamster (nark), you can make facts every seconds,
         #     or every millisecond, we don't care, so long as they do
         #     not overlap!
-        return '0'
+        return 0
 
     # ***
 
