@@ -36,6 +36,7 @@ this = sys.modules[__name__]
 # *** Config function: log level helpers.
 # ***
 
+# Subset (and lowercase) of logging._nameToLevel.
 this.LOG_LEVELS = {
     'debug': logging.DEBUG,
     'info': logging.INFO,
