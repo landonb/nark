@@ -20,8 +20,10 @@ Wire something along the lines of:
    import nark
 
    nark_config = {
-      'db_engine' = 'sqlite',
-      'db_path' = 'path/to/nark.sqlite',
+      'db': {
+         'engine' = 'sqlite',
+         'path' = 'path/to/nark.sqlite',
+      }
    }
    controller = nark.control.NarkControl(nark_config)
    controller.standup_store()
