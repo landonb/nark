@@ -31,7 +31,7 @@ class TestConfigLogLevels:
         assert(isinstance(_log_level, int))
 
     def test_must_verify_log_level_invalid(self, log_level_invalid_parametrized):
-        with pytest.raises(SyntaxError):
+        with pytest.raises(ValueError):
             must_verify_log_level(log_level_invalid_parametrized)
 
     def test_get_log_level_safe_valid(self, log_level_valid_parametrized):

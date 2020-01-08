@@ -63,19 +63,19 @@ def must_verify_log_level(level_name):
         msg = _(
             "Unrecognized log level type in config: “{}”. Try a string from: {}."
         ).format(level_name, ', '.join(this.LOG_LEVELS))
-        raise SyntaxError(msg)
+        raise ValueError(msg)
     except KeyError:
         msg = _(
             "Unrecognized log level value in config: “{}”. Try one of: {}."
         ).format(level_name, ', '.join(this.LOG_LEVELS))
-        raise SyntaxError(msg)
+        raise ValueError(msg)
     return log_level
 
 
 def get_log_level_safe(level_name):
     try:
         log_level = must_verify_log_level(level_name)
-    except SyntaxError:
+    except ValueError:
         # MAYBE: (lb): Complain to user that their config value is bad.
         log_level = logging.WARNING
     # FIXME/EXPLAIN/2019-01-17: What only do this for nark,
