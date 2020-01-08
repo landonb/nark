@@ -65,7 +65,11 @@ def must_verify_log_level(log_level_name):
 
 
 def get_log_level_safe(log_level_name):
-    must_verify_log_level(log_level_name)
+    try:
+        log_level = must_verify_log_level(log_level_name)
+    except SyntaxError:
+        # MAYBE: (lb): Complain to user that their config value is bad.
+        log_level = logging.WARNING
     # FIXME/EXPLAIN/2019-01-17: What only do this for nark,
     #   and not also for cli_log_level ?
     #   TEST: Per comment, test ``dob complete`` and see if dob logs
@@ -76,5 +80,5 @@ def get_log_level_safe(log_level_name):
     if (len(sys.argv) == 2) and (sys.argv[1] == 'complete'):
         # Disable for dob-complete.
         return logging.CRITICAL + 1
-    return log_level_name
+    return log_level
 
