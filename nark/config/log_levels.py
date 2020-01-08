@@ -56,6 +56,11 @@ this.LOG_LEVELS = {
 def must_verify_log_level(log_level_name):
     try:
         log_level = this.LOG_LEVELS[log_level_name.lower()]
+    except AttributeError:
+        msg = _(
+            "Unrecognized log level type in config: “{}”. Try a string from: {}."
+        ).format(log_level_name, ', '.join(this.LOG_LEVELS))
+        raise SyntaxError(msg)
     except KeyError:
         msg = _(
             "Unrecognized log level value in config: “{}”. Try one of: {}."
