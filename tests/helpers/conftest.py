@@ -25,12 +25,7 @@ import os
 
 import fauxfactory
 import pytest
-# FIXME/2019-11-27: (lb): Update to ConfigObj; remove ConfigParser.
-#  from configobj import ConfigObj
-from configparser import ConfigParser
-from six import text_type
 
-from nark.helpers import app_config
 from nark.helpers.app_dirs import NarkAppDirs
 
 
@@ -63,83 +58,6 @@ def appdirs(mocker, tmpdir):
     NarkAppDirs.user_log_dir = ensure_directory_exists(os.path.join(
         tmpdir.mkdir('log').strpath, 'nark/'))
     return NarkAppDirs
-
-
-# FIXME/2019-11-27 15:07: Deleted: get_default_backend_config
-if False:
-    @pytest.fixture
-    def backend_config(appdirs):
-        """Provide generic backend config."""
-        appdir = appdirs(app_config.DEFAULT_APP_NAME)
-        return app_config.get_default_backend_config(appdir)
-
-
-@pytest.fixture
-def configparser_instance(request):
-    """Provide a ``ConfigParser`` instance and its expected config dict."""
-    config = ConfigParser()
-    config.add_section('backend')
-    config.set('backend', 'store', 'sqlalchemy')
-    config.set('backend', 'db_engine', 'sqlite')
-    config.set('backend', 'db_path', '/tmp/hamster.db')
-    config.set('backend', 'db_host', 'www.example.com')
-    config.set('backend', 'db_port', '22')
-    config.set('backend', 'db_name', 'hamster')
-    config.set('backend', 'db_user', 'hamster')
-    config.set('backend', 'db_password', 'hamster')
-    config.set('backend', 'day_start', '05:00:00')
-    config.set('backend', 'fact_min_delta', '60')
-    config.set('backend', 'lib_log_level', 'WARNING')
-    config.set('backend', 'sql_log_level', 'WARNING')
-    # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
-    # in specific tests and leaving them set to factory defaults here.
-    #   config.set('time', 'day_start', '')
-    #   config.set('time', 'fact_min_delta', '0')
-    # Also consider the other settings not being set here.
-    #   config.set('time', 'allow_momentaneous', 'False')
-    #   config.set('time', 'tz_aware', 'False')
-    #   config.set('time', 'default_tzinfo', '')
-
-    expectation = {
-        'store': text_type('sqlalchemy'),
-        'db_engine': text_type('sqlite'),
-        'db_path': text_type('/tmp/hamster.db'),
-        'db_host': text_type('www.example.com'),
-        'db_port': 22,
-        'db_name': text_type('hamster'),
-        'db_user': text_type('hamster'),
-        'db_password': text_type('hamster'),
-        'allow_momentaneous': False,
-        'day_start': datetime.datetime.strptime('05:00:00', '%H:%M:%S').time(),
-        'fact_min_delta': 60,
-        # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
-        # in specific tests and leaving them set to factory defaults here:
-        #   'day_start': '',
-        #   'fact_min_delta': 0,
-        'lib_log_level': text_type('WARNING'),
-        'sql_log_level': text_type('WARNING'),
-        'tz_aware': False,
-        'default_tzinfo': '',
-    }
-
-    return config, expectation
-
-
-@pytest.fixture
-def config_instance(request):
-    """A dummy instance of ``ConfigParser``."""
-    return ConfigParser()
-
-
-# FIXME/2019-11-27 15:09: Deleted: backend_config_to_configparser
-if False:
-    @pytest.fixture
-    def config_file(backend_config, appdirs):
-        """Provide a config file stored under our fake config dir."""
-        config_conf = os.path.join(appdirs.user_config_dir, 'config.conf')
-        with codecs.open(config_conf, 'w', encoding='utf-8') as fobj:
-            app_config.backend_config_to_configparser(backend_config).write(fobj)
-            config_instance.write(fobj)
 
 
 @pytest.fixture(params=[

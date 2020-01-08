@@ -23,9 +23,10 @@ import datetime
 
 import faker as faker_
 import pytest
+from pytest_factoryboy import register
+
 from nark.control import NarkControl
 from nark.manager import BaseStore
-from pytest_factoryboy import register
 
 from . import factories
 

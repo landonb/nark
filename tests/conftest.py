@@ -25,6 +25,8 @@ import fauxfactory
 import pytest
 from pytest_factoryboy import register
 
+from nark.config import ConfigRoot
+
 from .nark import factories as lib_factories
 
 # Make factory fixtures, like alchemy_category_factory.
@@ -37,10 +39,10 @@ register(lib_factories.FactFactory)
 
 # This fixture is used by ``test_helpers`` and ``test_storage``.
 @pytest.fixture
-def endless_fact(base_config, fact_factory):
+def endless_fact(fact_factory):
     """Provide an existing 'ongoing fact'."""
     # (lb): Comment from hamster-lib:
-    #   For reasons unknow ``fact.tags`` would be empty
+    #   For reasons unknown ``fact.tags`` would be empty
     #   when using the ``fact`` fixture.
     fact = fact_factory()
     fact.end = None
@@ -50,19 +52,38 @@ def endless_fact(base_config, fact_factory):
 @pytest.fixture
 def base_config(tmpdir):
     """Provide a generic baseline configuration."""
-    return {
-        'db.orm': 'sqlalchemy',
-        'db.engine': 'sqlite',
-        'db.path': ':memory:',
-        # FIXME: (lb): Make special tests for these less used options
-        #        and then just set to default values here, e.g.,
-        #           'day_start': '',
-        #           'fact_min_delta': 0,
-        'time.day_start': datetime.time(hour=5, minute=30, second=0),
-        'time.fact_min_delta': 60,
-        'dev.lib_log_level': 'WARNING',
-        'dev.sql_log_level': 'WARNING',
+    base_config = {
+        'db': {
+            'orm': 'sqlalchemy',
+            'engine': 'sqlite',
+            'path': ':memory:',
+        },
+        'time': {
+            # FIXME: (lb): Make special tests for these less used options
+            #        and then just set to default values here, e.g.,
+            #           'day_start': '',
+            #           'fact_min_delta': 0,
+            'day_start': datetime.time(hour=5, minute=30, second=0),
+            'fact_min_delta': 60,
+        },
+        'dev': {
+            'lib_log_level': 'WARNING',
+            'sql_log_level': 'WARNING',
+        },
     }
+    # (lb): The application deals with a ConfigDecorator object, and not a
+    # simple dict, which has the advantage that our tests (and any client
+    # code) does not need to ensure that it sets all the config values.
+    # - However, we still return a dictionary, because we want to be able
+    # to change config values without triggering any validation. E.g.,
+    # calling config_root['db'].update({'engine': None}) would raise.
+    # But we don't want to blow up in the fixture!
+    config_root = ConfigRoot
+    # Because ConfigRoot is a weird module global, reset it between tests.
+    config_root.forget_config_values()
+    config_root.update_known(base_config)
+    config = config_root.as_dict()
+    return config
 
 
 @pytest.fixture

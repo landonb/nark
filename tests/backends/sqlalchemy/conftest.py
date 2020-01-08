@@ -19,19 +19,23 @@
 
 from __future__ import absolute_import, unicode_literals
 
+import copy
 import datetime
 import os
 
 import fauxfactory
 import pytest
+from pytest_factoryboy import register
+from unittest.mock import patch, sentinel, PropertyMock
+
+from sqlalchemy import create_engine, event
+
 from nark.backends.sqlalchemy import objects
 from nark.backends.sqlalchemy.storage import SQLAlchemyStore
 from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact
 from nark.items.tag import Tag
-from pytest_factoryboy import register
-from sqlalchemy import create_engine, event
 
 from . import common, factories
 
@@ -160,11 +164,13 @@ def db_path_parametrized(request, tmpdir):
 @pytest.fixture
 def alchemy_config(request, base_config):
     """Provide a config that is suitable for sqlalchemy stores."""
-    config = base_config.copy()
-    config.update({
-        'store': 'sqlalchemy',
-        'db.engine': 'sqlite',
-        'db.path': ':memory:',
+    config = copy.deepcopy(base_config)
+    # MEH/2020-01-07: (lb): This changes nothing; already the base_config default...
+    #                       was that the original intent?
+    config['db'].update({
+        'orm': 'sqlalchemy',
+        'engine': 'sqlite',
+        'path': ':memory:',
     })
     return config
 
@@ -173,24 +179,24 @@ def alchemy_config(request, base_config):
     params=(
         # SQLite
         {
-            'db.engine': 'sqlite',
-            'db.path': ':memory:',
+            'engine': 'sqlite',
+            'path': ':memory:',
         },
         # Non-SQLite
         {
-            'db.engine': 'postgres',
-            'db.host': fauxfactory.gen_ipaddr(),
-            'db.port': fauxfactory.gen_integer(),
-            'db.name': fauxfactory.gen_utf8(),
-            'db.user': fauxfactory.gen_utf8(),
-            'db.password': fauxfactory.gen_utf8(),
+            'engine': 'postgres',
+            'host': fauxfactory.gen_ipaddr(),
+            'port': fauxfactory.gen_integer(),
+            'name': fauxfactory.gen_utf8(),
+            'user': fauxfactory.gen_utf8(),
+            'password': fauxfactory.gen_utf8(),
         },
         {
-            'db.engine': 'postgres',
-            'db.host': fauxfactory.gen_ipaddr(),
-            'db.name': fauxfactory.gen_utf8(),
-            'db.user': fauxfactory.gen_utf8(),
-            'db.password': fauxfactory.gen_utf8(),
+            'engine': 'postgres',
+            'host': fauxfactory.gen_ipaddr(),
+            'name': fauxfactory.gen_utf8(),
+            'user': fauxfactory.gen_utf8(),
+            'password': fauxfactory.gen_utf8(),
         },
     ),
 )
@@ -200,63 +206,75 @@ def alchemy_config_parametrized(request, alchemy_config):
 
     We need to build our expectation dynamically if we want to use faked config values.
     """
-    config = alchemy_config.copy()
-    config.update(request.param)
-    if request.param['db.engine'] == 'sqlite':
+    config = copy.deepcopy(alchemy_config)
+    config['db'].update(request.param)
+    if request.param['engine'] == 'sqlite':
         expectation = '{engine}:///{path}'.format(
-            engine=request.param['db.engine'], path=request.param['db.path'])
+            engine=request.param['engine'], path=request.param['path'])
     else:
-        port = request.param.get('db.port', '')
+        port = request.param.get('port', '')
         if port:
             port = ':{}'.format(port)
         expectation = '{engine}://{user}:{password}@{host}{port}/{name}'.format(
-            engine=request.param['db.engine'], user=request.param['db.user'],
-            password=request.param['db.password'], host=request.param['db.host'],
-            port=port, name=request.param['db.name'])
+            engine=request.param['engine'],
+            user=request.param['user'],
+            password=request.param['password'],
+            host=request.param['host'],
+            port=port,
+            name=request.param['name'],
+        )
     return (config, expectation)
 
 
 @pytest.fixture(params=(
-    {'db.engine': None,
-     'db.path': None},
+    {'engine': None,
+     'path': None},
     # sqlite
-    {'db.engine': 'sqlite',
-     'db.path': None},
-    {'db.engine': 'sqlite',
-     'db.path': ''},
+    {'engine': 'sqlite',
+     'path': None},
+    {'engine': 'sqlite',
+     'path': ''},
     # Non-sqlite
-    {'db.engine': 'postgres',
-     'db.host': None,
-     'db.name': fauxfactory.gen_utf8(),
-     'db.user': fauxfactory.gen_utf8(),
-     'db.password': fauxfactory.gen_alphanumeric()},
-    {'db.engine': 'postgres',
-     'db.host': fauxfactory.gen_ipaddr(),
-     'db.name': '',
-     'db.user': fauxfactory.gen_utf8(),
-     'db.password': fauxfactory.gen_alphanumeric()},
-    {'db.engine': 'postgres',
-     'db.host': fauxfactory.gen_ipaddr(),
-     'db.name': fauxfactory.gen_utf8(),
-     'db.user': '',
-     'db.password': fauxfactory.gen_alphanumeric()},
-    {'db.engine': 'postgres',
-     'db.host': fauxfactory.gen_ipaddr(),
-     'db.name': fauxfactory.gen_utf8(),
-     'db.user': fauxfactory.gen_utf8(),
-     'db.password': ''}
+    {'engine': 'postgres',
+     'host': None,
+     'name': fauxfactory.gen_utf8(),
+     'user': fauxfactory.gen_utf8(),
+     'password': fauxfactory.gen_alphanumeric()},
+    {'engine': 'postgres',
+     'host': fauxfactory.gen_ipaddr(),
+     'name': '',
+     'user': fauxfactory.gen_utf8(),
+     'password': fauxfactory.gen_alphanumeric()},
+    {'engine': 'postgres',
+     'host': fauxfactory.gen_ipaddr(),
+     'name': fauxfactory.gen_utf8(),
+     'user': '',
+     'password': fauxfactory.gen_alphanumeric()},
+    {'engine': 'postgres',
+     'host': fauxfactory.gen_ipaddr(),
+     'name': fauxfactory.gen_utf8(),
+     'user': fauxfactory.gen_utf8(),
+     'password': ''}
 ))
 def alchemy_config_missing_store_config_parametrized(request, alchemy_config):
     """
     Provide an alchemy config containing invalid key/value pairs for
     store initialization.
     """
-    config = alchemy_config.copy()
-    config.update(request.param)
+    config = copy.deepcopy(alchemy_config)
+    config['db'].update(request.param)
     return config
 
 
 @pytest.fixture
+@patch('nark.backends.sqlalchemy.storage.create_engine', lambda *args, **kwargs: None)
+@patch('nark.backends.sqlalchemy.objects.metadata.create_all',
+       lambda *args, **kwargs: None)
+@patch('migrate.versioning.api.db_version', lambda *args, **kwargs: None)
+@patch('migrate.versioning.api.downgrade', lambda *args, **kwargs: None)
+@patch('migrate.versioning.api.upgrade', lambda *args, **kwargs: None)
+@patch('migrate.versioning.api.version_control', lambda *args, **kwargs: None)
+# (lb): 'migrate.versioning.api.version' more complicated; see with-patch, below.
 def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     """
     Provide a SQLAlchemyStore that uses our test-session.
@@ -273,7 +291,10 @@ def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     # each test would still have to find the session object somehow.
     #   https://docs.pytest.org/en/latest/fixture.html#autouse-fixtures-xunit-setup-on-steroids
     store = SQLAlchemyStore(alchemy_config)
-    store.standup(alchemy_session)
+    with patch('migrate.versioning.api.version', new_callable=PropertyMock) as mock_version:
+        # return_value does not matter so long as it's an int.
+        type(mock_version).value = PropertyMock(return_value=3)
+        store.standup(alchemy_session)
     return store
 
 

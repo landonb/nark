@@ -19,10 +19,11 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 
+from configobj import ConfigObj
+
 import pytest
-from configparser import ConfigParser
-# FIXME/2019-11-27 15:04: I deleted app_config
-#from nark.helpers import app_config
+
+from nark.config import decorate_config
 from nark.helpers.app_dirs import NarkAppDirs
 
 
@@ -134,72 +135,12 @@ class TestNarkAppDirs(object):
         assert os.path.exists(appdir.user_log_dir) is create
 
 
-if False:  # I delete get_config_path
-    class TestGetConfigPath(object):
-        """Test config pathj retrieval."""
+class TestConfigObjToBackendConfig(object):
+    """Make sure that conversion works expected."""
 
-        def test_get_config_path(self, appdirs):
-            """Make sure the config target path is constructed to our expectations."""
-            expectation = os.path.join(
-                appdirs.user_config_dir,
-                app_config.DEFAULT_CONFIG_FILENAME,
-            )
-            result = app_config.get_config_path()
-            assert result == expectation
-
-
-# FIXME/2019-11-27 15:04: Delete this. I remove nark/nark/helpers.app_config
-# and app_config.write_config_file
-if False:
-    class TestWriteConfigFile(object):
-        """Make sure writing a config instance to disk works as expected."""
-
-        def test_file_is_written(self, config_instance, appdirs):
-            """
-            Make sure the file is written.
-
-            Note: Content is not checked, this is ConfigParsers job.
-            """
-            app_config.write_config_file(config_instance)
-            expected_location = app_config.get_config_path()
-            assert os.path.lexists(expected_location)
-
-        def test_return_config_instance(self, config_instance, appdirs):
-            """Make sure we return a ``ConfigParser`` instance."""
-            result = app_config.write_config_file(config_instance)
-            assert isinstance(result, ConfigParser)
-
-
-# FIXME/2019-11-27 15:06: I deleted load_config_file
-# see dob's config/manage.py... and write tests for that!
-if False:
-    class TestLoadConfigFile(object):
-        """Make sure file retrival works as expected."""
-
-        def test_no_file_present(self, appdirs, config_instance):
-            """
-            Make sure we return ``None``.
-
-            Notw:
-                We use the ``appdirs`` fixture to make sure the required dirs exist.
-            """
-            result = app_config.load_config_file(fallback_config_instance=config_instance)
-            assert result == config_instance
-
-        def test_file_present(self, config_instance, backend_config):
-            """Make sure we try parsing a found config file."""
-            result = app_config.load_config_file()
-            assert isinstance(result, ConfigParser)
-
-
-# FIXME/2019-11-27 15:09: Deleted: configparser_to_backend_config
-if False:
-    class TestConfigParserToBackendConfig(object):
-        """Make sure that conversion works expected."""
-
-        def test_regular_usecase(self, configobj_instance):
-            """Make sure basic mechanics work and int/time types are created."""
-            cp_instance, expectation = configobj_instance
-            result = app_config.configparser_to_backend_config(cp_instance)
-            assert result == expectation
+    def test_regular_usecase(self, configobj_instance):
+        """Make sure basic mechanics work and int/time types are created."""
+        configobj, expectation = configobj_instance
+        result = decorate_config(configobj).as_dict(use_stringify=True)
+        assert result == expectation
 

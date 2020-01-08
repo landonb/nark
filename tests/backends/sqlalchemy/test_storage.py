@@ -20,6 +20,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 
 import pytest
+
 from nark.backends.sqlalchemy.objects import (
     AlchemyActivity,
     AlchemyCategory,
@@ -27,6 +28,7 @@ from nark.backends.sqlalchemy.objects import (
     AlchemyTag
 )
 from nark.backends.sqlalchemy.storage import SQLAlchemyStore
+from nark.config import decorate_config
 
 
 # The reason we see a great deal of count == 0 statements is to make sure that
@@ -73,7 +75,7 @@ class TestStore(object):
     def test_get_db_url(self, alchemy_config_parametrized, alchemy_store):
         """Make sure that db_url composition works as expected."""
         config, expectation = alchemy_config_parametrized
-        alchemy_store.config = config
+        alchemy_store.config = decorate_config(config)
         assert alchemy_store.db_url == expectation
 
     def test_get_db_url_missing_keys(
@@ -83,8 +85,12 @@ class TestStore(object):
         Make sure that db_url composition throws error if key/values are
         missing in config.
         """
-        alchemy_store.config = alchemy_config_missing_store_config_parametrized
         with pytest.raises(ValueError):
+            alchemy_store.config = decorate_config(
+                alchemy_config_missing_store_config_parametrized
+            )
+            # If decorate_config() does not raise on engine missing error,
+            # db_url will raise on missing path, host, etc.
             alchemy_store.db_url
 
     def test_init_with_unicode_path(self, alchemy_config, db_path_parametrized):
