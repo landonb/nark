@@ -210,6 +210,35 @@ class NarkConfigurableDev(object):
 
 # ***
 
+def _day_start_strptime(day_start_text):
+    day_start = None
+    if day_start_text:
+        try:
+            day_start = datetime.datetime.strptime(
+                day_start_text, '%H:%M:%S',
+            ).time()
+        except ValueError:
+            raise
+    if not day_start:
+        day_start = datetime.time(0, 0, 0)
+    return day_start
+
+
+def _validate_day_start(day_start_text):
+    def _get_day_start():
+        try:
+            _time = _day_start_strptime(day_start_text)
+        except ValueError:
+            warn_invalid(day_start_text)
+        return True
+
+    def warn_invalid(day_start_text):
+        msg = _(" (Expected '%H:%M:%S'-formatted time of day.)")
+        raise SyntaxError(msg)
+
+    return _get_day_start()
+
+
 @ConfigRoot.section('time')
 class NarkConfigurableTime(object):
     """"""
@@ -239,29 +268,17 @@ class NarkConfigurableTime(object):
 
     # ***
 
-    # (lb): Seems like an abuse: Not a class method (no self),
-    # but not a staticmethod either, so what is?
-    def validate_day_start(day_start_text):
-        def _get_day_start():
-            day_start = None
-            if day_start_text:
-                try:
-                    day_start = datetime.datetime.strptime(
-                        day_start_text, '%H:%M:%S',
-                    ).time()
-                except ValueError:
-                    warn_invalid(day_start_text)
-            if not day_start:
-                day_start = datetime.time(0, 0, 0)
-            return day_start
-
-        def warn_invalid(day_start_text):
-            msg = _(
-                'WARNING: Invalid "day_start" from config: {}'
-            ).format(str(day_start_text))
-            raise SyntaxError(msg)
-
-        return _get_day_start()
+    @property
+    @ConfigRoot.setting(
+        _('Generated value.'),
+        ephemeral=True,
+        hidden=True,
+    )
+    def day_start_time(self):
+        day_start = ''
+        if self is not None:
+            day_start = self['day_start']
+        return _day_start_strptime(day_start)
 
     @property
     @ConfigRoot.setting(
@@ -284,7 +301,7 @@ class NarkConfigurableTime(object):
         # midnight to midnight, or from between day_start on consecutive days.
         # (lb): This help is tricky to get right. This iteration feels okay:
         _("Default start time for grouping by days, and for dates with no time."),
-        validate=validate_day_start,
+        validate=_validate_day_start,
     )
     def day_start(self):
         # Same default as in Legacy Hamster, midnight, a sextuple zed double colon.
