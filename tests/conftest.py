@@ -58,6 +58,10 @@ def base_config(tmpdir):
             'engine': 'sqlite',
             'path': ':memory:',
         },
+        'dev': {
+            'lib_log_level': 'WARNING',
+            'sql_log_level': 'WARNING',
+        },
         'time': {
             # FIXME: (lb): Make special tests for these less used options
             #        and then just set to default values here, e.g.,
@@ -65,10 +69,6 @@ def base_config(tmpdir):
             #           'fact_min_delta': 0,
             'day_start': datetime.time(hour=5, minute=30, second=0),
             'fact_min_delta': 60,
-        },
-        'dev': {
-            'lib_log_level': 'WARNING',
-            'sql_log_level': 'WARNING',
         },
     }
     # (lb): The application deals with a ConfigDecorator object, and not a
