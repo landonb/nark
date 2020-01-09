@@ -25,7 +25,7 @@ import fauxfactory
 import pytest
 from pytest_factoryboy import register
 
-from nark.config import ConfigRoot
+from nark.config import decorate_config
 
 from .nark import factories as lib_factories
 
@@ -78,10 +78,7 @@ def base_config(tmpdir):
     # to change config values without triggering any validation. E.g.,
     # calling config_root['db'].update({'engine': None}) would raise.
     # But we don't want to blow up in the fixture!
-    config_root = ConfigRoot
-    # Because ConfigRoot is a weird module global, reset it between tests.
-    config_root.forget_config_values()
-    config_root.update_known(base_config)
+    config_root = decorate_config(base_config)
     config = config_root.as_dict()
     return config
 
