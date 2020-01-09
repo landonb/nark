@@ -35,6 +35,7 @@ from .helpers.dev.profiling import timefunc
 #   http://www.wefearchange.org/2012/06/the-right-way-to-internationalize-your.html
 # seems to use ``sys.version_info.major > 3``
 kwargs = {}
+# FIXME/2020-01-08: (lb): Remove py2 code, including six, __future__, and probably this:
 if sys.version_info.major < 3:
     kwargs['unicode'] = True
 gettext.install('nark', **kwargs)

@@ -26,7 +26,7 @@ import os
 import fauxfactory
 import pytest
 from pytest_factoryboy import register
-from unittest.mock import patch, sentinel, PropertyMock
+from unittest.mock import patch, PropertyMock
 
 from sqlalchemy import create_engine, event
 
@@ -291,7 +291,10 @@ def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     # each test would still have to find the session object somehow.
     #   https://docs.pytest.org/en/latest/fixture.html#autouse-fixtures-xunit-setup-on-steroids
     store = SQLAlchemyStore(alchemy_config)
-    with patch('migrate.versioning.api.version', new_callable=PropertyMock) as mock_version:
+    with patch(
+        'migrate.versioning.api.version',
+        new_callable=PropertyMock,
+    ) as mock_version:
         # return_value does not matter so long as it's an int.
         type(mock_version).value = PropertyMock(return_value=3)
         store.standup(alchemy_session)
