@@ -29,7 +29,7 @@ from config_decorator import section, ConfigDecorator
 
 from ..helpers.app_dirs import NarkAppDirs
 
-from .log_levels import get_log_level_safe
+from .log_levels import get_log_level_safe, must_verify_log_level
 
 __all__ = (
     'REGISTERED_BACKENDS',
@@ -193,6 +193,7 @@ class NarkConfigurableDev(object):
     @ConfigRoot.setting(
         _("The log level for library (nark) squaller"
             " (using Python logging library levels)"),
+        validate=must_verify_log_level,
         conform=get_log_level_safe,
     )
     def lib_log_level(self):
@@ -202,6 +203,7 @@ class NarkConfigurableDev(object):
     @ConfigRoot.setting(
         _("The log level for database (SQL) squaller"
             " (using Python logging library levels)"),
+        validate=must_verify_log_level,
         conform=get_log_level_safe,
     )
     def sql_log_level(self):
