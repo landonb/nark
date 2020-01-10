@@ -57,6 +57,8 @@ this.LOG_LEVELS = {
 #     See also: nark/nark/control.py and nark/nark/helpers/logging.py
 #     have log_level functions, should probably consolidate this!
 def must_verify_log_level(level_name):
+    if isinstance(level_name, int):
+        return level_name
     try:
         log_level = this.LOG_LEVELS[level_name.lower()]
     except AttributeError:
