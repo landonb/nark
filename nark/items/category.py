@@ -19,7 +19,6 @@
 
 from collections import namedtuple
 
-from six import text_type
 
 from .item_base import BaseItem
 
@@ -52,7 +51,7 @@ class Category(BaseItem):
     def name(self, name):
         if name is None:
             raise ValueError(_('Category name must not be None.'))
-        self._name = text_type(name)
+        self._name = str(name)
 
     def as_tuple(self, include_pk=True):
         """
@@ -110,5 +109,5 @@ class Category(BaseItem):
         return hash(self.as_tuple())
 
     def __str__(self):
-        return text_type('{name}'.format(name=self.name))
+        return '{name}'.format(name=self.name)
 

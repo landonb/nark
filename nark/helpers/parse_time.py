@@ -25,7 +25,6 @@ import re
 from datetime import timedelta
 
 import lazy_import
-from six import text_type
 
 from .fact_time import (
     RE_PATTERN_RELATIVE_CLOCK,
@@ -223,7 +222,7 @@ class HamsterTimeSpec(object):
 def parse_dated(dated, time_now, cruftless=False):
     """"""
     def _parse_dated():
-        if not isinstance(dated, text_type):
+        if not isinstance(dated, str):
             # Let BaseFactManager.get_all() process, if not already datetime.
             return dated
         dt, type_dt, sep, rest = HamsterTimeSpec.discern(dated)

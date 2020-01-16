@@ -77,8 +77,6 @@ requirements = [
     #      E   ModuleNotFoundError: No module named 'regex._regex_core';
     #       'regex' is not a package
     'regex == 2019.02.18',
-    # https://pythonhosted.org/six/
-    'six',
     # https://www.sqlalchemy.org/
     # MAYBE/2019-11-02: (lb): Migrate to SQLalchemy 1.3. Until then, stuck on 1.2.
     # 'sqlalchemy',

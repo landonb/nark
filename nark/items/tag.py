@@ -19,7 +19,6 @@
 
 from collections import namedtuple
 
-from six import text_type
 
 from .item_base import BaseItem
 
@@ -53,7 +52,7 @@ class Tag(BaseItem):
         if not name:
             # Disallow `None` and empty string.
             raise ValueError(_('Tags must be named.'))
-        self._name = text_type(name)
+        self._name = str(name)
 
     def as_tuple(self, include_pk=True):
         """
@@ -109,5 +108,5 @@ class Tag(BaseItem):
         return hash(self.as_tuple())
 
     def __str__(self):
-        return text_type('{name}'.format(name=self.name))
+        return '{name}'.format(name=self.name)
 

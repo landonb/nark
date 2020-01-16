@@ -17,7 +17,6 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-from six import text_type
 
 from ..helpers.emphasis import attr, colorize, set_coloring
 from ..helpers.strings import format_value_truncate
@@ -54,11 +53,6 @@ def friendly_str(
         # MAYBE/2019-01-28: Truncate meta per cut_width or similar.
         meta = assemble_parts(fact)
         result = format_result(fact, meta)
-
-        # (lb): EXPLAIN: Why do we cast here?
-        #   (Was this meant to call repr(result) for orig __repr__ implementation?)
-        result = text_type(result)
-
         set_coloring(was_coloring)
         return result
 

@@ -19,7 +19,6 @@
 
 """This module provides nark raw fact parsing-related functions."""
 
-from six import text_type
 
 __all__ = (
     'comma_or_join',
@@ -45,7 +44,7 @@ def format_value_truncate(val, trunc_width=None):
     #       val = vals[0] + '...'
     # but replacing newlines with representation of same
     # is more meaningful, and less confusing to end user.
-    val = '\\n'.join(text_type(val).splitlines())
+    val = '\\n'.join(str(val).splitlines())
     if trunc_width is not None:
         if len(val) > trunc_width and trunc_width >= 0:
             val = val[:trunc_width - 3] + '...'

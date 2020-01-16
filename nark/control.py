@@ -27,16 +27,28 @@ from .helpers.dev.profiling import timefunc
 
 
 
-# See: https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#gettext
-# [FIXME]
-# Is this correct?
-#   http://www.wefearchange.org/2012/06/the-right-way-to-internationalize-your.html
-# seems to use ``sys.version_info.major > 3``
-kwargs = {}
-# FIXME/2020-01-08: (lb): Remove py2 code, including six, __future__, and probably this:
-if sys.version_info.major < 3:
-    kwargs['unicode'] = True
-gettext.install('nark', **kwargs)
+# (lb): hamster-lib comment:
+#
+#         See: https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#gettext
+#         [FIXME]
+#         Is this correct?
+#           http://www.wefearchange.org/2012/06/the-right-way-to-internationalize-your.html
+#         seems to use ``sys.version_info.major > 3``
+#
+# 2020-01-16: Now that Python2 (and six and future) dropped,
+#  this branch not executed.
+#
+# FIXME/2020-01-16: (lb): EXPLAIN: Is gettext.install still necessary?
+#  I.e., was this call just in case kwargs['unicode'] got set?
+#
+#  - Here's the old (v2-compatible) code:
+#
+#       kwargs = {}
+#       if sys.version_info.major < 3:
+#           kwargs['unicode'] = True
+#       gettext.install('nark', **kwargs)
+#
+gettext.install('nark')
 
 
 class NarkControl(object):

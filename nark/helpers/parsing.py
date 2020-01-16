@@ -24,7 +24,6 @@ import os
 import re
 
 import lazy_import
-from six import text_type
 
 from .parse_errors import (
     ParserException,
@@ -267,7 +266,7 @@ class Parser(object):
         # FIXME/2018-05-22 20:42: (lb): Implement: tz_local
         local_tz=None,  # Default to None, i.e., naive
     ):
-        if isinstance(factoid, text_type):
+        if isinstance(factoid, str):
             # Path from tests/nark/test_objects.py, but not from dob.
             factoid = (factoid,)
         else:

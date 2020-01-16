@@ -25,14 +25,13 @@ import xml
 import pytest
 from icalendar import Calendar
 from nark import reports
-from six import text_type
 
 
 # Fixtures
 @pytest.fixture
 def path(tmpdir):
     path = tmpdir.mkdir('reports').join('report.csv').strpath
-    return text_type(path)
+    return path
 
 
 @pytest.fixture
@@ -119,7 +118,7 @@ class TestTSVWriter(object):
             reader = csv.reader(fobj, dialect='excel-tab')
             header = next(reader)
         for field, expectation in zip(header, expectations):
-            if isinstance(field, text_type):
+            if isinstance(field, str):
                 assert field == expectation
             else:
                 assert field.decode('utf-8') == expectation
@@ -145,8 +144,8 @@ class TestTSVWriter(object):
             next(reader)
             line = next(reader)
             for field, expectation in zip(line, fact_tuple):
-                if isinstance(field, text_type):
-                    assert field == text_type(expectation)
+                if isinstance(field, str):
+                    assert field == expectation
                 else:
                     assert field.decode('utf-8') == expectation
 
@@ -162,10 +161,10 @@ class TestICALWriter(object):
         result = ical_writer._fact_to_tuple(fact)
         assert result.start == fact.start
         assert result.end == fact.end
-        assert result.activity == text_type(fact.activity.name)
+        assert result.activity == fact.activity.name
         assert result.duration is None
-        assert result.category == text_type(fact.category.name)
-        assert result.description == text_type(fact.description)
+        assert result.category == fact.category.name
+        assert result.description == fact.description
 
     def test__fact_to_tuple_no_category(self, ical_writer, fact):
         """Make sure that ``None`` category values translate to ``empty strings``."""
@@ -213,10 +212,10 @@ class TestXMLWriter(object):
         result = xml_writer._fact_to_tuple(fact)
         assert result.start == fact.start.strftime(xml_writer.datetime_format)
         assert result.end == fact.end.strftime(xml_writer.datetime_format)
-        assert result.activity == text_type(fact.activity.name)
-        assert result.duration == text_type(fact.format_delta(style='%M'))
-        assert result.category == text_type(fact.category.name)
-        assert result.description == text_type(fact.description)
+        assert result.activity == fact.activity.name
+        assert result.duration == fact.format_delta(style='%M')
+        assert result.category == fact.category.name
+        assert result.description == fact.description
 
     def test__fact_to_tuple_no_category(self, xml_writer, fact):
         """Make sure that ``None`` category values translate to ``empty strings``."""

@@ -21,7 +21,6 @@ from gettext import gettext as _
 
 from builtins import str
 
-from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -273,8 +272,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         self.store.logger.debug(message)
 
         if category:
-            # EXPLAIN: (lb): Do we really need to cast?
-            category = text_type(category.name)
+            category = category.name
             try:
                 alchemy_category = self.store.categories.get_by_name(category, raw=True)
             except KeyError:
@@ -289,10 +287,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         else:
             alchemy_category = None
 
-        # EXPLAIN: (lb): Do we really need to cast? Why not to text_type?
-        #   (I realize text_type is str in Py3. I'm curious if this fails
-        #   in Py2 (dropping Py2 support anyway?). And I'm curious if name
-        #   is ever not a string.
+        # EXPLAIN: (lb): Is name ever not a string here?
         name = str(name)
         try:
             query = self.store.session.query(AlchemyActivity)
@@ -437,7 +432,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             #     e.g., ``if '*' in category.name: ...``
             if category:
                 category_name = None
-                if isinstance(category, text_type):
+                if isinstance(category, str):
                     category_name = category
                 elif not category.pk:
                     category_name = category.name

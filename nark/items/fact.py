@@ -21,7 +21,6 @@ from collections import namedtuple
 from datetime import datetime
 from operator import attrgetter
 
-from six import text_type
 
 from ..helpers import fact_time, format_fact, format_time
 from ..helpers.parsing import parse_factoid
@@ -157,15 +156,6 @@ class Fact(BaseItem):
         return (self.start, fact_end, fact_pk)
 
     def __str__(self):
-        # MAYBE: (lb): __str__ used to pass fmttr=text_type to friendly_str,
-        #   and __repr__ used to pass fmttr=repr; and then friendly_str would
-        #   wrap all strings that it assembled with that formatter, e.g.,
-        #     fmttr(self.activity.name)
-        #   but I did not understand why (what's the difference between
-        #   text_type and repr? text_type is a no-op in py3, and converts
-        #   py2 string to unicode, right?). In any case, I don't think we
-        #   need to cast to text_type/repr anymore (especially if we drop
-        #   Python 2 support).
         return format_fact.friendly_str(self)
 
     def __repr__(self):
@@ -288,7 +278,7 @@ class Fact(BaseItem):
           or relative time string.
 
         Args:
-            start (datetime.datetime, text_type): Start datetime of this ``Fact``.
+            start (datetime.datetime, str): Start datetime of this ``Fact``.
 
         Raises:
             TypeError: If we receive something other than a ``datetime.datetime``
@@ -496,7 +486,7 @@ class Fact(BaseItem):
         Store everything else as string.
         """
         if description:
-            description = text_type(description)
+            description = str(description)
         else:
             description = None
         self._description = description
@@ -587,7 +577,7 @@ class Fact(BaseItem):
             of those facts on the instance level.
 
         Returns:
-            text_type: Canonical string encoding all available fact info.
+            str: Canonical string encoding all available fact info.
         """
         return format_fact.friendly_str(self, shellify=shellify)
 
@@ -628,7 +618,7 @@ class Fact(BaseItem):
         Args:
             factoid (str): Raw fact to be parsed.
 
-            time_hint (text_type, optional): One of:
+            time_hint (str, optional): One of:
                 'verify_none': Do not expect to find any time encoded in factoid.
                 'verify_both': Expect to find both start and end times.
                 'verify_start': Expect to find just one time, which is the start.

@@ -19,7 +19,6 @@
 
 from collections import namedtuple
 
-from six import text_type
 
 from .category import Category
 from .item_base import BaseItem
@@ -67,7 +66,7 @@ class Activity(BaseItem):
         # NOTE: (lb): Unlike Category.name=, not requiring ``not name``.
         if name is None:
             raise ValueError(_('Activity name must not be None.'))
-        self._name = text_type(name)
+        self._name = str(name)
 
     @classmethod
     def create_from_composite(cls, name, category_name, deleted=False):
@@ -147,9 +146,10 @@ class Activity(BaseItem):
 
     def __str__(self):
         if self.category is None:
-            string = '{name}'.format(name=self.name)
+            full_name = '{name}'.format(name=self.name)
         else:
-            string = '{name} ({category})'.format(
-                name=self.name, category=self.category.name)
-        return text_type(string)
+            full_name = '{name} ({category})'.format(
+                name=self.name, category=self.category.name,
+            )
+        return full_name
 

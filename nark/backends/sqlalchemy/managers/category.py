@@ -19,7 +19,6 @@
 
 from gettext import gettext as _
 
-from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -221,7 +220,6 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         message = _("Received name: '{}', raw={}.".format(name, raw))
         self.store.logger.debug(message)
 
-        name = text_type(name)
         try:
             result = self.store.session.query(AlchemyCategory).filter_by(name=name).one()
         except NoResultFound:

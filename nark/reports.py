@@ -31,7 +31,6 @@ import sys
 from collections import namedtuple
 
 import lazy_import
-from six import text_type
 
 # Profiling: load icalendar: ~ 0.008 secs.
 icalendar = lazy_import.lazy_module('icalendar')
@@ -183,11 +182,8 @@ class PlaintextWriter(ReportWriter):
             _("deleted"),
         )
         results = []
-        for h in headers:
-            data = text_type(h)
-            if sys.version_info < (3, 0):
-                data = data.encode('utf-8')
-            results.append(data)
+        for header in headers:
+            results.append(header)
         self.csv_writer.writerow(results)
         self.duration_fmt = duration_fmt
 
@@ -204,12 +200,16 @@ class PlaintextWriter(ReportWriter):
         Returns:
             FactTuple: Tuple representing the original ``Fact``.
         """
-        # Fields that may have ``None`` value will be represented by ''
+        # Fields that allow ``None`` values will be represented by empty ''s.
+        # FIXME/DRY/2020-01-16: (lb): This block repeated throughout this file:
+        if fact.activity:
+            activity = fact.activity.name
+        else:
+            activity = ''
         if fact.category:
             category = fact.category.name
         else:
             category = ''
-
         description = fact.description or ''
 
         start = fact.start.strftime(self.datetime_format) if fact.start else ''
@@ -219,15 +219,10 @@ class PlaintextWriter(ReportWriter):
             start=start,
             end=end,
             duration=fact.format_delta(style=self.duration_fmt),
-            activity=fact.activity.name,
-            # EXPLAIN: (lb): I think this is an artifact from hamster-lib,
-            # but am unclear on the "why": cast the category name to the
-            # appropriate string type. Which begs the obvious question, Why
-            # do we do this? but also begs the question, Why don't we also
-            # do this to fact.activity.name and description?
-            category=text_type(category),
+            activity=activity,
+            category=category,
             description=description,
-            deleted=bool(fact.deleted),
+            deleted=str(fact.deleted),
         )
 
     def _write_fact(self, fact_tuple):
@@ -240,10 +235,7 @@ class PlaintextWriter(ReportWriter):
         """
         results = []
         for value in fact_tuple:
-            data = text_type(value)
-            if sys.version_info < (3, 0):
-                data = data.encode('utf-8')
-            results.append(data)
+            results.append(value)
         self.csv_writer.writerow(results)
 
 
@@ -317,22 +309,26 @@ class ICALWriter(ReportWriter):
         Returns:
             FactTuple: Tuple representing the original ``Fact``.
         """
-        # Fields that may have ``None`` value will be represented by ''
+        # Fields that allow ``None`` values will be represented by empty ''s.
+        # FIXME/DRY/2020-01-16: (lb): This block repeated throughout this file:
+        if fact.activity:
+            activity = fact.activity.name
+        else:
+            activity = ''
         if fact.category:
             category = fact.category.name
         else:
             category = ''
-
         description = fact.description or ''
 
         return FactTuple(
             start=fact.start,
             end=fact.end,
             duration=None,
-            activity=text_type(fact.activity.name),
-            category=text_type(category),
-            description=text_type(description),
-            deleted=bool(fact.deleted),
+            activity=activity,
+            category=category,
+            description=description,
+            deleted=str(fact.deleted),
         )
 
     def _write_fact(self, fact_tuple):
@@ -396,22 +392,26 @@ class XMLWriter(ReportWriter):
         Returns:
             FactTuple: Tuple representing the original ``Fact``.
         """
-        # Fields that may have ``None`` value will be represented by ''
+        # Fields that allow ``None`` values will be represented by empty ''s.
+        # FIXME/DRY/2020-01-16: (lb): This block repeated throughout this file:
+        if fact.activity:
+            activity = fact.activity.name
+        else:
+            activity = ''
         if fact.category:
             category = fact.category.name
         else:
             category = ''
-
         description = fact.description or ''
 
         return FactTuple(
             start=fact.start.strftime(self.datetime_format),
             end=fact.end.strftime(self.datetime_format),
             duration=fact.format_delta(style='%M'),
-            activity=text_type(fact.activity.name),
-            category=text_type(category),
-            description=text_type(description),
-            deleted=text_type(fact.deleted),
+            activity=activity,
+            category=category,
+            description=description,
+            deleted=str(fact.deleted),
         )
 
     def _write_fact(self, fact_tuple):

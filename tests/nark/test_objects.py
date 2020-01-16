@@ -29,7 +29,6 @@ from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact
 from nark.items.tag import Tag
-from six import text_type
 
 faker = faker_.Faker()
 
@@ -683,7 +682,7 @@ class TestFact(object):
             description=fact.description
         )
         result = fact.get_serialized_string()
-        assert isinstance(result, text_type)
+        assert isinstance(result, str)
         assert result == expectation
 
     @pytest.mark.parametrize(('values', 'expectation'), (

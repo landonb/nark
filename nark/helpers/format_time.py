@@ -23,7 +23,6 @@ import datetime
 import math
 
 import lazy_import
-from six import text_type
 
 from pedantic_timedelta import PedanticTimedelta
 
@@ -157,7 +156,7 @@ def format_delta(delta, style='%M'):
         raise ValueError(_("Invalid format_delta style ‘{}’.").format(style))
 
     def format_mins(minutes):
-        return text_type(minutes)
+        return str(minutes)
 
     def format_hours_mins(hours, minutes):
         return '{0:02d}:{1:02d}'.format(hours, minutes)

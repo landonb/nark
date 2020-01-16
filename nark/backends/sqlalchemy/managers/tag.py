@@ -21,7 +21,6 @@ from gettext import gettext as _
 
 from builtins import str
 
-from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -229,7 +228,6 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         message = _("Received name: '{}', raw={}.".format(name, raw))
         self.store.logger.debug(message)
 
-        name = text_type(name)
         try:
             result = self.store.session.query(AlchemyTag).filter_by(name=name).one()
         except NoResultFound:

@@ -409,7 +409,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 Match Facts more recent than a specific dates.
             until (datetime.datetime, optional):
                 Match Facts older than a specific dates.
-            search_term (text_type):
+            search_term (str):
                 Case-insensitive strings to match ``Activity.name`` or
                 ``Category.name``.
             deleted (boolean, optional): False to restrict to non-deleted

@@ -24,7 +24,6 @@ from gettext import gettext as _
 import datetime
 import re
 
-from six import text_type
 
 __all__ = (
     'datetime_from_clock_prior',
@@ -148,7 +147,7 @@ def must_be_datetime_or_relative(dt):
         #        perhaps someday I'll revisit this and really
         #        figure out what's going on.
         return dt.replace(microsecond=0)
-    elif not dt or isinstance(dt, text_type):
+    elif not dt or isinstance(dt, str):
         if (
             dt and not (
                 # NOTE: re.match checks for a match only at the beginning of the string.

@@ -310,7 +310,7 @@ class BaseFactManager(BaseManager):
                 starting at or after this datetime. Defaults to ``None``.
             end_date (datetime.datetime): Consider only Facts ending before or at
                 this datetime. Defaults to ``None``.
-            search_term (text_type): Cases insensitive strings to match
+            search_term (str): Cases insensitive strings to match
                 ``Activity.name`` or ``Category.name``.
             deleted (boolean, optional): False to restrict to non-deleted
                 Facts; True to find only those marked deleted; None to find
