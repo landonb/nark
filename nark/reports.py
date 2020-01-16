@@ -370,9 +370,12 @@ class ICALWriter(ReportWriter):
 
 class XMLWriter(ReportWriter):
     """Writer for a basic xml export."""
-
-    # This is a straight forward copy of the 'legacy hamster' XMLWriter class
-    # contributed by 'tbaugis' in 11e3f66
+    # (lb): @elbenfreund noted that XMLWriter copied from 'legacy hamster':
+    #   Authored by tstriker <https://github.com/tstriker>. Docstrings by elbenfreund.
+    #   https://github.com/projecthamster/hamster/blame/66ed9270c6f0070a4548aca9f070517cc13c85ae
+    #       /src/hamster/reports.py#L159
+    #   (Other than this class, the nark code authors are either:
+    #    landonb (2018-2020); or elbenfreund (2015-2017).)
 
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         """Setup the writer including a main xml document."""
