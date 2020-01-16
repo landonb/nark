@@ -33,7 +33,7 @@ Current Hamsterriah
   and fun to hack.
   Which is why there's now |nark|_.
 
-  As a multi-year Legacy Hamster user, my goal is make the *Hamster CLI*
+  As a multi-year Legacy Hamster user, my goal is make the Hamster *CLI*
   I've always wanted. This was originally thought to be a juiced-up prompt
   using `Bash completion
   <https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion>`__,
@@ -44,7 +44,7 @@ Current Hamsterriah
   and built a colorful, robust, interactive terminal application
   instead (namely, |dob|_).
 
-  The goal of this project, |nark|_, is mostly to serve the needs of |dob|_,
+  The goal of this project (|nark|_) is mostly to serve the needs of |dob|_,
   and to allow for separation of responsibilities. So you'll mostly see new
   features implemented in |nark|_ at the behest of |dob|_.
 
@@ -68,16 +68,15 @@ from `the Noun Project <https://thenounproject.com>`__.
 “Hamster 2.0” Rewrite (circa 2015 to 2017)
 ==========================================
 
-Eric Goller rewrote Hamster with best practices in mind.
-Welcome to modern dev, Hamster!
+Eric Goller rewrote "Legacy Hamster" with modern practices in mind.
 
-Development Lead
-----------------
+Creator/Lead
+------------
 
 * `Eric Goller <https://github.com/elbenfreund>`_
 
-Patch and Pull Request Contributors
------------------------------------
+Contributors
+------------
 
 * `Felix Schwarz <felix.schwarz@oss.schwarz.eu>`_
 * `Jan Tojnar <https://github.com/jtojnar>`_
@@ -90,14 +89,14 @@ Legacy Hamster (circa 2007 to 2016)
 The `original Hamster project <https://github.com/projecthamster/hamster/>`_
 rolled strong for 10 years with 2 great maintainers and hundreds of contributors.
 
-Top Hamstership
----------------
+Top Hamsters
+------------
 
 * Toms Bauģis
 * Patryk Zawadzki
 
-Awesome Hamsterlings
---------------------
+Hamster Horde
+-------------
 
 .. HINT: Generate a list of Authors from the git log:
 ..
