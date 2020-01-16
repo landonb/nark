@@ -20,8 +20,6 @@
 import os
 from datetime import datetime
 
-from future.utils import python_2_unicode_compatible
-
 from .config import decorate_config
 from .helpers import logging as logging_helpers
 from .helpers.app_dirs import NarkAppDirs
@@ -33,7 +31,6 @@ from .managers.tag import BaseTagManager
 __all__ = ('BaseStore', )
 
 
-@python_2_unicode_compatible
 class BaseStore(object):
     """
     A controller store defines the interface to interact with stored entities,

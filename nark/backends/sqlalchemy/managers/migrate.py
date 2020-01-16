@@ -20,8 +20,6 @@
 import os
 
 import lazy_import
-from future.utils import python_2_unicode_compatible
-
 from ....helpers.legacy_db import upgrade_legacy_db_hamster_applet
 from ....managers.migrate import BaseMigrationsManager
 
@@ -33,7 +31,6 @@ migrate_versioning_api = lazy_import.lazy_module('migrate.versioning.api')
 __all__ = ('MigrationsManager', )
 
 
-@python_2_unicode_compatible
 class MigrationsManager(BaseMigrationsManager):
     """"""
 

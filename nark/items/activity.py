@@ -19,7 +19,6 @@
 
 from collections import namedtuple
 
-from future.utils import python_2_unicode_compatible
 from six import text_type
 
 from .category import Category
@@ -30,7 +29,6 @@ ActivityTuple = namedtuple(
 )
 
 
-@python_2_unicode_compatible
 class Activity(BaseItem):
     """Storage agnostic class for activities."""
 

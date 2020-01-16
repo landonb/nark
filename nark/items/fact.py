@@ -21,7 +21,6 @@ from collections import namedtuple
 from datetime import datetime
 from operator import attrgetter
 
-from future.utils import python_2_unicode_compatible
 from six import text_type
 
 from ..helpers import fact_time, format_fact, format_time
@@ -67,7 +66,6 @@ FactTuple = namedtuple(
 )
 
 
-@python_2_unicode_compatible
 class Fact(BaseItem):
     """Storage agnostic class for facts."""
     def __init__(

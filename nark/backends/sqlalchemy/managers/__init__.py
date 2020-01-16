@@ -19,8 +19,6 @@
 
 """``nark`` storage object managers."""
 
-from future.utils import python_2_unicode_compatible
-
 from gettext import gettext as _
 
 from sqlalchemy.exc import IntegrityError
@@ -68,7 +66,6 @@ def query_apply_true_or_not(query, column, condition, **kwargs):
     return query
 
 
-@python_2_unicode_compatible
 class BaseAlchemyManager(object):
     """Base class for sqlalchemy managers."""
 

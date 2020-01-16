@@ -41,7 +41,6 @@ Note:
     cause be added here.
 """
 
-from future.utils import python_2_unicode_compatible
 # Profiling: Loading sqlalchemy takes about ~ 0.150 secs.
 # (lb): And there's probably not a way to avoid it.
 from sqlalchemy import (
@@ -66,7 +65,6 @@ from ...items.tag import Tag
 DEFAULT_STRING_LENGTH = 254
 
 
-@python_2_unicode_compatible
 class AlchemyCategory(Category):
     def __init__(self, pk, name, deleted, hidden):
         """
@@ -91,7 +89,6 @@ class AlchemyCategory(Category):
         )
 
 
-@python_2_unicode_compatible
 class AlchemyActivity(Activity):
     def __init__(self, pk, name, category, deleted, hidden):
         """
@@ -141,7 +138,6 @@ class AlchemyActivity(Activity):
         )
 
 
-@python_2_unicode_compatible
 class AlchemyTag(Tag):
     def __init__(self, pk, name, deleted, hidden):
         """
@@ -166,7 +162,6 @@ class AlchemyTag(Tag):
         )
 
 
-@python_2_unicode_compatible
 class AlchemyFact(Fact):
     def __init__(self, pk, activity, start, end, description, deleted, split_from):
         """

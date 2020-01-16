@@ -19,7 +19,6 @@
 
 from collections import namedtuple
 
-from future.utils import python_2_unicode_compatible
 from six import text_type
 
 from .item_base import BaseItem
@@ -29,7 +28,6 @@ CategoryTuple = namedtuple(
 )
 
 
-@python_2_unicode_compatible
 class Category(BaseItem):
     """Storage agnostic class for categories."""
 

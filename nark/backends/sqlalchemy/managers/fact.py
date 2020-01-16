@@ -22,7 +22,6 @@ from gettext import gettext as _
 from builtins import str
 from datetime import datetime
 
-from future.utils import python_2_unicode_compatible
 from sqlalchemy import asc, desc, func
 from sqlalchemy.sql.expression import and_, or_
 
@@ -37,7 +36,6 @@ from ..objects import (
 )
 
 
-@python_2_unicode_compatible
 class FactManager(BaseAlchemyManager, BaseFactManager):
     """
     """

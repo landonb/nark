@@ -17,12 +17,9 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-from future.utils import python_2_unicode_compatible
-
 from . import BaseManager
 
 
-@python_2_unicode_compatible
 class BaseMigrationsManager(BaseManager):
     """Base class defining the minimal API for a MigrationsManager implementation."""
 

@@ -31,7 +31,6 @@ import sys
 from collections import namedtuple
 
 import lazy_import
-from future.utils import python_2_unicode_compatible
 from six import text_type
 
 # Profiling: load icalendar: ~ 0.008 secs.
@@ -52,7 +51,6 @@ FactTuple = namedtuple(
 )
 
 
-@python_2_unicode_compatible
 class ReportWriter(object):
     def __init__(
         self,
@@ -148,7 +146,6 @@ class ReportWriter(object):
         self.file.close()
 
 
-@python_2_unicode_compatible
 class PlaintextWriter(ReportWriter):
     # HINT: For list of dialects:
     #   >>> import csv
@@ -250,7 +247,6 @@ class PlaintextWriter(ReportWriter):
         self.csv_writer.writerow(results)
 
 
-@python_2_unicode_compatible
 class CSVWriter(PlaintextWriter):
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         super(CSVWriter, self).__init__(
@@ -280,7 +276,6 @@ class CSVWriter(PlaintextWriter):
         )
 
 
-@python_2_unicode_compatible
 class TSVWriter(PlaintextWriter):
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
         super(TSVWriter, self).__init__(
@@ -291,7 +286,6 @@ class TSVWriter(PlaintextWriter):
         )
 
 
-@python_2_unicode_compatible
 class ICALWriter(ReportWriter):
     """A simple ical writer for fact export."""
     def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):

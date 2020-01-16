@@ -21,7 +21,6 @@ from gettext import gettext as _
 
 from builtins import str
 
-from future.utils import python_2_unicode_compatible
 from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -32,7 +31,6 @@ from ....managers.activity import BaseActivityManager
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 
 
-@python_2_unicode_compatible
 class ActivityManager(BaseAlchemyManager, BaseActivityManager):
     def get_or_create(self, activity, raw=False, skip_commit=False):
         """

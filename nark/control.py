@@ -21,8 +21,6 @@ import gettext
 import importlib
 import sys
 
-from future.utils import python_2_unicode_compatible
-
 from .config import REGISTERED_BACKENDS, decorate_config
 from .helpers import logging as logging_helpers
 from .helpers.dev.profiling import timefunc
@@ -41,7 +39,6 @@ if sys.version_info.major < 3:
 gettext.install('nark', **kwargs)
 
 
-@python_2_unicode_compatible
 class NarkControl(object):
     """
     All mandatory config options are set as part of the controller setup.

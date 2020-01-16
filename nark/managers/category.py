@@ -17,15 +17,12 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-from future.utils import python_2_unicode_compatible
-
 from gettext import gettext as _
 
 from . import BaseManager
 from ..items.category import Category
 
 
-@python_2_unicode_compatible
 class BaseCategoryManager(BaseManager):
     """
     Base class defining the minimal API for a CategoryManager implementation.

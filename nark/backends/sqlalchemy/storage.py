@@ -23,7 +23,6 @@ from gettext import gettext as _
 
 import os.path
 
-from future.utils import python_2_unicode_compatible
 # Profiling: load create_engine: ~ 0.100 secs.
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
@@ -41,7 +40,6 @@ from .managers.tag import TagManager
 __all__ = ('SQLAlchemyStore', )
 
 
-@python_2_unicode_compatible
 class SQLAlchemyStore(BaseStore):
     """
     SQLAlchemy based backend.

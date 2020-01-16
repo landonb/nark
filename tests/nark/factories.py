@@ -23,14 +23,12 @@ import datetime
 
 import factory
 import fauxfactory
-from future.utils import python_2_unicode_compatible
 from nark.items.activity import Activity
 from nark.items.category import Category
 from nark.items.fact import Fact
 from nark.items.tag import Tag
 
 
-@python_2_unicode_compatible
 class CategoryFactory(factory.Factory):
     """Factory providing randomized ``nark.Category`` instances."""
 
@@ -45,7 +43,6 @@ class CategoryFactory(factory.Factory):
         model = Category
 
 
-@python_2_unicode_compatible
 class ActivityFactory(factory.Factory):
     """Factory providing randomized ``nark.Activity`` instances."""
 
@@ -58,7 +55,6 @@ class ActivityFactory(factory.Factory):
         model = Activity
 
 
-@python_2_unicode_compatible
 class TagFactory(factory.Factory):
     """Factory providing randomized ``nark.Category`` instances."""
 
@@ -69,7 +65,6 @@ class TagFactory(factory.Factory):
         model = Tag
 
 
-@python_2_unicode_compatible
 class FactFactory(factory.Factory):
     """
     Factory providing randomized ``nark.Fact`` instances.

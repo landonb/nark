@@ -17,13 +17,10 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-from future.utils import python_2_unicode_compatible
-
 from . import BaseManager
 from ..items.tag import Tag
 
 
-@python_2_unicode_compatible
 class BaseTagManager(BaseManager):
     """
     Base class defining the minimal API for a TagManager implementation.

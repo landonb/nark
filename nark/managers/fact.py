@@ -21,14 +21,11 @@ from gettext import gettext as _
 
 import datetime
 
-from future.utils import python_2_unicode_compatible
-
 from . import BaseManager
 from ..helpers import fact_time
 from ..items.fact import Fact
 
 
-@python_2_unicode_compatible
 class BaseFactManager(BaseManager):
     """Base class defining the minimal API for a FactManager implementation."""
     def __init__(self, *args, localize=False, **kwargs):

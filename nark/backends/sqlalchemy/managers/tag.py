@@ -21,7 +21,6 @@ from gettext import gettext as _
 
 from builtins import str
 
-from future.utils import python_2_unicode_compatible
 from six import text_type
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -38,7 +37,6 @@ from ..objects import (
 )
 
 
-@python_2_unicode_compatible
 class TagManager(BaseAlchemyManager, BaseTagManager):
     def get_or_create(self, tag, raw=False, skip_commit=False):
         """

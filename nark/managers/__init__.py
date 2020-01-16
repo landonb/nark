@@ -26,8 +26,6 @@ Note:
       to test them once and our actual backends focus on the CRUD implementation.
 """
 
-from future.utils import python_2_unicode_compatible
-
 from gettext import gettext as _
 
 from ..items.item_base import BaseItem
@@ -35,7 +33,6 @@ from ..items.item_base import BaseItem
 __all__ = ('BaseManager', )
 
 
-@python_2_unicode_compatible
 class BaseManager(object):
     """Base class for all object managers."""
 
