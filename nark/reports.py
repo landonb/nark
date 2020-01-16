@@ -25,8 +25,6 @@ of the setup upon instantiation so all the client needs to do is to call
 ``write_report`` with a list of ``FactTuples`` as arguments.
 """
 
-from __future__ import absolute_import, unicode_literals
-
 import csv
 import datetime
 import sys

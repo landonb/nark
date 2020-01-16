@@ -41,8 +41,6 @@ Note:
     cause be added here.
 """
 
-from __future__ import absolute_import, unicode_literals
-
 from future.utils import python_2_unicode_compatible
 # Profiling: Loading sqlalchemy takes about ~ 0.150 secs.
 # (lb): And there's probably not a way to avoid it.

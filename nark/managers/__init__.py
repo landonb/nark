@@ -26,8 +26,6 @@ Note:
       to test them once and our actual backends focus on the CRUD implementation.
 """
 
-from __future__ import absolute_import, unicode_literals
-
 from future.utils import python_2_unicode_compatible
 
 from gettext import gettext as _

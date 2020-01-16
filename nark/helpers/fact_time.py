@@ -19,8 +19,6 @@
 
 """This module provides several time-related convenience functions."""
 
-from __future__ import absolute_import, unicode_literals
-
 from gettext import gettext as _
 
 import datetime

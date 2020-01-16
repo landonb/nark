@@ -19,8 +19,6 @@
 
 """Fixtures in order to test the SQLAlchemy backend."""
 
-from __future__ import absolute_import, unicode_literals
-
 import copy
 import datetime
 import os

@@ -19,8 +19,6 @@
 
 """Raw SQLite3 commands to upgrade legacy hamster-applet database."""
 
-from __future__ import absolute_import, unicode_literals
-
 import logging
 import sqlite3
 

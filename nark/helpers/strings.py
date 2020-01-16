@@ -19,8 +19,6 @@
 
 """This module provides nark raw fact parsing-related functions."""
 
-from __future__ import absolute_import, unicode_literals
-
 from six import text_type
 
 __all__ = (

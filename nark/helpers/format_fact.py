@@ -17,8 +17,6 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, unicode_literals
-
 from six import text_type
 
 from ..helpers.emphasis import attr, colorize, set_coloring

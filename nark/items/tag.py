@@ -17,8 +17,6 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, unicode_literals
-
 from collections import namedtuple
 
 from future.utils import python_2_unicode_compatible

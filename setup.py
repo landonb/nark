@@ -53,10 +53,6 @@ requirements = [
     'configobj >= 5.0.6',
     # https://github.com/scrapinghub/dateparser
     'dateparser',
-    # Py2/3 support shim. (Higher-level than `six`.)
-    #  https://pypi.org/project/future/
-    #  https://python-future.org/
-    'future',
     # Elapsed timedelta formatter, e.g., "1.25 days".
     'human-friendly_pedantic-timedelta >= 0.0.5',  # Imports as pedantic_timedelta.
     # https://github.com/collective/icalendar

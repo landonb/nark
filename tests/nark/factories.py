@@ -19,8 +19,6 @@
 
 """Factories providing randomized object instances."""
 
-from __future__ import unicode_literals
-
 import datetime
 
 import factory

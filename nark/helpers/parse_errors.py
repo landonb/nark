@@ -19,8 +19,6 @@
 
 """This module provides nark raw fact parsing-related functions."""
 
-from __future__ import absolute_import, unicode_literals
-
 __all__ = (
     'ParserException',
     'ParserMissingDatetimeException',
