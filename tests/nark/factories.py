@@ -17,8 +17,6 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-# -*- coding: utf-8 -*-
-
 """Factories providing randomized object instances."""
 
 from __future__ import unicode_literals
