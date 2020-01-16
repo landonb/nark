@@ -25,8 +25,6 @@ from .config import REGISTERED_BACKENDS, decorate_config
 from .helpers import logging as logging_helpers
 from .helpers.dev.profiling import timefunc
 
-
-
 # (lb): hamster-lib comment:
 #
 #         See: https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#gettext
