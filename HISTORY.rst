@@ -2,17 +2,11 @@
 History
 #######
 
-.. |dob| replace:: ``dob``
-.. _dob: https://github.com/hotoffthehamster/dob
-
 .. |nark| replace:: ``nark``
 .. _nark: https://github.com/hotoffthehamster/nark
 
 .. |nark-pypi| replace:: nark
 .. _nark-pypi: https://pypi.org/project/nark/
-
-.. |config-decorator| replace:: ``config-decorator``
-.. _config-decorator: https://github.com/hotoffthehamster/config-decorator
 
 .. |hamster-lib| replace:: ``hamster-lib``
 .. _hamster-lib: https://github.com/projecthamster/hamster-lib
@@ -24,6 +18,12 @@ History
 
 3.1.0 (2020-01-16)
 ==================
+
+.. |dob| replace:: ``dob``
+.. _dob: https://github.com/hotoffthehamster/dob
+
+.. |config-decorator| replace:: ``config-decorator``
+.. _config-decorator: https://github.com/hotoffthehamster/config-decorator
 
 - Documentation improvements.
 
