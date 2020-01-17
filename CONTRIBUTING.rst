@@ -32,6 +32,15 @@ Contributing
 .. |virtualenvwrapper| replace:: ``virtualenvwrapper``
 .. _virtualenvwrapper: https://pypi.org/project/virtualenvwrapper/
 
+.. |user-docs| replace:: user documentation
+.. _user-docs: https://github.com/hotoffthehamster/nark/blob/develop/docs
+
+.. |PEP-257| replace:: PEP 257
+.. _PEP-257: https://www.python.org/dev/peps/pep-0257/
+
+.. |goog-py-sty| replace:: Google Python Style Guide
+.. _goog-py-sty: https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings
+
 .. contents:: Contributing Contents
    :depth: 2
    :local:
@@ -74,9 +83,15 @@ Pick one, assign yourself to it, and work on the issue.
 Write Documentation
 -------------------
 
-If you find documentation out of date, missing, or confusing,
-please help improve it. This includes the official user documentation,
-the README, other developer documentation, and documentation.
+If you find documentation out of date, missing, or confusing, please help
+us to improve it.
+
+This includes the official |user-docs|_,
+the `README
+<https://github.com/hotoffthehamster/nark/blob/develop/README.rst>`__,
+and the inline docstrings that generate the `API documentation
+<https://nark.readthedocs.io/en/latest/modules.html>`__
+(per |PEP-257|_ and |goog-py-sty|_).
 
 We also appreciate reference from blog posts, articles, and other projects.
 
@@ -257,13 +272,16 @@ Otherwise, if you want just the bare library, continue reading!
    fixes, and then squash that commit into the previous commit wherein
    you originally added the code that didn't lint.
 
-   (*Note:* Rebasing is an intermediate Git skill, but you needn't be
-   afraid. Just bear in mind that you should not rebase any branch that
-   other developers are working on (which should not apply to your working
-   branch, unless you are collaborating with others, which you are probably
-   not). And know that ``git rebase --abort`` is your friend (though you might
-   want to make a copy of your local working directory before rebasing, just
-   to be safe; or at least make a new branch from the current ``HEAD``).)
+   (*Note:* Rebasing is an intermediate Git skill.
+   If you're unfamiliar, read up elsewhere.
+   But consider a few reminders.
+   First, ensure that you are not rebasing any branch that other developers
+   are also working on (which should not apply to your feature branch, unless
+   you are collaborating with others on that branch, which you are probably not).
+   Second, remember that ``git rebase --abort`` can save you from having to
+   resolve any unanticipated or complicated conflicts, should you find
+   yourself faced with rebase conflicts and unsure how to get your work back
+   (abort the rebase and maybe ask someone for help, and try another approach).)
 
    For example, pretend that I have the following git history::
 
@@ -352,22 +370,30 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. Update docs.
 
-   * Use docstrings to document new functions, and use inline comments
-     as appropriate (longer comments should go into a reST file in the
-     ``docs/`` directory).
+   * Use docstrings to document new functions, and use (hopefully concise)
+     inline comments as appropriate.
 
-   * Update ``README.rst`` if your feature adds to or changes the API.
+     * Follow the conventions defined by |PEP-257|_ and |goog-py-sty|_.
+
+   * Document broader concepts and capture API changes and additions
+     in the |user-docs|_.
 
 2. Include tests.
 
-   * If the pull request adds new functions, they should be tested,
-     either implicitly, because they're already called by an existing
-     test. Or they should be called explicitly, because you added new
-     tests for them.
+   * If a pull request adds new classes or methods, they should be tested,
+     either implicitly, because they're already called by an existing test.
+     Or they should be tested explicitly, because you added new tests for them.
 
-   * We strive for upwards of 100% test coverage (too tedious to hit
-     all branches), but we do not enforce it. In the least, your code
-     should not reduce coverage.
+   * We strive for test coverage in the high-90s (it's too tedious to hit
+     all branches and get 100%), but we do not enforce it.
+     Please provide tests that provide majority coverage of your new code
+     (you can ignore or consider error handling branches less important to
+     cover, but all branches would still be good to test!).
+
+     * Note that, as of early 2020, existing test coverage is no where near
+       100%, so take this guideline with a grain of salt. If existing code
+       coverage improves, the core developers will have more standing to
+       demand the same of contributed code.
 
 3. Commit sensibly.
 
@@ -583,10 +609,20 @@ the following custom rules:
   .. code-block:: Python
 
       if (some_thing
-          and another):
+          and another
           and another_thing):
 
-  instead of this:
+  or write this:
+
+  .. code-block:: Python
+
+      if (
+        some_thing
+        and another
+        and another_thing
+      ):
+
+  but do not write this:
 
   .. code-block:: Python
 
@@ -597,7 +633,7 @@ the following custom rules:
 * *Disabled:* "**W605**: invalid escape sequence".
 
   This rules incorrectly fires on some regex expression,
-  such as ``\d{2}``, so shunned.
+  such as ``\d{2}``, thus, shunned.
 
 There are some unwritten rules (because there are unenforceable by
 the existing linters, by way of not being features), including:
@@ -619,11 +655,10 @@ the existing linters, by way of not being features), including:
   it's a good idea to strive for shorter methods, and it's not all that
   difficult to do, once you develop your own tricks.
 
-  (This author likes to write a long function at first, and then to break
+  (For instance, one could write a long function at first, and then break
   it up into smaller, more coherent pieces, selecting multiple lines of code
-  at once, hitting ``<Tab>`` to indent all lines one stop, and then adding
-  ``def`` lines to each grouping of code, and assigning descriptive method
-  names.)
+  at once, hitting ``<Tab>`` to indent the code one stop, then adding ``def``
+  lines to each grouping of code and assigning descriptive method names.)
 
 * *Prefer* single quotes over double quotes. (This is a loose rule).
 
@@ -647,31 +682,28 @@ the existing linters, by way of not being features), including:
 
   E.g.,: ``def _my_private_method(): ...``.
 
-* Do not worry about Python 2 compatibility.
+* Python 2 compatibility has been retired.
 
-  (It's 2019, and Python 2 end-of-life has been announced for 2020.)
-
-  You may want to mimic these conventions in new code, but it should
-  no longer be necessary to adhere to the following:
+  These conventions are no longer necessary (and were removed from the code):
 
   * Declare the encoding at the top of every file: ``-*- coding: utf-8 -*-``
 
   * Use *absolute_import* and *unicode_literals* from the ``__future__`` package.
 
-  * Use *six.text_type* to cast a Unicode string under Python 2 and 3.
+  * Use *six.text_type* to cast a string (to Unicode).
 
 Of Readability
 --------------
 
-Concerning Writing Tests, Docstrings, Comments, and Documentation:
+Concerning Writing *Tests, Docstrings, Comments, and Documentation*:
 
-* Strive to write code that is self-documenting.
+* Strive to write code that is *self-documenting*.
 
   Use *expressive* variable and methods names (and use long names, if they need to be).
 
-  Break long functions into a bunch of small methods, which forces you to document
-  how the long function works by giving each smaller unit of work a descriptive
-  method name.
+  Break long functions into a collection of shorter methods. This will inherently
+  document how the long function works if you give each smaller unit of work a
+  descriptive method name.
 
   Use well-named, intermediate variables to make code more readable, rather than
   writing a long one-liner. By naming intermediate values, you will provide
@@ -685,6 +717,8 @@ Concerning Writing Tests, Docstrings, Comments, and Documentation:
   time consuming to write (and to read! if you made it this far, dear
   reader!). Written documentation is also likely to become outdated quickly,
   as new code is added and old code is changed, and documents lie in the dust.
+  (Which is not to say that docstrings have no utility! Just that docstrings
+  are essentially worthless if what you documented has no test coverage, say.)
 
 Altogether Now
 --------------
@@ -707,7 +741,8 @@ __ `Pull Request Guidelines`_
 Code of Conduct
 ===============
 
-Please respect and adhere to the `Code of Conduct <code-of-conduct.html>`__.
+Please respect and adhere to the `Code of Conduct <code-of-conduct.html>`__
+(please also read it!).
 
 **🐹appy 🐹amster 🐹acking!!1**
 

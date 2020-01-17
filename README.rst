@@ -29,6 +29,12 @@ nark
 .. |dob| replace:: ``dob``
 .. _dob: https://github.com/hotoffthehamster/dob
 
+.. |dob-rtd| replace:: dob
+.. _dob-rtd: https://dob.readthedocs.io/en/latest/
+
+.. |dobbing| replace:: *dobbing*
+.. _dobbing: https://dob.readthedocs.io/en/latest/usage.html
+
 .. |nark| replace:: ``nark``
 .. _nark: https://github.com/hotoffthehamster/nark
 
@@ -38,15 +44,19 @@ nark
 .. |pip| replace:: ``pip``
 .. _pip: https://pip.pypa.io/en/stable/
 
-Some might call it timesheet software, or dismiss it as simply time tracking,
-but I call it extreme-journaling, a back end framework for thrill-seeking, time
-travelling interval junkies, a/k/a *dobbers*.
+.. |Fact| replace:: *Fact*
+.. _Fact: concepts.html
 
-**NOTE:** You probably want to install the *client application*,
-`dob <https://github.com/hotoffthehamster/dob>`__!
--- Nark is a *support library*.
+nark is a Python 3 support library for (at least one) journaling,
+time tracking, and personal relationship management application(s).
 
-Install with |pip|_::
+nark provides an API for storing, retrieving, and reporting on time interval
+data, aka timesheet or journal entries.
+
+**NOTE:** You probably want to install a *client application*,
+such as |dob-rtd|_ -- nark is usually installed automatically.
+
+But if you want, you can install nark manually with |pip|_::
 
     pip install nark
 
@@ -54,31 +64,31 @@ For other setup options, read the
 `installation guide <https://nark.readthedocs.io/en/latest/installation.html>`__.
 
 =====
-Ethos
+Story
 =====
 
 |nark|_ is inspired by
 `Hamster <https://projecthamster.wordpress.com/>`__,
-a beloved but aged time tracking application for
+the esteemed time tracking application for
 `GNOME <https://en.wikipedia.org/wiki/GNOME>`__.
 
-|nark|_ is
-`Hamster <https://github.com/projecthamster/hamster>`__-compatible.
-Grab your existing Hamster database and start using |nark|_ today!
+|nark|_ is Hamster-friendly.
+`Upgrade your existing database
+<https://dob.readthedocs.io/en/latest/usage.html#upgrade-hamster>`__
+and start |dobbing|_ today!
 
-|nark|_ is a fork of the sensible but incomplete
-modern |hamster-lib|_ code rewrite. Now it's done?
+|nark|_ is a fork of the latent modern |hamster-lib|_ code rewrite.
+The nark developers appreciate such a wonderful starting point!
 
-|nark|_ is plainly a database-agnostic *Fact* storage API.
-It does one thing, (hopefully) well!
+|nark|_ is simply a |Fact|_ storage and reporting API, and does not
+care about the database nor the user interface.
+nark does one thing -- and only one thing -- and hopefully well!
 
-As developers, our goal with |nark|_ is naturally to provide stable,
-reliable code. But we also want to provide easily hackable code. Code
-that is approachable to any Python developer with a few extra minutes
-and a sense of adventure. Code that is welcoming, so that a developer
-who wants to incorporate this tool into their daily workflow will not
-be afraid to bang on it when it breaks, or to patch a new limb on it
-when then see a place for improvement. Or to just trust that it works.
+|nark|_ is developed with the goal that any Python developer -- with
+a few extra minutes and a sense of adventure -- would feel comfortable
+banging on it when it breaks, or adding new features where they see a
+need for improvement. (But hopefully you'll find that nark just works,
+and that it already does what you want!)
 
 ========
 Features
@@ -87,8 +97,8 @@ Features
 * Compatible with all modern Python releases (3.5, 3.6, and 3.7).
 * Naturally Unicode compatible -- spice up your notes!
 * Can migrate legacy Hamster databases (and fix integrity issues, too).
-* Excellent coverage (to give you comfort knowing your Facts are safe).
-* Decent documentation (though really you should learn by doing).
+* Respectable coverage (to give you comfort knowing your Facts are safe).
+* Decent documentation (including a live demo with inline instruction).
 * Comfortable code base (focus on the feature, not on the format).
 * Free and open source -- hack away!
 
@@ -101,7 +111,8 @@ to the project.
 Example
 =======
 
-Create a *Fact* instance from a *Factoid* string:
+This is a simple nark library usage example using the Python interpreter,
+showing how to create a *Fact* instance from a *Factoid* string:
 
 .. code-block:: Bash
 
@@ -120,24 +131,19 @@ Create a *Fact* instance from a *Factoid* string:
     #   activity=Activity(
     #     pk=None
     #     deleted=False,
-    #     hidden=False,
     #     _name='act',
     #     category=Category(
     #       pk=None,
     #       deleted=False,
-    #       hidden=False,
     #       _name='cat',
     #     ),
     #   ),
     #   tags=[Tag(
     #     pk=None,
     #     deleted=False,
-    #     hidden=False,
     #     _name='tag1',
     #   )],
     # )
-
-|
 
 .. image:: https://raw.githubusercontent.com/hotoffthehamster/nark/develop/docs/_static/images/information-cat.png
    :target: https://nark.readthedocs.io/en/latest/authors.html#information-cat

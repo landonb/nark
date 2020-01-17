@@ -2,17 +2,20 @@
 Concepts
 ########
 
+.. |nark| replace:: ``nark``
+.. _nark: https://github.com/hotoffthehamster/nark
+
 .. |hamster-lib| replace:: ``hamster-lib``
 .. _hamster-lib: https://github.com/projecthamster/hamster-lib
 
-This is a high-level, very general overview of basic ``nark`` concepts.
+This is a high-level, very general overview of basic |nark|_ concepts.
 
 (These concepts are essentially the same as those in
 `Legacy Hamster <https://github.com/projecthamster/hamster>`__,
 as well as in the stalled |hamster-lib|_ project.)
 
 Fact
-   The essence of ``nark`` is the *Fact*, an interval of time having a start
+   The essence of |nark|_ is the *Fact*, an interval of time having a start
    time and almost always having an end time (except for the *ongoing Fact*).
    A Fact may also be associated with a specific *Activity*,
    which itself is associated with a specific *Category*.
@@ -20,7 +23,7 @@ Fact
    Also, a Fact has a *Description*.
 
    No two Facts may occupy the same *time window*,
-   i.e., the start-to-end times of 2 different Facts may not overlap.
+   i.e., the start-to-end times of two separate Facts may not overlap.
 
 Factoid
    A *Factoid* is a string representation of a Fact. It can be parsed
@@ -49,10 +52,11 @@ Act\@Gory
    An *Act@Gory* (pronounced "act-eh-gory") is a documentation construct
    for the combined Activity and Category names for a given Fact. It is
    so-called because the ``dob`` CLI parser expects the user to specify
-   the activity with the at symbol. For instance, in the following Factoid,
+   the activity with the *at* (``@``) symbol.
+   For instance, in the following Factoid,
    ``at 08:00: Meeting@Work: I wish I was outside.``,
-   the Act\@Gory is ``Meeting@Work``. (Furthermore, ``Meeting`` is the
-   Activity, and ``Work`` is the Category, obviously).
+   the Act\@Gory is ``Meeting@Work`` (where ``Meeting`` is
+   the Activity and ``Work`` is the Category, naturally).
 
 Tag
    A *tag* is another way to label a Fact other than using an Act\@Gory.
@@ -62,21 +66,22 @@ Tag
    The user can apply more than one Tag to any Fact.
 
    Tags are not associated with any specific Activity or Category.
-   (Though the user could, e.g., search for Facts and restrict to a
-   specific Act\@Gory and specific Tag, so there will be an inherent
-   relationship between Tags and Activities simply by the act of being
-   associated with the same Fact; but outside of Facts themselves, there
-   is no relationship between Tags and Activities, like there is between
-   Activities and Categories).
+
+   - Though the user could, e.g., search for Facts and restrict to a
+     specific Act\@Gory, and to a specific Tag, so there will be an
+     inherent relationship between Tags and Activities simply by their
+     association to the same Fact. But outside of Facts themselves,
+     there is no relationship between Tags and Activities
+     (nor between Tags and Categories).
 
 Musings on Metadata
-   *How does the user know when to use an Activity or when to use a Tag?*
+   *How do I, the user, know when to use an Activity or when to use a Tag?*
 
    Essentially, at its core, a Tag is the same construct as an Act\@Gory:
    It's simply a string associated with a Fact.
 
    As such, a decent end user application will, for instance, enable the user
-   to search for Facts using Tag names just as easily as it will enable the
+   to search for Facts using Tag names just as easily as it will allow the
    user to search for Facts using Act\@Gory names.
 
    Really, what it boils down to is user preference.
@@ -93,17 +98,17 @@ Musings on Metadata
 
 Ongoing Fact
    An *ongoing* (or *endless*) Fact has no end time, and its start time is
-   at or after all other Facts' end times.
+   at or after any (all) other Facts' end times.
 
    There can be at most one ongoing Fact in the data store, and if it exists,
-   it's the latest Fact timewise amongst all others.
+   it's the latest Fact chronologically.
 
    - In Legacy Hamster, the user could save any Fact without an end time.
-     And sometimes the application did so by accident (read: bug).
+     And sometimes the application did so by accident (*read: bug*).
      But having more than one unclosed Fact wreaks havoc when trying to do
      interesting things with the data, such as generating reports, or compiling
-     statistics. So ``nark`` imposes a limit of one such open-ended Fact.
-     Also, when upgrading a legacy database, ``nark`` will close any open Facts
+     statistics. So |nark|_ imposes a limit of one such open-ended Fact.
+     Also, when upgrading a legacy database, |nark|_ will close any open Facts
      it finds (making them *momentaneous* Facts instead).
 
    - In stalled |hamster-lib|_, the ongoing Fact was instead called the

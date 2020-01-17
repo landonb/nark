@@ -5,7 +5,10 @@ Basic Usage
 .. |nark| replace:: ``nark``
 .. _nark: https://github.com/hotoffthehamster/nark
 
-To use nark in a project, import it into your project::
+.. |dob| replace:: ``dob``
+.. _dob: https://github.com/hotoffthehamster/dob
+
+To use nark in a project, import it, e.g.,::
 
     import nark
 
@@ -46,10 +49,14 @@ This is just a taste of the action.
 Because code will naturally outpace any effort to document it, please
 refer to the docstrings documentation in the source for more information.
 
-Or, better yet, look at the code for the reference client, ``dob``,
-to see how best to work with |nark|_. Start by reading the
-`class Controller
-<https://github.com/landonb/dob/blob/develop/dob/controller.py>`__,
-which descends from ``nark.NarkControl``
+.. |class-Controller| replace:: ``class Controller``
+.. _class-Controller: https://github.com/hotoffthehamster/dob/blob/develop/dob/controller.py
+
+.. |class-NarkControl| replace:: ``nark.NarkControl``
+.. _class-NarkControl: https://github.com/hotoffthehamster/nark/blob/develop/nark/control.py
+
+Or, better yet, look at the code for the reference client, |dob|_,
+to see how best to work with |nark|_. Start by reading the |class-Controller|_,
+which descends from |class-NarkControl|_
 and runs through the complete setup process.
 

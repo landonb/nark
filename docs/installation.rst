@@ -30,7 +30,8 @@ To develop on the project, link to the source files instead::
     $ mkvirtualenv -a $(pwd) --python=/usr/bin/python3.6 nark
     $ make develop
 
-To start developing from a fresh terminal, run |workon|_::
+After creating the virtual environment,
+to start developing from a fresh terminal, run |workon|_::
 
     $ workon nark
 
