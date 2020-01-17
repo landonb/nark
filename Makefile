@@ -67,8 +67,14 @@ clean-pyc:
 	find . -name '*~' -exec /bin/rm -f {} +
 	find . -name '__pycache__' -exec /bin/rm -fr {} +
 
+# 2020-01-16: (lb): Remove ignored, because `make docs` not auto-updating, e.g.,
+#   had to `/bin/rm docs/nark.helpers.rst && make docs` to fix compilation warning.
 clean-docs:
 	$(MAKE) -C docs clean BUILDDIR=$(BUILDDIR)
+	git ls-files docs --ignored --exclude-standard --others | while read file; do \
+		echo "Removing: $$file"; \
+		/bin/rm $$file; \
+	done
 
 clean-test:
 	/bin/rm -fr .tox/
