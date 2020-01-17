@@ -26,13 +26,13 @@ import pytest
 from nark.config.log_levels import LOG_LEVELS
 
 
-@pytest.fixture(params=list(LOG_LEVELS.keys()))
+@pytest.fixture(params=list(LOG_LEVELS.keys()) + [123,])
 def log_level_valid_parametrized(request):
     """Return each of the valid log level strings."""
     return request.param
 
 
-@pytest.fixture(params=(None, 123, 'abc', ''))
+@pytest.fixture(params=(None, '123', 'abc', ''))
 def log_level_invalid_parametrized(request):
     """Return selection of invalid log level strings."""
     return request.param
