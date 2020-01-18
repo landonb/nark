@@ -26,7 +26,7 @@ import pytest
 from nark.config.log_levels import LOG_LEVELS
 
 
-@pytest.fixture(params=list(LOG_LEVELS.keys()) + [123,])
+@pytest.fixture(params=list(LOG_LEVELS.keys()) + [123, ])
 def log_level_valid_parametrized(request):
     """Return each of the valid log level strings."""
     return request.param
