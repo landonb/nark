@@ -19,7 +19,6 @@
 
 import gettext
 import importlib
-import sys
 
 from .config import REGISTERED_BACKENDS, decorate_config
 from .helpers import logging as logging_helpers
