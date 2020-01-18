@@ -129,13 +129,15 @@ quickfix:
 	# those we can identify -- to avoid quickfix errorformat hits.
 	sed -r "s#^(.* .*):([0-9]+):#\1∷\2:#" -i .make.out
 
-docs:
+docs: docs-html
+	$(PYBROWSER) docs/_build/html/index.html
+
+docs-html:
 	/bin/rm -f docs/nark.rst
 	/bin/rm -f docs/modules.rst
 	sphinx-apidoc -o docs/ nark
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
-	$(PYBROWSER) docs/_build/html/index.html
 
 isort:
 	isort --recursive setup.py nark/ tests/
