@@ -33,7 +33,7 @@ Contributing
 .. _virtualenvwrapper: https://pypi.org/project/virtualenvwrapper/
 
 .. |user-docs| replace:: user documentation
-.. _user-docs: https://github.com/hotoffthehamster/nark/blob/develop/docs
+.. _user-docs: https://github.com/hotoffthehamster/nark/tree/develop/docs
 
 .. |PEP-257| replace:: PEP 257
 .. _PEP-257: https://www.python.org/dev/peps/pep-0257/

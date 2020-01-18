@@ -2,7 +2,7 @@
 nark
 ####
 
-.. image:: https://travis-ci.com/hotoffthehamster/nark.svg?branch=develop
+.. image:: https://api.travis-ci.com/hotoffthehamster/nark.svg?branch=develop
   :target: https://travis-ci.com/hotoffthehamster/nark
   :alt: Build Status
 
@@ -14,7 +14,7 @@ nark
   :target: https://nark.readthedocs.io/en/latest/
   :alt: Documentation Status
 
-.. image:: https://img.shields.io/github/release/hotoffthehamster/nark.svg?style=flat
+.. image:: https://img.shields.io/github/v/release/hotoffthehamster/nark.svg?style=flat
   :target: https://github.com/hotoffthehamster/nark/releases
   :alt: GitHub Release Status
 
