@@ -47,6 +47,9 @@ requirements = [
     # Platform-specific directory magic.
     #  https://github.com/ActiveState/appdirs
     'appdirs',
+    # Pythonic config @decorator.
+    #  https://github.com/hotoffthehamster/config-decorator
+    'config_decorator >= 0.4.0',
     # Better INI/conf parser (preserves order, comments) than ConfigParser.
     #  https://github.com/DiffSK/configobj
     #  https://configobj.readthedocs.io/en/latest/
