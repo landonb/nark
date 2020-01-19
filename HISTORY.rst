@@ -13,8 +13,8 @@ History
 
 .. :changelog:
 
-3.0.0 (2020-01-18)
-==================
+3.0.0rc1 (2020-01-18)
+=====================
 
 - Documentation improvements.
 
