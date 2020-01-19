@@ -8,17 +8,8 @@ History
 .. |config-decorator| replace:: ``config-decorator``
 .. _config-decorator: https://github.com/hotoffthehamster/config-decorator
 
-.. |nark| replace:: ``nark``
-.. _nark: https://github.com/hotoffthehamster/nark
-
 .. |nark-pypi| replace:: nark
 .. _nark-pypi: https://pypi.org/project/nark/
-
-.. |hamster-lib| replace:: ``hamster-lib``
-.. _hamster-lib: https://github.com/projecthamster/hamster-lib
-
-.. |legacy-hamster| replace:: Legacy Hamster
-.. _legacy-hamster: https://github.com/projecthamster/hamster
 
 .. :changelog:
 
@@ -27,12 +18,9 @@ History
 
 - Documentation improvements.
 
-- Bugfixes and enhancements to support
-  `dob <https://github.com/hotoffthehamster/dob>`__
-  development.
+- Bugfixes and enhancements to support |dob|_ development.
 
-- (Re)moved user settings modules to new project,
-  `config-decorator <https://github.com/hotoffthehamster/config-decorator>`__.
+- (Re)moved user settings modules to new project, |config-decorator|_.
 
 3.0.0a35 (2019-02-24)
 =====================
