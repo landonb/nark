@@ -32,8 +32,8 @@ History
 
   - Bugfixes and features to support |dob|_ development.
 
-3.0.0.beta.1 (2018-06-09)
-=========================
+3.0.0a1 (2018-06-09)
+====================
 
 - Fork from :doc:`hamster-lib <history-hamster-lib>`,
   rename, and release on PyPI as |nark-pypi|_.

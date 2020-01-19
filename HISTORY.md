@@ -5,11 +5,11 @@
 - Documentation improvements.
 
 - Bugfixes and enhancements to support
-  [dob](https://github.com/hotoffthehamster/dob)
-  development.
+[dob](https://github.com/hotoffthehamster/dob)
+development.
 
 - (Re)moved user settings modules to new project,
-  [config-decorator](https://github.com/hotoffthehamster/config-decorator)
+[config-decorator](https://github.com/hotoffthehamster/config-decorator).
 
 ## 3.0.0a35 (2019-02-24)
 
@@ -22,7 +22,7 @@
     [dob](https://github.com/hotoffthehamster/dob)
     development.
 
-## 3.0.0.beta.1 (2018-06-09)
+## 3.0.0a1 (2018-06-09)
 
 - Fork from
   [hamster-lib](https://nark.readthedocs.io/en/latest/history-hamster-lib.html),
