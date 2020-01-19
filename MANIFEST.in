@@ -30,6 +30,8 @@ prune docs/_static
 # Ignore Sphinx-/`make docs`-generated files.
 exclude docs/modules.rst
 recursive-exclude docs nark*.rst
+# Ignore GitHub release CI shim.
+exclude docs/HISTORY.md
 
 include LICENSE
 include Makefile
