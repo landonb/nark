@@ -2,6 +2,12 @@
 History
 #######
 
+.. |dob| replace:: ``dob``
+.. _dob: https://github.com/hotoffthehamster/dob
+
+.. |config-decorator| replace:: ``config-decorator``
+.. _config-decorator: https://github.com/hotoffthehamster/config-decorator
+
 .. |nark| replace:: ``nark``
 .. _nark: https://github.com/hotoffthehamster/nark
 
@@ -19,17 +25,14 @@ History
 3.0.0 (2020-01-18)
 ==================
 
-.. |dob| replace:: ``dob``
-.. _dob: https://github.com/hotoffthehamster/dob
-
-.. |config-decorator| replace:: ``config-decorator``
-.. _config-decorator: https://github.com/hotoffthehamster/config-decorator
-
 - Documentation improvements.
 
-- Bugfixes and enhancements to support |dob|_ development.
+- Bugfixes and enhancements to support
+  `dob <https://github.com/hotoffthehamster/dob>`__
+  development.
 
-- (Re)moved user settings modules to new project, |config-decorator|_.
+- (Re)moved user settings modules to new project,
+  `config-decorator <https://github.com/hotoffthehamster/config-decorator>`__.
 
 3.0.0a35 (2019-02-24)
 =====================
