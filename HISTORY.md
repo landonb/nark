@@ -4,12 +4,9 @@
 
 - Documentation improvements.
 
-- Bugfixes and enhancements to support
-[dob](https://github.com/hotoffthehamster/dob)
-development.
+- Bugfixes and enhancements to support [dob](https://github.com/hotoffthehamster/dob) development.
 
-- (Re)moved user settings modules to new project,
-[config-decorator](https://github.com/hotoffthehamster/config-decorator).
+- (Re)moved user settings modules to new project, [config-decorator](https://github.com/hotoffthehamster/config-decorator).
 
 ## 3.0.0a35 (2019-02-24)
 
