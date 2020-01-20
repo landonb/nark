@@ -31,7 +31,7 @@ prune docs/_static
 exclude docs/modules.rst
 recursive-exclude docs nark*.rst
 # Ignore GitHub release CI shim.
-exclude docs/HISTORY.md
+exclude docs/history-ci.md
 
 include LICENSE
 include Makefile
@@ -49,11 +49,9 @@ graft tests
 # to the --ignore option in the `check-manifest` call in `tox -e manifest`.
 # NOTE: This list ordered like `git ls-files` orders.
 # SCM files:
-exclude .coveragerc
 exclude .editorconfig
 exclude .gitignore
 exclude .ignore.example
-exclude .isort.cfg
 exclude .readthedocs.yml
 exclude .travis.yml
 exclude MANIFEST.in
