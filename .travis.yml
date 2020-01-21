@@ -36,6 +36,7 @@ matrix:
     - env: TOXENV=py35
       python: '3.5'
     # Other tasks run against latest Python.
+    # Upload reports to Codecov.io.
     - env: TOXENV=codecov
       python: '3.7'
     - env: TOXENV=dist_check
