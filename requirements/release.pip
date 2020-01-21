@@ -8,4 +8,6 @@ setuptools_scm
 tox == 3.0.0
 twine >= 1.11.0
 wheel >= 0.31.0
+# (lb): For verifying docs/history-ci.md
+grip >= 4.5.2
 
