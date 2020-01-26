@@ -19,19 +19,20 @@ To install user-local, simply run::
 To install within a |virtualenv|_, try::
 
     $ mkvirtualenv nark
-    $ pip3 install nark
+    (nark) $ pip3 install nark
 
 To develop on the project, link to the source files instead::
 
-    $ deactivate
+    (nark) $ deactivate
     $ rmvirtualenv nark
     $ git clone git@github.com:hotoffthehamster/nark.git
     $ cd nark
     $ mkvirtualenv -a $(pwd) --python=/usr/bin/python3.6 nark
-    $ make develop
+    (nark) $ make develop
 
 After creating the virtual environment,
 to start developing from a fresh terminal, run |workon|_::
 
     $ workon nark
+    (nark) $ ...
 
