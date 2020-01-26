@@ -1,4 +1,14 @@
-# http://editorconfig.org
+# This file exists within 'nark':
+#
+#   https://github.com/hotoffthehamster/nark
+
+# USAGE: Install an http://editorconfig.org plugin; profit.
+#
+#        Consider, for example:
+#
+#        - EditorConfig Vim Plugin
+#
+#          https://github.com/editorconfig/editorconfig-vim
 
 root = true
 

@@ -1,6 +1,6 @@
-####
+@@@@
 nark
-####
+@@@@
 
 .. image:: https://api.travis-ci.com/hotoffthehamster/nark.svg?branch=develop
   :target: https://travis-ci.com/hotoffthehamster/nark
@@ -63,9 +63,9 @@ But if you want, you can install nark manually with |pip|_::
 For other setup options, read the
 `installation guide <https://nark.readthedocs.io/en/latest/installation.html>`__.
 
-=====
+#####
 Story
-=====
+#####
 
 |nark|_ is inspired by
 `Hamster <https://projecthamster.wordpress.com/>`__,
@@ -90,9 +90,9 @@ banging on it when it breaks, or adding new features where they see a
 need for improvement. (But hopefully you'll find that nark just works,
 and that it already does what you want!)
 
-========
+########
 Features
-========
+########
 
 * Compatible with all modern Python releases (3.5, 3.6, and 3.7).
 * Naturally Unicode compatible -- spice up your notes!
@@ -107,9 +107,9 @@ See how you can
 <https://nark.readthedocs.io/en/latest/contributing.html>`__
 to the project.
 
-=======
+#######
 Example
-=======
+#######
 
 This is a simple nark library usage example using the Python interpreter,
 showing how to create a *Fact* instance from a *Factoid* string:

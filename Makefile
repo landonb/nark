@@ -1,3 +1,7 @@
+# This file exists within 'nark':
+#
+#   https://github.com/hotoffthehamster/nark
+
 BUILDDIR = _build
 
 .PHONY: clean-pyc clean-build docs clean

@@ -1,3 +1,7 @@
+# This file exists within 'nark':
+#
+#   https://github.com/hotoffthehamster/nark
+
 # Building/Packaging/Distributing.
 build/
 dist/

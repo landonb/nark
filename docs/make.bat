@@ -1,5 +1,9 @@
 @ECHO OFF
 
+REM This file exists within 'nark':
+REM
+REM   https://github.com/hotoffthehamster/nark
+
 REM Command file for Sphinx documentation
 
 if "%SPHINXBUILD%" == "" (

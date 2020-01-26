@@ -1,3 +1,7 @@
+# This file exists within 'nark':
+#
+#   https://github.com/hotoffthehamster/nark
+
 codecov:
   branch: develop
   # (lb): With setting disable_default_path_fixes, I see:

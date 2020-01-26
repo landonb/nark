@@ -1,4 +1,9 @@
+# This file exists within 'nark':
+#
+#   https://github.com/hotoffthehamster/nark
+
 # USAGE: `/bin/cp .ignore.example .ignore` and personalize.
+
 .git/
 
 *.egg-info/
