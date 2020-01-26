@@ -1,10 +1,12 @@
+# vim:tw=0:ts=2:sw=2:noet:ft=make:
+
 # This file exists within 'nark':
 #
 #   https://github.com/hotoffthehamster/nark
 
-BUILDDIR = _build
+PROJNAME = nark
 
-.PHONY: clean-pyc clean-build docs clean
+BUILDDIR = _build
 
 # DEV: Set BROWSER environ to pick your browser, otherwise webbrowser ignores
 # the system default and goes through its list, which starts with 'mozilla'.
@@ -28,7 +30,20 @@ export BROWSER_PYSCRIPT
 # NOTE: Cannot name BROWSER, else overrides environ of same name.
 PYBROWSER := python -c "$$BROWSER_PYSCRIPT"
 
-help:
+# YOU/DEV: If you want to define your own tasks, add your own Makefile.
+# You could e.g., define a help task extension thusly:
+#
+#   $ echo -e "help-local::\n\t@echo 'More help!'" > Makefile.local
+
+-include Makefile.local
+
+help: help-main help-local
+.PHONY: help
+
+help-local::
+.PHONY: help-local
+
+help-main:
 	@echo "Please choose a target for make:"
 	@echo
 	@echo " Installing and Packaging"
@@ -55,8 +70,17 @@ help:
 	@echo "   test            run tests quickly with the default Python"
 	@echo "   test-all        run tests on every Python version with tox"
 	@echo "   test-one        run tests until the first one fails"
+.PHONY: help-main
+
+venvforce:
+	@if [ -z "${VIRTUAL_ENV}" ]; then \
+		>&2 echo "ERROR: Run from a virtualenv!"; \
+		exit 1; \
+	fi
+.PHONY: venvforce
 
 clean: clean-build clean-pyc clean-test
+.PHONY: clean
 
 clean-build:
 	/bin/rm -fr build/
@@ -64,67 +88,74 @@ clean-build:
 	/bin/rm -fr .eggs/
 	find . -name '*.egg-info' -exec /bin/rm -fr {} +
 	find . -name '*.egg' -exec /bin/rm -f {} +
+.PHONY: clean-build
 
 clean-pyc:
 	find . -name '*.pyc' -exec /bin/rm -f {} +
 	find . -name '*.pyo' -exec /bin/rm -f {} +
 	find . -name '*~' -exec /bin/rm -f {} +
 	find . -name '__pycache__' -exec /bin/rm -fr {} +
+.PHONY: clean-pyc
 
-# 2020-01-16: (lb): Remove ignored, because `make docs` not auto-updating, e.g.,
-#   had to `/bin/rm docs/nark.helpers.rst && make docs` to fix compilation warning.
 clean-docs:
 	$(MAKE) -C docs clean BUILDDIR=$(BUILDDIR)
 	git ls-files docs --ignored --exclude-standard --others | while read file; do \
 		echo "Removing: $$file"; \
 		/bin/rm $$file; \
 	done
+.PHONY: clean-docs
 
 clean-test:
 	/bin/rm -fr .tox/
 	/bin/rm -f .coverage
 	/bin/rm -fr htmlcov/
+.PHONY: clean-test
 
-develop:
+develop: venvforce
 	pip install -U pip setuptools wheel
 	pip install -U -r requirements/dev.pip
 	pip install -U -e .
+.PHONY: develop
 
-lint:
-	flake8 setup.py nark/ tests/
+lint: venvforce
+	flake8 setup.py $(PROJNAME)/ tests/
 	doc8
+.PHONY: lint
 
-test:
-	@echo "Use the PYTEST_ADDOPTS environment variable to add extra command line options."
+test: venvforce test-hint
 	py.test $(TEST_ARGS) tests/
+.PHONY: test
+
+test-all: venvforce
+	tox
+.PHONY: test-all
 
 test-debug: test-local quickfix
+.PHONY: test-debug
 
-test-local:
-	# If you want Make to fail if py.test fails, you want pipefail.
-	# Put this at the top of the Makefile:
-	#     SHELL = /bin/bash -o pipefail
-	# or don't call tasks that pipe from Travis CI (so not false positives).
+test-hint:
+	@echo "Use the PYTEST_ADDOPTS environment variable to add extra command line options."
+.PHONY: test-hint
+
+test-local: venvforce test-hint
+	# (lb): I tried using pipefail to catch failure, but it didn't trip. E.g.,:
+	#           SHELL = /bin/bash
+	#           ...
+	#           test-local:
+	#             set -o pipefail
+	#             py.test ... | tee ...
+	#       Alternatively, we can access the special PIPESTATUS environ instead.
 	py.test $(TEST_ARGS) tests/ | tee .make.out
+	# Express the exit code of py.test, not the tee.
+	exit ${PIPESTATUS[0]}
+.PHONY: test-local
 
-test-all:
-	tox
-
-test-one:
+test-one: venvforce test-hint
 	# You can also obviously: TEST_ARGS=-x make test
 	# See also, e.g.,:
 	#   py.test --pdb -vv -k test_function tests/
 	py.test $(TEST_ARGS) -x tests/
-
-coverage:
-	coverage run -m pytest $(TEST_ARGS) tests
-	coverage report
-
-coverage-html: coverage view-coverage
-	coverage html
-
-view-coverage:
-	$(PYBROWSER) htmlcov/index.html
+.PHONY: test-one
 
 quickfix:
 	# Convert partial paths to full paths, for Vim quickfix.
@@ -132,19 +163,35 @@ quickfix:
 	# Convert double-colons in messages (not file:line:s) -- at least
 	# those we can identify -- to avoid quickfix errorformat hits.
 	sed -r "s#^(.* .*):([0-9]+):#\1∷\2:#" -i .make.out
+.PHONY: quickfix
+
+coverage: venvforce
+	coverage run -m pytest $(TEST_ARGS) tests
+	coverage report
+.PHONY: coverage
+
+coverage-html: coverage view-coverage
+	coverage html
+.PHONY: coverage-html
+
+view-coverage:
+	$(PYBROWSER) htmlcov/index.html
+.PHONY: view-coverage
 
 docs: docs-html
 	$(PYBROWSER) docs/_build/html/index.html
+.PHONY: docs
 
-docs-html:
-	/bin/rm -f docs/nark.rst
+docs-html: venvforce
+	/bin/rm -f docs/$(PROJNAME).rst
 	/bin/rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ nark
+	sphinx-apidoc -o docs/ $(PROJNAME)
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
+.PHONY: docs-html
 
-isort:
-	isort --recursive setup.py nark/ tests/
+isort: venvforce
+	isort --recursive setup.py $(PROJNAME)/ tests/
 	# DX: End files with blank line.
 	git ls-files | while read file; do \
 		if [ -n "$$(tail -n1 $$file)" ]; then \
@@ -155,29 +202,34 @@ isort:
 		fi \
 	done
 	@echo "ça va"
+.PHONY: isort
 
 servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+.PHONY: servedocs
 
-release: clean
+release: venvforce clean
 	python setup.py sdist bdist_wheel
 	twine upload -r pypi -s dist/*
+.PHONY: release
 
-dist: clean
+dist: venvforce clean
 	python setup.py sdist
 	python setup.py bdist_wheel
 	ls -l dist
+.PHONY: dist
 
-install: clean
+install: venvforce clean
 	python setup.py install
+.PHONY: install
 
 CLOC := $(shell command -v cloc 2> /dev/null)
+.PHONY: CLOC
 
 cloc:
 ifndef CLOC
 	$(error "Please install cloc from: https://github.com/AlDanial/cloc")
 endif
-	@cloc --exclude-dir=.git,_build,nark.egg-info,.pytest_cache .
-
-# vim:tw=0:ts=2:sw=2:noet:ft=make:
+	@cloc --exclude-dir=.git,_build,$(PROJNAME).egg-info,.pytest_cache .
+.PHONY: cloc
 
