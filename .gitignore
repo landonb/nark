@@ -10,7 +10,7 @@ dist/
 
 # Byte-compiled/Optimized Python and Library/DLL files.
 *.py[cod]
-__pycache__
+__pycache__/
 
 # Testing and CI tasks.
 .pytest_cache/
@@ -23,32 +23,16 @@ htmlcov/
 # pytest-cov / coverage / https://codecov.io
 coverage.xml
 
-# Created by Sphinx on `make docs`:
-docs/_build
-#docs/modules.rst
-## `make docs` Sphinx autodocs-generated.
-#docs/nark.backends.rst
-#docs/nark.backends.sqlalchemy.managers.rst
-#docs/nark.backends.sqlalchemy.rst
-#docs/nark.config.rst
-#docs/nark.helpers.dev.rst
-#docs/nark.helpers.rst
-#docs/nark.items.rst
-#docs/nark.managers.rst
-#docs/nark.migrations.rst
-#docs/nark.migrations.versions.rst
-#docs/nark.rst
-
-# In lieu of a personalizable, secondary Grep/Silver Searcher/RipGrep ignore,
-# like .gitignore's .git/info/exclude, the repo contains an .ignore.example.
+# Akin to .gitignore's private .git/info/exclude, this repo includes an
+# .ignore.example file DEV might want to copy as .ignore and customize.
 .ignore
 
-# ‘quickfix’ make task for Vim development.
-.make.out
+# Optional private DEV Makefile.
+Makefile.local
+
+# Sphinx docs/ (from `make docs`):
+docs/_build/
 
 # Translations
 *.mo
-
-# (lb): 2019-02-23: I wish I knew what was creating this file, ha!
-pip-wheel-metadata/
 
