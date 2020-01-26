@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # This file exists within 'nark':
 #
 #   https://github.com/hotoffthehamster/nark
