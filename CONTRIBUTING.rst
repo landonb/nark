@@ -8,6 +8,9 @@ Contributing
 .. |nark| replace:: ``nark``
 .. _nark: https://github.com/hotoffthehamster/nark
 
+.. |user-docs| replace:: user documentation
+.. _user-docs: https://github.com/hotoffthehamster/nark/tree/develop/docs
+
 .. |envlist| replace:: ``envlist``
 .. _envlist: https://tox.readthedocs.io/en/latest/config.html#conf-envlist
 
@@ -31,9 +34,6 @@ Contributing
 
 .. |virtualenvwrapper| replace:: ``virtualenvwrapper``
 .. _virtualenvwrapper: https://pypi.org/project/virtualenvwrapper/
-
-.. |user-docs| replace:: user documentation
-.. _user-docs: https://github.com/hotoffthehamster/nark/tree/develop/docs
 
 .. |PEP-257| replace:: PEP 257
 .. _PEP-257: https://www.python.org/dev/peps/pep-0257/
@@ -123,7 +123,8 @@ questions or concerns. Response times may vary depending on season.
 Getting Started
 ===============
 
-Ready to contribute? Here's how to set up |nark|_ for local development.
+Ready to contribute? Here's how to set up |nark|_
+for local development.
 
 *Note:* You might find it helpful to also install |dob|_, so that you
 can develop |nark|_ using a CLI. Otherwise, you'll just be developing against
@@ -135,7 +136,8 @@ Otherwise, if you want just the bare library, continue reading!
 
 1. Fork the |nark|_ repo on GitHub.
 
-   * Visit `<https://github.com/hotoffthehamster/nark>`__ and click *Fork*.
+   * Visit `<https://github.com/hotoffthehamster/nark>`__
+     and click *Fork*.
 
 2. Clone your fork locally.
 
@@ -144,7 +146,8 @@ Otherwise, if you want just the bare library, continue reading!
 
     $ git clone git@github.com:<your_login>/nark.git
 
-3. Install |nark|_ into a Python virtual instance, or |virtualenv|_.
+3. Install |nark|_ into a Python virtual instance,
+   or |virtualenv|_.
 
    First, ensure that you have |virtualenvwrapper|_ installed.
 
@@ -154,7 +157,8 @@ Otherwise, if you want just the bare library, continue reading!
     $ mkvirtualenv -a $(pwd) nark
 
    *Note:* We use the ``-a`` option so that ``cdproject`` changes directories
-   to the ``nark/`` directory when we're in the virtual environment.
+   to the ``nark/`` directory when we're in the virtual
+   environment.
 
    Next, set up your fork for local development::
 
@@ -348,7 +352,8 @@ Otherwise, if you want just the bare library, continue reading!
    .. _rebase_atop_develop:
 
 10. Finally,
-    `submit a pull request <https://github.com/hotoffthehamster/nark/pulls>`_
+    `submit a pull request
+    <https://github.com/hotoffthehamster/nark/pulls>`_
     through the GitHub website.
 
     *Important:* Please rebase your code against ``develop`` and resolve
@@ -428,8 +433,10 @@ Or you can exclude tests using ``not``, e.g., ``-k 'not test_method'``.
 Note that ``readline`` functionality will not work from any breakpoint
 you encounter under ``make test``. (For example, pressing the Up arrow
 will print a control character sequence to the terminal, rather than
-showing the last command you ran.) If you want to interact with the code
-at runtime, run ``py.test`` instead (see next).
+showing the last command you ran.)
+
+* If you want to interact with the code at runtime,
+  run ``py.test`` directly (see next).
 
 If you'd like to break into a debugger when a test fails, run ``pytest``
 directly and have it start the interactive Python debugger on errors::
