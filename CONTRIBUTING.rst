@@ -697,9 +697,11 @@ the existing linters, by way of not being features), including:
 
   * Declare the encoding at the top of every file: ``-*- coding: utf-8 -*-``
 
-  * Use *absolute_import* and *unicode_literals* from the ``__future__`` package.
+  * Import *absolute_import* and *unicode_literals* from the ``__future__`` package.
 
-  * Use *six.text_type* to cast a string (to Unicode).
+  * Import six and use *text_type* to cast a string (to Unicode).
+
+  * Similarly, ``from builtins import str``.
 
 Of Readability
 --------------

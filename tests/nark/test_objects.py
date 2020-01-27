@@ -19,7 +19,6 @@
 
 import copy
 import datetime
-from builtins import str as text
 from operator import attrgetter
 
 import faker as faker_
@@ -128,7 +127,7 @@ class TestCategory(object):
 
     def test__str__(self, category):
         """Test string representation."""
-        assert '{name}'.format(name=category.name) == text(category)
+        assert '{name}'.format(name=category.name) == str(category)
 
     def test__repr__(self, category):
         """Test representation method."""
@@ -272,10 +271,10 @@ class TestActivity(object):
 
     def test__str__without_category(self, activity):
         activity.category = None
-        assert text(activity) == '{name}'.format(name=activity.name)
+        assert str(activity) == '{name}'.format(name=activity.name)
 
     def test__str__with_category(self, activity):
-        assert text(activity) == '{name} ({category})'.format(
+        assert str(activity) == '{name} ({category})'.format(
             name=activity.name, category=activity.category.name)
 
     def test__repr__with_category(self, activity):
@@ -375,7 +374,7 @@ class TestTag(object):
 
     def test__str__(self, tag):
         """Test string representation."""
-        assert '{name}'.format(name=tag.name) == text(tag)
+        assert '{name}'.format(name=tag.name) == str(tag)
 
     def test__repr__(self, tag):
         """Test representation method."""
@@ -871,7 +870,7 @@ class TestFact(object):
             tags=fact.tagnames(),
             description=fact.description,
         )
-        assert text(fact) == expectation
+        assert str(fact) == expectation
 
     def test__str__no_end(self, fact):
         fact.end = None
@@ -883,7 +882,7 @@ class TestFact(object):
             tags=fact.tagnames(),
             description=fact.description,
         )
-        assert text(fact) == expectation
+        assert str(fact) == expectation
 
     def test__str__no_start_no_end(self, fact):
         fact.start = None
@@ -894,7 +893,7 @@ class TestFact(object):
             tags=fact.tagnames(),
             description=fact.description,
         )
-        assert text(fact) == expectation
+        assert str(fact) == expectation
 
     # (lb): It might be nice to do snapshot testing. However, that won't
     # work unless we disable the random string generator we use to make up

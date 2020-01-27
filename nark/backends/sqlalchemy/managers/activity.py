@@ -19,8 +19,6 @@
 
 from gettext import gettext as _
 
-from builtins import str
-
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound

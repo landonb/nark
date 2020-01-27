@@ -19,7 +19,6 @@
 
 from gettext import gettext as _
 
-from builtins import str
 from datetime import datetime
 
 from sqlalchemy import asc, desc, func
