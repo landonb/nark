@@ -36,7 +36,6 @@ from .parse_errors import (
     ParserMissingSeparatorActivity
 )
 from .parse_time import HamsterTimeSpec, parse_datetime_iso8601
-from .strings import comma_or_join
 
 # Profiling: `import dateparser` takes ~ 0.2 seconds.
 dateparser = lazy_import.lazy_module('dateparser')
@@ -705,12 +704,24 @@ class Parser(object):
         raise ParserMissingDatetimeOneException(msg)
 
     def raise_missing_datetime_two(self):
-        sep_str = comma_or_join(DATE_TO_DATE_SEPARATORS__RAW)
-        msg = _(
-            'Expected to find the two datetimes separated by one of: {}.'
-            .format(sep_str)
-        )
-        raise ParserMissingDatetimeTwoException(msg)
+        def _raise_missing_datetime_two():
+            sep_str = comma_or_join(DATE_TO_DATE_SEPARATORS__RAW)
+            msg = _(
+                'Expected to find the two datetimes separated by one of: {}.'
+                .format(sep_str)
+            )
+            raise ParserMissingDatetimeTwoException(msg)
+
+        def comma_or_join(seq):
+            # Need os.linesep or is \n fine?
+            seq = [part.replace('\n', '\\n') for part in seq]
+            if len(seq) > 1:
+                sep_str = '{} or {}'.format(', '.join(seq[:-1]), seq[-1])
+            else:
+                sep_str = seq[0]
+            return sep_str
+
+        _raise_missing_datetime_two()
 
     def raise_missing_separator_activity(self):
         msg = _('Expected to find an "@" indicating the activity.')

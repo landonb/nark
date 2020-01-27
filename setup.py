@@ -20,12 +20,12 @@ from setuptools import find_packages, setup
 
 requirements = [
     # "Very simple Python library for color and formatting in terminal."
-    # Forked (for italic "support") to:
+    # Forked by HOTH (for italic "support"):
     #  https://github.com/hotoffthehamster/ansi-escape-room
-    # Forked from:
+    # Forked from dslackw:
     #  https://gitlab.com/dslackw/colored
-    # See wrapper file:
-    #  nark/helpers/emphasis.py
+    # Used in nark to format log messages, but also installed by dob,
+    #  so not really adding any overhead.
     'ansi-escape-room',
     # Platform-specific directory magic.
     #  https://github.com/ActiveState/appdirs
