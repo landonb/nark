@@ -32,7 +32,7 @@ requirements = [
     'appdirs',
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
-    'config_decorator >= 0.4.0',
+    'config_decorator >= 1.0.0',
     # Better INI/conf parser (preserves order, comments) than ConfigParser.
     #  https://github.com/DiffSK/configobj
     #  https://configobj.readthedocs.io/en/latest/
@@ -40,7 +40,7 @@ requirements = [
     # https://github.com/scrapinghub/dateparser
     'dateparser',
     # Elapsed timedelta formatter, e.g., "1.25 days".
-    'human-friendly_pedantic-timedelta >= 0.0.6',  # Imports as pedantic_timedelta.
+    'human-friendly_pedantic-timedelta >= 1.0.1',  # Imports as pedantic_timedelta.
     # https://github.com/collective/icalendar
     'icalendar',
     # https://bitbucket.org/micktwomey/pyiso8601
