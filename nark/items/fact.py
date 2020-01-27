@@ -17,10 +17,11 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
+from gettext import gettext as _
+
 from collections import namedtuple
 from datetime import datetime
 from operator import attrgetter
-
 
 from ..helpers import fact_time, format_fact, format_time
 from ..helpers.parsing import parse_factoid

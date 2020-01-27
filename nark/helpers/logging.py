@@ -19,6 +19,8 @@
 
 """This module defines logging related function."""
 
+from gettext import gettext as _
+
 import logging
 
 from ansi_escape_room import attr, fg

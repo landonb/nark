@@ -25,6 +25,8 @@ of the setup upon instantiation so all the client needs to do is to call
 ``write_report`` with a list of ``FactTuples`` as arguments.
 """
 
+from gettext import gettext as _
+
 import csv
 import datetime
 import sys

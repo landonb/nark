@@ -19,6 +19,8 @@
 
 """This module provides several time-related convenience functions."""
 
+from gettext import gettext as _
+
 import datetime
 import math
 

@@ -41,6 +41,8 @@ Note:
     cause be added here.
 """
 
+from gettext import gettext as _
+
 # Profiling: Loading sqlalchemy takes about ~ 0.150 secs.
 # (lb): And there's probably not a way to avoid it.
 from sqlalchemy import (

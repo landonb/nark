@@ -19,6 +19,8 @@
 
 """Raw SQLite3 commands to upgrade legacy hamster-applet database."""
 
+from gettext import gettext as _
+
 import logging
 import sqlite3
 

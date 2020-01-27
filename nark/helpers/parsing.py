@@ -19,6 +19,8 @@
 
 """This module provides nark raw fact parsing-related functions."""
 
+from gettext import gettext as _
+
 import logging
 import os
 import re

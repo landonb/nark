@@ -17,6 +17,7 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
+from gettext import gettext as _
 
 from ..helpers.emphasis import attr, colorize, set_coloring
 from ..helpers.strings import format_value_truncate
