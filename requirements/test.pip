@@ -1,25 +1,19 @@
 # Specifies packages for local testing with and without tox,
 # as well as for testing on the CI servers.
 
-# FIXME/2019-02-16: (lb): Try latest versions of these.
-
 # *** Py.Test Framework & Related
 
 # - "pytest: simple powerful testing with Python"
 #
 #   https://docs.pytest.org/en/latest/
-pytest == 3.10.1
-#pytest >= 5.3.4
+pytest >= 5.3.4
 
 # - "Thin-wrapper around the mock package for easier use with py.test"
 #
 #   https://github.com/pytest-dev/pytest-mock/
-pytest-mock == 1.10.1
-#pytest-mock >= 2.0.0
+pytest-mock >= 2.0.0
 
 # *** Coverage
-
-# EXPLAIN/2020-01-26: (lb): Do we need both coverage and pytest-cov?
 
 # - "Code coverage measurement for Python"
 #   2020-01-26: Itself with 94.00% coverage.
@@ -55,8 +49,7 @@ pytest-factoryboy >= 2.0.3
 
 # - "package that generates fake data for you"
 #   https://github.com/FactoryBoy/factory_boy
-Faker == 1.0.2
-#Faker >= 4.0.0
+Faker >= 4.0.0
 #
 # - "Faker integration with the pytest framework."
 #   https://github.com/pytest-dev/pytest-faker

@@ -34,9 +34,7 @@ setuptools_scm >= 3.4.3
 # - "generic virtualenv management and test command line tool"
 #
 #   https://tox.readthedocs.io/en/latest/
-tox == 3.0.0
-#tox == 3.7.0
-#tox >= 3.14.3
+tox >= 3.14.3
 
 # - "Collection of utilities for publishing packages on PyPI"
 #
