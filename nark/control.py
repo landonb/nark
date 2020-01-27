@@ -76,18 +76,30 @@ class NarkControl(object):
         # Profiling: _get_store(): Observed: ~ 0.136 to 0.240 secs.
         self.store = self._get_store()
         self.sql_logger = self._sql_logger()
-        self.for_your_convenience()
 
     def standup_store(self):
         created_fresh = self.store.standup()
         return created_fresh
 
-    def for_your_convenience(self):
-        self.migrations = self.store.migrations
-        self.categories = self.store.categories
-        self.activities = self.store.activities
-        self.tags = self.store.tags
-        self.facts = self.store.facts
+    @property
+    def migrations(self):
+        return self.store.migrations
+
+    @property
+    def categories(self):
+        return self.store.categories
+
+    @property
+    def activities(self):
+        return self.store.activities
+
+    @property
+    def tags(self):
+        return self.store.tags
+
+    @property
+    def facts(self):
+        return self.store.facts
 
     # 2020-01-07: (lb): Only called by 1 test.
     def update_config(self, config):
