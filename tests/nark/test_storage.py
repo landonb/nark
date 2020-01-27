@@ -357,8 +357,6 @@ class TestFactManager:
         with pytest.raises(NotImplementedError):
             basestore.facts._get_all()
 
-    # FIXME: See comment in function docstring: there's a problem with Fact.start
-    #   that's being masked -- for now -- with the (currently) future freeze_time.
     @freeze_time('2019-02-01 18:00')
     @pytest.mark.parametrize('hint', (
         None,
@@ -367,7 +365,6 @@ class TestFactManager:
         datetime.timedelta(seconds=-10),
         datetime.timedelta(minutes=-10),
         datetime.datetime(2019, 2, 1, 19),
-        datetime.datetime(2019, 2, 1, 17, 59),
     ))
     def test_stop_current_fact_with_hint(
         self, basestore, base_config, endless_fact, hint, mocker,
@@ -379,12 +376,21 @@ class TestFactManager:
         a endless_fact with ``Fact.start`` after our mocked today-date. In order to avoid
         confusion the easies fix is to make sure the mock-today is well in the future.
         """
+        now = datetime.datetime.now()  # the freeze_time time, above.
+        if endless_fact.start > now:
+            # (lb): The FactFactory sets start to faker.Faker().date_time(),
+            # which is not constrained in any way (maybe it doesn't return
+            # time from the future?). Here we dial back the start if it's
+            # too far a’future, because then the FactManager will complain
+            # about trying to end the Fact before it started.
+            endless_fact.start = now
         # NOTE: The `fact` fixture simply adds a second Fact to the db, after
         #       having added the endless_fact Fact.
         if hint:
             if isinstance(hint, datetime.datetime):
                 expected_end = hint
             else:
+                # (lb): This operation is same as = now + hint, isn't it.
                 expected_end = datetime.datetime(2019, 2, 1, 18) + hint
         else:
             # NOTE: Because freeze_time, datetime.now() === datetime.utcnow().
@@ -398,6 +404,25 @@ class TestFactManager:
         assert fact_to_be_added.end == expected_end
         fact_to_be_added.end = None
         assert fact_to_be_added == endless_fact
+
+    @freeze_time('2019-02-01 18:00')
+    @pytest.mark.parametrize('hint', (
+        datetime.datetime(2019, 2, 1, 17, 59),
+    ))
+    def test_stop_current_fact_with_end_in_the_past(
+        self, basestore, base_config, endless_fact, hint, mocker,
+    ):
+        """
+        Make sure that stopping an 'ongoing fact' with end before start raises.
+        """
+        # Set start to the freeze_time time, above.
+        endless_fact.start = datetime.datetime.now()
+        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        basestore.facts._add = mocker.MagicMock()
+        with pytest.raises(ValueError):
+            basestore.facts.stop_current_fact(hint)
+        assert basestore.facts.endless.called
+        assert not basestore.facts._add.called
 
     def test_stop_current_fact_invalid_offset_hint(
         self, basestore, endless_fact, mocker,
