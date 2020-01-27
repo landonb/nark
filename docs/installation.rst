@@ -27,7 +27,7 @@ To develop on the project, link to the source files instead::
     $ rmvirtualenv nark
     $ git clone git@github.com:hotoffthehamster/nark.git
     $ cd nark
-    $ mkvirtualenv -a $(pwd) --python=/usr/bin/python3.6 nark
+    $ mkvirtualenv -a $(pwd) --python=/usr/bin/python3.7 nark
     (nark) $ make develop
 
 After creating the virtual environment,
