@@ -13,6 +13,15 @@ History
 
 .. :changelog:
 
+3.0.1 (2020-01-26)
+==================
+
+- Documentation improvements.
+
+- Developer Experience [DX] enhancements.
+
+- Fix issue processing certain error messages.
+
 3.0.0 (2020-01-19)
 ==================
 

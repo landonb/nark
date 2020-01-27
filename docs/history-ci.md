@@ -2,6 +2,14 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.0.1 (2020-01-26)
+
+- Documentation improvements.
+
+- Developer Experience [DX] enhancements.
+
+- Fix issue processing certain error messages.
+
 ## 3.0.0 (2020-01-19)
 
 - Documentation improvements.
