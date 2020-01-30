@@ -19,14 +19,6 @@ nark.helpers.app\_dirs module
    :undoc-members:
    :show-inheritance:
 
-nark.helpers.emphasis module
-----------------------------
-
-.. automodule:: nark.helpers.emphasis
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 nark.helpers.fact\_time module
 ------------------------------
 
@@ -43,10 +35,10 @@ nark.helpers.facts\_fit module
    :undoc-members:
    :show-inheritance:
 
-nark.helpers.format\_fact module
+nark.helpers.format\_text module
 --------------------------------
 
-.. automodule:: nark.helpers.format_fact
+.. automodule:: nark.helpers.format_text
    :members:
    :undoc-members:
    :show-inheritance:
@@ -111,14 +103,6 @@ nark.helpers.singleton module
 -----------------------------
 
 .. automodule:: nark.helpers.singleton
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-nark.helpers.strings module
----------------------------
-
-.. automodule:: nark.helpers.strings
    :members:
    :undoc-members:
    :show-inheritance:
