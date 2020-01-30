@@ -94,7 +94,7 @@ and that it already does what you want!)
 Features
 ########
 
-* Compatible with all modern Python releases (3.5, 3.6, and 3.7).
+* Designed for modern Python releases (3.6, 3.7, and 3.8).
 * Naturally Unicode compatible -- spice up your notes!
 * Can migrate legacy Hamster databases (and fix integrity issues, too).
 * Respectable coverage (to give you comfort knowing your Facts are safe).
