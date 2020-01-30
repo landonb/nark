@@ -89,9 +89,9 @@ setup(
 
     # Specify which package(s) to install.
     # - Without any rules, find_packages returns, e.g.,
-    #     ['release_ghub_pypi', 'tests', 'tests.release_ghub_pypi']
+    #     ['nark', 'tests', 'tests.nark']
     # - With the 'exclude*' rule, this call is essentially:
-    #     packages=['release_ghub_pypi']
+    #     packages=['nark']
     packages=find_packages(exclude=['tests*']),
 
     # Tell setuptools to determine the version

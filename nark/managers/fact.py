@@ -356,6 +356,10 @@ class BaseFactManager(BaseManager):
 
     # ***
 
+    # 2020-01-28: This method only called by nark/tests/. dob replaced its
+    # stop-fact mechanism with add_fact, to handle all the possible stop
+    # scenarios (e.g., specifying an end time or not; appending the endless
+    # fact's description, if it's already got one, etc.).
     def stop_current_fact(self, end_hint=None):
         """
         Stop current 'ongoing fact'.
@@ -431,8 +435,7 @@ class BaseFactManager(BaseManager):
         """
         def _get_current_fact():
             self.store.logger.debug(_("Looking for the 'ongoing fact'."))
-            # 2018-06-09: (lb): Ha! Why did I add endless arg when I had
-            # months ago written an endless() method? Because I forgot!!
+            # See alternatively:
             #   facts = self.get_all(endless=True)
             facts = self.endless()
             ensure_one_or_fewer_ongoing(facts)
