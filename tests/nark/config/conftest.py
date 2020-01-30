@@ -59,8 +59,6 @@ def configobj_instance(request):
     config['time']['allow_momentaneous'] = False
     config['time']['day_start'] = '05:00:00'
     config['time']['fact_min_delta'] = 60
-    config['time']['tz_aware'] = False
-    config['time']['default_tzinfo'] = ''
 
     expectation = {
         'db': {
@@ -85,8 +83,6 @@ def configobj_instance(request):
             # in specific tests and leaving them set to factory defaults here:
             #   'day_start': '',
             #   'fact_min_delta': 0,
-            'tz_aware': 'False',
-            'default_tzinfo': '',
         },
     }
 

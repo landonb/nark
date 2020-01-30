@@ -321,19 +321,22 @@ class NarkConfigurableTime(object):
 
     # ***
 
+    # FIXME/2020-01-28: (lb): This never got implemented...
+
     @property
     @ConfigRoot.setting(
-        _("If True, makes it easier to travel across timezones"
-            " and daylight savings with dob!"),
+        _("Not Implemented."),
+        ephemeral=True,
+        hidden=True,
     )
     def tz_aware(self):
-        # FIXME/2018-06-09: (lb): Implement tzawareness!
-        #   Then maybe this should be default True?
         return False
 
     @property
     @ConfigRoot.setting(
-        _("Default TimeZone when tz_aware is in effect."),
+        _("Not Implemented."),
+        ephemeral=True,
+        hidden=True,
     )
     def default_tzinfo(self):
         return ''
