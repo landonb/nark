@@ -27,8 +27,7 @@ from pytest_factoryboy import register
 
 from nark.control import NarkControl
 from nark.manager import BaseStore
-
-from . import factories
+from nark.tests import factories
 
 register(factories.CategoryFactory)
 register(factories.ActivityFactory)

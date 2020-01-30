@@ -26,15 +26,14 @@ import pytest
 from pytest_factoryboy import register
 
 from nark.config import decorate_config
-
-from .nark import factories as lib_factories
+from nark.tests import factories
 
 # Make factory fixtures, like alchemy_category_factory.
 #   ((lb) At least this is where I think it happens.)
-register(lib_factories.CategoryFactory)
-register(lib_factories.ActivityFactory)
-register(lib_factories.TagFactory)
-register(lib_factories.FactFactory)
+register(factories.CategoryFactory)
+register(factories.ActivityFactory)
+register(factories.TagFactory)
+register(factories.FactFactory)
 
 
 # This fixture is used by ``test_helpers`` and ``test_storage``.
