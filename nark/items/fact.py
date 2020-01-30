@@ -23,7 +23,8 @@ from collections import namedtuple
 from datetime import datetime
 from operator import attrgetter
 
-from ..helpers import fact_time, format_fact, format_time
+from ..helpers import fact_time, format_time
+from ..helpers.format_text import format_value_truncate
 from ..helpers.parsing import parse_factoid
 from .activity import Activity
 from .category import Category
@@ -48,6 +49,7 @@ __all__ = (
 SinceTimeBegan = datetime(1, 1, 1)
 
 
+# FIXME/2020-01-27: #Y10Kbug.
 UntilTimeStops = datetime(9999, 12, 31, 23, 59, 59)
 
 
@@ -157,9 +159,12 @@ class Fact(BaseItem):
         return (self.start, fact_end, fact_pk)
 
     def __str__(self):
-        return format_fact.friendly_str(self)
+        return self.friendly_str()
 
     def __repr__(self):
+        return self.as_kvals()
+
+    def as_kvals(self):
         parts = []
         for key in sorted(self.__dict__.keys()):
             if key == 'name':
@@ -169,10 +174,10 @@ class Fact(BaseItem):
                 val = repr(self.tags_sorted)
             else:
                 # Not that nark knows anything about this, but dob's derived
-                # class, PlaceableFact, has a next_fact and prev_fact pointer.
+                # class, FactDressed, has a next_fact and prev_fact pointer.
                 # To avoid a deadly RecursionError by following pointers of a
                 # doubly-linked list, check that the attribute value is not
-                # another Fact. (For the sake of coupling, PlaceableFact could
+                # another Fact. (For the sake of coupling, FactDressed could
                 # just supply its own __repr__() function, but this function
                 # is already doing a lot, so might as well toss in the kitchen
                 # sink.)
@@ -463,6 +468,8 @@ class Fact(BaseItem):
         except AttributeError:
             return ''
 
+    # +++
+
     @property
     def category(self):
         """Just a convenience shim to underlying category object."""
@@ -475,6 +482,8 @@ class Fact(BaseItem):
             return self.activity.category.name
         except AttributeError:
             return ''
+
+    # +++
 
     @property
     def description(self):
@@ -491,6 +500,14 @@ class Fact(BaseItem):
         else:
             description = None
         self._description = description
+
+    # +++
+
+    def tagnames(self, *args, **kwargs):
+        return self.oid_tags(*args, **kwargs)
+
+    def tagnames_sorted_formatted(self, format_tagname):
+        return [format_tagname(tag) for tag in self.tags_sorted]
 
     def tags_replace(self, tags):
         new_tags = set()
@@ -526,25 +543,178 @@ class Fact(BaseItem):
 
     # ***
 
-    def tagnames(self, *args, **kwargs):
-        return format_fact.tags_inline(self, *args, **kwargs)
+    # ’oid, as in Factoid: these methods help make the friendly, parsable Factoid.
 
-    def tags_inline(self, colorful=False, underlined=False, **kwargs):
-        return format_fact.tags_inline(
-            self, colorful=colorful, underlined=underlined, **kwargs
-        )
+    def oid_colorize(self, oid_part, oid_text):
+        """Returns stylized text for a specific part of the Fact*oid*.
 
-    def tags_tuples(self, colorful=False, underlined=False, **kwargs):
-        return format_fact.tags_tuples(
-            self, colorful=colorful, underlined=underlined, **kwargs
-        )
+        Clients that display Facts where ornamentation matters can override
+        this method. This base class implementation is a no-op.
+        """
+        return oid_text
 
-    # ***
+    def oid_actegory(self, shellify=False, omit_empty_actegory=False):
+        # (lb): We can skip delimiter after time when using ISO 8601.
+        if not self.activity_name:
+            if not self.category_name:
+                act_cat = '' if omit_empty_actegory else '@'
+            else:
+                act_cat = '@{}'.format(self.category_name)
+        else:
+            act_cat = (
+                '{}@{}'.format(
+                    self.activity_name,
+                    self.category_name,
+                )
+            )
+        act_cat = self.oid_colorize('act@gory', act_cat)
+        act_cat = '"{}"'.format(act_cat) if act_cat and shellify else act_cat
+        return act_cat
 
-    def friendly_str(self, *args, **kwargs):
-        return format_fact.friendly_str(self, *args, **kwargs)
+    def oid_description(self, cut_width=None, sep=', '):
+        description = self.description or ''
+        if description:
+            if cut_width is not None:
+                description = format_value_truncate(description, cut_width)
+            description = '{}{}'.format(sep, description)
+        return description
 
-    # ***
+    # (lb): People associate tags with pound signs -- like, #hashtag!
+    # But Bash, and other shells, use octothorpes to start comments.
+    # The user can tell Bash to interpret a pound sign as input by
+    # "#quoting" it, or by \#delimiting it. Hamster also lets the user
+    # use an '@' at symbol instead (not to be confused with typical
+    # social media usage of '@' to refer to other users or people).
+    # By default, this function assumes the tags do not need special
+    # delimiting, and that the pound sign is fine.
+    def oid_tags(
+        self,
+        hashtag_token='#',
+        quote_tokens=False,
+    ):
+        def format_tagname(tag):
+            tagged = '{}{}'.format(
+                self.oid_colorize('#', hashtag_token),
+                self.oid_colorize('tag', tag.name),
+            )
+            tagged = self.oid_colorize('#tag', tagged)
+            if quote_tokens:
+                tagged = '"{}"'.format(tagged)
+            return tagged
+
+        # NOTE: The returned string includes leading space if nonempty!
+        tagnames = ''
+        if self.tags:
+            tagnames = ' '.join(self.tagnames_sorted_formatted(format_tagname))
+        return tagnames
+
+    # +++
+
+    def friendly_str(
+        self,
+        shellify=False,
+        description_sep=': ',
+        tags_sep=': ',
+        localize=False,
+        include_id=False,
+        cut_width=None,
+        show_elapsed=False,
+        omit_empty_actegory=False,
+    ):
+        """
+        Flexible Fact serializer.
+        """
+        def _friendly_str():
+            # MAYBE/2019-01-28: Truncate meta per cut_width or similar.
+            meta = assemble_parts()
+            result = format_result(meta)
+            return result
+
+        def assemble_parts():
+            parts = [
+                get_id_string(),
+                get_times_string(),
+                self.oid_actegory(shellify, omit_empty_actegory),
+            ]
+            parts_str = ' '.join(list(filter(None, parts)))
+            tags = get_tags_string()
+            parts_str += tags_sep + tags if tags else ''
+            parts_str += _(" [del]") if self.deleted else ''
+            return parts_str
+
+        def format_result(meta):
+            result = '{fact_meta}{description}'.format(
+                fact_meta=meta,
+                description=self.oid_description(cut_width, description_sep),
+            )
+            return result
+
+        def get_id_string():
+            if not include_id:
+                return ''
+            # Format the 🏭 🆔 width to be consistent. Assume lifetime of facts?
+            # [ [fact]ory ↑ ↑ ID ]
+            # - 6 digits: 999,999 facts over 100 years would be ~27 facts per day.
+            return self.oid_colorize(
+                'pk',
+                '(🏭 {})'.format(self.pk and '{:6d}'.format(self.pk) or 'None'),
+            )
+
+        def get_times_string():
+            times = ''
+            times += get_times_string_start()
+            times += get_times_string_end(times)
+            times += get_times_duration()
+            return times
+
+        def get_times_string_start():
+            if not self.start:
+                return ''
+            if not self.localize:
+                start_time = self.start_fmt_utc
+            else:
+                start_time = self.start_fmt_local
+            start_time = self.oid_colorize('start', start_time)
+            return start_time
+
+        def get_times_string_end(times):
+            # NOTE: The CLI's DATE_TO_DATE_SEPARATORS[0] is 'to'.
+            prefix = self.oid_colorize('to', ' to ') if times else ''
+            if not self.end:
+                if not times:
+                    end_time = ''
+                else:
+                    # (lb): What's a good term here? '<ongoing>'? Or just 'now'?
+                    end_time = _('<now>')
+            elif not self.localize:
+                end_time = self.end_fmt_utc
+            else:
+                end_time = self.end_fmt_local
+            end_time = self.oid_colorize('end', end_time)
+            return prefix + end_time
+
+        def get_times_duration():
+            if not show_elapsed:
+                return ''
+            duration = ' [{}]'.format(self.format_delta(style=''))
+            return self.oid_colorize('duration', duration)
+
+        def get_tags_string():
+            # (lb): There are three ways to "shellify" a hashtag token:
+            #         1.) "#quote" it;
+            #         2.) \#delimit it; or
+            #         3.) use the inoffensive @ symbol instead of #.
+            # Let's do 1.) by default, because most people associate the pound
+            # sign with tags, because quotes are less offensive than a slash,
+            # and because the @ symbol makes me think of "at'ing someone".
+            #   Nope:  hashtag_token = '@' if shellify else '#'
+            return self.oid_tags(quote_tokens=shellify)
+
+        # ***
+
+        return _friendly_str()
+
+    # +++
 
     def get_serialized_string(self, shellify=False):
         """
@@ -580,7 +750,9 @@ class Fact(BaseItem):
         Returns:
             str: Canonical string encoding all available fact info.
         """
-        return format_fact.friendly_str(self, shellify=shellify)
+        return self.friendly_str(shellify=shellify)
+
+    # +++
 
     @property
     def short(self):
@@ -589,14 +761,10 @@ class Fact(BaseItem):
 
         (lb): Not actually called by any code, but useful for debugging!
         """
-        return format_fact.friendly_str(self, include_id=True, cut_width=39)
-
-    @property
-    def html_notif(self):
-        """
-        A briefer Fact one-liner using HTML. Useful for, e.g., notifier toast.
-        """
-        return format_fact.html_notif(self)
+        # HARDCODED: Truncate description at 39 chars. If this method was
+        # actually used, and not just be a DEV on the PDB prompt, we might
+        # care to move this value to the config, or at least a class attr.
+        return self.friendly_str(include_id=True, cut_width=39)
 
     # ***
 
