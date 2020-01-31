@@ -464,6 +464,40 @@ class BaseFactManager(BaseManager):
 
     # ***
 
+    def find_latest_fact(self, restrict=None):
+        assert not restrict or restrict in ['ended', 'ongoing', ]
+        fact = None
+        if not restrict or restrict == 'ongoing':
+            try:
+                fact = self.get_current_fact()
+            except KeyError:
+                fact = None
+            except Exception as err:
+                # (lb): Unexpected! This could mean more than one ongoing Fact found!
+                raise
+        if fact is None and restrict != 'ongoing':
+            results = self.get_all(
+                sort_col='start', sort_order='desc', limit=1, exclude_ongoing=True,
+            )
+            if len(results) > 0:
+                assert len(results) == 1
+                fact, = results
+        return fact
+
+    # ***
+
+    def find_oldest_fact(self):
+        fact = None
+        results = self.facts.get_all(
+            sort_col='start', sort_order='asc', limit=1,
+        )
+        if len(results) > 0:
+            assert len(results) == 1
+            fact, = results
+        return fact
+
+    # ***
+
     def cancel_current_fact(self, purge=False):
         """
         Delete the current, ongoing, endless Fact. (Really just mark it deleted.)
