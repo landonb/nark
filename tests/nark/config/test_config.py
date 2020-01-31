@@ -139,6 +139,6 @@ class TestConfigObjToBackendConfig(object):
     def test_regular_usecase(self, configobj_instance):
         """Make sure basic mechanics work and int/time types are created."""
         configobj, expectation = configobj_instance
-        result = decorate_config(configobj).as_dict(use_stringify=True)
+        result = decorate_config(configobj).as_dict(unmutated=True)
         assert result == expectation
 
