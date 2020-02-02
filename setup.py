@@ -24,7 +24,7 @@ requirements = [
     #  https://github.com/hotoffthehamster/ansi-escape-room
     # Forked from dslackw:
     #  https://gitlab.com/dslackw/colored
-    # Used in nark to format log messages, but also installed by dob,
+    # Used in nark to format log messages, but also installed by dob(-bright),
     #  so not really adding any overhead.
     'ansi-escape-room',
     # Platform-specific directory magic.
