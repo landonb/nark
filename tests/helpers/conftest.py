@@ -21,22 +21,9 @@
 
 import os
 
-import fauxfactory
 import pytest
 
 from nark.helpers.app_dirs import NarkAppDirs
-
-
-@pytest.fixture
-def filename():
-    """Provide a filename string."""
-    return fauxfactory.gen_utf8()
-
-
-@pytest.fixture
-def filepath(tmpdir, filename):
-    """Provide a fully qualified pathame within our tmp-dir."""
-    return os.path.join(tmpdir.strpath, filename)
 
 
 @pytest.fixture
@@ -111,6 +98,7 @@ def appdirs(mocker, tmpdir):
         'description': 'palimpalum',
     }),
 ])
+# FIXME/2020-01-31: raw_fact_parametrized is not used.
 def raw_fact_parametrized(request):
     """Provide a variety of raw facts as well as a dict of its proper components."""
     return request.param
