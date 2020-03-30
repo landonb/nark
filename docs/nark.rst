@@ -12,6 +12,7 @@ Subpackages
    nark.items
    nark.managers
    nark.migrations
+   nark.tests
 
 Submodules
 ----------
