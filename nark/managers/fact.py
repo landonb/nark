@@ -472,7 +472,7 @@ class BaseFactManager(BaseManager):
                 fact = self.get_current_fact()
             except KeyError:
                 fact = None
-            except Exception as err:
+            except Exception:
                 # (lb): Unexpected! This could mean more than one ongoing Fact found!
                 raise
         if fact is None and restrict != 'ongoing':
