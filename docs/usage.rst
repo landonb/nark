@@ -50,10 +50,10 @@ Because code will naturally outpace any effort to document it, please
 refer to the docstrings documentation in the source for more information.
 
 .. |class-Controller| replace:: ``class Controller``
-.. _class-Controller: https://github.com/hotoffthehamster/dob/blob/develop/dob/controller.py
+.. _class-Controller: https://github.com/hotoffthehamster/dob-bright/blob/master/dob_bright/controller.py
 
 .. |class-NarkControl| replace:: ``nark.NarkControl``
-.. _class-NarkControl: https://github.com/hotoffthehamster/nark/blob/develop/nark/control.py
+.. _class-NarkControl: https://github.com/hotoffthehamster/nark/blob/master/nark/control.py
 
 Or, better yet, look at the code for the reference client, |dob|_,
 to see how best to work with |nark|_. Start by reading the |class-Controller|_,

@@ -27,7 +27,7 @@ Information Cat
 ---------------
 
 .. |infocat| replace:: *Information Cat*
-.. _infocat: https://github.com/hotoffthehamster/nark/blob/develop/docs/_static/images/information-cat.png
+.. _infocat: https://github.com/hotoffthehamster/nark/blob/master/docs/_static/images/information-cat.png
 
 .. |readme-example| replace:: ``README``
 .. _readme-example: index.html#example

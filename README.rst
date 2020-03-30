@@ -23,7 +23,7 @@ nark
   :alt: PyPI Release Status
 
 .. image:: https://img.shields.io/github/license/hotoffthehamster/nark.svg?style=flat
-  :target: https://github.com/hotoffthehamster/nark/blob/develop/LICENSE
+  :target: https://github.com/hotoffthehamster/nark/blob/master/LICENSE
   :alt: License Status
 
 .. |dob| replace:: ``dob``
