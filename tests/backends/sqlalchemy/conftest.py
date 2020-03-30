@@ -267,14 +267,20 @@ def alchemy_config_missing_store_config_parametrized(request, alchemy_config):
 
 
 @pytest.fixture
-@patch('nark.backends.sqlalchemy.storage.create_engine', lambda *args, **kwargs: None)
+@patch('nark.backends.sqlalchemy.storage.create_engine',
+       lambda *args, **kwargs: None)
 @patch('nark.backends.sqlalchemy.objects.metadata.create_all',
        lambda *args, **kwargs: None)
-@patch('migrate.versioning.api.db_version', lambda *args, **kwargs: None)
-@patch('migrate.versioning.api.downgrade', lambda *args, **kwargs: None)
-@patch('migrate.versioning.api.upgrade', lambda *args, **kwargs: None)
-@patch('migrate.versioning.api.version_control', lambda *args, **kwargs: None)
-# (lb): 'migrate.versioning.api.version' more complicated; see with-patch, below.
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.db_version',
+       lambda *args, **kwargs: None)
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.downgrade',
+       lambda *args, **kwargs: None)
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.upgrade',
+       lambda *args, **kwargs: None)
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.version_control',
+       lambda *args, **kwargs: None)
+# (lb): 'sqlalchemy_migrate_hotoffthehamster.versioning.api.version'
+#       is more complicated; see with-patch, below.
 def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     """
     Provide a SQLAlchemyStore that uses our test-session.
@@ -292,7 +298,7 @@ def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     #   https://docs.pytest.org/en/latest/fixture.html#autouse-fixtures-xunit-setup-on-steroids
     store = SQLAlchemyStore(alchemy_config)
     with patch(
-        'migrate.versioning.api.version',
+        'sqlalchemy_migrate_hotoffthehamster.versioning.api.version',
         new_callable=PropertyMock,
     ) as mock_version:
         # return_value does not matter so long as it's an int.

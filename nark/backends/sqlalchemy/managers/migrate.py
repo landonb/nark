@@ -24,9 +24,15 @@ from ....helpers.legacy_db import upgrade_legacy_db_hamster_applet
 from ....managers.migrate import BaseMigrationsManager
 
 # Profiling: Loading `migrate` takes ~ 0.090 seconds.
-migrate_exceptions = lazy_import.lazy_module('migrate.exceptions')
-migrate_versioning_cfgparse = lazy_import.lazy_module('migrate.versioning.cfgparse')
-migrate_versioning_api = lazy_import.lazy_module('migrate.versioning.api')
+migrate_exceptions = lazy_import.lazy_module(
+    'sqlalchemy_migrate_hotoffthehamster.exceptions'
+)
+migrate_versioning_cfgparse = lazy_import.lazy_module(
+    'sqlalchemy_migrate_hotoffthehamster.versioning.cfgparse'
+)
+migrate_versioning_api = lazy_import.lazy_module(
+    'sqlalchemy_migrate_hotoffthehamster.versioning.api'
+)
 
 __all__ = ('MigrationsManager', )
 

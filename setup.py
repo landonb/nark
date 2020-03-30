@@ -71,7 +71,7 @@ requirements = [
     #  https://pypi.org/project/sqlalchemy-migrate/
     #  https://sqlalchemy-migrate.readthedocs.io/en/latest/
     # 2019-02-21: (lb): Forked again! Package alt. that accepts static config.
-    'sqlalchemy-migrate-dob >= 0.12.1',
+    'sqlalchemy-migrate-hotoffthehamster >= 0.13.0, < 1',
     # https://github.com/regebro/tzlocal
     'tzlocal',
 ]

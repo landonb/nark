@@ -19,7 +19,7 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-from migrate.versioning.shell import main
+from sqlalchemy_migrate_hotoffthehamster.versioning.shell import main
 
 
 if __name__ == '__main__':
