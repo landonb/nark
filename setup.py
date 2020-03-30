@@ -26,46 +26,39 @@ requirements = [
     #  https://gitlab.com/dslackw/colored
     # Used in nark to format log messages, but also installed by dob(-bright),
     #  so not really adding any overhead.
-    'ansi-escape-room',
+    'ansi-escape-room >= 1.4.2, < 2',
     # Platform-specific directory magic.
     #  https://github.com/ActiveState/appdirs
-    'appdirs',
+    'appdirs >= 1.4.3, < 2',
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
-    'config_decorator >= 1.0.0',
+    'config_decorator >= 2.0.0, < 3',
     # Better INI/conf parser (preserves order, comments) than ConfigParser.
     #  https://github.com/DiffSK/configobj
     #  https://configobj.readthedocs.io/en/latest/
-    'configobj >= 5.0.6',
+    'configobj >= 5.0.6, < 6',
     # https://github.com/scrapinghub/dateparser
-    'dateparser',
+    'dateparser >= 0.7.4, < 1',
     # Elapsed timedelta formatter, e.g., "1.25 days".
-    'human-friendly_pedantic-timedelta >= 1.0.1',  # Imports as pedantic_timedelta.
+    # - Imports as `pedantic_timedelta`.
+    #  https://github.com/hotoffthehamster/human-friendly_pedantic-timedelta
+    'human-friendly_pedantic-timedelta >= 2.0.0, < 3',
     # https://github.com/collective/icalendar
-    'icalendar',
+    'icalendar >= 4.0.5, < 5',
     # https://bitbucket.org/micktwomey/pyiso8601
-    'iso8601',
+    'iso8601 >= 0.1.12, < 1',
     # https://github.com/mnmelo/lazy_import
-    'lazy_import',
+    'lazy_import >= 0.2.2, < 1',
     # Daylight saving time-aware timezone library.
     #  https://pythonhosted.org/pytz/
-    'pytz',
+    'pytz >= 2019.3',
     # For testing with dateparser,
     #   https://bitbucket.org/mrabarnett/mrab-regex
     #   https://pypi.org/project/regex/
-    # FIXME/2019-02-19 18:13: Latest regex is broken.
-    #   https://pypi.org/project/regex/2019.02.20/
-    #   https://bitbucket.org/mrabarnett/mrab-regex/commits/
-    #       5d8b8bb2b64b696cdbaa7bdc0dce4b462d311134#Lregex_3/regex.pyF400
-    # Because of recent change to import line (was made self-referential):
-    #      .tox/py37/lib/python3.7/site-packages/regex.py:400: in <module>
-    #          import regex._regex_core as _regex_core
-    #      E   ModuleNotFoundError: No module named 'regex._regex_core';
-    #       'regex' is not a package
-    'regex == 2019.02.18',
+    'regex >= 2020.2.20',
+    # FIXME/2019-11-02: (lb): Should (probably) upgrade to SQLalchemy 1.3.
+    #  https://docs.sqlalchemy.org/en/13/changelog/migration_13.html
     # https://www.sqlalchemy.org/
-    # MAYBE/2019-11-02: (lb): Migrate to SQLalchemy 1.3. Until then, stuck on 1.2.
-    # 'sqlalchemy',
     'sqlalchemy >= 1.2.19, < 1.3',
     # Database gooser/versioner.
     #  https://pypi.org/project/sqlalchemy-migrate/
@@ -73,7 +66,7 @@ requirements = [
     # 2019-02-21: (lb): Forked again! Package alt. that accepts static config.
     'sqlalchemy-migrate-hotoffthehamster >= 0.13.0, < 1',
     # https://github.com/regebro/tzlocal
-    'tzlocal',
+    'tzlocal >= 2.0.0, < 3',
 ]
 
 # *** Minimal setup() function -- Prefer using config where possible.
