@@ -43,7 +43,7 @@ __package_name__ = 'nark'
 
 # MAYBE: (lb): This feels like a package one-off... which is exactly
 # what we need, another PyPI package to manage....
-def get_version(ref_file=None, include_head=False):
+def get_version(reference_file=None, include_head=False):
     """Returns the installed package version, or '<none>'.
 
     In lieu of always setting __version__ -- and always loading pkg_resources --
@@ -87,7 +87,7 @@ def get_version(ref_file=None, include_head=False):
         #   return setuptools_scm.get_version(relative_to=__file__)
         # So figure out the root path of the repo. In lieu of something robust,
         # like `git rev-parse --show-toplevel`, look for '.git/' ourselves.
-        cur_path = ref_file or __file__
+        cur_path = reference_file or __file__
         while cur_path and cur_path != os.path.dirname(cur_path):
             cur_path = os.path.dirname(cur_path)
             proj_git = os.path.join(cur_path, '.git')
