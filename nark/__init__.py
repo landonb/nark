@@ -57,6 +57,17 @@ def get_version(ref_file=None, include_head=False):
                 dist_version = '{} ({})'.format(dist_version, repo_version)
         return dist_version
 
+    def version_installed():
+        # - This returns the version most recently pip-installed. That is, if
+        #   you install local sources and have committed code but not run the
+        #   pip-install again, this shows the older version.
+        from pkg_resources import get_distribution, DistributionNotFound
+        try:
+            return get_distribution(__package_name__).version
+        except DistributionNotFound:
+            # This would be really weird, no?
+            return '<none!?>'
+
     def version_from_repo():
         try:
             return version_from_tags()
@@ -87,17 +98,6 @@ def get_version(ref_file=None, include_head=False):
                 return setuptools_scm.get_version(root=cur_path)
         # Not .git/ found. Package probably installed to site-packages/.
         return ''
-
-    def version_installed():
-        # - This returns the version most recently pip-installed. That is, if
-        #   you install local sources and have committed code but not run the
-        #   pip-install again, this shows the older version.
-        from pkg_resources import get_distribution, DistributionNotFound
-        try:
-            return get_distribution(__package_name__).version
-        except DistributionNotFound:
-            # This would be really weird, no?
-            return '<none!?>'
 
     return resolve_vers()
 
