@@ -43,7 +43,7 @@ __package_name__ = 'nark'
 
 # MAYBE: (lb): This feels like a package one-off... which is exactly
 # what we need, another PyPI package to manage....
-def get_version(reference_file=None, include_head=False):
+def get_version(package_name=None, reference_file=None, include_head=False):
     """Returns the installed package version, or '<none>'.
 
     In lieu of always setting __version__ -- and always loading pkg_resources --
@@ -63,7 +63,8 @@ def get_version(reference_file=None, include_head=False):
         #   pip-install again, this shows the older version.
         from pkg_resources import get_distribution, DistributionNotFound
         try:
-            return get_distribution(__package_name__).version
+            distrib_name = package_name or __package_name__
+            return get_distribution(distrib_name).version
         except DistributionNotFound:
             # This would be really weird, no?
             return '<none!?>'
