@@ -49,22 +49,26 @@ def __resolve_vers__():
     """
     def resolve_vers():
         try:
-            import setuptools_scm
-            # For whatever reason, relative_to does not work, (lb) thought it would.
-            #   return setuptools_scm.get_version(relative_to=__file__)
-            pkg_dirname = os.path.dirname(os.path.dirname(__file__))
-            # See if parent directory (of this file) contains .git/.
-            proj_git = os.path.join(pkg_dirname, '.git')
-            if os.path.exists(proj_git):
-                # Get version from setuptools_scm, and git tags.
-                # This is similar to a developer running, e.g.,
-                #   python setup.py --version
-                return setuptools_scm.get_version(root=pkg_dirname)
+            return version_from_tags()
         # Note: Py3.6 adds ModuleNotFoundError; using less specific ImportError.
         except ImportError:
             return version_installed()
         else:
             return '<none>'
+
+    def version_from_tags():
+        # Try to get the version from SCM.
+        import setuptools_scm
+        # For whatever reason, relative_to does not work, (lb) thought it would.
+        #   return setuptools_scm.get_version(relative_to=__file__)
+        pkg_dirname = os.path.dirname(os.path.dirname(__file__))
+        # See if parent directory (of this file) contains .git/.
+        proj_git = os.path.join(pkg_dirname, '.git')
+        if os.path.exists(proj_git):
+            # Get version from setuptools_scm, and git tags.
+            # This is similar to a developer running, e.g.,
+            #   python setup.py --version
+            return setuptools_scm.get_version(root=pkg_dirname)
 
     def version_installed():
         # - This returns the version most recently pip-installed. That is, if
