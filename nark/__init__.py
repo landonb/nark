@@ -48,13 +48,22 @@ def __resolve_vers__():
     use a method to avoid incurring startup costs if the version is not needed.
     """
     def resolve_vers():
+        dist_version = version_installed()
+        repo_version = version_from_repo()
+        if repo_version:
+            dist_version = '{} (HEAD: {})'.format(dist_version, repo_version)
+        return dist_version
+
+    def version_from_repo():
         try:
             return version_from_tags()
         # Note: ModuleNotFoundError in Py3.6+, so using less specific ImportError.
         except ImportError:
-            return version_installed()
-        else:
-            return '<none>'
+            # No setuptools_scm package installed.
+            return ''
+        except LookupError:
+            # Path containing .git/ not a repo after all.
+            return '<none?!>'
 
     def version_from_tags():
         # Try to get the version from SCM. Obvi, this is intended for devs,
