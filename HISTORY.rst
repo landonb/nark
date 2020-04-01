@@ -13,6 +13,11 @@ History
 
 .. :changelog:
 
+3.0.3 (2020-04-01)
+==================
+
+- Update get_version to accept package name.
+
 3.0.2 (2020-04-01)
 ==================
 
