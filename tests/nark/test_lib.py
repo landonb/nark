@@ -21,6 +21,7 @@ import logging
 
 import pytest
 
+from nark import get_version
 from nark.manager import BaseStore
 
 
@@ -64,4 +65,13 @@ class TestController:
         assert isinstance(logger, logging.Logger)
         assert logger.name == 'nark.store'
         assert isinstance(logger.handlers[0], logging.NullHandler)
+
+
+class TestNarkLib:
+    def test_get_version(self):
+        # (lb): Not sure how best to test get_version, because it
+        # behaves differently if setuptools_scm is included or not,
+        # and the version will often be a non-release version, e.g.,
+        # '3.0.2.dev9+gfba2058.d20200401'. For now, just say not empty.
+        assert get_version() != ''
 
