@@ -23,8 +23,8 @@ import os
 import time
 
 __all__ = (
+    'get_version',
     '__package_name__',
-    '__resolve_vers__',
     '__time_0__',
     '__PROFILING__',
 )
@@ -41,7 +41,9 @@ __time_0__ = time.time()
 __package_name__ = 'nark'
 
 
-def __resolve_vers__():
+# MAYBE: (lb): This feels like a package one-off... which is exactly
+# what we need, another PyPI package to manage....
+def get_version(ref_file=None, include_head=False):
     """Returns the installed package version, or '<none>'.
 
     In lieu of always setting __version__ -- and always loading pkg_resources --
@@ -49,9 +51,10 @@ def __resolve_vers__():
     """
     def resolve_vers():
         dist_version = version_installed()
-        repo_version = version_from_repo()
-        if repo_version:
-            dist_version = '{} (HEAD: {})'.format(dist_version, repo_version)
+        if include_head:
+            repo_version = version_from_repo()
+            if repo_version:
+                dist_version = '{} ({})'.format(dist_version, repo_version)
         return dist_version
 
     def version_from_repo():
@@ -73,7 +76,7 @@ def __resolve_vers__():
         #   return setuptools_scm.get_version(relative_to=__file__)
         # So figure out the root path of the repo. In lieu of something robust,
         # like `git rev-parse --show-toplevel`, look for '.git/' ourselves.
-        cur_path = __file__
+        cur_path = ref_file or __file__
         while cur_path and cur_path != os.path.dirname(cur_path):
             cur_path = os.path.dirname(cur_path)
             proj_git = os.path.join(cur_path, '.git')
