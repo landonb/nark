@@ -383,7 +383,8 @@ class TestFactManager:
             # time from the future?). Here we dial back the start if it's
             # too far a’future, because then the FactManager will complain
             # about trying to end the Fact before it started.
-            endless_fact.start = now
+            fmdelta = base_config['time']['fact_min_delta']
+            endless_fact.start = now - datetime.timedelta(seconds=fmdelta)
         # NOTE: The `fact` fixture simply adds a second Fact to the db, after
         #       having added the endless_fact Fact.
         if hint:
