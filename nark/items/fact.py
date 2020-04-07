@@ -126,13 +126,13 @@ class Fact(BaseItem):
         self.split_from = split_from
 
     def __eq__(self, other):
-        if other is not None and not isinstance(other, FactTuple):
+        if isinstance(other, BaseItem):
             other = other.as_tuple()
 
         return self.as_tuple() == other
 
     def equal_sans_end(self, other):
-        if other is not None and not isinstance(other, FactTuple):
+        if isinstance(other, BaseItem):
             other = other.as_tuple(sans_end=True)
 
         return self.as_tuple(sans_end=True) == other
