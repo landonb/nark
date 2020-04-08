@@ -64,7 +64,7 @@ class BaseFactManager(BaseManager):
             # min delta, meaning you could violate fact_min_delta and end up
             # raising from herein. Oh, well, I don't delta, so I don't care.
             if not fact.end:
-                # The ongoing fact.
+                # The ongoing, active fact.
                 return
 
             fact_min_delta = int(self.config['time.fact_min_delta'])
@@ -208,9 +208,9 @@ class BaseFactManager(BaseManager):
                 normalization. The actual backend query is handled by ``_get_all``.
             * ``search_term`` should be prefixable with ``not`` in order to
                 invert matching.
-            * This does only return proper facts and does not include any
-                existing 'ongoing fact'.
-            * This method will *NOT* return facts that start before and end
+            * This only returns completed facts and does not include the
+                active Fact, whether or not it exists.
+            * This method will not return facts that start before *and* end
                 after (e.g. that span more than) the specified timeframe.
         """
         def _get_all_verify_since_until(since, until, **kwargs):
@@ -338,8 +338,8 @@ class BaseFactManager(BaseManager):
             list: List of ``Fact`` instances.
 
         Note:
-            * This does only return proper facts and does not include any
-              existing 'ongoing fact'.
+            * This only returns completed facts and does not include the
+                active Fact, whether or not it exists.
         """
         self.store.logger.debug(_("Returning today's facts"))
 
@@ -362,7 +362,7 @@ class BaseFactManager(BaseManager):
     # fact's description, if it's already got one, etc.).
     def stop_current_fact(self, end_hint=None):
         """
-        Stop current 'ongoing fact'.
+        Stop current 'active fact'.
 
         Args:
             end_hint (datetime.timedelta or datetime.datetime, optional): Hint to be
@@ -379,11 +379,11 @@ class BaseFactManager(BaseManager):
         Raises:
             TypeError: If ``end_hint`` is not a ``datetime.datetime`` or
                 ``datetime.timedelta`` instance or ``None``.
-            ValueError: If there is no currently 'ongoing fact' present.
+            ValueError: If there is no currently 'active fact' present.
             ValueError: If the final end value (due to the hint) is before
                 the fact's start value.
         """
-        self.store.logger.debug(_("Stopping 'ongoing fact'."))
+        self.store.logger.debug(_("Stopping 'active fact'."))
 
         if not (
             (end_hint is None)
@@ -415,7 +415,7 @@ class BaseFactManager(BaseManager):
             new_fact = self.save(fact)
             self.store.logger.debug(_("Current fact is now history!"))
         else:
-            message = _("Trying to stop a non existing ongoing fact.")
+            message = _("Trying to stop a nonexistent active fact.")
             self.store.logger.debug(message)
             raise ValueError(message)
         return new_fact
@@ -427,14 +427,13 @@ class BaseFactManager(BaseManager):
         Provide a way to retrieve any existing 'ongoing fact'.
 
         Returns:
-            nark.Fact: An instance representing our current
-                <ongoing fact>.
+            nark.Fact: An instance representing the <active fact>.
 
         Raises:
             KeyError: If no ongoing fact is present.
         """
         def _get_current_fact():
-            self.store.logger.debug(_("Looking for the 'ongoing fact'."))
+            self.store.logger.debug(_("Looking for the 'active fact'."))
             # See alternatively:
             #   facts = self.get_all(endless=True)
             facts = self.endless()
@@ -456,7 +455,7 @@ class BaseFactManager(BaseManager):
             if facts:
                 return
             # See also: NO_ACTIVE_FACT_HELP
-            message = _("No ongoing Fact found.")
+            message = _("No active Fact found.")
             self.store.logger.debug(message)
             raise KeyError(message)
 
@@ -500,19 +499,20 @@ class BaseFactManager(BaseManager):
 
     def cancel_current_fact(self, purge=False):
         """
-        Delete the current, ongoing, endless Fact. (Really just mark it deleted.)
+        Delete the current, ongoing, endless, active Fact.
+        (Really just mark it deleted.)
 
         Returns:
             None: If everything worked as expected.
 
         Raises:
-            KeyError: If no ongoing fact is present.
+            KeyError: If no ongoing, active fact found.
         """
-        self.store.logger.debug(_("Cancelling 'ongoing fact'."))
+        self.store.logger.debug(_("Cancelling 'active fact'."))
 
         fact = self.get_current_fact()
         if not fact:
-            message = _("Trying to stop a non existing ongoing fact.")
+            message = _("Trying to stop a nonexistent active fact.")
             self.store.logger.debug(message)
             raise KeyError(message)
         self.remove(fact, purge)

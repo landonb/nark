@@ -84,7 +84,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             end = self._get_sql_datetime(fact.end)
             condition = and_(condition, func.datetime(AlchemyFact.start) < end)
         else:
-            # The fact is ongoing, so also match the ongoing Fact in the store.
+            # The fact is ongoing, so match the ongoing (active) Fact in the store.
             # E711: `is None` breaks Alchemy, so use `== None`.
             condition = or_(AlchemyFact.end == None, condition)  # noqa: E711
 

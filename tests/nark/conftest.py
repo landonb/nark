@@ -182,7 +182,7 @@ def not_today_fact(fact_factory):
 
 @pytest.fixture
 def current_fact(fact_factory):
-    """Provide a ``ongoing fact``. That is a fact that has started but not ended yet."""
+    """Provide a ``ongoing fact``, which has a start time but no end time."""
     # MAYBE: Use controller.store.now ?
     return fact_factory(
         start=datetime.datetime.utcnow().replace(microsecond=0),

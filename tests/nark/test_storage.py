@@ -241,8 +241,8 @@ class TestTagManager():
 class TestFactManager:
     def test_save_endless_fact(self, basestore, fact, mocker):
         """
-        Make sure that passing a fact without end (aka 'endless, ongoing fact')
-        triggers the right method.
+        Make sure that passing a fact without end (aka 'endless, ongoing,
+        active fact') triggers the correct method.
         """
         magic_fact = {}
         basestore.facts._add = mocker.MagicMock(return_value=magic_fact)
@@ -480,7 +480,7 @@ class TestFactManager:
         assert fact is fact
 
     def test_get_endless_fact_without_ongoing_fact(self, basestore, mocker):
-        """Make sure that we raise a KeyError if ther is no 'ongoing fact'."""
+        """Make sure that we raise a KeyError if there is no 'ongoing fact'."""
         basestore.facts.endless = mocker.MagicMock(return_value=[])
         fact = basestore.facts.endless()
         assert fact == []

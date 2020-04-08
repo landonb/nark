@@ -684,7 +684,7 @@ class Fact(BaseItem):
                 if not times:
                     end_time = ''
                 else:
-                    # (lb): What's a good term here? '<ongoing>'? Or just 'now'?
+                    # (lb): What's a good term here? '<active>'? Or just 'now'?
                     end_time = _('<now>')
             elif not self.localize:
                 end_time = self.end_fmt_utc
