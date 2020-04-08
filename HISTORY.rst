@@ -23,30 +23,30 @@ History
 3.0.3 (2020-04-01)
 ==================
 
-- Update get_version to accept package name.
+- Improve: Update get_version to accept package name.
 
 3.0.2 (2020-04-01)
 ==================
 
-- Fix issue sometimes emitting incorrect version information.
+- Bugfix: Sometimes emitting incorrect version information.
 
 3.0.1 (2020-03-30)
 ==================
 
-- Documentation improvements.
+- Docs: General improvements.
 
-- Developer Experience [DX] enhancements.
+- DX: General enhancements.
 
-- Fix issue processing certain error messages.
+- Bugfix: Fix issue processing certain error messages.
 
 3.0.0 (2020-01-19)
 ==================
 
-- Documentation improvements.
+- Docs: Some improvements.
 
 - Bugfixes and enhancements to support |dob|_ development.
 
-- (Re)moved user settings modules to new project, |config-decorator|_.
+- Refactor: (Re)moved user settings modules to new project, |config-decorator|_.
 
 3.0.0a35 (2019-02-24)
 =====================
