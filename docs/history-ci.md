@@ -2,6 +2,12 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.0.4 (2020-04-08)
+
+- Bugfix: Update/save Fact broken.
+
+- Docs: Clarify concepts terminology.
+
 ## 3.0.3 (2020-04-01)
 
 - Update get_version to accept package name.

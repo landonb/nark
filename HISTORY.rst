@@ -13,6 +13,13 @@ History
 
 .. :changelog:
 
+3.0.4 (2020-04-08)
+==================
+
+- Bugfix: Update/save Fact broken.
+
+- Docs: Clarify concepts terminology.
+
 3.0.3 (2020-04-01)
 ==================
 
