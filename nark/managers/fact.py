@@ -487,7 +487,7 @@ class BaseFactManager(BaseManager):
 
     def find_oldest_fact(self):
         fact = None
-        results = self.facts.get_all(
+        results = self.get_all(
             sort_col='start', sort_order='asc', limit=1,
         )
         if len(results) > 0:
