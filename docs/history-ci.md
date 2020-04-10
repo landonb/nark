@@ -2,6 +2,10 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.0.5 (2020-04-09)
+
+- Bugfix: Interactive editor `gg` (jump to first Fact) fails.
+
 ## 3.0.4 (2020-04-08)
 
 - Bugfix: Update/save Fact broken.
