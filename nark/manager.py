@@ -117,6 +117,10 @@ class BaseStore(object):
             self._now = self.now_tz_aware()
         return self._now
 
+    def now_refresh(self):
+        self._now = None
+        return self.now
+
     def now_tz_aware(self):
         if self.config['time.tz_aware']:
             # FIXME/2018-05-23: (lb): Tests use utcnow(). Should they honor tz_aware?
