@@ -2,6 +2,10 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.0.6 (2020-04-13)
+
+- API: New method to refresh "now".
+
 ## 3.0.5 (2020-04-09)
 
 - Bugfix: Interactive editor `gg` (jump to first Fact) fails.
