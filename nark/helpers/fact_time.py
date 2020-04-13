@@ -156,11 +156,11 @@ def must_be_datetime_or_relative(dt):
             )
         ):
             raise TypeError(_(
-                'Expected Hamster time string to indicate relative time, not: {}'
+                'Expected time entry to indicate relative time, not: {}'
             ).format(dt))
         return dt
     raise TypeError(_(
-        "Hamster time not `datetime`, relative string, or `None`, but: {}"
+        "Time entry not `datetime`, relative string, or `None`, but: {}"
     ).format(type(dt)))
 
 
