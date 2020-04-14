@@ -129,11 +129,14 @@ def day_end_time(start_time):
 # (lb) See comment atop pattern_date in parse_time about allowing
 #   \d{4} (without :colon). Here's the stricter pattern:
 #    '^(?P<hours>\d{2}):(?P<minutes>\d{2})$'
+# - Note that colons (':') are used to separate parts.
 RE_PATTERN_RELATIVE_CLOCK = re.compile(
     '^(?P<hours>\d{1,2}):?(?P<minutes>\d{2})(:(?P<seconds>\d{2}))?$'
 )
 
 
+# HARDCODED: There's an 'h' and 'm' in this regex.
+# FIXME: (lb): The 'h' and 'm' are not part of i18n, not l10n-friendly.
 RE_PATTERN_RELATIVE_DELTA = re.compile(
     '^(?P<signage>[-+])?((?P<hours>\d+)h)?((?P<minutes>\d{1,2})m?)?$'
 )
