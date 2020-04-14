@@ -160,6 +160,7 @@ class HamsterTimeSpec(object):
             '(?P<relative>([-+]?(\d+h)|[-+](\d+h)?\d+m?))'
         )
 
+        # BEWARE: Does not verify hours and minutes in range 0..59.
         pattern_just_clock = (
             '(?P<clock_time>\d{1,2}:?\d{2}(:\d{2})?)'
         )
@@ -171,6 +172,7 @@ class HamsterTimeSpec(object):
         pattern_date = (
             '(?:(\d{8}|\d{4}-\d{1,2}(-\d{1,2})?))'
         )
+        # BEWARE: Does not verify hours and minutes in range 0..59.
         pattern_time = (  # noqa: E131
             # (lb): We could allow 3-digit times... but, no.
             #   '(?:\d{1,2})'
@@ -212,6 +214,8 @@ class HamsterTimeSpec(object):
         parts = re.split(r' |T', raw_dt)
         if len(parts) != 2:
             return False
+        # BEWARE: RE_PATTERN_RELATIVE_CLOCK does not validate range, e.g., 0..59.
+        # - But this is just an assert, so should not fire anyway.
         assert re.match(RE_PATTERN_RELATIVE_CLOCK, parts[1]) is not None
         return True
 
@@ -233,11 +237,13 @@ def parse_dated(dated, time_now, cruftless=False):
                 '{} “{}”: ‘{}’{} + ‘{}’'
                 .format(msg, dated, str(dt), plus_sep, rest)
             )
-        if dt is None:
+        if dt is not None:
+            parsed_dt = datetime_from_discerned(dated, dt, type_dt)
+        if dt is None or parsed_dt is None:
             raise ParserInvalidDatetimeException(
                 '{}: “{}”'.format(_('Unparseable datetime'), dated)
             )
-        return datetime_from_discerned(dated, dt, type_dt)
+        return parsed_dt
 
     def datetime_from_discerned(dated, dt, type_dt):
         if type_dt == 'datetime':
@@ -245,7 +251,12 @@ def parse_dated(dated, time_now, cruftless=False):
             dt_suss = parse_datetime_iso8601(dt, must=True, local_tz=None)
         # else, relative time, or clock time; let caller handle.
         elif type_dt == 'clock_time':
+            # Note that HamsterTimeSpec.discern is a little lazy and does
+            # not verify the clock time is sane values, e.g., hours and
+            # minutes between 0..59. But parse_clock_time cares.
             clock_time = parse_clock_time(dt)
+            if not clock_time:
+                return None
             dt_suss = datetime_from_clock_prior(time_now, clock_time)
         else:
             assert type_dt == 'relative'

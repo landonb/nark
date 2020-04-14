@@ -207,5 +207,12 @@ def parse_clock_time(clock_time):
             parts['minutes'],
             parts['seconds'] or '0',
         )
+    if (
+        not parsed_ct
+        or (int(parsed_ct[0]) < 0 or int(parsed_ct[0]) > 24)
+        or (int(parsed_ct[1]) < 0 or int(parsed_ct[1]) > 59)
+        or (int(parsed_ct[2]) < 0 or int(parsed_ct[2]) > 59)
+    ):
+        parsed_ct = None
     return parsed_ct
 
