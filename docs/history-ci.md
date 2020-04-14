@@ -2,6 +2,10 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.0.7 (2020-04-14)
+
+- Bugfix: Validate clock time components in range (0..23 or 0..59).
+
 ## 3.0.6 (2020-04-13)
 
 - API: New method to refresh "now".

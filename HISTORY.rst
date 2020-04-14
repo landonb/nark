@@ -13,6 +13,11 @@ History
 
 .. :changelog:
 
+3.0.7 (2020-04-14)
+==================
+
+- Bugfix: Validate clock time components in range (0..23 or 0..59).
+
 3.0.6 (2020-04-13)
 ==================
 
