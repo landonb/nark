@@ -32,6 +32,7 @@ __all__ = (
     'day_end_time',
     'must_be_datetime_or_relative',
     'must_not_start_after_end',
+    'parse_clock_time',
     'RE_PATTERN_RELATIVE_CLOCK',
     'RE_PATTERN_RELATIVE_DELTA',
 )
@@ -194,4 +195,17 @@ def must_not_start_after_end(range_tuple):
         raise ValueError(_("Start after end!"))
 
     return range_tuple
+
+
+def parse_clock_time(clock_time):
+    parsed_ct = None
+    match = RE_PATTERN_RELATIVE_CLOCK.match(clock_time)
+    if match:
+        parts = match.groupdict()
+        parsed_ct = (
+            parts['hours'],
+            parts['minutes'],
+            parts['seconds'] or '0',
+        )
+    return parsed_ct
 

@@ -29,7 +29,8 @@ import lazy_import
 from .fact_time import (
     RE_PATTERN_RELATIVE_CLOCK,
     RE_PATTERN_RELATIVE_DELTA,
-    datetime_from_clock_prior
+    datetime_from_clock_prior,
+    parse_clock_time
 )
 from .parse_errors import ParserInvalidDatetimeException
 
@@ -39,7 +40,6 @@ iso8601 = lazy_import.lazy_module('iso8601')
 __all__ = (
     'HamsterTimeSpec',
     'parse_dated',
-    'parse_clock_time',
     'parse_datetime_iso8601',
     'parse_relative_minutes',
 )
@@ -254,21 +254,6 @@ def parse_dated(dated, time_now, cruftless=False):
         return dt_suss
 
     return _parse_dated()
-
-
-# ***
-
-def parse_clock_time(clock_time):
-    parsed_ct = None
-    match = RE_PATTERN_RELATIVE_CLOCK.match(clock_time)
-    if match:
-        parts = match.groupdict()
-        parsed_ct = (
-            parts['hours'],
-            parts['minutes'],
-            parts['seconds'] or '0',
-        )
-    return parsed_ct
 
 
 # ***
