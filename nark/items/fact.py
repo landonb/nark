@@ -400,7 +400,7 @@ class Fact(BaseItem):
 
         return end_time - self.start
 
-    def format_delta(self, style='%M'):
+    def format_delta(self, style='%M', **kwargs):
         """
         Return a string representation of ``Fact().delta``.
 
@@ -416,7 +416,7 @@ class Fact(BaseItem):
         Returns:
             str: Formatted string representing this fact's *duration*.
         """
-        return format_time.format_delta(self.delta(), style=style)
+        return format_time.format_delta(self.delta(), style=style, **kwargs)
 
     # ***
 

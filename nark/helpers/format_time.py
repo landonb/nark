@@ -125,7 +125,7 @@ def isoformat_tzless(dt, sep='T', timespec='auto'):
 
 # ***
 
-def format_delta(delta, style='%M'):
+def format_delta(delta, style='%M', **kwargs):
     """
     Return a string representation of ``Fact().delta``.
 
@@ -137,6 +137,8 @@ def format_delta(delta, style='%M'):
             * ``'%H:%M'``: As 'hours:minutes'. rounded down.
             * ``HHhMMm``: As '{hours} hour(s) {minutes} minute(s)'.
             * ````: As human friendly time.
+
+        **kwargs (dict): Pass-through params to PedanticTimedelta.
 
     Returns:
         str: Formatted string representing this fact's *duration*.
@@ -174,7 +176,7 @@ def format_delta(delta, style='%M'):
     def format_pedantic(seconds):
         (
             tm_fmttd, tm_scale, tm_units,
-        ) = PedanticTimedelta(seconds=seconds).time_format_scaled()
+        ) = PedanticTimedelta(seconds=seconds).time_format_scaled(**kwargs)
         return tm_fmttd
 
     return _format_delta()
