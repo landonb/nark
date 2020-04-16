@@ -76,7 +76,8 @@ def configobj_instance(request):
             'sql_log_level': 'debug',
         },
         'time': {
-            'allow_momentaneous': 'False',
+            # allow_momentaneous is hidden, so won't show in as_dict, etc.
+            #  'allow_momentaneous': 'False',
             'day_start': '05:00:00',
             'fact_min_delta': '60',
             # MAYBE: (lb): Consider fiddling with day_start and fact_min_delta
