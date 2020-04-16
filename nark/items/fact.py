@@ -518,23 +518,24 @@ class Fact(BaseItem):
                 # Retain existing tags rather than replacing with new Tag()s.
                 # This is useful for clients that compare changes to a Fact,
                 # to avoid a Fact appearing edited when not. For instance, in
-                # clyde, after the user uses the Awesome Prompt, even if they
-                # just open it and quit it, the returned tags is a list of strs.
-                # And clyde sends that strings list to this tags_replace method.
-                # So be sure to look for existing tag matches and use those --
-                # if we built new Tag()s instead, the new tags would have None
-                # for the pk, rather than the ID originally read from the store,
-                # and then the fact would false-positive look edited (dirty).
-                # And then clyde would bug you to save your unedited Fact, etc.
+                # dob-viewer, after the user uses the Awesome Prompt, even if
+                # they just open it and quit it, the returned tags is a list
+                # of strs. And dob-viewer sends that string list to the
+                # tags_replace method. So be sure to look for existing tag
+                # matches and use those -- if we built new Tag()s instead,
+                # the new tags would have None for the pk, rather than the
+                # ID originally read from the store, and then the fact would
+                # false-positive look edited (dirty). And then dob-viewer
+                # would bug you to save your unedited Fact, etc.
                 tag = next(
                     (tag for tag in self.tags if tag.name == tagn),
                     Tag(name=tagn),
                 )
             new_tags.add(tag)
-        # (lb): Do this in one swoop, and be sure to assign a list; when wrapped
-        # by SQLAlchemy, if tried to set to, e.g., set(), complains:
+        # (lb): Do this in one swoop, and be sure to assign a list; when
+        # wrapped by SQLAlchemy, if set to, say, set(), it complains:
         #   TypeError: Incompatible collection type: set is not list-like
-        # (That error is from orm.attribute.CollectionAttributeImpl.set.)
+        # (Via orm.attribute.CollectionAttributeImpl.set.)
         self.tags = list(new_tags)
 
     @property

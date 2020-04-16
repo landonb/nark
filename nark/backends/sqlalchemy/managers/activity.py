@@ -36,7 +36,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
         Args:
             activity (nark.Activity): Activity we want.
-            raw (bool): Wether to return the AlchemyActivity instead.
+            raw (bool): Whether to return the AlchemyActivity instead.
 
         Returns:
             nark.Activity: Activity.
