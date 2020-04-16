@@ -13,6 +13,11 @@ History
 
 .. :changelog:
 
+3.0.8 (2020-04-15)
+==================
+
+- Improve: Let caller set pedantic timedelta precision.
+
 3.0.7 (2020-04-14)
 ==================
 
