@@ -23,17 +23,12 @@ import os
 
 import pytest
 
-from nark.helpers.app_dirs import NarkAppDirs
+from nark.helpers.app_dirs import ensure_directory_exists, NarkAppDirs
 
 
 @pytest.fixture
 def appdirs(mocker, tmpdir):
     """Provide mocked version specific user dirs using a tmpdir."""
-    def ensure_directory_exists(directory):
-        if not os.path.lexists(directory):
-            os.makedirs(directory)
-        return directory
-
     NarkAppDirs.user_config_dir = ensure_directory_exists(os.path.join(
         tmpdir.mkdir('config').strpath, 'nark/'))
     NarkAppDirs.user_data_dir = ensure_directory_exists(os.path.join(

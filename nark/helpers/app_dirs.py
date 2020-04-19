@@ -24,6 +24,7 @@ import appdirs
 from .singleton import Singleton
 
 __all__ = (
+    'ensure_directory_exists',
     'NarkAppDirs',
 )
 
@@ -91,7 +92,7 @@ class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
             roaming=self.roaming,
         )
         if self.create:
-            self._ensure_directory_exists(directory)
+            ensure_directory_exists(directory)
         return directory
 
     @property
@@ -104,7 +105,7 @@ class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
             multipath=self.multipath,
         )
         if self.create:
-            self._ensure_directory_exists(directory)
+            ensure_directory_exists(directory)
         return directory
 
     @property
@@ -117,7 +118,7 @@ class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
             roaming=self.roaming,
         )
         if self.create:
-            self._ensure_directory_exists(directory)
+            ensure_directory_exists(directory)
         return directory
 
     @property
@@ -130,7 +131,7 @@ class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
             multipath=self.multipath,
         )
         if self.create:
-            self._ensure_directory_exists(directory)
+            ensure_directory_exists(directory)
         return directory
 
     @property
@@ -140,7 +141,7 @@ class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
             self.appname, self.appauthor, version=self.version,
         )
         if self.create:
-            self._ensure_directory_exists(directory)
+            ensure_directory_exists(directory)
         return directory
 
     @property
@@ -150,12 +151,13 @@ class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
             self.appname, self.appauthor, version=self.version,
         )
         if self.create:
-            self._ensure_directory_exists(directory)
+            ensure_directory_exists(directory)
         return directory
 
-    def _ensure_directory_exists(self, directory):
-        """Ensure that the passed path exists."""
-        if not os.path.lexists(directory):
-            os.makedirs(directory)
-        return directory
+
+def ensure_directory_exists(directory):
+    """Ensure that the passed path to a directory exists."""
+    if not os.path.lexists(directory):
+        os.makedirs(directory)
+    return directory
 
