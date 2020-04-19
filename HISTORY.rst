@@ -13,6 +13,13 @@ History
 
 .. :changelog:
 
+3.1.0 (2020-04-20)
+==================
+
+- API: De-scope function for broader usage.
+
+- API: Rename function: oid_colorize → oid_stylize.
+
 3.0.8 (2020-04-15)
 ==================
 

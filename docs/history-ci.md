@@ -2,6 +2,12 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.1.0 (2020-04-20)
+
+- API: De-scope function for broader usage.
+
+- API: Rename function: oid_colorize → oid_stylize.
+
 ## 3.0.8 (2020-04-15)
 
 - Improve: Let caller set pedantic timedelta precision.
