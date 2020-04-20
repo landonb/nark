@@ -546,7 +546,7 @@ class Fact(BaseItem):
 
     # ’oid, as in Factoid: these methods help make the friendly, parsable Factoid.
 
-    def oid_colorize(self, oid_part, oid_text):
+    def oid_stylize(self, oid_part, oid_text):
         """Returns stylized text for a specific part of the Fact*oid*.
 
         Clients that display Facts where ornamentation matters can override
@@ -568,7 +568,7 @@ class Fact(BaseItem):
                     self.category_name,
                 )
             )
-        act_cat = self.oid_colorize('act@gory', act_cat)
+        act_cat = self.oid_stylize('act@gory', act_cat)
         act_cat = '"{}"'.format(act_cat) if act_cat and shellify else act_cat
         return act_cat
 
@@ -595,10 +595,10 @@ class Fact(BaseItem):
     ):
         def format_tagname(tag):
             tagged = '{}{}'.format(
-                self.oid_colorize('#', hashtag_token),
-                self.oid_colorize('tag', tag.name),
+                self.oid_stylize('#', hashtag_token),
+                self.oid_stylize('tag', tag.name),
             )
-            tagged = self.oid_colorize('#tag', tagged)
+            tagged = self.oid_stylize('#tag', tagged)
             if quote_tokens:
                 tagged = '"{}"'.format(tagged)
             return tagged
@@ -656,7 +656,7 @@ class Fact(BaseItem):
             # Format the 🏭 🆔 width to be consistent. Assume lifetime of facts?
             # [ [fact]ory ↑ ↑ ID ]
             # - 6 digits: 999,999 facts over 100 years would be ~27 facts per day.
-            return self.oid_colorize(
+            return self.oid_stylize(
                 'pk',
                 '(🏭 {})'.format(self.pk and '{:6d}'.format(self.pk) or 'None'),
             )
@@ -675,12 +675,12 @@ class Fact(BaseItem):
                 start_time = self.start_fmt_utc
             else:
                 start_time = self.start_fmt_local
-            start_time = self.oid_colorize('start', start_time)
+            start_time = self.oid_stylize('start', start_time)
             return start_time
 
         def get_times_string_end(times):
             # NOTE: The CLI's DATE_TO_DATE_SEPARATORS[0] is 'to'.
-            prefix = self.oid_colorize('to', ' to ') if times else ''
+            prefix = self.oid_stylize('to', ' to ') if times else ''
             if not self.end:
                 if not times:
                     end_time = ''
@@ -691,14 +691,14 @@ class Fact(BaseItem):
                 end_time = self.end_fmt_utc
             else:
                 end_time = self.end_fmt_local
-            end_time = self.oid_colorize('end', end_time)
+            end_time = self.oid_stylize('end', end_time)
             return prefix + end_time
 
         def get_times_duration():
             if not show_elapsed:
                 return ''
             duration = ' [{}]'.format(self.format_delta(style=''))
-            return self.oid_colorize('duration', duration)
+            return self.oid_stylize('duration', duration)
 
         def get_tags_string():
             # (lb): There are three ways to "shellify" a hashtag token:
