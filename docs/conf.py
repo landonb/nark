@@ -44,8 +44,6 @@ sys.path.insert(0, project_root)
 # ┃                                                                     ┃
 # ┃ YOU/DEV: Customize this import and these strings for your project.  ┃
 
-import nark
-
 project_dist = 'nark'
 package_name = 'nark'
 project_ghuser = 'hotoffthehamster'
