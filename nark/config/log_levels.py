@@ -68,8 +68,8 @@ def must_verify_log_level(level_name):
         raise ValueError(msg)
     except KeyError:
         msg = _(
-            " (Unrecognized log level value in config: “{}”. Try one of: {}.)"
-        ).format(level_name, ', '.join(this.LOG_LEVELS))
+            " (Unrecognized log level value in config: “{}”. Try one of: ‘{}’.)"
+        ).format(level_name, '’, ‘'.join(this.LOG_LEVELS))
         raise ValueError(msg)
     return log_level
 
