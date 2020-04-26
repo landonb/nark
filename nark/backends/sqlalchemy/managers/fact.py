@@ -514,7 +514,17 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 AlchemyTag.name, magic_tag_sep,
             ).label("facts_tags")
             query = query.add_columns(tags_col)
-            query = query.outerjoin(fact_tags)
+            # (lb): Leaving this breadcrumb for now; feel free to delete later.
+            # - sqlalchemy 1.2.x allowed ambiguous joins and would use the first
+            #   instance of such a join for its ON clause. But sqlalchemy 1.3.x
+            #   requires that you be more specific. Here's the original code:
+            #       query = query.outerjoin(fact_tags)
+            #   and following is (obviously) the new code. Note that this was
+            #   the only place I found code that needed fixing, but I would not
+            #   be surprised to find more. Hence this note-to-self, for later.
+            query = query.outerjoin(
+                fact_tags, AlchemyFact.pk == fact_tags.columns.fact_id,
+            )
             query = query.outerjoin(AlchemyTag)
             query = query.group_by(AlchemyFact.pk)
             # (lb): 2019-01-22: Old comment re: joinedload. Leaving here as

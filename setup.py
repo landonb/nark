@@ -56,10 +56,8 @@ requirements = [
     #   https://bitbucket.org/mrabarnett/mrab-regex
     #   https://pypi.org/project/regex/
     'regex >= 2020.2.20',
-    # FIXME/2019-11-02: (lb): Should (probably) upgrade to SQLalchemy 1.3.
-    #  https://docs.sqlalchemy.org/en/13/changelog/migration_13.html
     # https://www.sqlalchemy.org/
-    'sqlalchemy >= 1.2.19, < 1.3',
+    'sqlalchemy >= 1.3.16, < 1.4',
     # Database gooser/versioner.
     #  https://pypi.org/project/sqlalchemy-migrate/
     #  https://sqlalchemy-migrate.readthedocs.io/en/latest/
