@@ -2,6 +2,10 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.1.1 (2020-04-25)
+
+- Bugfix: Config created by `dob init` crashes subsequent dob commands.
+
 ## 3.1.0 (2020-04-20)
 
 - API: De-scope function for broader usage.

@@ -13,6 +13,11 @@ History
 
 .. :changelog:
 
+3.1.1 (2020-04-25)
+==================
+
+- Bugfix: Config created by ``dob init`` crashes subsequent dob commands.
+
 3.1.0 (2020-04-20)
 ==================
 
