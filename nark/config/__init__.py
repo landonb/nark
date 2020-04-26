@@ -29,7 +29,7 @@ from config_decorator import section, ConfigDecorator
 
 from ..helpers.app_dirs import NarkAppDirs
 
-from .log_levels import get_log_level_safe, must_verify_log_level
+from .log_levels import get_log_level_safe, get_log_name_safe, must_verify_log_level
 
 __all__ = (
     'REGISTERED_BACKENDS',
@@ -195,6 +195,7 @@ class NarkConfigurableDev(object):
             " (using Python logging library levels)"),
         validate=must_verify_log_level,
         conform=get_log_level_safe,
+        recover=get_log_name_safe,
     )
     def lib_log_level(self):
         return 'WARNING'
@@ -205,6 +206,7 @@ class NarkConfigurableDev(object):
             " (using Python logging library levels)"),
         validate=must_verify_log_level,
         conform=get_log_level_safe,
+        recover=get_log_name_safe,
     )
     def sql_log_level(self):
         return 'WARNING'
