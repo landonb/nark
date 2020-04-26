@@ -325,7 +325,9 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                 agg_cols.append(time_col)
 
                 query = self.store.session.query(AlchemyTag, count_col, time_col)
-                query = query.join(fact_tags)
+                query = query.join(
+                    fact_tags, AlchemyTag.pk == fact_tags.columns.tag_id,
+                )
                 query = query.join(AlchemyFact)
 
             return query, agg_cols
