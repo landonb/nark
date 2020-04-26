@@ -13,6 +13,11 @@ History
 
 .. :changelog:
 
+3.2.1 (2020-04-26)
+==================
+
+- Bugfix: Additional sqlalchemy 1.3 support.
+
 3.2.0 (2020-04-26)
 ==================
 
