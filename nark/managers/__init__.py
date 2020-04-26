@@ -91,6 +91,7 @@ class BaseManager(object):
         self.store.logger.debug(_("'{}' has been received.".format(item)))
 
         # NOTE: Not assuming that PK is an int, i.e., not testing '> 0'.
+        #       (Also, if pk really 0, this raises ValueError.)
         if item.pk or item.pk == 0:
             result = self._update(item, **kwargs)
         else:
