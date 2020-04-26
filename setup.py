@@ -32,7 +32,7 @@ requirements = [
     'appdirs >= 1.4.3, < 2',
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
-    'config_decorator >= 2.0.10, < 2.1',
+    'config_decorator >= 2.0.12, < 2.1',
     # Better INI/conf parser (preserves order, comments) than ConfigParser.
     #  https://github.com/DiffSK/configobj
     #  https://configobj.readthedocs.io/en/latest/
