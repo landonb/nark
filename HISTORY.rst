@@ -13,6 +13,11 @@ History
 
 .. :changelog:
 
+3.2.0 (2020-04-26)
+==================
+
+- Bugfix: Windows support, aka upgrade to sqlalchemy 1.3.
+
 3.1.1 (2020-04-25)
 ==================
 

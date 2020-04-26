@@ -2,6 +2,10 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
+## 3.2.0 (2020-04-26)
+
+- Bugfix: Windows support, aka upgrade to sqlalchemy 1.3.
+
 ## 3.1.1 (2020-04-25)
 
 - Bugfix: Config created by `dob init` crashes subsequent dob commands.
