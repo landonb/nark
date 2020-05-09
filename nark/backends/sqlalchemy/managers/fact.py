@@ -364,6 +364,11 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
+    def get_all(self, *args, **kwargs):
+        return super(FactManager, self).get_all(*args, **kwargs)
+
+    # ***
+
     def _get_all(
         self,
         endless=False,
