@@ -445,7 +445,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_prepare_joins(query)
 
-            query = _get_all_filter_partial(query)
+            query = self.get_all_filter_partial(
+                query, since=since, until=until, endless=endless, partial=partial,
+            )
 
             query = _get_all_filter_by_activity(query)
 
@@ -557,60 +559,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query = query.outerjoin(AlchemyFact.activity)  # Same as: AlchemyActivity
             if (category is not False) or search_term:
                 query = query.outerjoin(AlchemyCategory)
-            return query
-
-        def _get_all_filter_partial(query):
-            fmt_since = self._get_sql_datetime(since) if since else None
-            fmt_until = self._get_sql_datetime(until) if until else None
-            if partial:
-                query = _get_partial_overlaps(query, fmt_since, fmt_until)
-            else:
-                query = _get_complete_overlaps(query, fmt_since, fmt_until, endless)
-            return query
-
-        def _get_partial_overlaps(query, since, until):
-            """Return all facts where either start or end falls within the timeframe."""
-            if since and not until:
-                # (lb): Checking AlchemyFact.end >= since is sorta redundant,
-                # because AlchemyFact.start >= since should guarantee that.
-                query = query.filter(
-                    or_(
-                        func.datetime(AlchemyFact.start) >= since,
-                        func.datetime(AlchemyFact.end) >= since,
-                    ),
-                )
-            elif not since and until:
-                # (lb): Checking AlchemyFact.start <= until is sorta redundant,
-                # because AlchemyFact.end <= until should guarantee that.
-                query = query.filter(
-                    or_(
-                        func.datetime(AlchemyFact.start) <= until,
-                        func.datetime(AlchemyFact.end) <= until,
-                    ),
-                )
-            elif since and until:
-                query = query.filter(or_(
-                    and_(
-                        func.datetime(AlchemyFact.start) >= since,
-                        func.datetime(AlchemyFact.start) <= until,
-                    ),
-                    and_(
-                        func.datetime(AlchemyFact.end) >= since,
-                        func.datetime(AlchemyFact.end) <= until,
-                    ),
-                ))
-            else:
-                pass
-            return query
-
-        def _get_complete_overlaps(query, since, until, endless=False):
-            """Return all facts with start and end within the timeframe."""
-            if since:
-                query = query.filter(func.datetime(AlchemyFact.start) >= since)
-            if until:
-                query = query.filter(func.datetime(AlchemyFact.end) <= until)
-            elif endless:
-                query = query.filter(AlchemyFact.end == None)  # noqa: E711
             return query
 
         def _get_all_filter_by_activity(query):
@@ -734,21 +682,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             direction(AlchemyFact.pk),
         )
         return query
-
-    # ***
-
-    def _get_sql_datetime(self, datetm):
-        # Be explicit with the format used by the SQL engine, otherwise,
-        #   e.g., and_(AlchemyFact.start > start) might match where
-        #   AlchemyFact.start == start. In the case of SQLite, the stored
-        #   date will be translated with the seconds, even if 0, e.g.,
-        #   "2018-06-29 16:32:00", but the datetime we use for the compare
-        #   gets translated without, e.g., "2018-06-29 16:32". And we
-        #   all know that "2018-06-29 16:32:00" > "2018-06-29 16:32".
-        # See also: func.datetime(AlchemyFact.start/end).
-        cmp_fmt = '%Y-%m-%d %H:%M:%S'
-        text = datetm.strftime(cmp_fmt)
-        return text
 
     # ***
 
