@@ -239,16 +239,23 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         return result
 
     def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
-        """Get all tags."""
+        """
+        Get all tags, with filtering and sorting options.
+
+        Returns:
+            list: List of all Tags present in the database,
+                  ordered by lower(name), or most recently
+                  used; possibly filtered by a search term.
+        """
         kwargs['include_usage'] = include_usage
         kwargs['sort_col'] = sort_col
-        return self._get_all(*args, **kwargs)
+        return super(TagManager, self).get_all(*args, **kwargs)
 
     def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
         assert(not args)
         kwargs['include_usage'] = True
         kwargs['sort_col'] = sort_col
-        return self._get_all(*args, **kwargs)
+        return super(TagManager, self).get_all(*args, **kwargs)
 
     def _get_all(
         self,
@@ -257,6 +264,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         # FIXME/2018-06-20: (lb): Implement since/until.
         since=None,
         until=None,
+        endless=False,
+        partial=False,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
         deleted=False,
         hidden=False,
@@ -287,6 +296,10 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
             query, agg_cols = _get_all_start_query()
 
+            query = self.get_all_filter_partial(
+                query, since=since, until=until, endless=endless, partial=partial,
+            )
+
             query = _get_all_filter_by_activity(query)
 
             query = _get_all_filter_by_category(query)
@@ -313,18 +326,18 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
         def _get_all_start_query():
             agg_cols = []
-            if not include_usage:
+            if not (include_usage or since or until or endless):
                 query = self.store.session.query(AlchemyTag)
             else:
-                count_col = func.count(AlchemyTag.pk).label('uses')
-                agg_cols.append(count_col)
-
-                time_col = func.sum(
-                    func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
-                ).label('span')
-                agg_cols.append(time_col)
-
-                query = self.store.session.query(AlchemyTag, count_col, time_col)
+                if include_usage:
+                    count_col = func.count(AlchemyTag.pk).label('uses')
+                    agg_cols.append(count_col)
+                    time_col = func.sum(
+                        func.julianday(AlchemyFact.end)
+                        - func.julianday(AlchemyFact.start)
+                    ).label('span')
+                    agg_cols.append(time_col)
+                    query = self.store.session.query(AlchemyTag, count_col, time_col)
                 query = query.join(
                     fact_tags, AlchemyTag.pk == fact_tags.columns.tag_id,
                 )

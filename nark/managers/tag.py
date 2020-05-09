@@ -179,32 +179,3 @@ class BaseTagManager(BaseManager):
         """
         raise NotImplementedError
 
-    # ***
-
-    def get_all(
-        self,
-        include_usage=True,
-        count_results=False,
-        since=None,
-        until=None,
-        deleted=False,
-        hidden=False,
-        key=None,
-        search_term='',
-        activity=False,
-        category=False,
-        sort_col='',
-        sort_order='',
-        limit='',
-        offset='',
-    ):
-        """
-        Get all tags, with filtering and sorting options.
-
-        Returns:
-            list: List of all Tags present in the database,
-                  ordered by lower(name), or most recently
-                  used; possibly filtered by a search term.
-        """
-        raise NotImplementedError
-

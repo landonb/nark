@@ -31,6 +31,7 @@ from gettext import gettext as _
 import datetime
 
 from ..items.item_base import BaseItem
+from ..helpers.parse_time import parse_dated
 
 __all__ = ('BaseManager', )
 
@@ -158,6 +159,9 @@ class BaseManager(object):
                     since=since, until=until
                 )
             )
+            # Convert the since and until time strings to datetimes.
+            since = parse_dated(since, self.store.now) if since else None
+            until = parse_dated(until, self.store.now) if until else None
             since_dt = _get_all_verify_since(since)
             until_dt = _get_all_verify_until(until)
             if since_dt and until_dt and (until_dt <= since_dt):

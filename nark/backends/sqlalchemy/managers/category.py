@@ -232,17 +232,24 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
+    # ***
+
     def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
-        """Get all activities."""
+        """
+        Return a list of all categories.
+
+        Returns:
+            list: List of ``Categories``, ordered by ``lower(name)``.
+        """
         kwargs['include_usage'] = include_usage
         kwargs['sort_col'] = sort_col
-        return self._get_all(*args, **kwargs)
+        return super(CategoryManager, self).get_all(*args, **kwargs)
 
     def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
         assert(not args)
         kwargs['include_usage'] = True
         kwargs['sort_col'] = sort_col
-        return self._get_all(*args, **kwargs)
+        return super(CategoryManager, self).get_all(*args, **kwargs)
 
     # DRY: This fcn. very much similar between activity/category/tag.
     def _get_all(
@@ -252,6 +259,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         # FIXME/2018-06-20: (lb): Implement since/until.
         since=None,
         until=None,
+        endless=False,
+        partial=False,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden. [i.e., in UI]
         deleted=False,
         hidden=False,
@@ -280,6 +289,10 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
             query, agg_cols = _get_all_start_query()
 
+            query = self.get_all_filter_partial(
+                query, since=since, until=until, endless=endless, partial=partial,
+            )
+
             query = _get_all_filter_by_activity(query)
 
             query = _get_all_filter_by_search_term(query)
@@ -307,21 +320,21 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         def _get_all_start_query():
             agg_cols = []
             if (
-                not include_usage
+                not (include_usage or since or until or endless)
                 and not activity
                 and sort_col not in ['start', 'activity', ]
             ):
                 query = self.store.session.query(AlchemyCategory)
             else:
-                count_col = func.count(AlchemyCategory.pk).label('uses')
-                agg_cols.append(count_col)
-
-                time_col = func.sum(
-                    func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
-                ).label('span')
-                agg_cols.append(time_col)
-
-                query = self.store.session.query(AlchemyFact, count_col, time_col)
+                if include_usage:
+                    count_col = func.count(AlchemyCategory.pk).label('uses')
+                    agg_cols.append(count_col)
+                    time_col = func.sum(
+                        func.julianday(AlchemyFact.end)
+                        - func.julianday(AlchemyFact.start)
+                    ).label('span')
+                    agg_cols.append(time_col)
+                    query = self.store.session.query(AlchemyFact, count_col, time_col)
                 query = query.join(AlchemyFact.activity)
                 query = query.join(AlchemyCategory)
 

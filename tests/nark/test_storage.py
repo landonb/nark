@@ -332,12 +332,17 @@ class TestFactManager:
             basestore.facts.get_all(since, until)
 
     @pytest.mark.parametrize(('since', 'until'), [
+        # (lb): This test used to cause TypeError, because get_all used to not
+        # parse the input, but expected datetime objects instead. So the string
+        # values in the parameters here would trigger TypeError. But now the
+        # parsing is part of get_all (because DRY), so now we test ValueError.
+        # - Note that since > until here, so ValueError, and tests mixed types.
         (datetime.date(2015, 4, 5), '2012-03-04'),
         ('2015-04-05 18:00:00', '2012-03-04 19:00:00'),
     ])
     def test_get_all_invalid_date_types(self, basestore, mocker, since, until):
-        """Test that we throw an exception if we recieve invalid date/time objects."""
-        with pytest.raises(TypeError):
+        """Test that we throw an exception if we receive invalid date/time objects."""
+        with pytest.raises(ValueError):
             basestore.facts.get_all(since, until)
 
     @freeze_time('2015-10-03 14:45')

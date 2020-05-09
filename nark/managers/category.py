@@ -187,29 +187,3 @@ class BaseCategoryManager(BaseManager):
         """
         raise NotImplementedError
 
-    # ***
-
-    def get_all(
-        self,
-        include_usage=True,
-        count_results=False,
-        since=None,
-        until=None,
-        deleted=False,
-        hidden=False,
-        key=None,
-        search_term='',
-        activity=False,
-        sort_col='',
-        sort_order='',
-        limit='',
-        offset='',
-    ):
-        """
-        Return a list of all categories.
-
-        Returns:
-            list: List of ``Categories``, ordered by ``lower(name)``.
-        """
-        raise NotImplementedError
-

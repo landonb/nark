@@ -198,53 +198,6 @@ class BaseActivityManager(BaseManager):
 
     # ***
 
-    def get_all(
-        self,
-        include_usage=True,
-        count_results=False,
-        since=None,
-        until=None,
-        deleted=False,
-        hidden=False,
-        key=None,
-        search_term='',
-        category=False,
-        activity=False,
-        sort_col='',
-        sort_order='',
-        limit='',
-        offset='',
-    ):
-        """
-        Return all matching activities.
-
-        Args:
-            category (nark.Category, optional): Limit activities to this category.
-                Defaults to ``False``. If ``category=None`` only activities without a
-                category will be considered.
-            search_term (str, optional): Limit activities to those matching this string
-                a substring in their name. Defaults to ``empty string``.
-
-        Returns:
-            list: List of ``nark.Activity`` instances matching constrains.
-                This list is ordered by ``Activity.name``.
-
-        Note:
-            * This method combines legacy ``storage.db.__get_activities`` and
-                ``storage.db.____get_category_activities``.
-            * Can search terms be prefixed with 'not'?
-            * Original implementation in ``nark.storage.db.__get_activities`` returns
-                activity names converted to lowercase!
-            * Does exclude activities with ``deleted=True``.
-        """
-        # [FIXME]
-        # ``__get_category_activity`` order by lower(activity.name),
-        # ``__get_activities```orders by most recent start date *and*
-        # lower(activity.name).
-        raise NotImplementedError
-
-    # ***
-
     def get_all_by_usage(
         self,
         deleted=False,

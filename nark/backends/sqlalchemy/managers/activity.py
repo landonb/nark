@@ -303,17 +303,40 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         self.store.logger.debug(_("Returning: {!r}.".format(result)))
         return result
 
+    # ***
+
     def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
-        """Get all activities."""
+        """
+        Return all matching activities.
+
+        Args:
+            category (nark.Category, optional): Limit activities to this category.
+                Defaults to ``False``. If ``category=None`` only activities without a
+                category will be considered.
+            search_term (str, optional): Limit activities to those matching this string
+                a substring in their name. Defaults to ``empty string``.
+
+        Returns:
+            list: List of ``nark.Activity`` instances matching constrains.
+                This list is ordered by ``Activity.name``.
+
+        Note:
+            * This method combines legacy ``storage.db.__get_activities`` and
+                ``storage.db.____get_category_activities``.
+            * Can search terms be prefixed with 'not'?
+            * Original implementation in ``nark.storage.db.__get_activities`` returns
+                activity names converted to lowercase!
+            * Does exclude activities with ``deleted=True``.
+        """
         kwargs['include_usage'] = include_usage
         kwargs['sort_col'] = sort_col
-        return self._get_all(*args, **kwargs)
+        return super(ActivityManager, self).get_all(*args, **kwargs)
 
     def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
         assert(not args)
         kwargs['include_usage'] = True
         kwargs['sort_col'] = sort_col
-        return self._get_all(*args, **kwargs)
+        return super(ActivityManager, self).get_all(*args, **kwargs)
 
     def _get_all(
         self,
@@ -322,6 +345,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # FIXME/2018-06-20: (lb): Implement since/until.
         since=None,
         until=None,
+        endless=False,
+        partial=False,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
         deleted=False,
         hidden=False,
@@ -376,6 +401,10 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
             query, agg_cols = _get_all_start_query()
 
+            query = self.get_all_filter_partial(
+                query, since=since, until=until, endless=endless, partial=partial,
+            )
+
             query = _get_all_filter_by_category(query)
 
             query = _get_all_filter_by_activity(query)
@@ -398,18 +427,18 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
         def _get_all_start_query():
             agg_cols = []
-            if not include_usage:
+            if not (include_usage or since or until or endless):
                 query = self.store.session.query(AlchemyActivity)
             else:
-                count_col = func.count(AlchemyActivity.pk).label('uses')
-                agg_cols.append(count_col)
-
-                time_col = func.sum(
-                    func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
-                ).label('span')
-                agg_cols.append(time_col)
-
-                query = self.store.session.query(AlchemyFact, count_col, time_col)
+                if include_usage:
+                    count_col = func.count(AlchemyActivity.pk).label('uses')
+                    agg_cols.append(count_col)
+                    time_col = func.sum(
+                        func.julianday(AlchemyFact.end)
+                        - func.julianday(AlchemyFact.start)
+                    ).label('span')
+                    agg_cols.append(time_col)
+                    query = self.store.session.query(AlchemyFact, count_col, time_col)
                 query = query.join(AlchemyFact.activity)
                 # NOTE: (lb): SQLAlchemy will lazy load category if/when caller
                 #       references it. (I tried using query.options(joinedload(...))
