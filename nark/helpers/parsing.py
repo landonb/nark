@@ -25,8 +25,6 @@ import logging
 import os
 import re
 
-import lazy_import
-
 from .parse_errors import (
     ParserException,
     ParserInvalidDatetimeException,
@@ -35,11 +33,7 @@ from .parse_errors import (
     ParserMissingDatetimeTwoException,
     ParserMissingSeparatorActivity
 )
-from .parse_time import HamsterTimeSpec, parse_datetime_iso8601
-
-# Profiling: `import dateparser` takes ~ 0.2 seconds.
-dateparser = lazy_import.lazy_module('dateparser')
-
+from .parse_time import HamsterTimeSpec, parse_datetime_human, parse_datetime_iso8601
 
 __all__ = (
     'parse_factoid',
@@ -651,33 +645,8 @@ class Parser(object):
         return the_datetime
 
     def hydrate_datetime_friendly(self, datepart, must=False):
-        settings = {
-            # PREFER_DATES_FROM:    defaults to current_period.
-            #                       Options are future or past.
-            # SUPPORT_BEFORE_COMMON_ERA: defaults to False.
-            # PREFER_DAY_OF_MONTH:  defaults to current.
-            #                       Could be first and last day of month.
-            # SKIP_TOKENS:          defaults to [‘t’]. Can be any string.
-            # TIMEZONE:             defaults to UTC. Can be timezone abbrev
-            #                       or any of tz database name as given here:
-            #     https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-            # RETURN_AS_TIMEZONE_AWARE: return tz aware datetime objects in
-            #                       case timezone is detected in the date string.
-            # RELATIVE_BASE:        count relative date from this base date.
-            #                       Should be datetime object.
-
-            # FIXME/2018-05-22 20:46: (lb): Use RELATIVE_BASE to support
-            # friendlies relative to other time, e.g.,
-            #       `from 1 hour ago to 2018-05-22 20:47`
-
-            'RETURN_AS_TIMEZONE_AWARE': False,
-        }
-        if self.local_tz:
-            # NOTE: Uses machine-local tz, unless TIMEZONE set.
-            settings['RETURN_AS_TIMEZONE_AWARE'] = True
-            settings['TIMEZONE'] = self.local_tz
-
-        parsed = dateparser.parse(datepart, settings=settings)
+        # MAYBE/2020-05-09: (lb): Add time_now to human parse?
+        parsed = parse_datetime_human(datepart, local_tz=self.local_tz)
 
         if not parsed:
             parsed = None

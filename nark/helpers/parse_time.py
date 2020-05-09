@@ -34,6 +34,9 @@ from .fact_time import (
 )
 from .parse_errors import ParserInvalidDatetimeException
 
+# Profiling: `import dateparser` takes ~ 0.2 seconds.
+dateparser = lazy_import.lazy_module('dateparser')
+
 # Profiling: load iso8601: ~ 0.004 secs.
 iso8601 = lazy_import.lazy_module('iso8601')
 
@@ -222,7 +225,6 @@ class HamsterTimeSpec(object):
 
 # ***
 
-# FIXME: Use this fcn. to support relative/clock-time --since/--until.
 def parse_dated(dated, time_now, cruftless=False):
     """"""
     def _parse_dated():
@@ -237,9 +239,13 @@ def parse_dated(dated, time_now, cruftless=False):
                 '{} “{}”: ‘{}’{} + ‘{}’'
                 .format(msg, dated, str(dt), plus_sep, rest)
             )
+        parsed_dt = None
         if dt is not None:
             parsed_dt = datetime_from_discerned(dated, dt, type_dt)
-        if dt is None or parsed_dt is None:
+        if parsed_dt is None:
+            # FIXME/2020-05-09: Time zone awareness. Use local_tz.
+            parsed_dt = parse_datetime_human(dated, time_now, local_tz=False)
+        if parsed_dt is None:
             raise ParserInvalidDatetimeException(
                 '{}: “{}”'.format(_('Unparseable datetime'), dated)
             )
@@ -257,6 +263,12 @@ def parse_dated(dated, time_now, cruftless=False):
             clock_time = parse_clock_time(dt)
             if not clock_time:
                 return None
+
+            # FIXME/2020-05-09 13:08: Use day_start here? (Or otherwise address issue
+            # where clock time near now gets set nearly 24 hours later, not what user
+            # meant.
+            #            day_start = self.config['time.day_start']
+
             dt_suss = datetime_from_clock_prior(time_now, clock_time)
         else:
             assert type_dt == 'relative'
@@ -265,6 +277,58 @@ def parse_dated(dated, time_now, cruftless=False):
         return dt_suss
 
     return _parse_dated()
+
+
+# ***
+
+def parse_datetime_human(datepart, time_now=None, local_tz=False):
+    # For settings def, see:
+    #   dateparser/dateparser_data/settings.py
+    #   https://github.com/scrapinghub/dateparser/blob/master/docs/usage.rst#settings
+    settings = {
+        # PREFER_DATES_FROM:    defaults to current_period.
+        #                       Options are future or past.
+        # SUPPORT_BEFORE_COMMON_ERA: defaults to False.
+        # PREFER_DAY_OF_MONTH:  defaults to current.
+        #                       Could be first and last day of month.
+        # SKIP_TOKENS:          defaults to [‘t’]. Can be any string.
+        # TIMEZONE:             defaults to UTC. Can be timezone abbrev
+        #                       or any of tz database name as given here:
+        #     https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        # RETURN_AS_TIMEZONE_AWARE: return tz aware datetime objects in
+        #                       case timezone is detected in the date string.
+        # RELATIVE_BASE:        count relative date from this base date.
+        #                       Should be datetime object.
+        # Defaults:
+        #  'PREFER_DATES_FROM': 'current_period',
+        #  'PREFER_DAY_OF_MONTH': 'current',
+        #  'SKIP_TOKENS': ["t"],
+        #  'SKIP_TOKENS_PARSER': ["t", "year", "hour", "minute"],
+        #  'TIMEZONE': 'local',
+        #  'TO_TIMEZONE': False,
+        #  'RETURN_AS_TIMEZONE_AWARE': 'default',
+        #  'NORMALIZE': True,
+        #  'RELATIVE_BASE': False,
+        #  'DATE_ORDER': 'MDY',
+        #  'PREFER_LOCALE_DATE_ORDER': True,
+        #  'FUZZY': False,
+        #  'STRICT_PARSING': False,
+        #  'RETURN_TIME_AS_PERIOD': False,
+        #  'PARSERS': default_parsers,
+        # FIXME/2018-05-22: (lb): Use RELATIVE_BASE to support
+        #                   friendlies relative to other time, e.g.,
+        #                       `from 1 hour ago to 2018-05-22 20:47`
+        'RETURN_AS_TIMEZONE_AWARE': False,
+    }
+    if time_now:
+        settings['RELATIVE_BASE'] = time_now
+    if local_tz:
+        # NOTE: Uses machine-local tz, unless TIMEZONE set.
+        settings['RETURN_AS_TIMEZONE_AWARE'] = True
+        settings['TIMEZONE'] = local_tz
+
+    parsed = dateparser.parse(datepart, settings=settings)
+    return parsed
 
 
 # ***
