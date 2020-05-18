@@ -144,7 +144,10 @@ def format_delta(delta, style='%M', **kwargs):
         str: Formatted string representing this fact's *duration*.
     """
     def _format_delta():
-        seconds = delta.total_seconds() if delta is not None else 0
+        try:
+            seconds = delta.total_seconds()
+        except AttributeError:
+            seconds = delta if delta is not None else 0
         if not style:
             return format_pedantic(seconds)
         elif style == '%M':
