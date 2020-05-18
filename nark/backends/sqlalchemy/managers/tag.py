@@ -265,6 +265,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         since=None,
         until=None,
         endless=False,
+        # FIXME/2020-05-09: (lb): I don't see partial ever being True.
         partial=False,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
         deleted=False,

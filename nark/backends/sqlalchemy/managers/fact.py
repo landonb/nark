@@ -372,12 +372,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
     def _get_all(
         self,
         endless=False,
+        # FIXME/2020-05-09: (lb): I don't see partial ever being True.
         partial=False,
         include_usage=False,
         count_results=False,
         since=None,
         until=None,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
+        # FIXME/2020-05-16: (lb): Remove deleted/hidden....
         deleted=False,
         search_term='',
         activity=False,
