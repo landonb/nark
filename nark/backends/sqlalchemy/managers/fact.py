@@ -21,7 +21,7 @@ from gettext import gettext as _
 
 from datetime import datetime
 
-from sqlalchemy import asc, desc, func
+from sqlalchemy import asc, case, desc, func
 from sqlalchemy.sql.expression import and_, or_
 
 from . import BaseAlchemyManager, query_apply_limit_offset, query_apply_true_or_not
@@ -369,6 +369,17 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
+    RESULT_GRP_INDEX = {
+        'duration': 0,
+        'group_count': 1,
+        'first_start': 2,
+        'final_end': 3,
+        'activities': 4,
+        'actegories': 5,
+    }
+
+    # ***
+
     def _get_all(
         self,
         endless=False,
@@ -384,6 +395,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         search_term='',
         activity=False,
         category=False,
+        group_activity=False,
+        group_category=False,
+        group_tags=False,
         sort_col='',
         sort_order='',
         raw=False,
@@ -437,6 +451,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         """
         magic_tag_sep = '%%%%,%%%%'
 
+        is_grouped = group_activity or group_category or group_tags
+
+        i_duration = FactManager.RESULT_GRP_INDEX['duration']
+        i_group_count = FactManager.RESULT_GRP_INDEX['group_count']
+        i_first_start = FactManager.RESULT_GRP_INDEX['first_start']
+        i_final_end = FactManager.RESULT_GRP_INDEX['final_end']
+        i_activities = FactManager.RESULT_GRP_INDEX['activities']
+        i_actegories = FactManager.RESULT_GRP_INDEX['actegories']
+
         def _get_all_facts():
             message = _(
                 'since: {} / until: {} / srch_term: {} / srt_col: {} / srt_ordr: {}'
@@ -448,7 +471,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = self.store.session.query(AlchemyFact)
 
-            query, span_col = _get_all_prepare_span_col(query)
+            query, span_cols = _get_all_prepare_span_cols(query)
+
+            query, grouping_cols = _get_all_prepare_grouping_cols(query)
 
             query, tags_col = _get_all_prepare_tags_col(query)
 
@@ -468,11 +493,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_filter_by_ongoing(query)
 
-            query = _get_all_order_by(query, span_col)
+            query = _get_all_group_by(query)
+
+            query = _get_all_order_by(query, span_cols)
 
             query = query_apply_limit_offset(query, **kwargs)
 
-            query = _get_all_with_entities(query, span_col, tags_col)
+            query = _get_all_with_entities(query, span_cols, grouping_cols, tags_col)
 
             self.store.logger.debug(_('query: {}'.format(str(query))))
 
@@ -481,7 +508,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             else:
                 # Profiling: 2018-07-15: (lb): ~ 0.120 s. to fetch latest of 20K Facts.
                 records = query.all()
-                results = _process_results(records, span_col, tags_col)
+                results = _process_results(records)
 
             return results
 
@@ -501,32 +528,165 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _process_results(records, span_col, tags_col):
-            if span_col is None and tags_col is None:
-                if raw:
-                    return records
-                else:
-                    return [fact.as_hamster(self.store) for fact in records]
-
-            results = []
-            for fact, *cols in records:
-                new_tags = None
-                if not lazy_tags:
-                    tags = cols.pop()
-                    new_tags = tags.split(magic_tag_sep) if tags else []
-
+        def _process_results(records):
+            # MAGIC_NUMBER: Check any record (0) to see if any aggregate columns
+            # exist or not -- if length is 1, it's just the Fact, no aggregates.
+            if not records or len(records[0]) == 1:
                 if not raw:
-                    new_fact = fact.as_hamster(self.store, new_tags)
-                else:
-                    if new_tags:
-                        fact.tags = new_tags
-                    new_fact = fact
+                    records = [fact.as_hamster(self.store) for fact in records]
+                return records, None
 
-                if len(cols):
-                    results.append((new_fact, *cols))
-                else:
-                    results.append(new_fact)
-            return results
+            return _process_records(records)
+
+        def _process_records(records):
+            results = []
+
+            # MAGIC_ARRAY: Create aggregate values of all results.
+            # These are the indices of this results aggregate:
+            #   0: Durations summation.
+            #   1: Group count count.
+            #   2: First first_start.
+            #   3: Final final_end.
+            #   Skip: Activities, Actegories.
+            # - See: FactManager.RESULT_GRP_INDEX.
+            gross_totals = [0, 0, None, None]
+
+            # PROFILING: Here's a loop over all the results!
+            # If the user didn't limit or restrict their query,
+            # this could be all the Facts!
+            for fact, *cols in records:
+                fact_or_tuple = _process_record(fact, cols, gross_totals)
+                results.append(fact_or_tuple)
+
+            return results, gross_totals
+
+        # The results list is one of:
+        # - A list of raw AlchemyFact objects;
+        # - A list of hydrated Fact objects (or of a caller-specified subclass); or
+        # - A list of tuples comprised of the AlchemyFact or Fact, followed by
+        #   a number of calculated, aggregate columns (added when grouping).
+        #   - The order of items in each tuple is determined by the function:
+        #       _get_all_with_entities
+        #     which calls query.with_entities with a list that starts with:
+        #       AlchemyFact
+        #     and then adds aggregate columns from the functions:
+        #       _get_all_prepare_span_cols, and
+        #       _get_all_prepare_grouping_cols.
+        #   - The order of aggregates is also reflected by RESULT_GRP_INDEX.
+        # - The intermediate results might also end with a coalesced Tags value
+        #   (see _get_all_prepare_tags_col), but the tags_col is pulled before
+        #   the results are returned.
+
+        def _process_record(fact, cols, gross_totals):
+            new_tags = _process_record_tags(cols)
+            new_fact = _process_record_prepare_fact(fact, new_tags)
+            _process_record_update_gross(new_fact, cols, gross_totals)
+            _process_record_reduce_aggregates(cols)
+            return _process_record_new_fact_or_tuple(new_fact, cols)
+
+        # +++
+
+        def _process_record_tags(cols):
+            # If tags were fetched, they'll be coalesced in the final column.
+            new_tags = None
+            if not lazy_tags:
+                tags = cols.pop()
+                new_tags = tags.split(magic_tag_sep) if tags else []
+            return new_tags
+
+        # +++
+
+        def _process_record_prepare_fact(fact, new_tags):
+            # Unless the caller wants raw results, create a Fact.
+            if not raw:
+                new_fact = fact.as_hamster(self.store, new_tags)
+            else:
+                # Even if user wants raw results, still attach the tags.
+                if new_tags:
+                    fact.tags = new_tags
+                new_fact = fact
+            return new_fact
+
+        # +++
+
+        def _process_record_update_gross(new_fact, cols, gross_totals):
+            if not cols:
+                _process_record_update_gross_single_fact(new_fact, gross_totals)
+            else:
+                _process_record_update_gross_grouped_facts(cols, gross_totals)
+
+        def _process_record_update_gross_single_fact(new_fact, gross_totals):
+            # Because julianday, expects days. MAGIC_NUMBER: 86400 secs/day.
+            duration = new_fact.delta().total_seconds() / 86400.0
+            group_count = 1
+            first_start = new_fact.start
+            final_end = new_fact.end
+            _process_record_update_gross_values(
+                gross_totals, duration, group_count, first_start, final_end,
+            )
+
+        def _process_record_update_gross_grouped_facts(cols, gross_totals):
+            duration = cols[i_duration]
+            group_count = cols[i_group_count]
+            first_start = cols[i_first_start]
+            final_end = cols[i_final_end]
+            _process_record_update_gross_values(
+                gross_totals, duration, group_count, first_start, final_end,
+            )
+
+        def _process_record_update_gross_values(
+            gross_totals, duration, group_count, first_start, final_end,
+        ):
+            gross_totals[i_duration] += duration
+
+            gross_totals[i_group_count] += group_count
+
+            if gross_totals[i_first_start] is None:
+                gross_totals[i_first_start] = first_start
+            else:
+                gross_totals[i_first_start] = min(
+                    gross_totals[i_first_start], first_start,
+                )
+
+            if gross_totals[i_final_end] is None:
+                gross_totals[i_final_end] = final_end
+            else:
+                gross_totals[i_final_end] = max(
+                    gross_totals[i_final_end], final_end,
+                )
+
+        # +++
+
+        def _process_record_reduce_aggregates(cols):
+            if not cols:
+                return
+
+            _process_record_reduce_aggregate_activities(cols)
+            _process_record_reduce_aggregate_actegories(cols)
+
+        def _process_record_reduce_aggregate_activities(cols):
+            _process_record_reduce_aggregate_value(cols, i_activities)
+
+        def _process_record_reduce_aggregate_actegories(cols):
+            _process_record_reduce_aggregate_value(cols, i_actegories)
+
+        def _process_record_reduce_aggregate_value(cols, index):
+            encoded_value = cols[index]
+            if encoded_value in (0, None):
+                return
+
+            concated_values = encoded_value.split(magic_tag_sep)
+            unique_values = set(concated_values)
+            cols[index] = unique_values
+
+        # +++
+
+        def _process_record_new_fact_or_tuple(new_fact, cols):
+            # Make a tuple for group-by results, if any.
+            if cols:
+                return (new_fact, *cols)
+            else:
+                return new_fact
 
         # ***
 
@@ -554,7 +714,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 fact_tags, AlchemyFact.pk == fact_tags.columns.fact_id,
             )
             query = query.outerjoin(AlchemyTag)
-            query = query.group_by(AlchemyFact.pk)
             # (lb): 2019-01-22: Old comment re: joinedload. Leaving here as
             # documentation in case I try using joinedload again in future.
             #   # FIXME/2018-06-25: (lb): Not quite sure this'll work...
@@ -567,28 +726,178 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _get_all_prepare_span_col(query):
-            if not include_usage:
+        def _get_all_prepare_span_cols(query):
+            if not include_usage and not is_grouped:
                 return query, None
 
+            span_cols = []
+
+            group_span_col = _get_all_prepare_span_cols_group_span(query)
+            span_cols.append(group_span_col)
+
+            group_count_col = _get_all_prepare_span_cols_group_count(query)
+            span_cols.append(group_count_col)
+
+            first_start_col = _get_all_prepare_span_cols_first_start(query)
+            span_cols.append(first_start_col)
+
+            final_end_col = _get_all_prepare_span_cols_final_end(query)
+            span_cols.append(final_end_col)
+
+            return query, span_cols
+
+        def _get_all_prepare_span_cols_group_span(query):
+            # For most Facts, we could calculate the time window span with
+            # simple end-minus-start math, e.g.,
+            #   func.julianday(AlchemyFact.end)
+            #    - func.julianday(AlchemyFact.start)
+            # But this would miss the final ongoing, active Fact. So check
+            # first if end is None, and use the 'now' time if so.
+            endornow_col = case(
+                [(AlchemyFact.end != None, AlchemyFact.end)],  # noqa: E711
+                else_=self._get_sql_datetime(self.store.now),
+            )
+
+            span_col = _get_all_prepare_span_cols_group_span_dbms_specific(endornow_col)
+
+            group_span_col = func.sum(
+                span_col
+            ).label('duration')
+            query = query.add_columns(group_span_col)
+            return group_span_col
+
+        def _get_all_prepare_span_cols_group_span_dbms_specific(endornow_col):
+            # MAYBE/2020-05-15: Implement this feature for other DBMS engines.
+            # - The julianday function is SQLite-specific.
+            #   - A "pure" fix might mean doing the calculation after getting
+            #     all the results (i.e., post-processing the SQL response).
+            #   - (lb): But I like how easy julianday is. It works, and I personally
+            #     have no stake in using another DBMS engine. We can add additional
+            #     support as needed (i.e., as users' non-SQLite interests dictate).
+            if self.store.config['db.engine'] == 'sqlite':
+                return _get_all_prepare_span_cols_group_span_sqlite(endornow_col)
+            else:
+                # See exception thrown by must_support_db_engine_funcs() if not SQLite.
+                assert(False)  # Not reachable.
+
+        def _get_all_prepare_span_cols_group_span_sqlite(endornow_col):
             span_col = (
-                func.julianday(AlchemyFact.end) - func.julianday(AlchemyFact.start)
-            ).label('span')
-            query = self.store.session.query(AlchemyFact, span_col)
-            return query, span_col
+                func.julianday(endornow_col) - func.julianday(AlchemyFact.start)
+            )
+            return span_col
+
+        def _get_all_prepare_span_cols_group_count(query):
+            group_count_col = func.count(
+                AlchemyFact.pk
+            ).label('group_count')
+            query = query.add_columns(group_count_col)
+            return group_count_col
+
+        def _get_all_prepare_span_cols_first_start(query):
+            first_start_col = func.min(
+                AlchemyFact.start
+            ).label('first_start')
+            query = query.add_columns(first_start_col)
+            return first_start_col
+
+        def _get_all_prepare_span_cols_final_end(query):
+            final_end_col = func.max(
+                AlchemyFact.start
+            ).label('final_end')
+            query = query.add_columns(final_end_col)
+            return final_end_col
+
+        # ***
+
+        # Note that grouping by Activity.pk inherently also groups by the
+        # Category, because of the many-to-one relationship.
+        # - The same is also true if grouping by Activity and Category,
+        #   which is essentially no different than grouping by Activity.
+        # - An alternative would be to group by Activity name, thereby
+        #   combining Facts from same-named Activities in different
+        #   Categories. But this is not currently supported -- and there
+        #   are no plans to support such a feature (it does not seem like
+        #   useful information that the user would care about. Though,
+        #   as an example, if a user had Email@Personal and Email@Work,
+        #   grouping by Activity name would show overall time spent on
+        #   Email -- but you could instead use an #Email tag to generate
+        #   a report with this information, which currently *is* supported).
+        # - Also note that grouping by Category (but not Activity) will
+        #   collapse one or more Activities, as will grouping by Tags.
+        # - Depending on what's grouped -- Activity, Category, and/or Tags --
+        #   we'll make a coalesced Activities or Act@gories column to combine
+        #   all Activity names that are grouped.
+
+        def _get_all_prepare_grouping_cols(query):
+            grouping_cols = None
+            if not include_usage and not is_grouped:
+                return query, grouping_cols
+
+            # Use placeholder values -- may as well be zero -- for columns we do
+            # not need for this query, so that the return tuple is always the same
+            # size and always has the same layout as reflected by RESULT_GRP_INDEX.
+            # Because the concatenated names columns are strings, the caller can
+            # check if the value is not a string, but an integer (0) instead, to
+            # help decide which columns to use in the report output.
+            activities_col = '0'
+            actegories_col = '0'
+
+            if group_activity:
+                # The Activity@Category for each result is unique/not an aggregate.
+                pass
+            elif group_category:
+                # Just one Category per result, but one or Activities were flattened.
+                activities_col = _get_all_prepare_grouping_cols_activities(query)
+            elif group_tags:
+                # When grouping by tags, both Activities and Categories are grouped.
+                actegories_col = _get_all_prepare_grouping_cols_actegories(query)
+
+            grouping_cols = [activities_col, actegories_col]
+
+            return query, grouping_cols
+
+        def _get_all_prepare_grouping_cols_activities(query):
+            activities_col = func.group_concat(
+                AlchemyActivity.name, magic_tag_sep,
+            ).label("facts_activities")
+            query = query.add_columns(activities_col)
+            return activities_col
+
+        def _get_all_prepare_grouping_cols_actegories(query):
+            # SQLite supports column || concatenation, which is + in SQLAlchemy.
+            # MAYBE/2020-05-18: Is there a config value that specs the '@' sep?
+            # - I.e., replace the hardcoded '@' with a config value.
+            actegory_col = AlchemyActivity.name + '@' + AlchemyCategory.name
+            # SKIP/Not necessary:
+            #   actegory_col.label("actegory")
+            #   query = query.add_columns(actegory_col)
+            #   grouping_cols.append(actegory_col)
+            actegories_col = func.group_concat(
+                actegory_col, magic_tag_sep,
+            ).label("facts_actegories")
+            query = query.add_columns(actegories_col)
+            return actegories_col
 
         # ***
 
         def _get_all_prepare_joins(query):
-            if (
-                include_usage
-                or (activity is not False)
+            join_category = (
+                group_category
+                or group_tags  # b/c _get_all_prepare_grouping_cols_actegories
                 or (category is not False)
                 or search_term
+            )
+            if (
+                include_usage
+                or group_activity
+                or (activity is not False)
+                or join_category
             ):
-                query = query.outerjoin(AlchemyFact.activity)  # Same as: AlchemyActivity
-            if (category is not False) or search_term:
-                query = query.outerjoin(AlchemyCategory)
+                # Equivalent: AlchemyFact.activity or AlchemyActivity.
+                query = query.outerjoin(AlchemyFact.activity)
+            if join_category:
+                # Equivalent: AlchemyActivity.category or AlchemyCategory.
+                query = query.outerjoin(AlchemyActivity.category)
             return query
 
         # ***
@@ -657,16 +966,47 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query = query.filter(AlchemyFact.end != None)  # noqa: E711
             return query
 
+        # ***
+
+        def _get_all_group_by(query):
+            if not is_grouped:
+                # Need to group by Fact.pk because of Tags join table.
+                return _get_all_group_by_pk(query)
+            return _get_all_group_by_meta(query)
+
+        def _get_all_group_by_pk(query):
+            # Group by Fact.pk, as there might be "duplicate" Facts because
+            # of the fact_tags join. The 'facts_tags' column coalesces Tags.
+            query = query.group_by(AlchemyFact.pk)
+            return query
+
+        def _get_all_group_by_meta(query):
+            if group_activity:
+                # NOTE:The wrong group-by returns 1 record:
+                #        query = query.group_by(AlchemyFact.activity)
+                #      generates:
+                #         GROUP BY activities.id = facts.activity_id
+                #      But we want more simply:
+                #         GROUP BY activities.id
+                query = query.group_by(AlchemyActivity.pk)
+            if group_category:
+                query = query.group_by(AlchemyCategory.pk)
+            if group_tags:
+                query = query.group_by(AlchemyTag.pk)
+            return query
+
+        # ***
+
         # FIXME/2018-06-09: (lb): DRY: Combine each manager's _get_all_order_by.
-        def _get_all_order_by(query, span_col=None):
+        def _get_all_order_by(query, span_cols=None):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
                 query = self._get_all_order_by_times(query, direction)
             elif sort_col == 'time':
-                assert include_usage and span_col is not None
+                assert include_usage and span_cols is not None
                 direction = desc if not sort_order else direction
-                query = query.order_by(direction(span_col))
+                query = query.order_by(direction(span_cols[i_duration]))
             elif sort_col == 'activity':
                 query = query.order_by(direction(AlchemyActivity.name))
                 query = query.order_by(direction(AlchemyCategory.name))
@@ -684,16 +1024,23 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _get_all_with_entities(query, span_col, tags_col):
+        def _get_all_with_entities(query, span_cols, grouping_cols, tags_col):
+            # Even if grouping, we still want to fetch all columns. For one,
+            # _process_results expects a Fact object as leading item in each
+            # result tuple, and also because as_hamster expects certain fields
+            # (and in a specific order). We'd also have to at least specify
+            # AlchemyFact.pk so that SQLAlchemy uses `FROM facts`, and not,
+            # e.g., `FROM category`. So use all Fact cols to start the select.
             columns = [AlchemyFact]
 
-            if span_col is not None:
-                # Throw in the count column, which act/cat/tag fetch, so we can
-                # use the same utility functions (that except a count column).
-                static_count = '1'
-                columns.append(static_count)
-                columns.append(span_col)
+            # The order of the aggregate columns added here is reflected
+            # by RESULT_GRP_INDEX.
+            if span_cols is not None:
+                columns.extend(span_cols)
+            if grouping_cols is not None:
+                columns.extend(grouping_cols)
 
+            # Ensure tags_col is last, because _process_record_tags expects (pops) it.
             if tags_col is not None:
                 assert not lazy_tags
                 columns.append(tags_col)
