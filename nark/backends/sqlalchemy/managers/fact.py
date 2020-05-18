@@ -444,6 +444,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             )
             self.store.logger.debug(message)
 
+            must_support_db_engine_funcs()
+
             query = self.store.session.query(AlchemyFact)
 
             query, span_col = _get_all_prepare_span_col(query)
@@ -483,6 +485,22 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             return results
 
+        # ***
+
+        def must_support_db_engine_funcs():
+            if self.store.config['db.engine'] == 'sqlite':
+                return
+
+            errmsg = _(
+                'This feature does not work with the current DBMS engine: ‘{}’.'
+                ' (Please tell the maintainers if you want this supported!'
+                ' That, or switch to SQLite to use this feature.)'
+                .format(self.store.config['db.engine'])
+            )
+            raise NotImplementedError(errmsg)
+
+        # ***
+
         def _process_results(records, span_col, tags_col):
             if span_col is None and tags_col is None:
                 if raw:
@@ -519,6 +537,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # but this can be slow. E.g., on 15K Facts, calling fact.tags on
             # each -- triggering lazy load -- takes 7 seconds on my machine.
             # As opposed to 0 seconds (rounded down) when preloading tags.
+            # - Note earlier must_support_db_engine_funcs() b/c SQLite-specific.
             tags_col = func.group_concat(
                 AlchemyTag.name, magic_tag_sep,
             ).label("facts_tags")
@@ -546,6 +565,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             #   query = query.options(joinedload(AlchemyFact.tags))
             return query, tags_col
 
+        # ***
+
         def _get_all_prepare_span_col(query):
             if not include_usage:
                 return query, None
@@ -555,6 +576,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             ).label('span')
             query = self.store.session.query(AlchemyFact, span_col)
             return query, span_col
+
+        # ***
 
         def _get_all_prepare_joins(query):
             if (
@@ -567,6 +590,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             if (category is not False) or search_term:
                 query = query.outerjoin(AlchemyCategory)
             return query
+
+        # ***
 
         def _get_all_filter_by_activity(query):
             if activity is False:
@@ -602,6 +627,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query = _filter_search_term(query)
             return query
 
+        # ***
+
         def _filter_search_term(query):
             """
             Limit query to facts that match the search terms.
@@ -620,6 +647,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             )
 
             return query
+
+        # ***
 
         def _get_all_filter_by_ongoing(query):
             if not exclude_ongoing:
@@ -653,8 +682,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query = self._get_all_order_by_times(query, direction)
             return query
 
+        # ***
+
         def _get_all_with_entities(query, span_col, tags_col):
-            columns = []
+            columns = [AlchemyFact]
 
             if span_col is not None:
                 # Throw in the count column, which act/cat/tag fetch, so we can
@@ -667,7 +698,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 assert not lazy_tags
                 columns.append(tags_col)
 
-            query = query.with_entities(AlchemyFact, *columns)
+            query = query.with_entities(*columns)
 
             return query
 
