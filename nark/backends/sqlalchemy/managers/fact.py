@@ -120,7 +120,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             ValueError: If the passed fact has a PK assigned.
                 New facts should not have one.
 
-            ValueError: If the timewindow is already occupied.
+            ValueError: If the time window is already occupied.
         """
         self.adding_item_must_not_have_pk(fact)
 
@@ -171,7 +171,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         Raises:
             KeyError: if a Fact with the relevant PK could not be found.
             ValueError: If the the passed activity does not have a PK assigned.
-            ValueError: If the timewindow is already occupied.
+            ValueError: If the time window is already occupied.
         """
         self.store.logger.debug(_("Received '{!r}', 'raw'={}.".format(fact, raw)))
 

@@ -100,7 +100,7 @@ class BaseFactManager(BaseManager):
 
         Raises:
             ValueError: If passed fact has a PK. New facts should not have one.
-            ValueError: If timewindow is already occupied.
+            ValueError: If time window is already occupied.
         """
         raise NotImplementedError
 
@@ -119,7 +119,7 @@ class BaseFactManager(BaseManager):
         Raises:
             KeyError: if a Fact with the relevant PK could not be found.
             ValueError: If the the passed activity does not have a PK assigned.
-            ValueError: If the timewindow is already occupied.
+            ValueError: If the time window is already occupied.
         """
         raise NotImplementedError
 

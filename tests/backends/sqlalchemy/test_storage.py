@@ -934,10 +934,10 @@ class TestFactManager():
         assert str(result[0]) == str(alchemy_fact)
 
     @pytest.mark.parametrize(('start_filter', 'end_filter'), (
-        # Fact.start is in timewindow
+        # Fact.start is in time window.
         (None, 2),
         (-900, 2),
-        # Fact.end is in timewindow
+        # Fact.end is in time window.
         (5, None),
         (5, 900),
     ))
