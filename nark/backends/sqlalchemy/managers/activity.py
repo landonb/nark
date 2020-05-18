@@ -353,8 +353,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # FIXME/2018-06-20: (lb): Do what with key now?
         key=None,
         search_term='',
-        category=False,
         activity=False,
+        category=False,
         sort_col='',
         sort_order='',
         # kwargs: limit, offset
@@ -370,12 +370,12 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
                 each Activity.
             search_term (str, optional): Limit activities to those matching a substring
                 in their name. Defaults to ``empty string``.
-            category (nark.Category or str, optional): Limit activities to this
-                category. Defaults to ``False``. If ``category=None`` only activities
-                without a category will be considered.
             activity (nark.Activity, optional): Limit activities to this activity.
                 Defaults to ``False``. If ``activity=None`` only activities with a
                 matching name will be considered.
+            category (nark.Category or str, optional): Limit activities to this
+                category. Defaults to ``False``. If ``category=None`` only activities
+                without a category will be considered.
             sort_col (str, optional): Which columns to sort by. Defaults to 'activity'.
                 Choices: 'activity, 'category', 'start', 'usage'.
                 Note that 'start' and 'usage' only apply if include_usage.
@@ -484,7 +484,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
                     query = query.filter(
                         func.lower(AlchemyActivity.name) == func.lower(activity.name)
                     )
-            else:
+            else:  # activity is None.
                 query = query.filter(AlchemyFact.activity == None)  # noqa: E711
             return query
 
