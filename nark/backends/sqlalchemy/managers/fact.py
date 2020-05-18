@@ -468,7 +468,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_filter_by_ongoing(query)
 
-            query = _get_all_order_by(query, span_col, tags_col)
+            query = _get_all_order_by(query, span_col)
 
             query = query_apply_limit_offset(query, **kwargs)
 
@@ -658,7 +658,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             return query
 
         # FIXME/2018-06-09: (lb): DRY: Combine each manager's _get_all_order_by.
-        def _get_all_order_by(query, span_col=None, tags_col=None):
+        def _get_all_order_by(query, span_col=None):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
