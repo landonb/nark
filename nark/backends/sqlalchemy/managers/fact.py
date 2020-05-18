@@ -376,6 +376,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         'final_end': 3,
         'activities': 4,
         'actegories': 5,
+        'categories': 6,
     }
 
     # ***
@@ -459,6 +460,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         i_final_end = FactManager.RESULT_GRP_INDEX['final_end']
         i_activities = FactManager.RESULT_GRP_INDEX['activities']
         i_actegories = FactManager.RESULT_GRP_INDEX['actegories']
+        i_categories = FactManager.RESULT_GRP_INDEX['categories']
 
         def _get_all_facts():
             message = _(
@@ -617,12 +619,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             _process_record_reduce_aggregate_activities(cols)
             _process_record_reduce_aggregate_actegories(cols)
+            _process_record_reduce_aggregate_categories(cols)
 
         def _process_record_reduce_aggregate_activities(cols):
             _process_record_reduce_aggregate_value(cols, i_activities)
 
         def _process_record_reduce_aggregate_actegories(cols):
             _process_record_reduce_aggregate_value(cols, i_actegories)
+
+        def _process_record_reduce_aggregate_categories(cols):
+            _process_record_reduce_aggregate_value(cols, i_categories)
 
         def _process_record_reduce_aggregate_value(cols, index):
             encoded_value = cols[index]
@@ -767,22 +773,23 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # Note that grouping by Activity.pk inherently also groups by the
         # Category, because of the many-to-one relationship.
-        # - The same is also true if grouping by Activity and Category,
-        #   which is essentially no different than grouping by Activity.
-        # - An alternative would be to group by Activity name, thereby
-        #   combining Facts from same-named Activities in different
-        #   Categories. But this is not currently supported -- and there
-        #   are no plans to support such a feature (it does not seem like
-        #   useful information that the user would care about. Though,
-        #   as an example, if a user had Email@Personal and Email@Work,
-        #   grouping by Activity name would show overall time spent on
-        #   Email -- but you could instead use an #Email tag to generate
-        #   a report with this information, which currently *is* supported).
+        # - The same is also true if grouping by Activity.pk and Category.pk,
+        #   which is essentially no different than grouping by just Activity.pk.
+        # - As such, we make the distinction between grouping by just Activity
+        #   and by both Activity and Category by using the Activity name when
+        #   grouping only by the Activity, but using the Activity ID when the
+        #   Category is also involved.
+        # - When we group by Activity name, it combines Facts from same-named
+        #   Activities in different Categories. As an example, if a user has
+        #   Email@Personal and Email@Work, grouping by Activity name will show
+        #   overall time spent on Email (which they could also achieve with,
+        #   say, an #Email tag).
         # - Also note that grouping by Category (but not Activity) will
         #   collapse one or more Activities, as will grouping by Tags.
         # - Depending on what's grouped -- Activity, Category, and/or Tags --
         #   we'll make a coalesced Activities or Act@gories column to combine
-        #   all Activity names that are grouped.
+        #   all Activity names that are grouped, or a Categories column to
+        #   report all the Categories of each set of grouped Facts (each row).
 
         def _get_all_prepare_grouping_cols(query):
             grouping_cols = None
@@ -797,10 +804,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # help decide which columns to use in the report output.
             activities_col = '0'
             actegories_col = '0'
+            categories_col = '0'
 
-            if group_activity:
+            if group_activity and group_category:
                 # The Activity@Category for each result is unique/not an aggregate.
                 pass
+            elif group_activity:
+                # Just one Activity name per result, but one or Categories were flattened.
+                categories_col = _get_all_prepare_grouping_cols_categories(query)
             elif group_category:
                 # Just one Category per result, but one or Activities were flattened.
                 activities_col = _get_all_prepare_grouping_cols_activities(query)
@@ -808,7 +819,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # When grouping by tags, both Activities and Categories are grouped.
                 actegories_col = _get_all_prepare_grouping_cols_actegories(query)
 
-            grouping_cols = [activities_col, actegories_col]
+            grouping_cols = [activities_col, actegories_col, categories_col]
 
             return query, grouping_cols
 
@@ -834,18 +845,25 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             query = query.add_columns(actegories_col)
             return actegories_col
 
+        def _get_all_prepare_grouping_cols_categories(query):
+            categories_col = func.group_concat(
+                AlchemyCategory.name, magic_tag_sep,
+            ).label("facts_categories")
+            query = query.add_columns(categories_col)
+            return categories_col
+
         # ***
 
         def _get_all_prepare_joins(query):
             join_category = (
-                group_category
+                group_activity  # b/c _get_all_prepare_grouping_cols_categories
+                or group_category
                 or group_tags  # b/c _get_all_prepare_grouping_cols_actegories
                 or (category is not False)
                 or search_term
             )
             if (
                 include_usage
-                or group_activity
                 or (activity is not False)
                 or join_category
             ):
@@ -937,7 +955,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             return query
 
         def _get_all_group_by_meta(query):
-            if group_activity:
+            query = _get_all_group_by_activity_and_category(query)
+            query = _get_all_group_by_tags(query)
+            return query
+
+        def _get_all_group_by_activity_and_category(query):
+            if group_activity and group_category:
                 # NOTE:The wrong group-by returns 1 record:
                 #        query = query.group_by(AlchemyFact.activity)
                 #      generates:
@@ -945,8 +968,29 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 #      But we want more simply:
                 #         GROUP BY activities.id
                 query = query.group_by(AlchemyActivity.pk)
-            if group_category:
+                # Each Activity is associated with exactly one Category,
+                # so the group_by(AlchemyActivity.pk) is sufficient, but
+                # for completeness, group on the Category, too.
                 query = query.group_by(AlchemyCategory.pk)
+            elif group_activity:
+                # This is kinda smudgy. What does it mean to group by the Activity?
+                # - Do you mean an Activity in the traditional sense, which is
+                #   Activity@Category? (in which case, group-by the Activity.pk,
+                #   and include the Category in the grouping).
+                # - Or is this an Activity is a looser sense, as in an Activity
+                #   name? (in which case, group by the Activity name, which means
+                #   two Activities with the same name but in different Categories
+                #   become grouped).
+                # To be the most flexible, if the user wants to group by the
+                # Activity but does not also specify the Category, then, sure,
+                # group by the Activity name. They can add the Category grouping
+                # if they want to group on the actual Activity@Category.
+                query = query.group_by(AlchemyActivity.name)
+            elif group_category:
+                query = query.group_by(AlchemyCategory.pk)
+            return query
+
+        def _get_all_group_by_tags(query):
             if group_tags:
                 query = query.group_by(AlchemyTag.pk)
             return query
