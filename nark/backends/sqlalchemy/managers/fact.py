@@ -532,35 +532,11 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # MAGIC_NUMBER: Check any record (0) to see if any aggregate columns
             # exist or not -- if length is 1, it's just the Fact, no aggregates.
             if not records or len(records[0]) == 1:
-                if not raw:
-                    records = [fact.as_hamster(self.store) for fact in records]
-                return records, None
+                return _process_records_facts_only(records)
 
-            return _process_records(records)
+            return _process_records_facts_and_aggs(records)
 
-        def _process_records(records):
-            results = []
-
-            # MAGIC_ARRAY: Create aggregate values of all results.
-            # These are the indices of this results aggregate:
-            #   0: Durations summation.
-            #   1: Group count count.
-            #   2: First first_start.
-            #   3: Final final_end.
-            #   Skip: Activities, Actegories.
-            # - See: FactManager.RESULT_GRP_INDEX.
-            gross_totals = [0, 0, None, None]
-
-            # PROFILING: Here's a loop over all the results!
-            # If the user didn't limit or restrict their query,
-            # this could be all the Facts!
-            for fact, *cols in records:
-                fact_or_tuple = _process_record(fact, cols, gross_totals)
-                results.append(fact_or_tuple)
-
-            return results, gross_totals
-
-        # The results list is one of:
+        # The list of results returned to the user is one of:
         # - A list of raw AlchemyFact objects;
         # - A list of hydrated Fact objects (or of a caller-specified subclass); or
         # - A list of tuples comprised of the AlchemyFact or Fact, followed by
@@ -577,10 +553,36 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         #   (see _get_all_prepare_tags_col), but the tags_col is pulled before
         #   the results are returned.
 
-        def _process_record(fact, cols, gross_totals):
+        def _process_records_facts_only(records):
+            if raw:
+                return records
+
+            # Because not add_aggregates, each result is a single item, the
+            # AlchemyFact; or a list containing a single item, if not lazy_tags.
+            if not include_extras:
+                records = [fact.as_hamster(self.store) for fact in records]
+            else:
+                # (lb): I doubt this path happens, and I also don't doubt that
+                # it would be allowed, because include_extras is a method arg.
+                assert(not records or len(records[0]) == 1)
+                records = [
+                    fact.as_hamster(self.store) for fact, *_cols in records
+                ]
+            return records
+
+        def _process_records_facts_and_aggs(records):
+            results = []
+            # PROFILING: Here's a loop over all the results!
+            # If the user didn't limit or restrict their query,
+            # this could be all the Facts!
+            for fact, *cols in records:
+                fact_or_tuple = _process_record(fact, cols)
+                results.append(fact_or_tuple)
+            return results
+
+        def _process_record(fact, cols):
             new_tags = _process_record_tags(cols)
             new_fact = _process_record_prepare_fact(fact, new_tags)
-            _process_record_update_gross(new_fact, cols, gross_totals)
             _process_record_reduce_aggregates(cols)
             return _process_record_new_fact_or_tuple(new_fact, cols)
 
@@ -589,7 +591,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         def _process_record_tags(cols):
             # If tags were fetched, they'll be coalesced in the final column.
             new_tags = None
-            if not lazy_tags:
+            if cols and not lazy_tags:
                 tags = cols.pop()
                 new_tags = tags.split(magic_tag_sep) if tags else []
             return new_tags
@@ -606,54 +608,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                     fact.tags = new_tags
                 new_fact = fact
             return new_fact
-
-        # +++
-
-        def _process_record_update_gross(new_fact, cols, gross_totals):
-            if not cols:
-                _process_record_update_gross_single_fact(new_fact, gross_totals)
-            else:
-                _process_record_update_gross_grouped_facts(cols, gross_totals)
-
-        def _process_record_update_gross_single_fact(new_fact, gross_totals):
-            # Because julianday, expects days. MAGIC_NUMBER: 86400 secs/day.
-            duration = new_fact.delta().total_seconds() / 86400.0
-            group_count = 1
-            first_start = new_fact.start
-            final_end = new_fact.end
-            _process_record_update_gross_values(
-                gross_totals, duration, group_count, first_start, final_end,
-            )
-
-        def _process_record_update_gross_grouped_facts(cols, gross_totals):
-            duration = cols[i_duration]
-            group_count = cols[i_group_count]
-            first_start = cols[i_first_start]
-            final_end = cols[i_final_end]
-            _process_record_update_gross_values(
-                gross_totals, duration, group_count, first_start, final_end,
-            )
-
-        def _process_record_update_gross_values(
-            gross_totals, duration, group_count, first_start, final_end,
-        ):
-            gross_totals[i_duration] += duration
-
-            gross_totals[i_group_count] += group_count
-
-            if gross_totals[i_first_start] is None:
-                gross_totals[i_first_start] = first_start
-            else:
-                gross_totals[i_first_start] = min(
-                    gross_totals[i_first_start], first_start,
-                )
-
-            if gross_totals[i_final_end] is None:
-                gross_totals[i_final_end] = final_end
-            else:
-                gross_totals[i_final_end] = max(
-                    gross_totals[i_final_end], final_end,
-                )
 
         # +++
 
@@ -684,8 +638,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         def _process_record_new_fact_or_tuple(new_fact, cols):
             # Make a tuple for group-by results, if any.
             if cols:
-                return (new_fact, *cols)
+                return new_fact, *cols
             else:
+                # This happens when cols is empty, i.e., because tags_col
+                # was queried, but removed.
                 return new_fact
 
         # ***
