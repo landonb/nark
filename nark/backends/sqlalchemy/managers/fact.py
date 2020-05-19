@@ -632,11 +632,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _process_record_reduce_aggregate_value(cols, index):
             encoded_value = cols[index]
-            if encoded_value in (0, None):
+            # Note that group_concat generates None if all values were None.
+            if encoded_value == 0:
                 return
 
-            concated_values = encoded_value.split(magic_tag_sep)
-            unique_values = set(concated_values)
+            if encoded_value:
+                concated_values = encoded_value.split(magic_tag_sep)
+                unique_values = set(concated_values)
+            else:
+                unique_values = ''
             cols[index] = unique_values
 
         # +++
