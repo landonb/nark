@@ -768,7 +768,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_prepare_span_cols_final_end(query):
             final_end_col = func.max(
-                AlchemyFact.start
+                AlchemyFact.end
             ).label('final_end')
             query = query.add_columns(final_end_col)
             return final_end_col
