@@ -426,8 +426,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # - The user can specify one or more columns on which to sort,
         #   and an 'asc' or 'desc' modifier for each column under sort.
-        sort_col='',
-        sort_order='',
+        sort_cols='',
+        sort_orders='',
 
         # - The user can restrict the results with basic SQL limit-offset.
         limit=None,
@@ -498,7 +498,11 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             group_activity or group_category or group_tags or group_days
         )
 
-        add_aggregates = include_extras or is_grouped or sort_col in ('usage', 'time')
+        add_aggregates = (
+            include_extras
+            or is_grouped
+            or set(sort_cols).intersection(('usage', 'time'))
+        )
 
         i_duration = FactManager.RESULT_GRP_INDEX['duration']
         i_group_count = FactManager.RESULT_GRP_INDEX['group_count']
@@ -510,8 +514,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_facts():
             message = _(
-                'since: {} / until: {} / srch_term: {} / srt_col: {} / srt_ordr: {}'
-                .format(since, until, search_term, sort_col, sort_order)
+                'since: {} / until: {} / srch_term: {} / srt_cols: {} / srt_ordrz: {}'
+                .format(since, until, search_term, sort_cols, sort_orders)
             )
             self.store.logger.debug(message)
 
@@ -941,8 +945,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 or group_days  # b/c _get_all_prepare_actg_cols_actegories
                 or (category is not False)
                 or search_term
-                or sort_col == 'activity'
-                or sort_col == 'category'
+                or 'activity' in sort_cols
+                or 'category' in sort_cols
             )
             if (
                 add_aggregates
@@ -1081,12 +1085,17 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # FIXME/2018-06-09: (lb): DRY: Combine each manager's _get_all_order_by.
         def _get_all_order_by(query, span_cols=None, date_col=None, tags_col=None):
-            direction = desc if sort_order == 'desc' else asc
-            if sort_col == 'start':
-                direction = desc if not sort_order else direction
+            for idx, sort_col in enumerate(sort_cols):
+                direction = desc if sort_orders[idx] == 'desc' else asc
+                query = _get_all_order_by_col(
+                    query, sort_col, direction, span_cols, date_col, tags_col,
+                )
+            return query
+
+        def _get_all_order_by_col(query, sort_col, direction, span_cols, date_col, tags_col):
+            if sort_col == 'start' or not sort_col:
                 query = self._get_all_order_by_start(query, direction)
             elif sort_col == 'time':
-                direction = desc if not sort_order else direction
                 query = query.order_by(direction(span_cols[i_duration]))
             elif sort_col == 'activity':
                 # If grouping by only category, this sort does not work: The
@@ -1098,6 +1107,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # So sorting activity when grouping category is done by caller.
                 if group_activity or group_tags or group_days or not group_category:
                     query = query.order_by(direction(AlchemyActivity.name))
+                    # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                     query = query.order_by(direction(AlchemyCategory.name))
             elif sort_col == 'category':
                 # If sorting by category but grouping by activity (or tags), the
@@ -1107,6 +1117,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # would have no effect, so might as well not.)
                 if group_category or group_tags or group_days or not group_activity:
                     query = query.order_by(direction(AlchemyCategory.name))
+                    # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                     query = query.order_by(direction(AlchemyActivity.name))
             elif sort_col == 'tag' and tags_col is not None:
                 # Don't sort by the aggregate column, because tags aren't
@@ -1146,11 +1157,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # it like `--sort start`). But there are no reasons, other than perhaps
                 # ideological, that we cannot at least wire it to the PK. So here ya go:
                 query = query.order_by(direction(AlchemyFact.pk))
-            else:
-                # If sort not specified, sort like `--sort start`.
-                assert not sort_col
-                direction = desc if not sort_order else direction
-                query = self._get_all_order_by_start(query, direction)
             return query
 
         # ***
