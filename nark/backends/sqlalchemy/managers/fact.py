@@ -740,16 +740,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             span_cols = []
 
-            group_span_col = _get_all_prepare_span_cols_group_span(query)
+            query, group_span_col = _get_all_prepare_span_cols_group_span(query)
             span_cols.append(group_span_col)
 
-            group_count_col = _get_all_prepare_span_cols_group_count(query)
+            query, group_count_col = _get_all_prepare_span_cols_group_count(query)
             span_cols.append(group_count_col)
 
-            first_start_col = _get_all_prepare_span_cols_first_start(query)
+            query, first_start_col = _get_all_prepare_span_cols_first_start(query)
             span_cols.append(first_start_col)
 
-            final_end_col = _get_all_prepare_span_cols_final_end(query)
+            query, final_end_col = _get_all_prepare_span_cols_final_end(query)
             span_cols.append(final_end_col)
 
             return query, span_cols
@@ -772,7 +772,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 span_col
             ).label('duration')
             query = query.add_columns(group_span_col)
-            return group_span_col
+            return query, group_span_col
 
         def _get_all_prepare_span_cols_group_span_dbms_specific(endornow_col):
             # MAYBE/2020-05-15: Implement this feature for other DBMS engines.
@@ -799,21 +799,21 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 AlchemyFact.pk
             ).label('group_count')
             query = query.add_columns(group_count_col)
-            return group_count_col
+            return query, group_count_col
 
         def _get_all_prepare_span_cols_first_start(query):
             first_start_col = func.min(
                 AlchemyFact.start
             ).label('first_start')
             query = query.add_columns(first_start_col)
-            return first_start_col
+            return query, first_start_col
 
         def _get_all_prepare_span_cols_final_end(query):
             final_end_col = func.max(
                 AlchemyFact.end
             ).label('final_end')
             query = query.add_columns(final_end_col)
-            return final_end_col
+            return query, final_end_col
 
         # ***
 
@@ -857,13 +857,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 pass
             elif group_activity:
                 # One Activity per result, but one or more Categories were flattened.
-                categories_col = _get_all_prepare_actg_cols_categories(query)
+                query, categories_col = _get_all_prepare_actg_cols_categories(query)
             elif group_category:
                 # One Category per result, but one or more Activities were flattened.
-                activities_col = _get_all_prepare_actg_cols_activities(query)
+                query, activities_col = _get_all_prepare_actg_cols_activities(query)
             elif group_tags:
                 # When grouping by tags, both Activities and Categories are grouped.
-                actegories_col = _get_all_prepare_actg_cols_actegories(query)
+                query, actegories_col = _get_all_prepare_actg_cols_actegories(query)
 
             actg_cols = [activities_col, actegories_col, categories_col]
 
@@ -874,7 +874,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 AlchemyActivity.name, magic_tag_sep,
             ).label("facts_activities")
             query = query.add_columns(activities_col)
-            return activities_col
+            return query, activities_col
 
         def _get_all_prepare_actg_cols_actegories(query):
             # SQLite supports column || concatenation, which is + in SQLAlchemy.
@@ -889,14 +889,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 actegory_col, magic_tag_sep,
             ).label("facts_actegories")
             query = query.add_columns(actegories_col)
-            return actegories_col
+            return query, actegories_col
 
         def _get_all_prepare_actg_cols_categories(query):
             categories_col = func.group_concat(
                 AlchemyCategory.name, magic_tag_sep,
             ).label("facts_categories")
             query = query.add_columns(categories_col)
-            return categories_col
+            return query, categories_col
 
         # ***
 
