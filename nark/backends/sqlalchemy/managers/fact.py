@@ -539,7 +539,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 
-            query = _get_all_filter_by_activity(query)
+            query = self._get_all_filter_by_activity(query, activity)
 
             query = _get_all_filter_by_category(query)
 
@@ -963,21 +963,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             return query
 
         # ***
-
-        def _get_all_filter_by_activity(query):
-            if activity is False:
-                return query
-
-            if activity:
-                if activity.pk:
-                    query = query.filter(AlchemyActivity.pk == activity.pk)
-                else:
-                    query = query.filter(
-                        func.lower(AlchemyActivity.name) == func.lower(activity.name)
-                    )
-            else:
-                query = query.filter(AlchemyFact.activity == None)  # noqa: E711
-            return query
 
         def _get_all_filter_by_category(query):
             if category is False:

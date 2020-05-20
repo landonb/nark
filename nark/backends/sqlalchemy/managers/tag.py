@@ -366,16 +366,11 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         def _get_all_filter_by_activity(query):
             if activity is False:
                 return query
+
             query = query.join(AlchemyActivity)
-            if activity:
-                if activity.pk:
-                    query = query.filter(AlchemyActivity.pk == activity.pk)
-                else:
-                    query = query.filter(
-                        func.lower(AlchemyActivity.name) == func.lower(activity.name)
-                    )
-            else:
-                query = query.filter(AlchemyFact.activity == None)  # noqa: E711
+
+            query = self._get_all_filter_by_activity(query, activity)
+
             return query
 
         def _get_all_filter_by_category(query):
