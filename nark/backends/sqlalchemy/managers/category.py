@@ -256,7 +256,6 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
     #   comments about this method.
     def _get_all(
         self,
-        # FIXME/2018-06-20: (lb): Do what with key now?
         key=None,
         include_usage=True,
         count_results=False,
@@ -286,6 +285,13 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             include_usage
             or set(sort_cols).intersection(('start', 'usage', 'time'))
         )
+
+        # Bounce to the simple get() method if a PK specified.
+        if key:
+            category = self.get(pk=key, deleted=deleted, raw=raw)
+            if requested_usage:
+                category = (category,)
+            return [category]
 
         def _get_all_categories():
             message = _('usage: {} / term: {} / act.: {} / col: {} / order: {}').format(
