@@ -1009,7 +1009,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
-                query = self._get_all_order_by_times(query, direction)
+                query = self._get_all_order_by_start(query, direction)
             elif sort_col == 'time':
                 assert include_usage and span_cols is not None
                 direction = desc if not sort_order else direction
@@ -1075,7 +1075,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # If sort not specified, sort like `--sort start`.
                 assert not sort_col
                 direction = desc if not sort_order else direction
-                query = self._get_all_order_by_times(query, direction)
+                query = self._get_all_order_by_start(query, direction)
             return query
 
         # ***
@@ -1111,7 +1111,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def _get_all_order_by_times(self, query, direction, fact=None):
+    def _get_all_order_by_start(self, query, direction, fact=None):
         if fact and not fact.unstored:
             query = query.filter(AlchemyFact.pk != fact.pk)
 
@@ -1152,7 +1152,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, asc, fact=fact)
+        query = self._get_all_order_by_start(query, asc, fact=fact)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -1195,7 +1195,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, desc, fact=fact)
+        query = self._get_all_order_by_start(query, desc, fact=fact)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -1287,7 +1287,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         query = query.filter(condition)
 
         # Exclude fact.pk from results.
-        query = self._get_all_order_by_times(query, desc, fact=fact)
+        query = self._get_all_order_by_start(query, desc, fact=fact)
 
         query = query.limit(1)
 
@@ -1347,7 +1347,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         query = query.filter(condition)
 
         # Exclude fact.pk from results.
-        query = self._get_all_order_by_times(query, asc, fact=fact)
+        query = self._get_all_order_by_start(query, asc, fact=fact)
 
         query = query.limit(1)
 
@@ -1399,7 +1399,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, asc)
+        query = self._get_all_order_by_start(query, asc)
 
         self.store.logger.debug(_(
             'since: {} / until: {} / query: {}'
@@ -1471,7 +1471,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        query = self._get_all_order_by_times(query, asc)
+        query = self._get_all_order_by_start(query, asc)
 
         self.store.logger.debug(_(
             'fact_time: {} / query: {}'.format(
