@@ -326,6 +326,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
             return results
 
+        # ***
+
         def _get_all_start_query():
             agg_cols = []
             if not (include_usage or since or until or endless):
@@ -346,6 +348,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                 query = query.join(AlchemyFact)
 
             return query, agg_cols
+
+        # ***
 
         def _get_all_filter_by_activity(query):
             if activity is False:
@@ -385,11 +389,15 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             )
             return query
 
+        # ***
+
         def _get_all_group_by(query, agg_cols):
             if not agg_cols:
                 return query
             query = query.group_by(AlchemyTag.pk)
             return query
+
+        # ***
 
         def _get_all_order_by(query, count_col=None, time_col=None):
             direction = desc if sort_order == 'desc' else asc
@@ -418,6 +426,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                 assert sort_col in ('', 'name', 'tag', 'fact')
                 query = query.order_by(direction(AlchemyTag.name))
             return query
+
+        # ***
 
         def _get_all_with_entities(query, agg_cols):
             if not agg_cols:

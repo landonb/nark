@@ -84,6 +84,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             name=activity.name,
             category=None,
             deleted=bool(activity.deleted),
+            # FIXME/2020-05-19: Remove hidden...
             hidden=bool(activity.hidden),
         )
         if activity.category:
@@ -430,6 +431,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
             return results
 
+        # ***
+
         def _get_all_start_query():
             agg_cols = []
             if not (include_usage or since or until or endless):
@@ -455,6 +458,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             query = query.join(AlchemyCategory)
 
             return query, agg_cols
+
+        # ***
 
         def _get_all_filter_by_category(query):
             if category is False:
@@ -501,6 +506,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             )
             return query
 
+        # ***
+
         def _get_all_order_by(query, count_col=None, time_col=None):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
@@ -527,11 +534,15 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
                 query = query.order_by(direction(AlchemyCategory.name))
             return query
 
+        # ***
+
         def _get_all_group_by(query, agg_cols):
             if not agg_cols:
                 return query
             query = query.group_by(AlchemyActivity.pk)
             return query
+
+        # ***
 
         def _get_all_with_entities(query, agg_cols):
             if not agg_cols:

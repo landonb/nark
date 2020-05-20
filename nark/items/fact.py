@@ -556,6 +556,7 @@ class Fact(BaseItem):
 
     def oid_actegory(self, shellify=False, omit_empty_actegory=False):
         # (lb): We can skip delimiter after time when using ISO 8601.
+        # MAYBE/2020-05-18: I cannot remember, did I want to make '@' char configable?
         if not self.activity_name:
             if not self.category_name:
                 act_cat = '' if omit_empty_actegory else '@'

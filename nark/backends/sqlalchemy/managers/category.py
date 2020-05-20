@@ -317,6 +317,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
             return results
 
+        # ***
+
         def _get_all_start_query():
             agg_cols = []
             if (
@@ -340,6 +342,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
             return query, agg_cols
 
+        # ***
+
         def _get_all_filter_by_activity(query):
             if activity is False:
                 return query
@@ -361,6 +365,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
                 AlchemyCategory.name.ilike('%{}%'.format(search_term))
             )
             return query
+
+        # ***
 
         def _get_all_order_by(query, count_col=None, time_col=None):
             direction = desc if sort_order == 'desc' else asc
@@ -392,11 +398,15 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
                     query = query.order_by(direction(AlchemyActivity.name))
             return query
 
+        # ***
+
         def _get_all_group_by(query, agg_cols):
             if not agg_cols:
                 return query
             query = query.group_by(AlchemyCategory.pk)
             return query
+
+        # ***
 
         def _get_all_with_entities(query, agg_cols):
             if not agg_cols:
