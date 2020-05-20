@@ -341,6 +341,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
     def _get_all(
         self,
+        # FIXME/2018-06-20: (lb): Do what with key now?
+        key=None,
         include_usage=True,
         count_results=False,
         # FIXME/2018-06-20: (lb): Implement since/until.
@@ -351,8 +353,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
         deleted=False,
         hidden=False,
-        # FIXME/2018-06-20: (lb): Do what with key now?
-        key=None,
         search_term=None,
         activity=False,
         category=False,
