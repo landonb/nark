@@ -377,6 +377,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         'activities': 4,
         'actegories': 5,
         'categories': 6,
+        'date_col': 7,
     }
 
     # ***
@@ -501,7 +502,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         add_aggregates = (
             include_extras
             or is_grouped
-            or set(sort_cols).intersection(('usage', 'time'))
+            or set(sort_cols).intersection(('usage', 'time', 'day'))
         )
 
         i_duration = FactManager.RESULT_GRP_INDEX['duration']
@@ -511,6 +512,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         i_activities = FactManager.RESULT_GRP_INDEX['activities']
         i_actegories = FactManager.RESULT_GRP_INDEX['actegories']
         i_categories = FactManager.RESULT_GRP_INDEX['categories']
+        # i_date_col = FactManager.RESULT_GRP_INDEX['date_col']
 
         def _get_all_facts():
             message = _(
@@ -1097,6 +1099,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query = self._get_all_order_by_start(query, direction)
             elif sort_col == 'time':
                 query = query.order_by(direction(span_cols[i_duration]))
+            elif sort_col == 'day':
+                query = query.order_by(direction(date_col))
             elif sort_col == 'activity':
                 # If grouping by only category, this sort does not work: The
                 # activity names are group_concat'enated into the 'activities'
