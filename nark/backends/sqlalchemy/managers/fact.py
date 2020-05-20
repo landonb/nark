@@ -383,13 +383,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     def _get_all(
         self,
-        endless=False,
-        # FIXME/2020-05-09: (lb): I don't see partial ever being True.
-        partial=False,
         include_usage=False,
         count_results=False,
         since=None,
         until=None,
+        endless=False,
+        exclude_ongoing=None,
+        # FIXME/2020-05-09: (lb): I don't see partial ever being True.
+        partial=False,
         # FIXME/2018-06-09: (lb): Implement deleted/hidden.
         # FIXME/2020-05-16: (lb): Remove deleted/hidden....
         deleted=False,
@@ -405,7 +406,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         limit=None,
         offset=None,
         raw=False,
-        exclude_ongoing=None,
         # (lb): IMPOSSIBLE_BRANCH: We should always be able to preload tags
         # (eager loading), which is a lot quicker than lazy-loading tags,
         # especially when exporting all Facts. I.e., when eager loading,
