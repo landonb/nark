@@ -1058,7 +1058,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 #   `dob list facts --group category --sort activity`
                 # But if also grouping by activity, or tags, order-by here works.
                 # So sorting activity when grouping category is done by caller.
-                if not group_category and not group_tags:
+                if group_activity or group_tags or group_days or not group_category:
                     query = query.order_by(direction(AlchemyActivity.name))
                     query = query.order_by(direction(AlchemyCategory.name))
             elif sort_col == 'category':
@@ -1067,7 +1067,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # categories aggregate (which get_all returns as a set) into an
                 # alphabetically ordered string. (We could sort here, but it
                 # would have no effect, so might as well not.)
-                if not group_activity and not group_tags:
+                if group_category or group_tags or group_days or not group_activity:
                     query = query.order_by(direction(AlchemyCategory.name))
                     query = query.order_by(direction(AlchemyActivity.name))
             elif sort_col == 'tag' and tags_col is not None:
