@@ -449,6 +449,13 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             or set(sort_cols).intersection(('start', 'usage', 'time'))
         )
 
+        # Bounce to the simple get() method if a PK specified.
+        if key:
+            activity = self.get(pk=key, deleted=deleted, raw=raw)
+            if requested_usage:
+                activity = (activity,)
+            return [activity]
+
         def _get_all_activities():
             message = (
                 _('usage: {} / term: {} / cat.: {} / act.: {} / col: {} / order: {}')
