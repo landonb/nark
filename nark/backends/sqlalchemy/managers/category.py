@@ -265,7 +265,6 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         endless=False,
         partial=False,
         deleted=False,
-        hidden=False,
         search_term='',
         activity=False,
         sort_col='',
