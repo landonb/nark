@@ -372,7 +372,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # In any case, this 'deleted' option is still wired in the CLI, so
         # maintaining support here. For now.
         deleted=False,
-        hidden=False,
         # - Specify one or_ more search terms to match against the Activity name.
         #   - Note that if more than one term is supplied, they're ORed together,
         #     so an Activity only has to match one term.
