@@ -476,7 +476,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 
-            query = _get_all_filter_by_category(query)
+            query = self._get_all_filter_by_category(query, category)
 
             query = self._get_all_filter_by_activity(query, activity)
 
@@ -529,29 +529,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             return query, agg_cols
 
         # ***
-
-        def _get_all_filter_by_category(query):
-            if category is False:
-                return query
-            # FIXME/2018-05-15 22:30: (lb): MRU activities by category: GLOB:
-            #   do fuzzy search on name rather than PK, if special query,
-            #     e.g., ``if '*' in category.name: ...``
-            if category:
-                category_name = None
-                if isinstance(category, str):
-                    category_name = category
-                elif not category.pk:
-                    category_name = category.name
-
-                if not category_name:
-                    query = query.filter(AlchemyCategory.pk == category.pk)
-                else:
-                    query = query.filter(
-                        func.lower(AlchemyCategory.name) == func.lower(category_name)
-                    )
-            else:
-                query = query.filter(AlchemyActivity.category == None)  # noqa: E711
-            return query
 
         def _get_all_filter_by_search_term(query):
             if not search_term:

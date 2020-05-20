@@ -25,7 +25,7 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import and_, or_
 
-from ..objects import AlchemyActivity, AlchemyFact
+from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 
 __all__ = (
     'BaseAlchemyManager',
@@ -188,6 +188,30 @@ class BaseAlchemyManager(object):
                 )
         else:  # activity is None.
             query = query.filter(AlchemyFact.activity == None)  # noqa: E711
+        return query
+
+    # ***
+
+    def _get_all_filter_by_category(self, query, category):
+        if category is False:
+            return query
+
+        if category:
+            category_name = None
+            try:
+                if category.pk:
+                    query = query.filter(AlchemyCategory.pk == category.pk)
+                else:
+                    category_name = category.name
+            except AttributeError:
+                category_name = category
+
+            if category_name is not None:
+                query = query.filter(
+                    func.lower(AlchemyCategory.name) == func.lower(category_name)
+                )
+        else:
+            query = query.filter(AlchemyFact.category == None)  # noqa: E711
         return query
 
     # ***

@@ -377,15 +377,9 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             if category is False:
                 return query
             query = query.join(AlchemyActivity).join(AlchemyCategory)
-            if category:
-                if category.pk:
-                    query = query.filter(AlchemyCategory.pk == category.pk)
-                else:
-                    query = query.filter(
-                        func.lower(AlchemyCategory.name) == func.lower(category.name)
-                    )
-            else:
-                query = query.filter(AlchemyFact.category == None)  # noqa: E711
+
+            query = self._get_all_filter_by_category(query, category)
+
             return query
 
         def _get_all_filter_by_search_term(query):
