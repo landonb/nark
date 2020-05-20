@@ -443,6 +443,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                 query = query.order_by(direction(AlchemyActivity.name))
             elif sort_col == 'tag' or sort_col == 'name' or not sort_col:
                 query = query.order_by(direction(AlchemyTag.name))
+            else:
+                self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
             return query
 
         # ***

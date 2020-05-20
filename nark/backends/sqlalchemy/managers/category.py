@@ -418,6 +418,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
                 # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                 if count_col is not None:
                     query = query.order_by(direction(AlchemyActivity.name))
+            else:
+                self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
             return query
 
         # ***
