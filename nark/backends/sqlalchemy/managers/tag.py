@@ -274,7 +274,6 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         # FIXME/2020-05-09: (lb): I don't see partial ever being True.
         partial=False,
         deleted=False,
-        hidden=False,
         search_term=None,
         activity=False,
         category=False,
