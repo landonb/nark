@@ -383,37 +383,77 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     def _get_all(
         self,
+
+        # - If include_usage, returns a tuple for each result row: the Fact,
+        #   and then any additional columns added to the select.
         include_usage=False,
+
+        # - If count_results, returns just the count (an int) of results.
         count_results=False,
+
+        # - Use since and/or until to find Facts within a specific time range.
         since=None,
         until=None,
+        # - Use endless and partial to further influence the time range query.
+        # - Set endless=True to include the final, active Fact, if one exists.
         endless=False,
+        # - Use exclude_ongoing to omit the final, active Fact, if any,
+        #   from the results.
         exclude_ongoing=None,
-        # FIXME/2020-05-09: (lb): I don't see partial ever being True.
+        # - Specify partial
+        # - MAYBE/2020-05-09: (lb): I don't see partial ever being True.
+        #   - Either add to a test, or remove it. (Or find a use for it.)
         partial=False,
-        # FIXME/2018-06-09: (lb): Implement deleted/hidden.
-        # FIXME/2020-05-16: (lb): Remove deleted/hidden....
+
+        # - (lb): Note that 'deleted' is not super useful, given how 'deleted'
+        #   is used in a haphazard way to retain a Fact's edit history (though
+        #   really user's should use an external solution, like Git, and we
+        #   should remove the 'deleted' construct from herein, because nothing
+        #   actually does anything with deleted Facts (they just hang around
+        #   the database but that's it).
         deleted=False,
+
         search_term='',
+
         activity=False,
         category=False,
+
+        # - Use the group_* flags to GROUP BY specific attributes.
         group_activity=False,
         group_category=False,
         group_tags=False,
+
+        # - The user can specify one or more columns on which to sort,
+        #   and an 'asc' or 'desc' modifier for each column under sort.
         sort_col='',
         sort_order='',
+
         # - The user can restrict the results with basic SQL limit-offset.
         limit=None,
         offset=None,
+
+        # - If raw, returns the SQLAlchemy result object, a first-class object
+        #   with attributes (upon which the caller can use dot.notation).
+        #   The first item in the object is an AlchemyFact object, and the
+        #   remainder are the additional query columns.
+        # - If not raw, converts each result into a tuple, and converts the
+        #   AlchemyFact object into a proper Fact object. Note that the
+        #   additional query columns are not themselves identified, so it's
+        #   up to the caller to know what's in the tuple (which is at least
+        #   always the same set of columns, regardless of the query params).
         raw=False,
-        # (lb): IMPOSSIBLE_BRANCH: We should always be able to preload tags
-        # (eager loading), which is a lot quicker than lazy-loading tags,
-        # especially when exporting all Facts. I.e., when eager loading,
-        # there's only one SELECT call; but if lazy loading, there'd be one
-        # SELECT to get all the Facts, and then one SELECT to get the tags
-        # for each Fact; inefficient!). In any case, if there are problems
-        # with pre-loading, you can flip this switch to sample the other
-        # behavior, which is SQLAlchemy's "default", which is to lazy-load.
+
+        # - An option to lazy-load tags, but which should be avoided.
+        # - (lb): IMPOSSIBLE_BRANCH: Nothing in the code sets lazy_tags.
+        #   - It's here for the benefit of developers only.
+        #   - We should always be able to preload tags (eager loading), which
+        #     is a lot quicker than lazy-loading tags, especially when exporting
+        #     all Facts. I.e., when eager loading, there's only one SELECT call;
+        #     but if lazy loading, there's one SELECT to get all the Facts, and
+        #     then one SELECT each to get the tags for each Fact; inefficient!).
+        #     In any case, if there are problems with pre-loading, you can flip
+        #     this switch to sample the other behavior, which is SQLAlchemy's
+        #     "default", which is to lazy-load.
         lazy_tags=False,
     ):
         """
@@ -647,7 +687,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # +++
 
         def _process_record_new_fact_or_tuple(new_fact, cols):
-            # Make a tuple for group-by results, if any.
+            # Make a tuple with the calculated and group-by aggregates,
+            # if any, when requested by the caller.
             if cols:
                 return new_fact, *cols
             else:
@@ -1015,11 +1056,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 direction = desc if not sort_order else direction
                 query = query.order_by(direction(span_cols[i_duration]))
             elif sort_col == 'activity':
-                # If grouping by category, this sort does not work. That is, the
-                # activity names are being group_concat'enated into the 'activities'
+                # If grouping by only category, this sort does not work: The
+                # activity names are group_concat'enated into the 'activities'
                 # column, which must be post-processed -- split on magic_tag_sep,
                 # made unique, and sorted. Such a dob command might look like this:
                 #   `dob list facts --group category --sort activity`
+                # But if also grouping by activity, or tags, order-by here works.
                 # So sorting activity when grouping category is done by caller.
                 if not group_category and not group_tags:
                     query = query.order_by(direction(AlchemyActivity.name))
