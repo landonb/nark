@@ -277,8 +277,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         category=False,
         sort_col='',
         sort_order='',
-        # kwargs: limit, offset
-        **kwargs
+        limit=None,
+        offset=None,
     ):
         """
         Get all tags, with filtering and sorting options.
@@ -315,7 +315,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
             query = _get_all_order_by(query, *agg_cols)
 
-            query = query_apply_limit_offset(query, **kwargs)
+            query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
             query = _get_all_with_entities(query, agg_cols)
 

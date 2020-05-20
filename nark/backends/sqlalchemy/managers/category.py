@@ -270,8 +270,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         activity=False,
         sort_col='',
         sort_order='',
-        # kwargs: limit, offset
-        **kwargs
+        limit=None,
+        offset=None,
     ):
         """
         Get all Categories, possibly filtered by related Activity, and possible sorted.
@@ -307,7 +307,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
             query = _get_all_group_by(query, agg_cols)
 
-            query = query_apply_limit_offset(query, **kwargs)
+            query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
             query = _get_all_with_entities(query, agg_cols)
 

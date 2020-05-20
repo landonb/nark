@@ -34,7 +34,7 @@ __all__ = (
 )
 
 
-def query_apply_limit_offset(query, **kwargs):
+def query_apply_limit_offset(query, limit=None, offset=None):
     """
     Applies 'limit' and 'offset' to the database fetch query
 
@@ -49,22 +49,16 @@ def query_apply_limit_offset(query, **kwargs):
             offset (int|str, optional): Offset to apply to the query.
 
     Returns:
-        list: The query passed in, modified with limit and/or offset, maybe.
+        list: The query passed in, possibly updated with limit and/or offset.
     """
-    try:
-        if kwargs['limit']:
-            query = query.limit(kwargs['limit'])
-    except KeyError:
-        pass
-    try:
-        if kwargs['offset']:
-            query = query.offset(kwargs['offset'])
-    except KeyError:
-        pass
+    if limit and limit > 0:
+        query = query.limit(limit)
+    if offset and offset > 0:
+        query = query.offset(offset)
     return query
 
 
-def query_apply_true_or_not(query, column, condition, **kwargs):
+def query_apply_true_or_not(query, column, condition):
     if condition is not None:
         return query.filter(column == condition)
     return query

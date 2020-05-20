@@ -357,8 +357,9 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         category=False,
         sort_col='',
         sort_order='',
-        # kwargs: limit, offset
-        **kwargs
+        # - The user can request a subset of results.
+        limit=None,
+        offset=None,
     ):
         """
         FIXME: Update this docstring.
@@ -415,7 +416,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
             query = _get_all_group_by(query, agg_cols)
 
-            query = query_apply_limit_offset(query, **kwargs)
+            query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
             query = _get_all_with_entities(query, agg_cols)
 

@@ -401,6 +401,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         group_tags=False,
         sort_col='',
         sort_order='',
+        # - The user can restrict the results with basic SQL limit-offset.
+        limit=None,
+        offset=None,
         raw=False,
         exclude_ongoing=None,
         # (lb): IMPOSSIBLE_BRANCH: We should always be able to preload tags
@@ -412,8 +415,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # with pre-loading, you can flip this switch to sample the other
         # behavior, which is SQLAlchemy's "default", which is to lazy-load.
         lazy_tags=False,
-        # kwargs: limit, offset
-        **kwargs
     ):
         """
         Return all facts within a given timeframe that match given search terms.
@@ -499,7 +500,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_order_by(query, span_cols, tags_col)
 
-            query = query_apply_limit_offset(query, **kwargs)
+            query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
             query = _get_all_with_entities(query, span_cols, grouping_cols, tags_col)
 
