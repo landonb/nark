@@ -422,6 +422,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         group_activity=False,
         group_category=False,
         group_tags=False,
+        group_days=False,
 
         # - The user can specify one or more columns on which to sort,
         #   and an 'asc' or 'desc' modifier for each column under sort.
@@ -493,7 +494,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         """
         magic_tag_sep = '%%%%,%%%%'
 
-        is_grouped = group_activity or group_category or group_tags
+        is_grouped = (
+            group_activity or group_category or group_tags or group_days
+        )
 
         add_aggregates = include_extras or is_grouped or sort_col in ('usage', 'time')
 
@@ -520,6 +523,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query, actg_cols = _get_all_prepare_actg_cols(query)
 
+            query, date_col = _get_all_prepare_date_col(query)
+
             query, tags_col = _get_all_prepare_tags_col(query)
 
             query = _get_all_prepare_joins(query)
@@ -540,7 +545,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_group_by(query)
 
-            query = _get_all_order_by(query, span_cols, tags_col)
+            query = _get_all_order_by(query, span_cols, date_col, tags_col)
 
             query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
@@ -857,7 +862,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             elif group_category:
                 # One Category per result, but one or more Activities were flattened.
                 query, activities_col = _get_all_prepare_actg_cols_activities(query)
-            elif group_tags:
+            elif group_tags or group_days:
                 # When grouping by tags, both Activities and Categories are grouped.
                 query, actegories_col = _get_all_prepare_actg_cols_actegories(query)
 
@@ -896,11 +901,44 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
+        # MAYBE/2020-05-19: Splice Facts at midnight so that each
+        # day is reported as 24 hours, rather than reported as the
+        # sum of all the complete Facts that start on the day (in
+        # which case, a Fact that starts the day before that runs
+        # into the day will not be counted (undercount); and a Fact
+        # that starts on the day by ends on the next will be have
+        # all its time counted (over-count).
+
+        def _get_all_prepare_date_col(query):
+            if not group_days:
+                return query, None
+
+            # FIXME/MAYBE/2020-05-19: Prepare other time-grouped reports. See:
+            #   https://www.sqlite.org/lang_datefunc.html
+            # - MAYBE: Prepare monthly reports using 'start of month':
+            #     SELECT date('now', 'start of month');
+            #     if group_months: ...
+            # - MAYBE: Prepare weekly reports using `weekday N` (0=Sunday);
+            #     if group_weeks: ...
+            # - MAYBE: Prepare Sprint reports using... not sure.
+            #     if group_sprint???
+
+            date_col = func.date(
+                AlchemyFact.start,
+            ).label("date_col")
+            query = query.add_columns(date_col)
+            query = query.group_by(date_col)
+
+            return query, date_col
+
+        # ***
+
         def _get_all_prepare_joins(query):
             join_category = (
                 group_activity  # b/c _get_all_prepare_actg_cols_categories
                 or group_category
                 or group_tags  # b/c _get_all_prepare_actg_cols_actegories
+                or group_days  # b/c _get_all_prepare_actg_cols_actegories
                 or (category is not False)
                 or search_term
                 or sort_col == 'activity'
@@ -1042,7 +1080,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         # FIXME/2018-06-09: (lb): DRY: Combine each manager's _get_all_order_by.
-        def _get_all_order_by(query, span_cols=None, tags_col=None):
+        def _get_all_order_by(query, span_cols=None, date_col=None, tags_col=None):
             direction = desc if sort_order == 'desc' else asc
             if sort_col == 'start':
                 direction = desc if not sort_order else direction
