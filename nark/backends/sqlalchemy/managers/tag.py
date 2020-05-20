@@ -281,6 +281,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         sort_order='',
         limit=None,
         offset=None,
+        raw=False,
     ):
         """
         Get all tags, with filtering and sorting options.
@@ -290,6 +291,12 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                   ordered by lower(name), or most recently
                   used; possibly filtered by a search term.
         """
+        # If user is requesting sorting according to time, need Fact table.
+        requested_usage = include_usage
+        include_usage = (
+            include_usage
+            or set(sort_cols).intersection(('start', 'usage', 'time'))
+        )
 
         def _get_all_tags():
             message = _('usage: {} / term: {} / col: {} / order: {}').format(
@@ -323,7 +330,11 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
             self.store.logger.debug(_('query: {}').format(str(query)))
 
-            results = query.all() if not count_results else query.count()
+            if count_results:
+                results = query.count()
+            else:
+                results = query.all()
+                results = _process_results(results)
 
             return results
 
@@ -435,6 +446,13 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                 return query
             query = query.with_entities(AlchemyTag, *agg_cols)
             return query
+
+        # ***
+
+        def _process_results(records):
+            return self._get_all_process_results_simple(
+                records, raw, include_usage, requested_usage,
+            )
 
         # ***
 
