@@ -305,7 +305,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
     # ***
 
-    def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
+    def get_all(self, *args, include_usage=False, sort_cols=('name',), **kwargs):
         """
         Return all matching activities.
 
@@ -329,13 +329,13 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             * Does exclude activities with ``deleted=True``.
         """
         kwargs['include_usage'] = include_usage
-        kwargs['sort_col'] = sort_col
+        kwargs['sort_cols'] = sort_cols
         return super(ActivityManager, self).get_all(*args, **kwargs)
 
-    def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
+    def get_all_by_usage(self, *args, sort_cols=('usage',), **kwargs):
         assert(not args)
         kwargs['include_usage'] = True
-        kwargs['sort_col'] = sort_col
+        kwargs['sort_cols'] = sort_cols
         return super(ActivityManager, self).get_all(*args, **kwargs)
 
     def _get_all(
@@ -355,8 +355,10 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         search_term='',
         activity=False,
         category=False,
-        sort_col='',
-        sort_order='',
+        # - The user can specify one or more columns on which to sort,
+        #   and an 'asc' or 'desc' modifier for each column under sort.
+        sort_cols='',
+        sort_orders='',
         # - The user can request a subset of results.
         limit=None,
         offset=None,
@@ -377,10 +379,10 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             category (nark.Category or str, optional): Limit activities to this
                 category. Defaults to ``False``. If ``category=None`` only activities
                 without a category will be considered.
-            sort_col (str, optional): Which columns to sort by. Defaults to 'activity'.
-                Choices: 'activity, 'category', 'start', 'usage'.
+            sort_cols (list of str, optional): Which column(s) to sort by. Defaults to
+                'activity'. Choices: 'activity, 'category', 'start', 'usage'.
                 Note that 'start' and 'usage' only apply if include_usage.
-            sort_order (str, optional): One of:
+            sort_orders (list of str, optional): Each element one of:
                 'asc': Whether to search the results in ascending order.
                 'desc': Whether to search the results in descending order.
             limit (int, optional): Query "limit".
@@ -509,29 +511,28 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # ***
 
         def _get_all_order_by(query, count_col=None, time_col=None):
-            direction = desc if sort_order == 'desc' else asc
+            for idx, sort_col in enumerate(sort_cols):
+                direction = desc if sort_orders[idx] == 'desc' else asc
+                query = _get_all_order_by_col(
+                    query, sort_col, direction, count_col, time_col,
+                )
+            return query
+
+        def _get_all_order_by_col(query, sort_col, direction, count_col, time_col):
             if sort_col == 'start':
-                assert include_usage
-                direction = desc if not sort_order else direction
                 query = query.order_by(direction(AlchemyFact.start))
             elif sort_col == 'usage':
-                assert include_usage and count_col is not None
-                direction = desc if not sort_order else direction
-                query = query.order_by(direction(count_col), direction(time_col))
+                query = query.order_by(direction(count_col))
             elif sort_col == 'time':
-                assert include_usage and time_col is not None
-                direction = desc if not sort_order else direction
-                query = query.order_by(direction(time_col), direction(count_col))
-            elif sort_col == 'activity':
+                query = query.order_by(direction(time_col))
+            elif sort_col == 'activity' or sort_col == 'name' or not sort_col:
                 query = query.order_by(direction(AlchemyActivity.name))
+                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                 query = query.order_by(direction(AlchemyCategory.name))
             elif sort_col == 'category':
                 query = query.order_by(direction(AlchemyCategory.name))
+                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                 query = query.order_by(direction(AlchemyActivity.name))
-            else:
-                assert sort_col in ('', 'name', 'tag', 'fact')
-                query = query.order_by(direction(AlchemyActivity.name))
-                query = query.order_by(direction(AlchemyCategory.name))
             return query
 
         # ***
