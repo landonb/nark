@@ -180,11 +180,18 @@ class BaseAlchemyManager(object):
             return query
 
         if activity:
-            if activity.pk:
-                query = query.filter(AlchemyActivity.pk == activity.pk)
-            else:
+            activity_name = None
+            try:
+                if activity.pk:
+                    query = query.filter(AlchemyActivity.pk == activity.pk)
+                else:
+                    activity_name = activity.name
+            except AttributeError:
+                activity_name = activity
+
+            if activity_name is not None:
                 query = query.filter(
-                    func.lower(AlchemyActivity.name) == func.lower(activity.name)
+                    func.lower(AlchemyActivity.name) == func.lower(activity_name)
                 )
         else:  # activity is None.
             query = query.filter(AlchemyFact.activity == None)  # noqa: E711
