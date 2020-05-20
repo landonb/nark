@@ -22,6 +22,7 @@ from gettext import gettext as _
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import or_
 
 from . import BaseAlchemyManager, query_apply_limit_offset, query_apply_true_or_not
 from ....managers.activity import BaseActivityManager
@@ -352,7 +353,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         hidden=False,
         # FIXME/2018-06-20: (lb): Do what with key now?
         key=None,
-        search_term='',
+        search_term=None,
         activity=False,
         category=False,
         # - The user can specify one or more columns on which to sort,
@@ -371,8 +372,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         Args:
             include_usage (int, optional): If true, include count of Facts that reference
                 each Activity.
-            search_term (str, optional): Limit activities to those matching a substring
-                in their name. Defaults to ``empty string``.
+            search_term (list of str, optional): Limit activities to those matching a
+                substring in their name. Defaults to None/disabled.
             activity (nark.Activity, optional): Limit activities to this activity.
                 Defaults to ``False``. If ``activity=None`` only activities with a
                 matching name will be considered.
@@ -503,9 +504,16 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         def _get_all_filter_by_search_term(query):
             if not search_term:
                 return query
-            query = query.filter(
-                AlchemyActivity.name.ilike('%{}%'.format(search_term))
-            )
+
+            condits = None
+            for term in search_term:
+                condit = AlchemyActivity.name.ilike('%{}%'.format(term))
+                if condits is None:
+                    condits = condit
+                else:
+                    condits = or_(condits, condit)
+
+            query = query.filter(condits)
             return query
 
         # ***
