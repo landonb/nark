@@ -341,21 +341,63 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
     def _get_all(
         self,
-        # FIXME/2018-06-20: (lb): Do what with key now?
+        # - If specified, look for an Activity with this PK.
         key=None,
+        # - If True, include count of Facts that use this Activity, as
+        #   well as the cumulative duration (end - start) of those Facts.
         include_usage=True,
+        # - If True, return only a count of query matches (an integer).
+        #   Otherwise, the method returns a list of result rows.
         count_results=False,
-        # FIXME/2018-06-20: (lb): Implement since/until.
+        # - Use since and/or until to find Activities used by Facts from a
+        #   specific time range.
         since=None,
         until=None,
+        # - Use endless and partial to further influence the time range query.
         endless=False,
         partial=False,
-        # FIXME/2018-06-09: (lb): Implement deleted/hidden.
+        # FIXME/2020-05-19: (lb): What's the status of the 'deleted' feature?
+        # - There's code wired to 'delete' an Activity, but what does that mean?
+        # - Really, the user should be able to 'orphan' an Activity (by removing
+        #   it from all Facts), but if an Activity is still being used by Facts,
+        #   what would delete do? Would we want to remove the Activity from all
+        #   the Facts it's applied to?
+        #   - I think an 'orphaned' option makes sense here. And maybe a feature
+        #     to "rename" an Activity, or really to assign a different Activity
+        #     to some collection of Facts. Then maybe 'delete' is okay, i.e.,
+        #     once a Activity is orphaned, then it can be deleted.
+        #   - In the meantime, the user can hide Activities from the CLI front
+        #     end using the ignore feature, which omits matching Activities
+        #     from the auto-complete and suggestion widgets.
+        # In any case, this 'deleted' option is still wired in the CLI, so
+        # maintaining support here. For now.
         deleted=False,
         hidden=False,
+        # - Specify one or_ more search terms to match against the Activity name.
+        #   - Note that if more than one term is supplied, they're ORed together,
+        #     so an Activity only has to match one term.
+        #   - Note also that the search is loose: It ignores case and will match
+        #     in the middle of the Activity name.
         search_term=None,
+        # - Specify an Activity object to restrict to that specific Activity.
+        #   Note that the CLI does not expose this option.
         activity=False,
+        # - Specify a name or Category object to restrict to that specific Category.
+        #   - Note that this match is strict -- case and exactness count.
         category=False,
+        # - MEH: (lb): For parity, could add a 'tags' option to restrict the
+        #   search to Activities used on Facts with specific 'tags', but how
+        #   complicated and useless does that sound.
+        # - (lb): I added grouping support to FactManager.get_all via the options:
+        #     group_activity
+        #     group_category
+        #     group_tags
+        #   We could add them to this query, but it'd make it much more complex,
+        #   and you'd get essentially the same results as using Fact.get_all (save
+        #   for any Activities that are not applied to any Facts, but we can live
+        #   with that gap in support). (tl;dr, use `dob list fact` or `dob usage fact`
+        #   to group query results, and use the --column option if you want to tweak
+        #   the output report columns, e.g., to match this method's output.)
         # - The user can specify one or more columns on which to sort,
         #   and an 'asc' or 'desc' modifier for each column under sort.
         sort_cols='',
