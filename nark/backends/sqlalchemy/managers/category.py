@@ -234,7 +234,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
     # ***
 
-    def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
+    def get_all(self, *args, include_usage=False, sort_cols=('name',), **kwargs):
         """
         Return a list of all categories.
 
@@ -242,13 +242,13 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             list: List of ``Categories``, ordered by ``lower(name)``.
         """
         kwargs['include_usage'] = include_usage
-        kwargs['sort_col'] = sort_col
+        kwargs['sort_cols'] = sort_cols
         return super(CategoryManager, self).get_all(*args, **kwargs)
 
-    def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
+    def get_all_by_usage(self, *args, sort_cols=('usage',), **kwargs):
         assert(not args)
         kwargs['include_usage'] = True
-        kwargs['sort_col'] = sort_col
+        kwargs['sort_cols'] = sort_cols
         return super(CategoryManager, self).get_all(*args, **kwargs)
 
     # DRY: This fcn. very much similar between activity/category/tag.
@@ -267,8 +267,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         deleted=False,
         search_term='',
         activity=False,
-        sort_col='',
-        sort_order='',
+        sort_cols='',
+        sort_orders='',
         limit=None,
         offset=None,
         raw=False,
@@ -280,10 +280,16 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             list: List of all Categories present in the database, ordered
             by lower(name) or however caller asked that they be ordered.
         """
+        # If user is requesting sorting according to time, need Fact table.
+        requested_usage = include_usage
+        include_usage = (
+            include_usage
+            or set(sort_cols).intersection(('start', 'usage', 'time'))
+        )
 
         def _get_all_categories():
             message = _('usage: {} / term: {} / act.: {} / col: {} / order: {}').format(
-                include_usage, search_term, activity, sort_col, sort_order,
+                include_usage, search_term, activity, sort_cols, sort_orders,
             )
             self.store.logger.debug(message)
 
@@ -330,7 +336,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             if (
                 not (include_usage or since or until or endless)
                 and not activity
-                and sort_col not in ['start', 'activity', ]
+                and 'activity' not in sort_cols
             ):
                 query = self.store.session.query(AlchemyCategory)
             else:
@@ -375,31 +381,27 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         # ***
 
         def _get_all_order_by(query, count_col=None, time_col=None):
-            direction = desc if sort_order == 'desc' else asc
+            for idx, sort_col in enumerate(sort_cols):
+                direction = desc if sort_orders[idx] == 'desc' else asc
+                query = _get_all_order_by_col(
+                    query, sort_col, direction, count_col, time_col,
+                )
+            return query
+
+        def _get_all_order_by_col(query, sort_col, direction, count_col, time_col):
             if sort_col == 'start':
-                assert include_usage
-                direction = desc if not sort_order else direction
                 query = query.order_by(direction(AlchemyFact.start))
             elif sort_col == 'usage':
-                assert include_usage and count_col is not None
-                direction = desc if not sort_order else direction
-                query = query.order_by(direction(count_col), direction(time_col))
+                query = query.order_by(direction(count_col))
             elif sort_col == 'time':
-                assert include_usage and time_col is not None
-                direction = desc if not sort_order else direction
-                query = query.order_by(direction(time_col), direction(count_col))
+                query = query.order_by(direction(time_col))
             elif sort_col == 'activity':
                 query = query.order_by(direction(AlchemyActivity.name))
+                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                 query = query.order_by(direction(AlchemyCategory.name))
-            elif sort_col == 'category':
+            elif sort_col == 'category' or sort_col == 'name' or not sort_col:
                 query = query.order_by(direction(AlchemyCategory.name))
-                if count_col is not None:
-                    query = query.order_by(direction(AlchemyActivity.name))
-            else:
-                # FIXME/2018-05-29: (lb): Are all these sort_col's for real?
-                # Seems like they wouldn't sort like user would be expecting.
-                assert sort_col in ('', 'name', 'tag', 'fact')
-                query = query.order_by(direction(AlchemyCategory.name))
+                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                 if count_col is not None:
                     query = query.order_by(direction(AlchemyActivity.name))
             return query
