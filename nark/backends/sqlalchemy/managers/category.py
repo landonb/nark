@@ -252,20 +252,20 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         return super(CategoryManager, self).get_all(*args, **kwargs)
 
     # DRY: This fcn. very much similar between activity/category/tag.
+    # - See FactManager.get_all and ActivityManager.get_all for more
+    #   comments about this method.
     def _get_all(
         self,
+        # FIXME/2018-06-20: (lb): Do what with key now?
+        key=None,
         include_usage=True,
         count_results=False,
-        # FIXME/2018-06-20: (lb): Implement since/until.
         since=None,
         until=None,
         endless=False,
         partial=False,
-        # FIXME/2018-06-09: (lb): Implement deleted/hidden. [i.e., in UI]
         deleted=False,
         hidden=False,
-        # FIXME/2018-06-20: (lb): Do what with key now?
-        key=None,
         search_term='',
         activity=False,
         sort_col='',
