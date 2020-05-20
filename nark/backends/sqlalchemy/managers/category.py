@@ -22,6 +22,7 @@ from gettext import gettext as _
 from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import or_
 
 from . import BaseAlchemyManager, query_apply_limit_offset, query_apply_true_or_not
 from ....managers.category import BaseCategoryManager
@@ -264,7 +265,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         endless=False,
         partial=False,
         deleted=False,
-        search_term='',
+        search_term=None,
         activity=False,
         sort_cols='',
         sort_orders='',
@@ -379,9 +380,16 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         def _get_all_filter_by_search_term(query):
             if not search_term:
                 return query
-            query = query.filter(
-                AlchemyCategory.name.ilike('%{}%'.format(search_term))
-            )
+
+            condits = None
+            for term in search_term:
+                condit = AlchemyCategory.name.ilike('%{}%'.format(term))
+                if condits is None:
+                    condits = condit
+                else:
+                    condits = or_(condits, condit)
+
+            query = query.filter(condits)
             return query
 
         # ***
