@@ -384,9 +384,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
     def _get_all(
         self,
 
-        # - If include_usage, returns a tuple for each result row: the Fact,
+        # - If include_extras, returns a tuple for each result row: the Fact,
         #   and then any additional columns added to the select.
-        include_usage=False,
+        include_extras=False,
 
         # - If count_results, returns just the count (an int) of results.
         count_results=False,
@@ -495,6 +495,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         is_grouped = group_activity or group_category or group_tags
 
+        add_aggregates = include_extras or is_grouped or sort_col in ('usage', 'time')
+
         i_duration = FactManager.RESULT_GRP_INDEX['duration']
         i_group_count = FactManager.RESULT_GRP_INDEX['group_count']
         # i_first_start = FactManager.RESULT_GRP_INDEX['first_start']
@@ -572,9 +574,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def _process_results(records):
-            # MAGIC_NUMBER: Check any record (0) to see if any aggregate columns
-            # exist or not -- if length is 1, it's just the Fact, no aggregates.
-            if not records or len(records[0]) == 1:
+            if not records or (not include_extras and not add_aggregates):
                 return _process_records_facts_only(records)
 
             return _process_records_facts_and_aggs(records)
@@ -644,18 +644,17 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         def _process_record_prepare_fact(fact, new_tags):
             # Unless the caller wants raw results, create a Fact.
             if not raw:
-                new_fact = fact.as_hamster(self.store, new_tags)
-            else:
-                # Even if user wants raw results, still attach the tags.
-                if new_tags:
-                    fact.tags = new_tags
-                new_fact = fact
-            return new_fact
+                return fact.as_hamster(self.store, new_tags)
+
+            # Even if user wants raw results, still attach the tags.
+            if new_tags:
+                fact.tags = new_tags
+            return fact
 
         # +++
 
         def _process_record_reduce_aggregates(cols):
-            if not cols:
+            if not cols or not include_extras:
                 return
 
             _process_record_reduce_aggregate_activities(cols)
@@ -689,12 +688,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         def _process_record_new_fact_or_tuple(new_fact, cols):
             # Make a tuple with the calculated and group-by aggregates,
             # if any, when requested by the caller.
-            if cols:
+            if include_extras:
                 return new_fact, *cols
-            else:
-                # This happens when cols is empty, i.e., because tags_col
-                # was queried, but removed.
-                return new_fact
+            return new_fact
 
         # ***
 
@@ -735,7 +731,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def _get_all_prepare_span_cols(query):
-            if not include_usage and not is_grouped:
+            if not add_aggregates:
                 return query, None
 
             span_cols = []
@@ -839,7 +835,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_prepare_actg_cols(query):
             actg_cols = None
-            if not include_usage and not is_grouped:
+            if not add_aggregates:
                 return query, actg_cols
 
             # Use placeholder values -- may as well be zero -- for columns we do
@@ -911,7 +907,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 or sort_col == 'category'
             )
             if (
-                include_usage
+                add_aggregates
                 or (activity is not False)
                 or join_category
             ):
@@ -1052,7 +1048,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 direction = desc if not sort_order else direction
                 query = self._get_all_order_by_start(query, direction)
             elif sort_col == 'time':
-                assert include_usage and span_cols is not None
                 direction = desc if not sort_order else direction
                 query = query.order_by(direction(span_cols[i_duration]))
             elif sort_col == 'activity':
