@@ -404,6 +404,14 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # - The user can request a subset of results.
         limit=None,
         offset=None,
+        # - The user can request raw SQLAlchemy results (where each result
+        #   has a leaving AlchemyActivity object, and then the 'uses' and
+        #   'span' columns; and the result object has object attributes,
+        #   e.g., result.uses, result.span); or the user can expect tuple
+        #   results (with a proper Activity object as the first item in
+        #   the tuple, and the extra columns following). Note that when
+        #   raw=False, it is up to the caller to know how tuple layout.
+        raw=False,
     ):
         """
         FIXME: Update this docstring.
@@ -434,6 +442,12 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             list: List of ``nark.Activity`` instances matching constrains.
                 The list is ordered by ``Activity.name``.
         """
+        # If user is requesting sorting according to time, need Fact table.
+        requested_usage = include_usage
+        include_usage = (
+            include_usage
+            or set(sort_cols).intersection(('start', 'usage', 'time'))
+        )
 
         def _get_all_activities():
             message = (
@@ -471,7 +485,11 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
             self.store.logger.debug(_('Query') + ': {}'.format(str(query)))
 
-            results = query.all() if not count_results else query.count()
+            if count_results:
+                results = query.count()
+            else:
+                results = query.all()
+                results = _process_results(results)
 
             return results
 
@@ -610,6 +628,28 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             #  it out: self.store.session.query(AlchemyActivity).join(AlchemyFact).
             query = query.with_entities(AlchemyActivity, *agg_cols)
             return query
+
+        # ***
+
+        def _process_results(records):
+            if not records or not include_usage:
+                return _process_records_items_only(records)
+            return _process_records_items_and_aggs(records)
+
+        def _process_records_items_only(records):
+            if not raw:
+                return [item.as_hamster(self.store) for item in records]
+            return records
+
+        def _process_records_items_and_aggs(records):
+            if not raw:
+                return _process_records_items_and_aggs_hydrate(records)
+            return records
+
+        def _process_records_items_and_aggs_hydrate(records):
+            if requested_usage:
+                return [(item.as_hamster(self.store), *cols) for item, *cols in records]
+            return [item.as_hamster(self.store) for item, *cols in records]
 
         # ***
 
