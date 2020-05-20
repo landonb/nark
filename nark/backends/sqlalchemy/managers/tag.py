@@ -240,7 +240,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
-    def get_all(self, *args, include_usage=False, sort_col='name', **kwargs):
+    def get_all(self, *args, include_usage=False, sort_cols=('name',), **kwargs):
         """
         Get all tags, with filtering and sorting options.
 
@@ -250,13 +250,13 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                   used; possibly filtered by a search term.
         """
         kwargs['include_usage'] = include_usage
-        kwargs['sort_col'] = sort_col
+        kwargs['sort_cols'] = sort_cols
         return super(TagManager, self).get_all(*args, **kwargs)
 
-    def get_all_by_usage(self, *args, sort_col='usage', **kwargs):
+    def get_all_by_usage(self, *args, sort_cols=('usage',), **kwargs):
         assert(not args)
         kwargs['include_usage'] = True
-        kwargs['sort_col'] = sort_col
+        kwargs['sort_cols'] = sort_cols
         return super(TagManager, self).get_all(*args, **kwargs)
 
     # DRY: This fcn. very much similar between activity/category/tag.
@@ -277,8 +277,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         search_term=None,
         activity=False,
         category=False,
-        sort_col='',
-        sort_order='',
+        sort_cols='',
+        sort_orders='',
         limit=None,
         offset=None,
         raw=False,
@@ -300,7 +300,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
         def _get_all_tags():
             message = _('usage: {} / term: {} / col: {} / order: {}').format(
-                include_usage, search_term, sort_col, sort_order,
+                include_usage, search_term, sort_cols, sort_orders,
             )
             self.store.logger.debug(message)
 
@@ -419,30 +419,29 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         # ***
 
         def _get_all_order_by(query, count_col=None, time_col=None):
-            direction = desc if sort_order == 'desc' else asc
+            for idx, sort_col in enumerate(sort_cols):
+                direction = desc if sort_orders[idx] == 'desc' else asc
+                query = _get_all_order_by_col(
+                    query, sort_col, direction, count_col, time_col,
+                )
+            return query
+
+        def _get_all_order_by_col(query, sort_col, direction, count_col, time_col):
             if sort_col == 'start':
-                assert include_usage
-                direction = desc if not sort_order else direction
                 query = query.order_by(direction(AlchemyFact.start))
             elif sort_col == 'usage':
-                assert include_usage and count_col is not None
-                direction = desc if not sort_order else direction
-                query = query.order_by(direction(count_col), direction(time_col))
+                query = query.order_by(direction(count_col))
             elif sort_col == 'time':
-                assert include_usage and time_col is not None
-                direction = desc if not sort_order else direction
-                query = query.order_by(direction(time_col), direction(count_col))
+                query = query.order_by(direction(time_col))
             elif sort_col == 'activity':
                 query = query.order_by(direction(AlchemyActivity.name))
+                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                 query = query.order_by(direction(AlchemyCategory.name))
             elif sort_col == 'category':
                 query = query.order_by(direction(AlchemyCategory.name))
+                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
                 query = query.order_by(direction(AlchemyActivity.name))
-            else:
-                # Meh. Rather than make a custom --order for each command,
-                # just using the same big list. So 'activity', 'category',
-                # etc., are acceptable here, if not simply ignored.
-                assert sort_col in ('', 'name', 'tag', 'fact')
+            elif sort_col == 'tag' or sort_col == 'name' or not sort_col:
                 query = query.order_by(direction(AlchemyTag.name))
             return query
 
