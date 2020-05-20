@@ -476,7 +476,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query, span_cols = _get_all_prepare_span_cols(query)
 
-            query, grouping_cols = _get_all_prepare_grouping_cols(query)
+            query, actg_cols = _get_all_prepare_actg_cols(query)
 
             query, tags_col = _get_all_prepare_tags_col(query)
 
@@ -502,7 +502,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
-            query = _get_all_with_entities(query, span_cols, grouping_cols, tags_col)
+            query = _get_all_with_entities(query, span_cols, actg_cols, tags_col)
 
             self.store.logger.debug(_('query: {}'.format(str(query))))
 
@@ -550,7 +550,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         #       AlchemyFact
         #     and then adds aggregate columns from the functions:
         #       _get_all_prepare_span_cols, and
-        #       _get_all_prepare_grouping_cols.
+        #       _get_all_prepare_actg_cols.
         #   - The order of aggregates is also reflected by RESULT_GRP_INDEX.
         # - The intermediate results might also end with a coalesced Tags value
         #   (see _get_all_prepare_tags_col), but the tags_col is pulled before
@@ -796,10 +796,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         #   all Activity names that are grouped, or a Categories column to
         #   report all the Categories of each set of grouped Facts (each row).
 
-        def _get_all_prepare_grouping_cols(query):
-            grouping_cols = None
+        def _get_all_prepare_actg_cols(query):
+            actg_cols = None
             if not include_usage and not is_grouped:
-                return query, grouping_cols
+                return query, actg_cols
 
             # Use placeholder values -- may as well be zero -- for columns we do
             # not need for this query, so that the return tuple is always the same
@@ -816,26 +816,26 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 pass
             elif group_activity:
                 # One Activity per result, but one or more Categories were flattened.
-                categories_col = _get_all_prepare_grouping_cols_categories(query)
+                categories_col = _get_all_prepare_actg_cols_categories(query)
             elif group_category:
                 # One Category per result, but one or more Activities were flattened.
-                activities_col = _get_all_prepare_grouping_cols_activities(query)
+                activities_col = _get_all_prepare_actg_cols_activities(query)
             elif group_tags:
                 # When grouping by tags, both Activities and Categories are grouped.
-                actegories_col = _get_all_prepare_grouping_cols_actegories(query)
+                actegories_col = _get_all_prepare_actg_cols_actegories(query)
 
-            grouping_cols = [activities_col, actegories_col, categories_col]
+            actg_cols = [activities_col, actegories_col, categories_col]
 
-            return query, grouping_cols
+            return query, actg_cols
 
-        def _get_all_prepare_grouping_cols_activities(query):
+        def _get_all_prepare_actg_cols_activities(query):
             activities_col = func.group_concat(
                 AlchemyActivity.name, magic_tag_sep,
             ).label("facts_activities")
             query = query.add_columns(activities_col)
             return activities_col
 
-        def _get_all_prepare_grouping_cols_actegories(query):
+        def _get_all_prepare_actg_cols_actegories(query):
             # SQLite supports column || concatenation, which is + in SQLAlchemy.
             # MAYBE/2020-05-18: Is there a config value that specs the '@' sep?
             # - I.e., replace the hardcoded '@' with a config value.
@@ -843,14 +843,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # SKIP/Not necessary:
             #   actegory_col.label("actegory")
             #   query = query.add_columns(actegory_col)
-            #   grouping_cols.append(actegory_col)
+            #   actg_cols.append(actegory_col)
             actegories_col = func.group_concat(
                 actegory_col, magic_tag_sep,
             ).label("facts_actegories")
             query = query.add_columns(actegories_col)
             return actegories_col
 
-        def _get_all_prepare_grouping_cols_categories(query):
+        def _get_all_prepare_actg_cols_categories(query):
             categories_col = func.group_concat(
                 AlchemyCategory.name, magic_tag_sep,
             ).label("facts_categories")
@@ -861,9 +861,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_prepare_joins(query):
             join_category = (
-                group_activity  # b/c _get_all_prepare_grouping_cols_categories
+                group_activity  # b/c _get_all_prepare_actg_cols_categories
                 or group_category
-                or group_tags  # b/c _get_all_prepare_grouping_cols_actegories
+                or group_tags  # b/c _get_all_prepare_actg_cols_actegories
                 or (category is not False)
                 or search_term
                 or sort_col == 'activity'
@@ -1080,7 +1080,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _get_all_with_entities(query, span_cols, grouping_cols, tags_col):
+        def _get_all_with_entities(query, span_cols, actg_cols, tags_col):
             # Even if grouping, we still want to fetch all columns. For one,
             # _process_results expects a Fact object as leading item in each
             # result tuple, and also because as_hamster expects certain fields
@@ -1093,8 +1093,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # by RESULT_GRP_INDEX.
             if span_cols is not None:
                 columns.extend(span_cols)
-            if grouping_cols is not None:
-                columns.extend(grouping_cols)
+            if actg_cols is not None:
+                columns.extend(actg_cols)
 
             # Ensure tags_col is last, because _process_record_tags expects (pops) it.
             if tags_col is not None:
