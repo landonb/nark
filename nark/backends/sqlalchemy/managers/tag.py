@@ -58,6 +58,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             tag = self._add(tag, raw=raw, skip_commit=skip_commit)
         return tag
 
+    # ***
+
     def _add(self, tag, raw=False, skip_commit=False):
         """
         Add a new tag to the database.
@@ -92,6 +94,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         )
 
         return result
+
+    # ***
 
     def _update(self, tag):
         """
@@ -139,6 +143,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
         return alchemy_tag.as_hamster(self.store)
 
+    # ***
+
     def remove(self, tag):
         """
         Delete a given tag.
@@ -170,6 +176,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         self.store.session.commit()
         message = _("{!r} successfully deleted.").format(tag)
         self.store.logger.debug(message)
+
+    # ***
 
     def get(self, pk, deleted=None):
         """
@@ -209,6 +217,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         self.store.logger.debug(message)
         return result.as_hamster(self.store)
 
+    # ***
+
     def get_by_name(self, name, raw=False):
         """
         Return a tag based on its name.
@@ -239,6 +249,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             result = result.as_hamster(self.store)
             self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
+
+    # ***
 
     def get_all(self, *args, include_usage=False, sort_cols=('name',), **kwargs):
         """
@@ -277,6 +289,8 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         search_term=None,
         activity=False,
         category=False,
+        match_activities=[],
+        match_categories=[],
         sort_cols='',
         sort_orders='',
         limit=None,
@@ -310,9 +324,9 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 
-            query = _get_all_filter_by_activity(query)
+            query = _get_all_filter_by_activities(query)
 
-            query = _get_all_filter_by_category(query)
+            query = _get_all_filter_by_categories(query)
 
             query = _get_all_filter_by_search_term(query)
 
@@ -363,22 +377,28 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
         # ***
 
-        def _get_all_filter_by_activity(query):
+        def _get_all_filter_by_activities(query):
             if activity is False:
                 return query
 
             query = query.join(AlchemyActivity)
 
-            query = self._get_all_filter_by_activity(query, activity)
+            query = self._get_all_filter_by_activities(
+                query, match_activities + [activity],
+            )
 
             return query
 
-        def _get_all_filter_by_category(query):
+        def _get_all_filter_by_categories(query):
             if category is False:
                 return query
+
+            # (lb): This wouldn't double-join Activity, would it?
             query = query.join(AlchemyActivity).join(AlchemyCategory)
 
-            query = self._get_all_filter_by_category(query, category)
+            query = self._get_all_filter_by_categories(
+                query, match_categories + [category],
+            )
 
             return query
 
@@ -454,4 +474,6 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         # ***
 
         return _get_all_tags()
+
+    # ***
 

@@ -416,8 +416,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         search_term='',
 
+        # Leave activity=False or category=False to skip filtering on them.
+        # Or, set activity=None to find Facts without an Activity; likewise
+        # for category=None. Or set either to a string to do string matching
+        # on the activity or category name(s). Or set activity to Activity
+        # object, or category to Category object to match against exact item
+        # (i.e., using its PK).
         activity=False,
         category=False,
+        match_activities=[],
+        match_categories=[],
 
         # - Use the group_* flags to GROUP BY specific attributes.
         group_activity=False,
@@ -539,9 +547,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 
-            query = self._get_all_filter_by_activity(query, activity)
+            query = _get_all_filter_by_activities(query, match_activities + [activity])
 
-            query = self._get_all_filter_by_category(query, category)
+            query = _get_all_filter_by_categories(query, match_categories + [category])
 
             query = _get_all_filter_by_search_term(query)
 

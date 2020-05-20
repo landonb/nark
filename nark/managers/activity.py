@@ -172,6 +172,10 @@ class BaseActivityManager(BaseManager):
 
     # ***
 
+    # NOTE: Unlike Category and Tag, there is no Activity.get_by_name.
+
+    # ***
+
     def get_by_composite(self, name, category):
         """
         Lookup for unique 'name/category.name'-composite key.

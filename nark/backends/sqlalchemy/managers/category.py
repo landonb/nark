@@ -52,6 +52,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             category = self._add(category, raw=raw, skip_commit=skip_commit)
         return category
 
+    # ***
+
     def _add(self, category, raw=False, skip_commit=False):
         """
         Add a new category to the database.
@@ -86,6 +88,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         )
 
         return result
+
+    # ***
 
     def _update(self, category):
         """
@@ -132,6 +136,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
         return alchemy_category.as_hamster(self.store)
 
+    # ***
+
     def remove(self, category):
         """
         Delete a given category.
@@ -163,6 +169,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         self.store.session.commit()
         message = _("{!r} successfully deleted.").format(category)
         self.store.logger.debug(message)
+
+    # ***
 
     def get(self, pk, deleted=None):
         """
@@ -201,6 +209,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         message = _("Returning {!r}.").format(result)
         self.store.logger.debug(message)
         return result.as_hamster(self.store)
+
+    # ***
 
     def get_by_name(self, name, raw=False):
         """
@@ -267,6 +277,9 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         deleted=False,
         search_term=None,
         activity=False,
+        category=False,
+        match_activities=[],
+        match_categories=[],
         sort_cols='',
         sort_orders='',
         limit=None,
@@ -306,8 +319,13 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 
-            query = self._get_all_filter_by_activity(query, activity)
+            query = self._get_all_filter_by_activities(
+                query, match_activities + [activity],
+            )
 
+            query = self._get_all_filter_by_categories(
+                query, match_categories + [category],
+            )
             query = _get_all_filter_by_search_term(query)
 
             # FIXME/LATER/2018-05-29: (lb): Filter by tags used around this time.
@@ -434,4 +452,6 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         # ***
 
         return _get_all_categories()
+
+    # ***
 

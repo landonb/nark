@@ -53,6 +53,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         self.store.logger.debug(_("Returning {!r}.").format(result))
         return result
 
+    # ***
+
     def _add(self, activity, raw=False, skip_commit=False):
         """
         Add a new ``Activity`` instance to the databasse.
@@ -108,6 +110,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         )
 
         return result
+
+    # ***
 
     def _update(self, activity):
         """
@@ -168,6 +172,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
 
+    # ***
+
     def remove(self, activity):
         """
         Remove an activity from our internal backend.
@@ -206,6 +212,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         self.store.logger.debug(_("Deleted {!r}.").format(activity))
         return True
 
+    # ***
+
     def get(self, pk, deleted=None, raw=False):
         """
         Query for an Activity with given key.
@@ -242,6 +250,12 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             result = result.as_hamster(self.store)
         self.store.logger.debug(_("Returning: {!r}.").format(result))
         return result
+
+    # ***
+
+    # NOTE: Unlike Category and Tag, there is no Activity.get_by_name.
+
+    # ***
 
     def get_by_composite(self, name, category, raw=False):
         """
@@ -291,6 +305,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         name = str(name)
         try:
             query = self.store.session.query(AlchemyActivity)
+            # Note that if alchemy_category is None -- because caller passed None --
+            # then this only finds an Activity if it has no Category.
             query = query.filter_by(name=name).filter_by(category=alchemy_category)
             result = query.one()
         except NoResultFound:
@@ -384,6 +400,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # - Specify a name or Category object to restrict to that specific Category.
         #   - Note that this match is strict -- case and exactness count.
         category=False,
+        match_activities=[],
+        match_categories=[],
         # - MEH: (lb): For parity, could add a 'tags' option to restrict the
         #   search to Activities used on Facts with specific 'tags', but how
         #   complicated and useless does that sound.
@@ -476,9 +494,13 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 
-            query = self._get_all_filter_by_category(query, category)
+            query = self._get_all_filter_by_activities(
+                query, match_activities + [activity],
+            )
 
-            query = self._get_all_filter_by_activity(query, activity)
+            query = self._get_all_filter_by_categories(
+                query, match_categories + [category],
+            )
 
             query = _get_all_filter_by_search_term(query)
 
@@ -611,4 +633,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # ***
 
         return _get_all_activities()
+
+    # ***
 

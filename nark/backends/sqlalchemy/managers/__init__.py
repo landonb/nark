@@ -175,51 +175,75 @@ class BaseAlchemyManager(object):
 
     # ***
 
-    def _get_all_filter_by_activity(self, query, activity):
-        if activity is False:
-            return query
+    def _get_all_filter_by_activities(self, query, activities=[]):
+        filters = []
+        for activity in activities:
+            item_filter = self._get_all_filter_by_activity(activity)
+            if item_filter is not None:
+                filters.append(item_filter)
+        if filters:
+            query = query.filter(or_(*filters))
+        return query
 
+    def _get_all_filter_by_activity(self, activity):
+        if activity is False:
+            return None
+
+        item_filter = None
         if activity:
             activity_name = None
             try:
                 if activity.pk:
-                    query = query.filter(AlchemyActivity.pk == activity.pk)
+                    item_filter = AlchemyActivity.pk == activity.pk
                 else:
                     activity_name = activity.name
             except AttributeError:
                 activity_name = activity
 
             if activity_name is not None:
-                query = query.filter(
+                # NOTE: Strict name matching, case and exactness.
+                item_filter = (
                     func.lower(AlchemyActivity.name) == func.lower(activity_name)
                 )
         else:  # activity is None.
-            query = query.filter(AlchemyFact.activity == None)  # noqa: E711
-        return query
+            item_filter = AlchemyFact.activity == None  # noqa: E711
+        return item_filter
 
     # ***
 
-    def _get_all_filter_by_category(self, query, category):
-        if category is False:
-            return query
+    def _get_all_filter_by_categories(self, query, categories=[]):
+        filters = []
+        for category in categories:
+            item_filter = self._get_all_filter_by_category(category)
+            if item_filter is not None:
+                filters.append(item_filter)
+        if filters:
+            query = query.filter(or_(*filters))
+        return query
 
+    def _get_all_filter_by_category(self, category):
+        if category is False:
+            return None
+
+        item_filter = None
         if category:
             category_name = None
             try:
                 if category.pk:
-                    query = query.filter(AlchemyCategory.pk == category.pk)
+                    item_filter = AlchemyCategory.pk == category.pk
                 else:
                     category_name = category.name
             except AttributeError:
                 category_name = category
 
             if category_name is not None:
-                query = query.filter(
+                # NOTE: Strict name matching, case and exactness.
+                item_filter = (
                     func.lower(AlchemyCategory.name) == func.lower(category_name)
                 )
         else:
-            query = query.filter(AlchemyFact.category == None)  # noqa: E711
-        return query
+            item_filter = AlchemyFact.category == None  # noqa: E711
+        return item_filter
 
     # ***
 
