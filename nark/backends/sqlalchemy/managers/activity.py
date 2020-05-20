@@ -639,24 +639,9 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # ***
 
         def _process_results(records):
-            if not records or not include_usage:
-                return _process_records_items_only(records)
-            return _process_records_items_and_aggs(records)
-
-        def _process_records_items_only(records):
-            if not raw:
-                return [item.as_hamster(self.store) for item in records]
-            return records
-
-        def _process_records_items_and_aggs(records):
-            if not raw:
-                return _process_records_items_and_aggs_hydrate(records)
-            return records
-
-        def _process_records_items_and_aggs_hydrate(records):
-            if requested_usage:
-                return [(item.as_hamster(self.store), *cols) for item, *cols in records]
-            return [item.as_hamster(self.store) for item, *cols in records]
+            return self._get_all_process_results_simple(
+                records, raw, include_usage, requested_usage,
+            )
 
         # ***
 

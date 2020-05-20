@@ -271,6 +271,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         sort_order='',
         limit=None,
         offset=None,
+        raw=False,
     ):
         """
         Get all Categories, possibly filtered by related Activity, and possible sorted.
@@ -313,6 +314,12 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             self.store.logger.debug(_('Query') + ': {}'.format(str(query)))
 
             results = query.all() if not count_results else query.count()
+
+            if count_results:
+                results = query.count()
+            else:
+                results = query.all()
+                results = _process_results(results)
 
             return results
 
@@ -412,6 +419,13 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
                 return query
             query = query.with_entities(AlchemyCategory, *agg_cols)
             return query
+
+        # ***
+
+        def _process_results(records):
+            return self._get_all_process_results_simple(
+                records, raw, include_usage, requested_usage,
+            )
 
         # ***
 
