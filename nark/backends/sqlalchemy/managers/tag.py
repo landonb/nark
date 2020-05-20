@@ -48,7 +48,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             nark.Tag or None: Tag.
         """
 
-        message = _("Received {!r} and raw={}.".format(tag, raw))
+        message = _("Received {!r} and raw={}.").format(tag, raw)
         self.store.logger.debug(message)
 
         try:
@@ -108,30 +108,31 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             KeyError: If no tag with passed PK was found.
         """
 
-        message = _("Received {!r}.".format(tag))
+        message = _("Received {!r}.").format(tag)
         self.store.logger.debug(message)
 
         if not tag.pk:
             message = _(
                 "The tag passed ('{!r}') does not seem to havea PK. "
-                "We don't know which entry to modify.".format(tag)
-            )
+                "We don't know which entry to modify."
+            ).format(tag)
+
             self.store.logger.error(message)
             raise ValueError(message)
         alchemy_tag = self.store.session.query(AlchemyTag).get(tag.pk)
         if not alchemy_tag:
-            message = _("No tag with PK: {} was found!".format(tag.pk))
+            message = _("No tag with PK: {} was found!").format(tag.pk)
             self.store.logger.error(message)
             raise KeyError(message)
         alchemy_tag.name = tag.name
 
         try:
             self.store.session.commit()
-        except IntegrityError as e:
+        except IntegrityError as err:
             message = _(
                 "An error occured! Are you sure that tag.name is not "
-                "already present in the database? Error: '{}'.".format(e)
-            )
+                "already present in the database? Error: '{}'."
+            ).format(str(err))
             self.store.logger.error(message)
             raise ValueError(message)
 
@@ -152,7 +153,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             ValueError: If tag passed does not have an pk.
         """
 
-        message = _("Received {!r}.".format(tag))
+        message = _("Received {!r}.").format(tag)
         self.store.logger.debug(message)
 
         if not tag.pk:
@@ -166,7 +167,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             raise KeyError(message)
         self.store.session.delete(alchemy_tag)
         self.store.session.commit()
-        message = _("{!r} successfully deleted.".format(tag))
+        message = _("{!r} successfully deleted.").format(tag)
         self.store.logger.debug(message)
 
     def get(self, pk, deleted=None):
@@ -186,7 +187,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             We need this for now, as the service just provides pks, not names.
         """
 
-        message = _("Received PK: '{}'.".format(pk))
+        message = _("Received PK: '{}'.").format(pk)
         self.store.logger.debug(message)
 
         if deleted is None:
@@ -200,10 +201,10 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             result = results[0] if results else None
 
         if not result:
-            message = _("No tag with 'pk: {}' was found!".format(pk))
+            message = _("No tag with 'pk: {}' was found!").format(pk)
             self.store.logger.error(message)
             raise KeyError(message)
-        message = _("Returning {!r}.".format(result))
+        message = _("Returning {!r}.").format(result)
         self.store.logger.debug(message)
         return result.as_hamster(self.store)
 
@@ -223,13 +224,13 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
         """
 
-        message = _("Received name: '{}', raw={}.".format(name, raw))
+        message = _("Received name: '{}', raw={}.").format(name, raw)
         self.store.logger.debug(message)
 
         try:
             result = self.store.session.query(AlchemyTag).filter_by(name=name).one()
         except NoResultFound:
-            message = _("No tag named '{}' was found".format(name))
+            message = _("No tag named '{}' was found").format(name)
             self.store.logger.debug(message)
             raise KeyError(message)
 
@@ -290,9 +291,9 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         """
 
         def _get_all_tags():
-            message = _('usage: {} / term: {} / col: {} / order: {}'.format(
+            message = _('usage: {} / term: {} / col: {} / order: {}').format(
                 include_usage, search_term, sort_col, sort_order,
-            ))
+            )
             self.store.logger.debug(message)
 
             query, agg_cols = _get_all_start_query()
@@ -319,7 +320,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
             query = _get_all_with_entities(query, agg_cols)
 
-            self.store.logger.debug(_('query: {}'.format(str(query))))
+            self.store.logger.debug(_('query: {}').format(str(query)))
 
             results = query.all() if not count_results else query.count()
 

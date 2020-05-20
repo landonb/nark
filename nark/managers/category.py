@@ -73,7 +73,7 @@ class BaseCategoryManager(BaseManager):
                 its primary key.
         """
 
-        self.store.logger.debug(_("'{}' has been received.'.".format(category)))
+        self.store.logger.debug(_("'{}' has been received.'.").format(category))
         if category:
             try:
                 category = self.get_by_name(category)

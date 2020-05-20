@@ -71,7 +71,7 @@ class BaseTagManager(BaseManager):
                 the returned Tag will contain all data from the backend, including
                 its primary key.
         """
-        self.store.logger.debug(_("'{}' has been received.'.".format(tag)))
+        self.store.logger.debug(_("'{}' has been received.'.").format(tag))
         if tag:
             try:
                 tag = self.get_by_name(tag)

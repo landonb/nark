@@ -42,7 +42,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             nark.Category or None: Category.
         """
 
-        message = _("Received {!r} and raw={}.".format(category, raw))
+        message = _("Received {!r} and raw={}.").format(category, raw)
         self.store.logger.debug(message)
 
         try:
@@ -102,30 +102,30 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             KeyError: If no category with passed PK was found.
         """
 
-        message = _("Received {!r}.".format(category))
+        message = _("Received {!r}.").format(category)
         self.store.logger.debug(message)
 
         if not category.pk:
             message = _(
                 "The category passed ('{!r}') does not seem to havea PK. We don't know"
-                "which entry to modify.".format(category)
-            )
+                "which entry to modify."
+            ).format(category)
             self.store.logger.error(message)
             raise ValueError(message)
         alchemy_category = self.store.session.query(AlchemyCategory).get(category.pk)
         if not alchemy_category:
-            message = _("No category with PK: {} was found!".format(category.pk))
+            message = _("No category with PK: {} was found!").format(category.pk)
             self.store.logger.error(message)
             raise KeyError(message)
         alchemy_category.name = category.name
 
         try:
             self.store.session.commit()
-        except IntegrityError as e:
+        except IntegrityError as err:
             message = _(
                 "An error occured! Is category.name already present in the database?"
-                " / Error: '{}'.".format(e)
-            )
+                " / Error: '{}'."
+            ).format(str(err))
             self.store.logger.error(message)
             raise ValueError(message)
 
@@ -146,7 +146,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             ValueError: If category passed does not have an pk.
         """
 
-        message = _("Received {!r}.".format(category))
+        message = _("Received {!r}.").format(category)
         self.store.logger.debug(message)
 
         if not category.pk:
@@ -160,7 +160,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             raise KeyError(message)
         self.store.session.delete(alchemy_category)
         self.store.session.commit()
-        message = _("{!r} successfully deleted.".format(category))
+        message = _("{!r} successfully deleted.").format(category)
         self.store.logger.debug(message)
 
     def get(self, pk, deleted=None):
@@ -180,7 +180,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             We need this for now, as the service just provides pks, not names.
         """
 
-        message = _("Received PK: '{}'.".format(pk))
+        message = _("Received PK: '{}'.").format(pk)
         self.store.logger.debug(message)
 
         if deleted is None:
@@ -194,10 +194,10 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             result = results[0] if results else None
 
         if not result:
-            message = _("No category with 'pk: {}' was found!".format(pk))
+            message = _("No category with 'pk: {}' was found!").format(pk)
             self.store.logger.error(message)
             raise KeyError(message)
-        message = _("Returning {!r}.".format(result))
+        message = _("Returning {!r}.").format(result)
         self.store.logger.debug(message)
         return result.as_hamster(self.store)
 
@@ -217,13 +217,13 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
         """
 
-        message = _("Received name: '{}', raw={}.".format(name, raw))
+        message = _("Received name: '{}', raw={}.").format(name, raw)
         self.store.logger.debug(message)
 
         try:
             result = self.store.session.query(AlchemyCategory).filter_by(name=name).one()
         except NoResultFound:
-            message = _("No category named '{}' was found".format(name))
+            message = _("No category named '{}' was found").format(name)
             self.store.logger.debug(message)
             raise KeyError(message)
 
@@ -282,9 +282,9 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         """
 
         def _get_all_categories():
-            message = _('usage: {} / term: {} / act.: {} / col: {} / order: {}'.format(
+            message = _('usage: {} / term: {} / act.: {} / col: {} / order: {}').format(
                 include_usage, search_term, activity, sort_col, sort_order,
-            ))
+            )
             self.store.logger.debug(message)
 
             query, agg_cols = _get_all_start_query()
