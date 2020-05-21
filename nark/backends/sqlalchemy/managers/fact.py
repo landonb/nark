@@ -597,7 +597,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def _process_results(records):
-            if not records or (not include_extras and not add_aggregates):
+            if (
+                not records
+                or (not include_extras and not add_aggregates and lazy_tags)
+            ):
                 return _process_records_facts_only(records)
 
             return _process_records_facts_and_aggs(records)
