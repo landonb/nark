@@ -567,7 +567,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
-            query = _get_all_with_entities(query, span_cols, actg_cols, tags_col)
+            query = _get_all_with_entities(query, span_cols, actg_cols, date_col, tags_col)
 
             self.store.logger.debug(_('query: {}'.format(str(query))))
 
@@ -931,7 +931,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # all its time counted (over-count).
 
         def _get_all_prepare_date_col(query):
-            if not group_days:
+            # If we were not going to return the date_col with the results,
+            # rather than checking `not add_aggregates`, we would instead
+            # check `not group_days` and return if so.
+            if not add_aggregates:
                 return query, None
 
             # FIXME/MAYBE/2020-05-19: Prepare other time-grouped reports. See:
@@ -948,7 +951,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 AlchemyFact.start,
             ).label("date_col")
             query = query.add_columns(date_col)
-            query = query.group_by(date_col)
+            if group_days:
+                query = query.group_by(date_col)
 
             return query, date_col
 
@@ -1150,7 +1154,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _get_all_with_entities(query, span_cols, actg_cols, tags_col):
+        def _get_all_with_entities(query, span_cols, actg_cols, date_col, tags_col):
             # Even if grouping, we still want to fetch all columns. For one,
             # _process_results expects a Fact object as leading item in each
             # result tuple, and also because as_hamster expects certain fields
@@ -1159,12 +1163,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # e.g., `FROM category`. So use all Fact cols to start the select.
             columns = [AlchemyFact]
 
-            # The order of the aggregate columns added here is reflected
-            # by RESULT_GRP_INDEX.
+            # The order of the columns added here is reflected by RESULT_GRP_INDEX.
+            # - Note also if `add_aggregates` is True, then both span_cols and
+            #   actg_cols should be not None. But we'll check for None-ness
+            #   just to be safe.
             if span_cols is not None:
                 columns.extend(span_cols)
             if actg_cols is not None:
                 columns.extend(actg_cols)
+            if add_aggregates:
+                columns.append(date_col)
 
             # Ensure tags_col is last, because _process_record_tags expects (pops) it.
             if tags_col is not None:
