@@ -298,11 +298,17 @@ class TestTag(object):
     def as_repr(cls, tag):
         if tag is None:
             return repr(tag)
-        repred = "Tag(_name={name}, deleted={deleted}, hidden={hidden}, pk={pk})".format(
-            pk=repr(tag.pk),
-            name=repr(tag.name),
-            deleted=repr(tag.deleted),
-            hidden=repr(tag.hidden),
+        repred = (
+            "Tag("
+            "_name={name}, deleted={deleted}, freq={freq}, hidden={hidden}, pk={pk}"
+            ")"
+            .format(
+                pk=repr(tag.pk),
+                name=repr(tag.name),
+                deleted=repr(tag.deleted),
+                freq=repr(tag.freq),
+                hidden=repr(tag.hidden),
+            )
         )
         return repred
 

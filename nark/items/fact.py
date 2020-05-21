@@ -20,6 +20,7 @@
 from gettext import gettext as _
 
 from collections import namedtuple
+from collections import Counter
 from datetime import datetime
 from operator import attrgetter
 
@@ -509,8 +510,12 @@ class Fact(BaseItem):
     def tagnames_sorted_formatted(self, format_tagname):
         return [format_tagname(tag) for tag in self.tags_sorted]
 
-    def tags_replace(self, tags):
+    def tags_replace(self, tags, set_freqs=False):
         new_tags = set()
+
+        # Create a dict-like never-KeyErrors lookup of tag frequency counts.
+        tag_freqs = Counter(tags) if set_freqs else None
+
         for tagn in set(tags) if tags else set():
             if isinstance(tagn, Tag):
                 tag = tagn
@@ -529,7 +534,10 @@ class Fact(BaseItem):
                 # would bug you to save your unedited Fact, etc.
                 tag = next(
                     (tag for tag in self.tags if tag.name == tagn),
-                    Tag(name=tagn),
+                    Tag(
+                        name=tagn,
+                        freq=tag_freqs[tagn] if set_freqs else 1,
+                    ),
                 )
             new_tags.add(tag)
         # (lb): Do this in one swoop, and be sure to assign a list; when

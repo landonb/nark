@@ -81,6 +81,7 @@ class AlchemyTagFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     deleted = False
     hidden = False
+    # Skip `freq`, which is not part of the Tag table.
 
     class Meta:
         model = AlchemyTag

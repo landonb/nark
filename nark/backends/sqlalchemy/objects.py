@@ -187,7 +187,7 @@ class AlchemyFact(Fact):
         # Tags can only be assigned after the fact has been created.
         self.tags = list()
 
-    def as_hamster(self, store, tags=None):
+    def as_hamster(self, store, tags=None, set_freqs=False):
         """Provide an convenient way to return it as a ``nark.Fact`` instance."""
         # NOTE: (lb): By default, self.tags is lazy loaded, which causes a fetch
         #   when it's looked up, once per Fact. This is normally not an issue, but
@@ -200,11 +200,11 @@ class AlchemyFact(Fact):
         if tags is None:
             nark_tags = set([tag.as_hamster(store) for tag in self.tags])
         else:
-            nark_tags = set([Tag(tag) for tag in tags])
+            nark_tags = tags
 
         fact_cls = store.fact_cls or Fact
 
-        return fact_cls(
+        fact = fact_cls(
             pk=self.pk,
             deleted=bool(self.deleted),
             split_from=self.split_from,
@@ -212,8 +212,11 @@ class AlchemyFact(Fact):
             start=self.start,
             end=self.end,
             description=self.description,
-            tags=nark_tags,
         )
+
+        fact.tags_replace(nark_tags, set_freqs=set_freqs)
+
+        return fact
 
 
 metadata = MetaData()

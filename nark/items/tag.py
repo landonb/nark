@@ -31,7 +31,7 @@ TagTuple = namedtuple(
 class Tag(BaseItem):
     """Storage agnostic class for tags."""
 
-    def __init__(self, name, pk=None, deleted=False, hidden=False):
+    def __init__(self, name, pk=None, deleted=False, hidden=False, freq=1):
         """
         Initialize this instance.
 
@@ -41,6 +41,7 @@ class Tag(BaseItem):
         """
 
         super(Tag, self).__init__(pk, name)
+        self.freq = freq
         self.deleted = bool(deleted)
         self.hidden = bool(hidden)
 

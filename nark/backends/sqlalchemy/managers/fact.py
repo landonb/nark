@@ -670,10 +670,18 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         def _process_record_prepare_fact(fact, new_tags):
             # Unless the caller wants raw results, create a Fact.
             if not raw:
-                return fact.as_hamster(self.store, new_tags)
+                # Create a new, first-class Fact (or FactDressed). And if
+                # the results are aggregate, create a frequency distribution,
+                # or number of uses per tag (stored at tag.freq).
+                return fact.as_hamster(
+                    self.store, new_tags, set_freqs=is_grouped,
+                )
 
             # Even if user wants raw results, still attach the tags.
             if new_tags:
+                # Note that this is an AlchemyFact fact, and new_tags
+                # is a list of AlchemyTag objects, so not calling
+                # tags_replace.
                 fact.tags = new_tags
             return fact
 
