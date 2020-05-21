@@ -547,9 +547,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 
-            query = _get_all_filter_by_activities(query, match_activities + [activity])
+            query = self._get_all_filter_by_activities(
+                query, match_activities + [activity],
+            )
 
-            query = _get_all_filter_by_categories(query, match_categories + [category])
+            query = self._get_all_filter_by_categories(
+                query, match_categories + [category],
+            )
 
             query = _get_all_filter_by_search_term(query)
 
@@ -1079,6 +1083,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             elif sort_col == 'time':
                 query = query.order_by(direction(span_cols[i_duration]))
             elif sort_col == 'day':
+                assert(date_col is not None)
                 query = query.order_by(direction(date_col))
             elif sort_col == 'activity':
                 # If grouping by only category, this sort does not work: The
@@ -1090,8 +1095,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # So sorting activity when grouping category is done by caller.
                 if group_activity or group_tags or group_days or not group_category:
                     query = query.order_by(direction(AlchemyActivity.name))
-                    # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-                    query = query.order_by(direction(AlchemyCategory.name))
             elif sort_col == 'category':
                 # If sorting by category but grouping by activity (or tags), the
                 # caller must sort during post-processing, after transforming the
@@ -1100,8 +1103,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # would have no effect, so might as well not.)
                 if group_category or group_tags or group_days or not group_activity:
                     query = query.order_by(direction(AlchemyCategory.name))
-                    # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-                    query = query.order_by(direction(AlchemyActivity.name))
             elif sort_col == 'tag' and tags_col is not None:
                 # Don't sort by the aggregate column, because tags aren't
                 # sorted in the aggregate (they're not even unique, it's
