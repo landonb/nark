@@ -569,7 +569,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_with_entities(query, span_cols, actg_cols, date_col, tags_col)
 
-            self.store.logger.debug(_('query: {}'.format(str(query))))
+            self._log_sql_query(query)
 
             if count_results:
                 results = query.count()

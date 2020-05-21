@@ -342,7 +342,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
             query = _get_all_with_entities(query, agg_cols)
 
-            self.store.logger.debug(_('Query') + ': {}'.format(str(query)))
+            self._log_sql_query(query)
 
             results = query.all() if not count_results else query.count()
 

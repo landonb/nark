@@ -64,6 +64,8 @@ def query_apply_true_or_not(query, column, condition):
     return query
 
 
+# ***
+
 class BaseAlchemyManager(object):
     """Base class for sqlalchemy managers."""
 
@@ -288,4 +290,18 @@ class BaseAlchemyManager(object):
         return text
 
     # ***
+
+    def _log_sql_query(self, query):
+        if self.store.config['dev.catch_errors']:
+            # 2020-05-21: I don't generally like more noise in my tmux dev environment
+            # logger pane, but I do like seeing the query, especially with all the
+            # recent get_all() tweaks (improved grouping, sorting, and aggregates).
+            logf = self.store.logger.warn
+        else:
+            logf = self.store.logger.debug
+        logf('Query: {}'.format(str(query)))
+
+    # ***
+
+# ***
 

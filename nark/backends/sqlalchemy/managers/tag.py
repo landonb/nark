@@ -342,7 +342,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
             query = _get_all_with_entities(query, agg_cols)
 
-            self.store.logger.debug(_('query: {}').format(str(query)))
+            self._log_sql_query(query)
 
             if count_results:
                 results = query.count()
