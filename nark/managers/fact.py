@@ -164,50 +164,9 @@ class BaseFactManager(BaseManager):
 
     # ***
 
-    def _get_all(
-        self,
-        since=None,
-        until=None,
-        endless=False,
-        partial=False,
-        include_usage=True,
-        count_results=False,
-        # QUESTION: (lb): Would a Fact ever be "hidden"?
-        #   (Other than what momentaneous toggles.)
-        hidden=False,
-        deleted=False,
-        key=None,
-        search_term='',
-        activity=False,
-        category=False,
-        sort_col='',
-        sort_order='',
-        limit='',
-        offset='',
-    ):
+    def _get_all(self, **kwargs):
         """
         Return a list of ``Facts`` matching given criteria.
-
-        Args:
-            start_date (datetime.datetime, optional): Consider only Facts
-                starting at or after this datetime. Defaults to ``None``.
-            end_date (datetime.datetime): Consider only Facts ending before or at
-                this datetime. Defaults to ``None``.
-            search_term (str): Cases insensitive strings to match
-                ``Activity.name`` or ``Category.name``.
-            deleted (boolean, optional): False to restrict to non-deleted
-                Facts; True to find only those marked deleted; None to find
-                all.
-            partial (bool): If ``False`` only facts which start *and* end
-                within the timeframe will be considered.
-            order (string, optional): 'asc' or 'desc', 'natch.
-
-        Returns:
-            list: List of ``Facts`` matching given specifications.
-
-        Note:
-            In contrast to the public ``get_all``, this method actually handles the
-            backend query.
         """
         raise NotImplementedError
 

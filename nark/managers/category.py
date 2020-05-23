@@ -187,3 +187,11 @@ class BaseCategoryManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
+    def _get_all(self, **kwargs):
+        """
+        Return a list of ``Categories`` matching given criteria.
+        """
+        raise NotImplementedError
+

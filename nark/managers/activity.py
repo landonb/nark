@@ -198,6 +198,14 @@ class BaseActivityManager(BaseManager):
 
     # ***
 
+    def _get_all(self, **kwargs):
+        """
+        Return a list of ``Activities`` matching given criteria.
+        """
+        raise NotImplementedError
+
+    # ***
+
     def get_all_by_usage(
         self,
         deleted=False,

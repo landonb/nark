@@ -100,7 +100,7 @@ class TestCategoryManager():
 
     def test_get_all(self, basestore):
         with pytest.raises(NotImplementedError):
-            basestore.categories.get_all()
+            basestore.categories._get_all()
 
 
 # ***
