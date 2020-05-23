@@ -58,6 +58,7 @@ def base_config(tmpdir):
             'path': ':memory:',
         },
         'dev': {
+            'catch_errors': False,
             'lib_log_level': 'WARNING',
             'sql_log_level': 'WARNING',
         },

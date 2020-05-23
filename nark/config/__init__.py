@@ -191,6 +191,14 @@ class NarkConfigurableDev(object):
 
     @property
     @ConfigRoot.setting(
+        _("If True, enables features for developing dob"
+          " (e.g., stop at REPL on affirm faults)."),
+    )
+    def catch_errors(self):
+        return False
+
+    @property
+    @ConfigRoot.setting(
         _("The log level for library (nark) squaller"
             " (using Python logging library levels)"),
         validate=must_verify_log_level,

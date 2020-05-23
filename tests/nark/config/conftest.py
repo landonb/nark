@@ -53,6 +53,7 @@ def configobj_instance(request):
     config['db']['user'] = 'hamster'
     config['db']['password'] = 'hamster'
     config['dev'] = {}
+    config['dev']['catch_errors'] = False
     config['dev']['lib_log_level'] = 'WARNING'
     config['dev']['sql_log_level'] = 'debug'
     config['time'] = {}
@@ -72,6 +73,8 @@ def configobj_instance(request):
             'password': 'hamster',
         },
         'dev': {
+            # Devmode catch_errors could be deadly under test, as it sets a trace trap.
+            'catch_errors': 'False',
             'lib_log_level': 'WARNING',
             'sql_log_level': 'debug',
         },

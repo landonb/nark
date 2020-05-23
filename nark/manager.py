@@ -80,6 +80,7 @@ class BaseStore(object):
         self.config.setdefault('time.allow_momentaneous', False)
         self.config.setdefault('time.day_start', '')
         self.config.setdefault('time.fact_min_delta', '0')
+        self.config.setdefault('dev.catch_errors', False)
         self.config.setdefault('dev.lib_log_level', 'WARNING')
         self.config.setdefault('dev.sql_log_level', 'WARNING')
         self.config.setdefault('time.tz_aware', False)
