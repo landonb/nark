@@ -187,3 +187,11 @@ class BaseTagManager(BaseManager):
         """
         raise NotImplementedError
 
+    # ***
+
+    def get_all_by_usage(self, **kwargs):
+        """
+        Similar to get_all(), but include count of Facts that reference each Tag.
+        """
+        raise NotImplementedError
+

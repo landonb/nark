@@ -206,18 +206,7 @@ class BaseActivityManager(BaseManager):
 
     # ***
 
-    def get_all_by_usage(
-        self,
-        deleted=False,
-        hidden=False,
-        search_term='',
-        category=False,
-        activity=False,
-        sort_col='',
-        sort_order='',
-        limit='',
-        offset='',
-    ):
+    def get_all_by_usage(self, **kwargs):
         """
         Similar to get_all(), but include count of Facts that reference each Activity.
         """
