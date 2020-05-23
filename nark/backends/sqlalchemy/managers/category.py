@@ -19,7 +19,7 @@
 
 from gettext import gettext as _
 
-from sqlalchemy import asc, desc, func
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import or_
@@ -280,8 +280,8 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         category=False,
         match_activities=[],
         match_categories=[],
-        sort_cols='',
-        sort_orders='',
+        sort_cols=[],
+        sort_orders=[],
         limit=None,
         offset=None,
         raw=False,
@@ -334,7 +334,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
             #   be suggested. For now, filter by category can give similar effect,
             #   depending on how one uses categories.
 
-            query = _get_all_order_by(query, *agg_cols)
+            query = self._get_all_order_by(query, sort_cols, sort_orders, *agg_cols)
 
             query = _get_all_group_by(query, agg_cols)
 
@@ -398,36 +398,6 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
 
         # ***
 
-        def _get_all_order_by(query, count_col=None, time_col=None):
-            for idx, sort_col in enumerate(sort_cols):
-                direction = desc if sort_orders[idx] == 'desc' else asc
-                query = _get_all_order_by_col(
-                    query, sort_col, direction, count_col, time_col,
-                )
-            return query
-
-        def _get_all_order_by_col(query, sort_col, direction, count_col, time_col):
-            if sort_col == 'start':
-                query = query.order_by(direction(AlchemyFact.start))
-            elif sort_col == 'usage':
-                query = query.order_by(direction(count_col))
-            elif sort_col == 'time':
-                query = query.order_by(direction(time_col))
-            elif sort_col == 'activity':
-                query = query.order_by(direction(AlchemyActivity.name))
-                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-                query = query.order_by(direction(AlchemyCategory.name))
-            elif sort_col == 'category' or sort_col == 'name' or not sort_col:
-                query = query.order_by(direction(AlchemyCategory.name))
-                # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-                if count_col is not None:
-                    query = query.order_by(direction(AlchemyActivity.name))
-            else:
-                self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
-            return query
-
-        # ***
-
         def _get_all_group_by(query, agg_cols):
             if not agg_cols:
                 return query
@@ -452,6 +422,30 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         # ***
 
         return _get_all_categories()
+
+    # ***
+
+    def _get_all_order_by_col(
+        self, query, sort_col, direction, count_col=None, time_col=None,
+    ):
+        if sort_col == 'start':
+            query = query.order_by(direction(AlchemyFact.start))
+        elif sort_col == 'usage':
+            query = query.order_by(direction(count_col))
+        elif sort_col == 'time':
+            query = query.order_by(direction(time_col))
+        elif sort_col == 'activity':
+            query = query.order_by(direction(AlchemyActivity.name))
+            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
+            query = query.order_by(direction(AlchemyCategory.name))
+        elif sort_col == 'category' or sort_col == 'name' or not sort_col:
+            query = query.order_by(direction(AlchemyCategory.name))
+            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
+            if count_col is not None:
+                query = query.order_by(direction(AlchemyActivity.name))
+        else:
+            self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
+        return query
 
     # ***
 

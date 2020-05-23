@@ -435,8 +435,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # - The user can specify one or more columns on which to sort,
         #   and an 'asc' or 'desc' modifier for each column under sort.
-        sort_cols='',
-        sort_orders='',
+        sort_cols=[],
+        sort_orders=[],
 
         # - The user can restrict the results with basic SQL limit-offset.
         limit=None,
@@ -563,7 +563,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_group_by(query)
 
-            query = _get_all_order_by(query, span_cols, date_col, tags_col)
+            query = self._get_all_order_by(
+                query, sort_cols, sort_orders, span_cols, date_col, tags_col,
+            )
 
             query = query_apply_limit_offset(query, limit=limit, offset=offset)
 
@@ -1083,85 +1085,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        # FIXME/2018-06-09: (lb): DRY: Combine each manager's _get_all_order_by.
-        def _get_all_order_by(query, span_cols=None, date_col=None, tags_col=None):
-            for idx, sort_col in enumerate(sort_cols):
-                direction = desc if sort_orders[idx] == 'desc' else asc
-                query = _get_all_order_by_col(
-                    query, sort_col, direction, span_cols, date_col, tags_col,
-                )
-            return query
-
-        def _get_all_order_by_col(query, sort_col, direction, span_cols, date_col, tags_col):
-            if sort_col == 'start' or not sort_col:
-                query = self._get_all_order_by_start(query, direction)
-            elif sort_col == 'time':
-                query = query.order_by(direction(span_cols[i_duration]))
-            elif sort_col == 'day':
-                assert(date_col is not None)
-                query = query.order_by(direction(date_col))
-            elif sort_col == 'activity':
-                # If grouping by only category, this sort does not work: The
-                # activity names are group_concat'enated into the 'activities'
-                # column, which must be post-processed -- split on magic_tag_sep,
-                # made unique, and sorted. Such a dob command might look like this:
-                #   `dob list facts --group category --sort activity`
-                # But if also grouping by activity, or tags, order-by here works.
-                # So sorting activity when grouping category is done by caller.
-                if group_activity or group_tags or group_days or not group_category:
-                    query = query.order_by(direction(AlchemyActivity.name))
-            elif sort_col == 'category':
-                # If sorting by category but grouping by activity (or tags), the
-                # caller must sort during post-processing, after transforming the
-                # categories aggregate (which get_all returns as a set) into an
-                # alphabetically ordered string. (We could sort here, but it
-                # would have no effect, so might as well not.)
-                if group_category or group_tags or group_days or not group_activity:
-                    query = query.order_by(direction(AlchemyCategory.name))
-            elif sort_col == 'tag' and tags_col is not None:
-                # Don't sort by the aggregate column, because tags aren't
-                # sorted in the aggregate (they're not even unique, it's
-                # just a long string built from all the tags).
-                # - So this won't sort the table:
-                #     query = query.order_by(direction(tags_col))
-                # But because we checked tags_col is not None, we know that
-                # the Tag table is joined -- so we can sort by the tag name.
-                # Except if grouping by activity or category, then the sort
-                # won't stick, so skip it in that case.
-                if not group_activity and not group_category:
-                    query = query.order_by(direction(AlchemyTag.name))
-            elif sort_col == 'usage' and span_cols is not None:
-                query = query.order_by(direction(span_cols[i_group_count]))
-            elif sort_col == 'name':
-                # It makes sense to sort Activities, Categories, and Tags by their
-                # names, but a Fact does not have a name. So what does `--sort name`
-                # mean to a Fact? 2020-05-19: This code had been ignoring --sort name
-                # (all sort options are shared, so it's not considered wrong to
-                # receive such a request), but we could treat `--sort name` as a
-                # request to sort by description. There's not another mechanism to
-                # sort by description, and it seems pretty useless, anyway, except
-                # maybe to group Facts without a description. So we might as well wire
-                # sorting by name to sorting be description, rather than ignoring it.
-                query = query.order_by(direction(AlchemyFact.description))
-            elif sort_col == 'fact':
-                # (lb): There is (or at least should be) no meaning with Fact IDs,
-                # i.e., you should think of them as UUID values, and not having any
-                # relationship to one another, other than as an indicator of identity.
-                # So ordering by the PK, just because it happens to be an integer
-                # and can be compared against other PKs, is possible, but it also
-                # doesn't accomplish much. I suppose you could sort by PK to ensure that
-                # you can recreate a report in the same order as before, if that's your
-                # thing. 2020-05-18: In any case, the `--sort fact` option has existed
-                # in the CLI, but the code here has been ignoring it (and just treating
-                # it like `--sort start`). But there are no reasons, other than perhaps
-                # ideological, that we cannot at least wire it to the PK. So here ya go:
-                query = query.order_by(direction(AlchemyFact.pk))
-            else:
-                self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
-            return query
-
-        # ***
-
         def _get_all_with_entities(query, span_cols, actg_cols, date_col, tags_col):
             # Even if grouping, we still want to fetch all columns. For one,
             # _process_results expects a Fact object as leading item in each
@@ -1194,6 +1117,76 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         return _get_all_facts()
+
+    # ***
+
+    def _get_all_order_by_col(query, sort_col, direction, span_cols, date_col, tags_col):
+        if sort_col == 'start' or not sort_col:
+            query = self._get_all_order_by_start(query, direction)
+        elif sort_col == 'time':
+            query = query.order_by(direction(span_cols[i_duration]))
+        elif sort_col == 'day':
+            assert(date_col is not None)
+            query = query.order_by(direction(date_col))
+        elif sort_col == 'activity':
+            # If grouping by only category, this sort does not work: The
+            # activity names are group_concat'enated into the 'activities'
+            # column, which must be post-processed -- split on magic_tag_sep,
+            # made unique, and sorted. Such a dob command might look like this:
+            #   `dob list facts --group category --sort activity`
+            # But if also grouping by activity, or tags, order-by here works.
+            # So sorting activity when grouping category is done by caller.
+            if group_activity or group_tags or group_days or not group_category:
+                query = query.order_by(direction(AlchemyActivity.name))
+        elif sort_col == 'category':
+            # If sorting by category but grouping by activity (or tags), the
+            # caller must sort during post-processing, after transforming the
+            # categories aggregate (which get_all returns as a set) into an
+            # alphabetically ordered string. (We could sort here, but it
+            # would have no effect, so might as well not.)
+            if group_category or group_tags or group_days or not group_activity:
+                query = query.order_by(direction(AlchemyCategory.name))
+        elif sort_col == 'tag' and tags_col is not None:
+            # Don't sort by the aggregate column, because tags aren't
+            # sorted in the aggregate (they're not even unique, it's
+            # just a long string built from all the tags).
+            # - So this won't sort the table:
+            #     query = query.order_by(direction(tags_col))
+            # But because we checked tags_col is not None, we know that
+            # the Tag table is joined -- so we can sort by the tag name.
+            # Except if grouping by activity or category, then the sort
+            # won't stick, so skip it in that case.
+            if not group_activity and not group_category:
+                query = query.order_by(direction(AlchemyTag.name))
+        elif sort_col == 'usage' and span_cols is not None:
+            query = query.order_by(direction(span_cols[i_group_count]))
+        elif sort_col == 'name':
+            # It makes sense to sort Activities, Categories, and Tags by their
+            # names, but a Fact does not have a name. So what does `--sort name`
+            # mean to a Fact? 2020-05-19: This code had been ignoring --sort name
+            # (all sort options are shared, so it's not considered wrong to
+            # receive such a request), but we could treat `--sort name` as a
+            # request to sort by description. There's not another mechanism to
+            # sort by description, and it seems pretty useless, anyway, except
+            # maybe to group Facts without a description. So we might as well wire
+            # sorting by name to sorting be description, rather than ignoring it.
+            query = query.order_by(direction(AlchemyFact.description))
+        elif sort_col == 'fact':
+            # (lb): There is (or at least should be) no meaning with Fact IDs,
+            # i.e., you should think of them as UUID values, and not having any
+            # relationship to one another, other than as an indicator of identity.
+            # So ordering by the PK, just because it happens to be an integer
+            # and can be compared against other PKs, is possible, but it also
+            # doesn't accomplish much. I suppose you could sort by PK to ensure that
+            # you can recreate a report in the same order as before, if that's your
+            # thing. 2020-05-18: In any case, the `--sort fact` option has existed
+            # in the CLI, but the code here has been ignoring it (and just treating
+            # it like `--sort start`). But there are no reasons, other than perhaps
+            # ideological, that we cannot at least wire it to the PK. So here ya go:
+            query = query.order_by(direction(AlchemyFact.pk))
+        else:
+            self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
+        return query
 
     # ***
 

@@ -21,7 +21,7 @@
 
 from gettext import gettext as _
 
-from sqlalchemy import func
+from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import and_, or_
 
@@ -246,6 +246,17 @@ class BaseAlchemyManager(object):
         else:
             item_filter = AlchemyFact.category == None  # noqa: E711
         return item_filter
+
+    # ***
+
+    def _get_all_order_by(self, query, sort_cols, sort_orders, *agg_cols):
+        for idx, sort_col in enumerate(sort_cols):
+            try:
+                direction = desc if sort_orders[idx] == 'desc' else asc
+            except IndexError:
+                direction = asc
+            query = self._get_all_order_by_col(query, sort_col, direction, *agg_cols)
+        return query
 
     # ***
 
