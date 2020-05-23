@@ -258,6 +258,32 @@ class BaseAlchemyManager(object):
             query = self._get_all_order_by_col(query, sort_col, direction, *agg_cols)
         return query
 
+    def _get_all_order_by_col(
+        self, query, sort_col, direction, count_col=None, time_col=None,
+    ):
+        raise NotImplemented
+
+    def _get_all_order_by_col_common(
+        self, query, sort_col, direction, default, count_col=None, time_col=None,
+    ):
+        if sort_col == 'start':
+            query = query.order_by(direction(AlchemyFact.start))
+        elif sort_col == 'usage':
+            query = query.order_by(direction(count_col))
+        elif sort_col == 'time':
+            query = query.order_by(direction(time_col))
+        elif sort_col == 'activity' or sort_col == 'name' or not sort_col:
+            query = query.order_by(direction(AlchemyActivity.name))
+            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
+            query = query.order_by(direction(AlchemyCategory.name))
+        elif sort_col == 'category':
+            query = query.order_by(direction(AlchemyCategory.name))
+            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
+            query = query.order_by(direction(AlchemyActivity.name))
+        else:
+            self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
+        return query
+
     # ***
 
     def _get_all_process_results_simple(

@@ -446,26 +446,15 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
     # ***
 
-    def _get_all_order_by_col(self, query, sort_col, direction, count_col, time_col):
-        if sort_col == 'start':
-            query = query.order_by(direction(AlchemyFact.start))
-        elif sort_col == 'usage':
-            query = query.order_by(direction(count_col))
-        elif sort_col == 'time':
-            query = query.order_by(direction(time_col))
-        elif sort_col == 'activity':
-            query = query.order_by(direction(AlchemyActivity.name))
-            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-            query = query.order_by(direction(AlchemyCategory.name))
-        elif sort_col == 'category':
-            query = query.order_by(direction(AlchemyCategory.name))
-            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-            query = query.order_by(direction(AlchemyActivity.name))
-        elif sort_col == 'tag' or sort_col == 'name' or not sort_col:
-            query = query.order_by(direction(AlchemyTag.name))
+    def _get_all_order_by_col(
+        self, query, sort_col, direction, count_col=None, time_col=None,
+    ):
+        if sort_col == 'tag' or sort_col == 'name' or not sort_col:
+            return query.order_by(direction(AlchemyTag.name))
         else:
-            self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
-        return query
+            return self._get_all_order_by_col_common(
+                query, sort_col, direction, count_col=count_col, time_col=time_col,
+            )
 
     # ***
 
