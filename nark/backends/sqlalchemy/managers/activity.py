@@ -611,7 +611,12 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         self, query, sort_col, direction, count_col=None, time_col=None,
     ):
         return self._get_all_order_by_col_common(
-            query, sort_col, direction, count_col=count_col, time_col=time_col,
+            query,
+            sort_col,
+            direction,
+            default='activity',
+            count_col=count_col,
+            time_col=time_col,
         )
 
     # ***

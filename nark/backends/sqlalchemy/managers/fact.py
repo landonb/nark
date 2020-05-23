@@ -1120,7 +1120,9 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def _get_all_order_by_col(query, sort_col, direction, span_cols, date_col, tags_col):
+    def _get_all_order_by_col(
+        self, query, sort_col, direction, span_cols, date_col, tags_col,
+    ):
         if sort_col == 'start' or not sort_col:
             query = self._get_all_order_by_start(query, direction)
         elif sort_col == 'time':

@@ -449,12 +449,14 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
     def _get_all_order_by_col(
         self, query, sort_col, direction, count_col=None, time_col=None,
     ):
-        if sort_col == 'tag' or sort_col == 'name' or not sort_col:
-            return query.order_by(direction(AlchemyTag.name))
-        else:
-            return self._get_all_order_by_col_common(
-                query, sort_col, direction, count_col=count_col, time_col=time_col,
-            )
+        return self._get_all_order_by_col_common(
+            query,
+            sort_col,
+            direction,
+            default='tag',
+            count_col=count_col,
+            time_col=time_col,
+        )
 
     # ***
 

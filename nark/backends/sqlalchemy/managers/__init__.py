@@ -25,7 +25,7 @@ from sqlalchemy import asc, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import and_, or_
 
-from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
+from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact, AlchemyTag
 
 __all__ = (
     'BaseAlchemyManager',
@@ -266,18 +266,47 @@ class BaseAlchemyManager(object):
     def _get_all_order_by_col_common(
         self, query, sort_col, direction, default, count_col=None, time_col=None,
     ):
+        # Each get_all() method maintains an include_usage that indicates
+        # if AlchemyFact is joined, but we can glean same if the agg_cols,
+        # count_col and time_col, are not None; that'll mean Fact avail, too.
+        target = None
+        check_aggs = False
         if sort_col == 'start':
-            query = query.order_by(direction(AlchemyFact.start))
+            target = AlchemyFact.start
+            check_aggs = True
         elif sort_col == 'usage':
-            query = query.order_by(direction(count_col))
+            target = count_col
+            check_aggs = True
         elif sort_col == 'time':
-            query = query.order_by(direction(time_col))
-        elif sort_col == 'activity' or sort_col == 'name' or not sort_col:
-            query = query.order_by(direction(AlchemyActivity.name))
-        elif sort_col == 'category':
-            query = query.order_by(direction(AlchemyCategory.name))
-        else:
+            target = time_col
+            check_aggs = True
+        elif (
+            sort_col == 'activity'
+            or (default == 'activity' and (sort_col == 'name' or not sort_col))
+        ):
+            target = AlchemyActivity.name
+        elif (
+            sort_col == 'category'
+            or (default == 'category' and (sort_col == 'name' or not sort_col))
+        ):
+            target = AlchemyCategory.name
+        elif (
+            sort_col == 'tag'
+            or (default == 'tag' and (sort_col == 'name' or not sort_col))
+        ):
+            target = AlchemyTag.name
+
+        if (
+            target is not None
+            and check_aggs
+            and count_col is None
+            and time_col is None
+        ):
+            self.store.logger.warn("Invalid sort_col: {}".format(sort_col))
+        elif target is None:
             self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
+        else:
+            query = query.order_by(direction(target))
         return query
 
     # ***
