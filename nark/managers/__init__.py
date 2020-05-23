@@ -186,8 +186,9 @@ class BaseManager(object):
                 since_dt = datetime.datetime.combine(datetime.date.today(), since)
             else:
                 message = _(
-                    'You need to pass either a datetime.date, datetime.time'
-                    ' or datetime.datetime object.'
+                    'Unable to convert the since input to a datetime.'
+                    ' Neither date, nor time, nor datetime: ‘{}’'
+                    .format(str(since))
                 )
                 self.store.logger.debug(message)
                 raise TypeError(message)
@@ -210,8 +211,9 @@ class BaseManager(object):
                 until_dt = datetime.datetime.combine(datetime.date.today(), until)
             else:
                 message = _(
-                    'You need to pass either a datetime.date, datetime.time'
-                    ' or datetime.datetime object.'
+                    'Unable to convert the until input to a datetime.'
+                    ' Neither date, nor time, nor datetime: ‘{}’'
+                    .format(str(since))
                 )
                 raise TypeError(message)
             return until_dt
