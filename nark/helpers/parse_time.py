@@ -23,6 +23,7 @@ from gettext import gettext as _
 
 import re
 from datetime import timedelta
+from string import punctuation
 
 import lazy_import
 
@@ -281,53 +282,104 @@ def parse_dated(dated, time_now, cruftless=False):
 
 # ***
 
-def parse_datetime_human(datepart, time_now=None, local_tz=False):
+# The powerful dateparser parser can be a little too inclusive.
+# - For instance, it'll accept `18 55`, parsed as the 18th day of today's month
+#   in the year 2055; or even `44`, read as last century's 44th year, e.g., 1944.
+# - The previous two examples, `18 55` and `44`, can be avoided by setting
+#   STRICT_PARSING to True.
+# - But strict parsing excludes such friendly single-day or single-month
+#   inputs, e.g., `Monday` and `January`.
+# - But strict parsing also allows input we'd like to ignore, e.g., even if
+#   strict, `18:555` parses to Datetime(2055, 1, 8, 5, 0). What a stretch!
+# - So we do an upfront check and skip the friendly parser if the input
+#   is only numbers, whitespace, and/or punctuation, but no alpha characters.
+
+RE_ONLY_09_WH_AND_PUNCT = re.compile(r'^[0-9\s{}]+$'.format(re.escape(punctuation)))
+
+
+def parse_datetime_get_settings(time_now=None, local_tz=False):
     # For settings def, see:
-    #   dateparser/dateparser_data/settings.py
+    #
     #   https://github.com/scrapinghub/dateparser/blob/master/docs/usage.rst#settings
+    #
+    #   dateparser/dateparser_data/settings.py
+    #
+    # Settings help:
+    #
+    # - PREFER_DATES_FROM:         defaults to current_period.
+    #                              Options are future or past.
+    # - SUPPORT_BEFORE_COMMON_ERA: defaults to False.
+    # - PREFER_DAY_OF_MONTH:       defaults to current.
+    #                              Could be first and last day of month.
+    # - SKIP_TOKENS:               defaults to [‘t’]. Can be any string.
+    # - TIMEZONE:                  defaults to UTC. Can be timezone abbrev
+    #                              or any of tz database name as given here:
+    #       https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+    # - RETURN_AS_TIMEZONE_AWARE:  return tz aware datetime objects in
+    #                              case timezone is detected in the date string.
+    # - RELATIVE_BASE:             count relative date from this base date.
+    #                              Should be datetime object.
+    #
+    # Settings defaults:
+    #
+    #   'PREFER_DATES_FROM': 'current_period',  # Or: 'past', 'future'.
+    #   'PREFER_DAY_OF_MONTH': 'current',  # Or: 'first', 'last'.
+    #   'SKIP_TOKENS': ["t"],
+    #   'SKIP_TOKENS_PARSER': ["t", "year", "hour", "minute"],
+    #   'TIMEZONE': 'local',
+    #   'TO_TIMEZONE': False,
+    #   'RETURN_AS_TIMEZONE_AWARE': 'default',
+    #   'NORMALIZE': True,
+    #   'RELATIVE_BASE': False,
+    #   'DATE_ORDER': 'MDY',
+    #   'PREFER_LOCALE_DATE_ORDER': True,
+    #   'FUZZY': False,
+    #   'STRICT_PARSING': False,
+    #   'RETURN_TIME_AS_PERIOD': False,
+    #   'PARSERS': default_parsers,
+    #
     settings = {
-        # PREFER_DATES_FROM:    defaults to current_period.
-        #                       Options are future or past.
-        # SUPPORT_BEFORE_COMMON_ERA: defaults to False.
-        # PREFER_DAY_OF_MONTH:  defaults to current.
-        #                       Could be first and last day of month.
-        # SKIP_TOKENS:          defaults to [‘t’]. Can be any string.
-        # TIMEZONE:             defaults to UTC. Can be timezone abbrev
-        #                       or any of tz database name as given here:
-        #     https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-        # RETURN_AS_TIMEZONE_AWARE: return tz aware datetime objects in
-        #                       case timezone is detected in the date string.
-        # RELATIVE_BASE:        count relative date from this base date.
-        #                       Should be datetime object.
-        # Defaults:
-        #  'PREFER_DATES_FROM': 'current_period',
-        #  'PREFER_DAY_OF_MONTH': 'current',
-        #  'SKIP_TOKENS': ["t"],
-        #  'SKIP_TOKENS_PARSER': ["t", "year", "hour", "minute"],
-        #  'TIMEZONE': 'local',
-        #  'TO_TIMEZONE': False,
-        #  'RETURN_AS_TIMEZONE_AWARE': 'default',
-        #  'NORMALIZE': True,
-        #  'RELATIVE_BASE': False,
-        #  'DATE_ORDER': 'MDY',
-        #  'PREFER_LOCALE_DATE_ORDER': True,
-        #  'FUZZY': False,
-        #  'STRICT_PARSING': False,
-        #  'RETURN_TIME_AS_PERIOD': False,
-        #  'PARSERS': default_parsers,
-        # FIXME/2018-05-22: (lb): Use RELATIVE_BASE to support
-        #                   friendlies relative to other time, e.g.,
-        #                       `from 1 hour ago to 2018-05-22 20:47`
+        # Default to no time zone. We'll set True next, if local_tz.
         'RETURN_AS_TIMEZONE_AWARE': False,
+        # So that, e.g., `dob list --since January` uses January 1st, and
+        # not January whatever-today's-day-of-the-month-is, set DOM pref.
+        'PREFER_DAY_OF_MONTH': 'first',
+        # Note that when STRICT_PARSING is False, it allows, e.g., `18 55`
+        # to mean Datetime(2055, 12, 18, 0, 0), given a
+        # today of Datetime(2015, 12, 10, 12, 30). But we
+        # use RE_ONLY_09_WH_AND_PUNCT to avoid that.
+        'STRICT_PARSING': False,
     }
+
     if time_now:
+        # Using RELATIVE_BASE allows friendlies relative to other time, e.g.,
+        # '1 hour ago', as in `dob from 1 hour ago to 2018-05-22 20:47` or
+        # `dob list --since '1 hour ago'`, etc.
         settings['RELATIVE_BASE'] = time_now
+
     if local_tz:
         # NOTE: Uses machine-local tz, unless TIMEZONE set.
         settings['RETURN_AS_TIMEZONE_AWARE'] = True
         settings['TIMEZONE'] = local_tz
 
-    parsed = dateparser.parse(datepart, settings=settings)
+    return settings
+
+
+def parse_datetime_human(datepart, time_now=None, local_tz=False):
+    if RE_ONLY_09_WH_AND_PUNCT.match(datepart) is not None:
+        return
+
+    settings = parse_datetime_get_settings(time_now, local_tz)
+
+    # Use the parse() wrapper class, so that the detected language is reused every
+    # time, potentially speeding up a long import job. So avoid calling just this:
+    #   parsed = dateparser.parse(datepart, settings=settings)
+    ddp = dateparser.DateDataParser(settings=settings).get_date_data(datepart)
+    # ddp is dict: 'date_obj' is None or the datetime;
+    #              'period' is None or, e.g., 'day';
+    #              'locale' is None or, e.g., 'en'.
+    parsed = ddp['date_obj']
+
     return parsed
 
 
