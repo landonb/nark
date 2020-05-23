@@ -274,12 +274,8 @@ class BaseAlchemyManager(object):
             query = query.order_by(direction(time_col))
         elif sort_col == 'activity' or sort_col == 'name' or not sort_col:
             query = query.order_by(direction(AlchemyActivity.name))
-            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-            query = query.order_by(direction(AlchemyCategory.name))
         elif sort_col == 'category':
             query = query.order_by(direction(AlchemyCategory.name))
-            # MAYBE/2020-05-19: Now that sort_cols is multiple=True, omit this?:
-            query = query.order_by(direction(AlchemyActivity.name))
         else:
             self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
         return query
