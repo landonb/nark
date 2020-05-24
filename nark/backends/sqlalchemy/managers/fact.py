@@ -1193,10 +1193,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def query_order_by_start(self, query, direction, fact=None):
+    def query_exclude_fact(self, query, fact=None):
         if fact and not fact.unstored:
             query = query.filter(AlchemyFact.pk != fact.pk)
+        return query
 
+    # ***
+
+    def query_order_by_start(self, query, direction):
         # Include end so that momentaneous Facts are sorted properly.
         # - And add PK, too, so momentaneous Facts are sorted predictably.
         query = query.order_by(
@@ -1230,11 +1234,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         start_at = self._get_sql_datetime(fact.start)
         condition = and_(func.datetime(AlchemyFact.start) == start_at)
 
+        # Excluded 'deleted' Facts.
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
-
         query = query.filter(condition)
-
-        query = self.query_order_by_start(query, asc, fact=fact)
+        # Exclude fact.pk from results.
+        query = self.query_exclude_fact(query, fact)
+        # Order by start time (end time, fact ID), ascending.
+        query = self.query_order_by_start(query, asc)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -1273,11 +1279,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         end_at = self._get_sql_datetime(fact.end)
         condition = and_(func.datetime(AlchemyFact.end) == end_at)
 
+        # Excluded 'deleted' Facts.
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
-
         query = query.filter(condition)
-
-        query = self.query_order_by_start(query, desc, fact=fact)
+        # Exclude fact.pk from results.
+        query = self.query_exclude_fact(query, fact)
+        # Order by start time (end time, fact ID), descending.
+        query = self.query_order_by_start(query, desc)
 
         self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
 
@@ -1364,12 +1372,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             before_closed_fact_end,
         )
 
+        # Excluded 'deleted' Facts.
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
-
         query = query.filter(condition)
-
         # Exclude fact.pk from results.
-        query = self.query_order_by_start(query, desc, fact=fact)
+        query = self.query_exclude_fact(query, fact)
+        # Order by start time (end time, fact ID), descending.
+        query = self.query_order_by_start(query, desc)
 
         query = query.limit(1)
 
@@ -1424,12 +1433,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 ),
             )
 
+        # Excluded 'deleted' Facts.
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
-
         query = query.filter(condition)
-
         # Exclude fact.pk from results.
-        query = self.query_order_by_start(query, asc, fact=fact)
+        query = self.query_exclude_fact(query, fact)
+        # Order by start time (end time, fact ID), ascending.
+        query = self.query_order_by_start(query, asc)
 
         query = query.limit(1)
 
