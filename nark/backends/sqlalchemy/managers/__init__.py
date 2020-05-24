@@ -31,6 +31,7 @@ __all__ = (
     'BaseAlchemyManager',
     'query_apply_limit_offset',
     'query_apply_true_or_not',
+    'query_sort_order_at_index',
 )
 
 
@@ -62,6 +63,14 @@ def query_apply_true_or_not(query, column, condition):
     if condition is not None:
         return query.filter(column == condition)
     return query
+
+
+def query_sort_order_at_index(sort_orders, idx):
+    try:
+        direction = desc if sort_orders[idx] == 'desc' else asc
+    except IndexError:
+        direction = asc
+    return direction
 
 
 # ***
@@ -255,10 +264,7 @@ class BaseAlchemyManager(object):
 
     def _get_all_order_by(self, query, sort_cols, sort_orders, *agg_cols):
         for idx, sort_col in enumerate(sort_cols):
-            try:
-                direction = desc if sort_orders[idx] == 'desc' else asc
-            except IndexError:
-                direction = asc
+            direction = query_sort_order_at_index(sort_orders, idx)
             query = self._get_all_order_by_col(query, sort_col, direction, *agg_cols)
         return query
 
