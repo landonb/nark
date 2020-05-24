@@ -567,6 +567,14 @@ class TestActivityManager():
         )
         assert len(result) == 1
 
+    def test_get_all_with_category_miss(self, alchemy_store, alchemy_activity):
+        """
+        Make sure that activities matching the given alchemy_category are returned.
+        """
+        activity = alchemy_activity.as_hamster(alchemy_store)
+        result = alchemy_store.activities.get_all(category='miss')
+        assert len(result) == 0
+
 
 class TestTagManager():
     def test_add_new(self, alchemy_store, alchemy_tag_factory):
