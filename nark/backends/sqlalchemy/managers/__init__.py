@@ -193,23 +193,26 @@ class BaseAlchemyManager(object):
 
         item_filter = None
         if activity:
-            activity_name = None
-            try:
-                if activity.pk:
-                    item_filter = AlchemyActivity.pk == activity.pk
-                else:
-                    activity_name = activity.name
-            except AttributeError:
-                activity_name = activity
-
-            if activity_name is not None:
+            activity_name = self._get_all_filter_by_activity_name(activity)
+            if activity_name is None:
+                item_filter = AlchemyActivity.pk == activity.pk
+            else:
                 # NOTE: Strict name matching, case and exactness.
-                item_filter = (
-                    func.lower(AlchemyActivity.name) == func.lower(activity_name)
-                )
+                #       Not, say, func.lower(name) == func.lower(...),
+                #       or using sqlalchemy ilike().
+                item_filter = AlchemyActivity.name == activity_name
         else:  # activity is None.
             item_filter = AlchemyFact.activity == None  # noqa: E711
         return item_filter
+
+    def _get_all_filter_by_activity_name(self, activity):
+        activity_name = None
+        try:
+            if not activity.pk:
+                activity_name = activity.name
+        except AttributeError:
+            activity_name = activity
+        return activity_name
 
     # ***
 
@@ -229,23 +232,24 @@ class BaseAlchemyManager(object):
 
         item_filter = None
         if category:
-            category_name = None
-            try:
-                if category.pk:
-                    item_filter = AlchemyCategory.pk == category.pk
-                else:
-                    category_name = category.name
-            except AttributeError:
-                category_name = category
-
-            if category_name is not None:
+            category_name = self._get_all_filter_by_category_name(category)
+            if category_name is None:
+                item_filter = AlchemyCategory.pk == category.pk
+            else:
                 # NOTE: Strict name matching, case and exactness.
-                item_filter = (
-                    func.lower(AlchemyCategory.name) == func.lower(category_name)
-                )
+                item_filter = AlchemyCategory.name == category_name
         else:
             item_filter = AlchemyFact.category == None  # noqa: E711
         return item_filter
+
+    def _get_all_filter_by_category_name(self, category):
+        category_name = None
+        try:
+            if not category.pk:
+                category_name = category.name
+        except AttributeError:
+            category_name = category
+        return category_name
 
     # ***
 
