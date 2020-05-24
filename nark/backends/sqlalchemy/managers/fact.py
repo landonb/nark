@@ -343,7 +343,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         self.store.logger.debug(_("Received PK: {}', 'raw'={}.".format(pk, raw)))
 
         if deleted is None:
-            result = self.store.session.query(AlchemyFact).get(pk)
+            query = self.store.session.query(AlchemyFact)
+            result = query.get(pk)
         else:
             query = self.store.session.query(AlchemyFact)
             query = query.filter(AlchemyFact.pk == pk)
