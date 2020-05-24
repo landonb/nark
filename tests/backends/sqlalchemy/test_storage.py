@@ -1004,3 +1004,37 @@ class TestFactManager():
         assert str(result[0]) == str(set_of_alchemy_facts[1])
         assert result == [set_of_alchemy_facts[1]]
 
+    def test_starting_at(self, alchemy_store, alchemy_fact):
+        fact = alchemy_fact.as_hamster(alchemy_store)
+        # Ensure that starting_at does not exclude the reference Fact.
+        ref = fact.copy(include_pk=False)
+        result = alchemy_store.facts.starting_at(ref)
+        assert result == fact
+
+    def test_ending_at(self, alchemy_store, alchemy_fact):
+        fact = alchemy_fact.as_hamster(alchemy_store)
+        # Ensure that starting_at does not exclude the reference Fact.
+        ref = fact.copy(include_pk=False)
+        result = alchemy_store.facts.ending_at(ref)
+        assert result == fact
+
+    def test_antecedent(self, alchemy_store, set_of_alchemy_facts):
+        """Make sure facts with ``Fact.category.name`` matching the term are returned."""
+        assert len(set_of_alchemy_facts) == 5
+        fact_2nd = set_of_alchemy_facts[1]
+        fact_3rd = set_of_alchemy_facts[2]
+        result = alchemy_store.facts.antecedent(fact=fact_3rd)
+        # We could instead checked against a real Fact, either works:
+        #  fact_2nd = set_of_alchemy_facts[1].as_hamster(alchemy_store)
+        assert result == fact_2nd
+
+    def test_subsequent(self, alchemy_store, set_of_alchemy_facts):
+        """Make sure facts with ``Fact.category.name`` matching the term are returned."""
+        assert len(set_of_alchemy_facts) == 5
+        fact_2nd = set_of_alchemy_facts[1]
+        fact_3rd = set_of_alchemy_facts[2]
+        result = alchemy_store.facts.subsequent(ref_time=fact_2nd.end)
+        # We could instead checked against a real Fact, either works:
+        #  fact_3rd = set_of_alchemy_facts[2].as_hamster(alchemy_store)
+        assert result == fact_3rd
+
