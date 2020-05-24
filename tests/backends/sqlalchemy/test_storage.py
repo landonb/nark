@@ -988,19 +988,19 @@ class TestFactManager():
 
     def test_get_all_search_matches_activity(self, alchemy_store, set_of_alchemy_facts):
         """Make sure facts with ``Fact.activity.name`` matching the term are returned."""
+        assert len(set_of_alchemy_facts) == 5
         search_term = set_of_alchemy_facts[1].activity.name
         result = alchemy_store.facts._get_all(search_term=search_term, lazy_tags=True)
         assert len(result) == 1
-        assert len(set_of_alchemy_facts) == 5
         assert str(result[0]) == str(set_of_alchemy_facts[1])
         assert result == [set_of_alchemy_facts[1]]
 
     def test_get_all_search_matches_category(self, alchemy_store, set_of_alchemy_facts):
         """Make sure facts with ``Fact.category.name`` matching the term are returned."""
+        assert len(set_of_alchemy_facts) == 5
         search_term = set_of_alchemy_facts[1].category.name
         result = alchemy_store.facts._get_all(search_term=search_term, lazy_tags=True)
         assert len(result) == 1
-        assert len(set_of_alchemy_facts) == 5
         assert str(result[0]) == str(set_of_alchemy_facts[1])
         assert result == [set_of_alchemy_facts[1]]
 
