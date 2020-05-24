@@ -382,14 +382,28 @@ class TestFactManager:
         confusion the easies fix is to make sure the mock-today is well in the future.
         """
         now = datetime.datetime.now()  # the freeze_time time, above.
-        if endless_fact.start > now:
-            # (lb): The FactFactory sets start to faker.Faker().date_time(),
-            # which is not constrained in any way (maybe it doesn't return
-            # time from the future?). Here we dial back the start if it's
-            # too far a’future, because then the FactManager will complain
-            # about trying to end the Fact before it started.
-            fmdelta = base_config['time']['fact_min_delta']
-            endless_fact.start = now - datetime.timedelta(seconds=fmdelta)
+        # (lb): The FactFactory sets start to faker.Faker().date_time(),
+        # which is not constrained in any way, and might set Fact.start in
+        # the future, or close to now (freeze_time), in which case our 'hint'
+        # value might otherwise cause the test to end the Fact before it
+        # starts, eliciting the complaint:
+        #   ValueError:
+        #       Cannot end the Fact before it started.
+        #       Try editing the Fact instead.
+        # So ensure that setting end (relative to now) won't fail, by
+        # possibly moving Fact.start. (lb): Does it make setting Fact.start
+        # to a fake time worth it if we have to possibly change it anyway?
+        # - Start with the fact_min_delta padding, which will also cause a
+        #   complaint, if end isn't far enough ahead of start.
+        max_delta_secs = base_config['time']['fact_min_delta']
+        if hint and isinstance(hint, datetime.timedelta) and hint.total_seconds() < 0:
+            # Add hint's seconds, which is a negative value, so really, subtract.
+            max_delta_secs += hint.total_seconds()
+        max_start = None
+        if max_delta_secs:
+            max_start = now - datetime.timedelta(seconds=max_delta_secs)
+        if endless_fact.start > max_start:
+            endless_fact.start = max_start
         # NOTE: The `fact` fixture simply adds a second Fact to the db, after
         #       having added the endless_fact Fact.
         if hint:
