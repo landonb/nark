@@ -328,8 +328,13 @@ def set_of_tags(alchemy_tag_factory):
     return [alchemy_tag_factory() for i in range(5)]
 
 
-@pytest.fixture
-def set_of_alchemy_facts(start_datetime, alchemy_fact_factory):
+def _set_of_alchemy_facts(
+    start_datetime,
+    alchemy_fact_factory,
+    num_facts=5,
+    endless=False,
+    contiguous=False,
+):
     """
     Provide a multitude of generic persistent facts.
 
@@ -337,12 +342,36 @@ def set_of_alchemy_facts(start_datetime, alchemy_fact_factory):
     """
     start = start_datetime
     result = []
-    for i in range(5):
-        end = start + datetime.timedelta(minutes=20)
+
+    for i in range(num_facts):
+        if i < num_facts - 1:
+            end = start + datetime.timedelta(minutes=20)
+        else:
+            end = None
         fact = alchemy_fact_factory(start=start, end=end)
         result.append(fact)
-        start = start + datetime.timedelta(days=1)
+        if not contiguous:
+            start = start + datetime.timedelta(days=1)
+        else:
+            start = end
     return result
+
+
+@pytest.fixture
+def set_of_alchemy_facts(start_datetime, alchemy_fact_factory):
+    return _set_of_alchemy_facts(start_datetime, alchemy_fact_factory, endless=False)
+
+
+@pytest.fixture
+def set_of_alchemy_facts_active(start_datetime, alchemy_fact_factory):
+    return _set_of_alchemy_facts(start_datetime, alchemy_fact_factory, endless=True)
+
+
+@pytest.fixture
+def set_of_alchemy_facts_contiguous(start_datetime, alchemy_fact_factory):
+    return _set_of_alchemy_facts(
+        start_datetime, alchemy_fact_factory, endless=False, contiguous=True,
+    )
 
 
 # Fallback nark object and factory fixtures. Unless we know how factories

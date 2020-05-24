@@ -1005,6 +1005,7 @@ class TestFactManager():
         assert result == [set_of_alchemy_facts[1]]
 
     def test_starting_at(self, alchemy_store, alchemy_fact):
+        """Verify FactManager.starting_at."""
         fact = alchemy_fact.as_hamster(alchemy_store)
         # Ensure that starting_at does not exclude the reference Fact.
         ref = fact.copy(include_pk=False)
@@ -1012,29 +1013,104 @@ class TestFactManager():
         assert result == fact
 
     def test_ending_at(self, alchemy_store, alchemy_fact):
+        """Verify FactManager.ending_at."""
         fact = alchemy_fact.as_hamster(alchemy_store)
         # Ensure that starting_at does not exclude the reference Fact.
         ref = fact.copy(include_pk=False)
         result = alchemy_store.facts.ending_at(ref)
         assert result == fact
 
-    def test_antecedent(self, alchemy_store, set_of_alchemy_facts):
-        """Make sure facts with ``Fact.category.name`` matching the term are returned."""
-        assert len(set_of_alchemy_facts) == 5
-        fact_2nd = set_of_alchemy_facts[1]
-        fact_3rd = set_of_alchemy_facts[2]
-        result = alchemy_store.facts.antecedent(fact=fact_3rd)
-        # We could instead checked against a real Fact, either works:
-        #  fact_2nd = set_of_alchemy_facts[1].as_hamster(alchemy_store)
-        assert result == fact_2nd
+    @pytest.mark.parametrize('send_fact', (False, 'closed', 'active'))
+    def test_antecedent(self, alchemy_store, set_of_alchemy_facts_active, send_fact):
+        """Verify FactManager.antecedent works with various reference input."""
+        assert len(set_of_alchemy_facts_active) == 5
+        # Depending on send_fact, either send the fact, or a datetime.
+        if send_fact:
+            ref_time = None
+            if send_fact == 'closed':
+                fact = set_of_alchemy_facts_active[3]
+                expect = set_of_alchemy_facts_active[2]
+            else:  # 'active'
+                fact = set_of_alchemy_facts_active[4]
+                expect = set_of_alchemy_facts_active[3]
+        else:
+            fact = None
+            ref_time = set_of_alchemy_facts_active[3].start
+            expect = set_of_alchemy_facts_active[2]
+        result = alchemy_store.facts.antecedent(fact=fact, ref_time=ref_time)
+        assert result == expect
 
-    def test_subsequent(self, alchemy_store, set_of_alchemy_facts):
-        """Make sure facts with ``Fact.category.name`` matching the term are returned."""
+    @pytest.mark.parametrize('send_fact', (False, True))
+    def test_subsequent(self, alchemy_store, set_of_alchemy_facts, send_fact):
+        """Verify FactManager.subsequent works with various reference input."""
         assert len(set_of_alchemy_facts) == 5
         fact_2nd = set_of_alchemy_facts[1]
         fact_3rd = set_of_alchemy_facts[2]
-        result = alchemy_store.facts.subsequent(ref_time=fact_2nd.end)
+        # Depending on send_fact, either send the fact, or a datetime.
+        fact = fact_2nd if send_fact else None
+        ref_time = fact_2nd.end if not send_fact else None
+        result = alchemy_store.facts.subsequent(fact=fact, ref_time=ref_time)
         # We could instead checked against a real Fact, either works:
         #  fact_3rd = set_of_alchemy_facts[2].as_hamster(alchemy_store)
         assert result == fact_3rd
+
+    def test_strictly_during(self, alchemy_store, set_of_alchemy_facts):
+        """Verify FactManager.strictly_during finds a range of Facts."""
+        assert len(set_of_alchemy_facts) == 5
+        expect = set_of_alchemy_facts[1:2]
+        result = alchemy_store.facts.strictly_during(
+            since=expect[0].start, until=expect[-1].end,
+        )
+        assert result == expect
+
+    # ***
+
+    def test_surrounding_exclusive_outer(self, alchemy_store, set_of_alchemy_facts):
+        """Verify exclusive surrounding finds nothing given a Fact's start or end."""
+        assert len(set_of_alchemy_facts) == 5
+        any_fact = set_of_alchemy_facts[2]
+        fact_time = any_fact.start
+        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=False)
+        assert result == []
+
+    def test_surrounding_exclusive_inner(self, alchemy_store, set_of_alchemy_facts):
+        """Verify exclusive surrounding finds Fact given time between start and end."""
+        assert len(set_of_alchemy_facts) == 5
+        any_fact = set_of_alchemy_facts[2]
+        fact_time = any_fact.end - ((any_fact.end - any_fact.start) / 2)
+        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=False)
+        assert result[0] == any_fact
+
+
+    def test_surrounding_inclusive_outer(
+        self, alchemy_store, set_of_alchemy_facts_contiguous,
+    ):
+        """Verify inclusive surrounding finds 2 Facts given time at end and start."""
+        assert len(set_of_alchemy_facts_contiguous) == 5
+        expect = [
+            set_of_alchemy_facts_contiguous[1],
+            set_of_alchemy_facts_contiguous[2],
+        ]
+        fact_time = expect[-1].start
+        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=True)
+        assert result == expect
+
+    def test_surrounding_inclusive_inner(self, alchemy_store, set_of_alchemy_facts):
+        """Verify inclusive surrounding finds Fact given time between start and end."""
+        assert len(set_of_alchemy_facts) == 5
+        any_fact = set_of_alchemy_facts[2]
+        fact_time = any_fact.end - ((any_fact.end - any_fact.start) / 2)
+        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=True)
+        assert result[0] == any_fact
+
+    # ***
+
+    def test_endless(self, alchemy_store, set_of_alchemy_facts_active):
+        """Verify FactManager.endless finds the active Fact."""
+        assert len(set_of_alchemy_facts_active) == 5
+        expect = set_of_alchemy_facts_active[-1]
+        result = alchemy_store.facts.endless()
+        assert result[0] == expect
+
+    # ***
 
