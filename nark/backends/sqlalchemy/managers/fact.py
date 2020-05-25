@@ -1121,8 +1121,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def _get_all_order_by_col(
-        self, query, sort_col, direction, span_cols, date_col, tags_col,
+    def query_apply_order_by(
+        self,
+        query,
+        sort_col,
+        direction,
+        # The following columns are specific to a Fact gather.
+        span_cols,
+        date_col,
+        tags_col,
     ):
         if sort_col == 'start' or not sort_col:
             query = self.query_order_by_start(query, direction)
@@ -1196,18 +1203,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
     def query_exclude_fact(self, query, fact=None):
         if fact and not fact.unstored:
             query = query.filter(AlchemyFact.pk != fact.pk)
-        return query
-
-    # ***
-
-    def query_order_by_start(self, query, direction):
-        # Include end so that momentaneous Facts are sorted properly.
-        # - And add PK, too, so momentaneous Facts are sorted predictably.
-        query = query.order_by(
-            direction(AlchemyFact.start),
-            direction(AlchemyFact.end),
-            direction(AlchemyFact.pk),
-        )
         return query
 
     # ***

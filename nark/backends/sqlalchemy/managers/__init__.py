@@ -432,31 +432,51 @@ class BaseAlchemyManager(object):
     def _get_all_order_by(self, query, sort_cols, sort_orders, *agg_cols):
         for idx, sort_col in enumerate(sort_cols):
             direction = query_sort_order_at_index(sort_orders, idx)
-            query = self._get_all_order_by_col(query, sort_col, direction, *agg_cols)
+            query = self.query_apply_order_by(query, sort_col, direction, *agg_cols)
         return query
 
-    def _get_all_order_by_col(
-        self, query, sort_col, direction, count_col=None, time_col=None,
+    def query_apply_order_by(
+        self,
+        query,
+        sort_col,
+        direction,
+        # The following columns are specific to Activity, Category, and Tag
+        # gather calls. The FactManager.gather will override query_apply_order_by
+        # to pass its own specific query columns.
+        count_col=None,
+        time_col=None,
     ):
-        raise NotImplemented
+        return self.query_usage_order_by(
+            query,
+            sort_col,
+            direction,
+            default='tag',
+            count_col=count_col,
+            time_col=time_col,
+        )
 
-    def _get_all_order_by_col_common(
-        self, query, sort_col, direction, default, count_col=None, time_col=None,
+    def query_usage_order_by(
+        self,
+        query,
+        sort_col,
+        direction,
+        default,
+        count_col=None,
+        time_col=None,
     ):
         # Each get_all() method maintains an include_usage that indicates
         # if AlchemyFact is joined, but we can glean same if the agg_cols,
         # count_col and time_col, are not None; that'll mean Fact avail, too.
         target = None
-        check_aggs = False
+        check_agg = False
         if sort_col == 'start':
-            target = AlchemyFact.start
-            check_aggs = True
+            query = self.query_order_by_start(query, direction)
         elif sort_col == 'usage':
             target = count_col
-            check_aggs = True
+            check_agg = True
         elif sort_col == 'time':
             target = time_col
-            check_aggs = True
+            check_agg = True
         elif (
             sort_col == 'activity'
             or (default == 'activity' and (sort_col == 'name' or not sort_col))
@@ -473,17 +493,24 @@ class BaseAlchemyManager(object):
         ):
             target = AlchemyTag.name
 
-        if (
-            target is not None
-            and check_aggs
-            and count_col is None
-            and time_col is None
-        ):
+        if check_agg and target is None:
             self.store.logger.warn("Invalid sort_col: {}".format(sort_col))
         elif target is None:
             self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
         else:
             query = query.order_by(direction(target))
+        return query
+
+    # ***
+
+    def query_order_by_start(self, query, direction):
+        # Include end so that momentaneous Facts are sorted properly.
+        # - And add PK, too, so momentaneous Facts are sorted predictably.
+        query = query.order_by(
+            direction(AlchemyFact.start),
+            direction(AlchemyFact.end),
+            direction(AlchemyFact.pk),
+        )
         return query
 
     # ***

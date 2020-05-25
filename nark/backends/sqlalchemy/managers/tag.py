@@ -449,10 +449,10 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
     # ***
 
-    def _get_all_order_by_col(
+    def query_apply_order_by(
         self, query, sort_col, direction, count_col=None, time_col=None,
     ):
-        return self._get_all_order_by_col_common(
+        return self.query_usage_order_by(
             query,
             sort_col,
             direction,
