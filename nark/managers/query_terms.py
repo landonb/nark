@@ -30,19 +30,15 @@ class QueryTerms(object):
 
     def setup_terms(
         self,
-        # - If specified, look for an Activity with this PK.
+
         key=None,
-        # - If True, include count of Facts that use this Activity, as
-        #   well as the cumulative duration (end - start) of those Facts.
+
         include_usage=False,
-        # - If True, return only a count of query matches (an integer).
-        #   Otherwise, the method returns a list of result rows.
+
         count_results=False,
-        # - Use since and/or until to find Activities used by Facts from a
-        #   specific time range.
+
         since=None,
         until=None,
-        # - Use endless and partial to further influence the time range query.
         endless=False,
         partial=False,
         # FIXME/2020-05-19: (lb): What's the status of the 'deleted' feature?
@@ -61,23 +57,17 @@ class QueryTerms(object):
         # In any case, this 'deleted' option is still wired in the CLI, so
         # maintaining support here. For now.
         deleted=False,
-        # - Specify one or_ more search terms to match against the Activity name.
-        #   - Note that if more than one term is supplied, they're ORed together,
-        #     so an Activity only has to match one term.
-        #   - Note also that the search is loose: It ignores case and will match
-        #     in the middle of the Activity name.
         search_term=None,
-        # - Specify an Activity object to restrict to that specific Activity.
-        #   Note that the CLI does not expose this option.
+
+        # Note that item name matching is strict -- case and exactness count.
         activity=False,
-        # - Specify a name or Category object to restrict to that specific Category.
-        #   - Note that this match is strict -- case and exactness count.
         category=False,
         match_activities=[],
         match_categories=[],
         # - MEH: (lb): For parity, could add a 'tags' option to restrict the
         #   search to Activities used on Facts with specific 'tags', but how
         #   complicated and useless does that sound.
+
         # - (lb): I added grouping support to FactManager.get_all via the options:
         #     group_activity
         #     group_category
@@ -88,42 +78,93 @@ class QueryTerms(object):
         #   with that gap in support). (tl;dr, use `dob list fact` or `dob usage fact`
         #   to group query results, and use the --column option if you want to tweak
         #   the output report columns, e.g., to match this method's output.)
-        # - The user can specify one or more columns on which to sort,
-        #   and an 'asc' or 'desc' modifier for each column under sort.
+
         sort_cols=[],
         sort_orders=[],
-        # - The user can request a subset of results.
+
         limit=None,
         offset=None,
-        # - The user can request raw SQLAlchemy results (where each result
-        #   has a leading AlchemyActivity object, and then the 'uses' and
-        #   'span' columns; and the result object has object attributes,
-        #   e.g., result.uses, result.span); or the user can expect tuple
-        #   results (with a proper Activity object as the first item in
-        #   the tuple, and the extra columns following). Note that when
-        #   raw=False, it is up to the caller to know the tuple layout.
+
         raw=False,
     ):
         """
+        Configures query parameters for item.get_all() and item.get_all_by_usage().
+
+        Some of the settings affect the query, and some affect the returned results.
+
+        Each of the query parameters is optional. Defaults are such that each
+        argument default is falsey: it's either False, None, or an empty list.
+
         Args:
-            include_usage (int, optional): If true, include count of Facts that reference
-                each Activity.
-            search_term (list of str, optional): Limit activities to those matching a
-                substring in their name. Defaults to None/disabled.
-            activity (nark.Activity, optional): Limit activities to this activity.
-                Defaults to ``False``. If ``activity=None`` only activities with a
-                matching name will be considered.
-            category (nark.Category or str, optional): Limit activities to this
-                category. Defaults to ``False``. If ``category=None`` only activities
-                without a category will be considered.
-            sort_cols (list of str, optional): Which column(s) to sort by. Defaults to
-                'activity'. Choices: 'activity, 'category', 'start', 'usage'.
-                Note that 'start' and 'usage' only apply if include_usage.
-            sort_orders (list of str, optional): Each element one of:
-                'asc': Whether to search the results in ascending order.
-                'desc': Whether to search the results in descending order.
+            key: If specified, look for an item with this PK. See also the get()
+                method, if you do not need aggregate results.
+
+            include_usage: If True, computes additional details for each item or set
+                of grouped items, and returns a list of tuples (with the item or
+                aggregated item as the first element). Otherwise, if False, returns
+                a list of matching items only. For Attribute, Category, and Tag
+                queries, enable include_usage to receive a count of Facts that use
+                the item, as well as the cumulative duration (end - start) of those
+                Facts. For Facts, includes additional aggregate details.
+
+            count_results: If True, return only a count of query matches (an integer).
+                By default, count_results is False, and the method returns a list of
+                results (of either items or tuples, depending on include_usage).
+
+            since: Restrict Facts to those that start at or after this time.
+            until: Restrict Facts to those that end at or before this time.
+            endless: If True, include the active Fact, if any, in the query.
+            partial: If True, restrict Facts to those that start or end within the
+                since-to-until time window.
+            deleted: If True, include items marked 'deleted'.
+            search_term (None, or str list): Use to restrict to items whose name
+                matches any on the specified search terms. Each comparison is case
+                insensitive, and the match can occur in the middle of a string. If
+                an item name matches one or more of the search terms, if any, it
+                will be included in the results.
+                * Use ``not`` before a search term to exclude its matches from the
+                  results.
+
+            activity (nark.Activity, str, or False; optional): Matches only the
+                Activity or the Facts assigned the Activity with this exact name.
+                The activity name can be specified as a string, or by passing a
+                ``nark.Activity`` object whose name will be used. Defaults to
+                ``False``. To match Facts without an Activity assigned, set
+                ``activity=None``.
+            category (nark.Category, str, or False; optional): Matches only the
+                Category or the Activities assigned the Category with this exact
+                name. The category name can be specified as a string, or by
+                passing a ``nark.Caetgory`` object whose name will be used.
+                Defaults to ``False``. To match Activities without a Category
+                assigned, set ``category=None``.
+            match_activities: Use to specify more than one exact Activity name
+                to match. Activities that exactly match any of the specified
+                names will be included.
+            match_categories: Use to specify more than one exact Category name
+                to match. Categories that exactly match any of the specified
+                names will be included.
+
+            sort_cols (str list, optional): Which column(s) to sort by.
+                - If not aggregating results, defaults to 'name' and orders
+                  by item name.
+                - When aggregating results (include_usage=True) or searching
+                  Facts, defaults to 'start', and orders results by Fact start.
+                - Choices include: 'start', 'time', 'day', 'name', 'activity,
+                  'category', 'tag', 'usage', and 'fact'.
+                - Note that 'start' and 'usage' only apply if include_usage,
+                  and 'day' is only valid when group_days is True.
+            sort_orders (str list, optional): Specifies the direction of each
+                sort specified by sort_cols. Use the string 'asc' or 'desc'
+                in the corresponding index of sort_orders that you want applied
+                to the corresponding entry in soft_cols. If there is no
+                corresponding entry in sort_orders for a specific sort_cols
+                entry, that sort column is ordered in ascending order.
+
             limit (int, optional): Query "limit".
             offset (int, optional): Query "offset".
+
+            raw: If True, returns 'raw' SQLAlchemy items (e.g., AlchemyFact).
+                If False, returns first-class nark objects (e.g., Fact).
         """
         self.key = key
         self.include_usage = include_usage
