@@ -423,12 +423,12 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         limit=None,
         offset=None,
         # - The user can request raw SQLAlchemy results (where each result
-        #   has a leaving AlchemyActivity object, and then the 'uses' and
+        #   has a leading AlchemyActivity object, and then the 'uses' and
         #   'span' columns; and the result object has object attributes,
         #   e.g., result.uses, result.span); or the user can expect tuple
         #   results (with a proper Activity object as the first item in
         #   the tuple, and the extra columns following). Note that when
-        #   raw=False, it is up to the caller to know how tuple layout.
+        #   raw=False, it is up to the caller to know the tuple layout.
         raw=False,
     ):
         """
@@ -598,7 +598,10 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
         def _process_results(records):
             return self._get_all_process_results_simple(
-                records, raw, include_usage, requested_usage,
+                records,
+                raw=raw,
+                include_usage=include_usage,
+                requested_usage=requested_usage,
             )
 
         # ***

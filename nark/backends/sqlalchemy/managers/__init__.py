@@ -322,7 +322,11 @@ class BaseAlchemyManager(object):
     # ***
 
     def _get_all_process_results_simple(
-        self, records, raw, include_usage, requested_usage,
+        self,
+        records,
+        raw,
+        include_usage,
+        requested_usage,
     ):
         def _process_results(records):
             if not records or not include_usage:

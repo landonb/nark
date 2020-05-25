@@ -437,7 +437,10 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
 
         def _process_results(records):
             return self._get_all_process_results_simple(
-                records, raw, include_usage, requested_usage,
+                records,
+                raw=raw,
+                include_usage=include_usage,
+                requested_usage=requested_usage,
             )
 
         # ***
