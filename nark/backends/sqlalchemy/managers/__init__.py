@@ -82,7 +82,7 @@ class BaseAlchemyManager(object):
 
     def add_and_commit(self, alchemy_item, raw=False, skip_commit=False):
         """
-        Adds the item to the datastore, and perhaps calls commit.
+        Adds the item to the data store, and perhaps calls commit.
 
         Generally, unless importing Facts, the session is committed
         after an item is added or updated. However, when adding or
@@ -201,7 +201,7 @@ class BaseAlchemyManager(object):
             return None
 
         item_filter = None
-        if activity:
+        if activity is not None:
             activity_name = self._get_all_filter_by_activity_name(activity)
             if activity_name is None:
                 item_filter = AlchemyActivity.pk == activity.pk
@@ -240,7 +240,7 @@ class BaseAlchemyManager(object):
             return None
 
         item_filter = None
-        if category:
+        if category is not None:
             category_name = self._get_all_filter_by_category_name(category)
             if category_name is None:
                 item_filter = AlchemyCategory.pk == category.pk
