@@ -178,11 +178,13 @@ class BaseAlchemyManager(object):
 
             query = _get_all_filter_by_search_term(query)
 
-            query = self._get_all_order_by(query, qt.sort_cols, qt.sort_orders, *agg_cols)
-
             query = _get_all_group_by(query, agg_cols)
 
-            query = query_apply_limit_offset(query, limit=qt.limit, offset=qt.offset)
+            query = self._get_all_order_by(
+                query, qt.sort_cols, qt.sort_orders, *agg_cols,
+            )
+
+            query = query_apply_limit_offset(query, qt.limit, qt.offset)
 
             query = _get_all_with_entities(query, agg_cols)
 
