@@ -52,7 +52,7 @@ logger = logging.getLogger('nark.log')
 #        From a "globals" module?
 #        From a function-scoped sub-function?
 #        Or is here fine?
-DATE_TO_DATE_SEPARATORS__RAW = ['to', 'until', '-']
+DATE_TO_DATE_SEPARATORS__RAW = [_('to'), _('until'), '-']
 
 
 FACT_METADATA_SEPARATORS = [",", ":"]
