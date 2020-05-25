@@ -31,12 +31,12 @@ class QueryTerms(object):
     def setup_terms(
         self,
 
-        key=None,
-
+        raw=False,
         include_usage=False,
 
         count_results=False,
 
+        key=None,
         since=None,
         until=None,
         endless=False,
@@ -61,8 +61,8 @@ class QueryTerms(object):
 
         # Note that item name matching is strict -- case and exactness count.
         activity=False,
-        category=False,
         match_activities=[],
+        category=False,
         match_categories=[],
         # - MEH: (lb): For parity, could add a 'tags' option to restrict the
         #   search to Activities used on Facts with specific 'tags', but how
@@ -83,9 +83,7 @@ class QueryTerms(object):
         sort_orders=[],
 
         limit=None,
-        offset=None,
-
-        raw=False,
+        offset=None
     ):
         """
         Configures query parameters for item.get_all() and item.get_all_by_usage().
@@ -96,9 +94,8 @@ class QueryTerms(object):
         argument default is falsey: it's either False, None, or an empty list.
 
         Args:
-            key: If specified, look for an item with this PK. See also the get()
-                method, if you do not need aggregate results.
-
+            raw: If True, returns 'raw' SQLAlchemy items (e.g., AlchemyFact).
+                If False, returns first-class nark objects (e.g., Fact).
             include_usage: If True, computes additional details for each item or set
                 of grouped items, and returns a list of tuples (with the item or
                 aggregated item as the first element). Otherwise, if False, returns
@@ -111,6 +108,8 @@ class QueryTerms(object):
                 By default, count_results is False, and the method returns a list of
                 results (of either items or tuples, depending on include_usage).
 
+            key: If specified, look for an item with this PK. See also the get()
+                method, if you do not need aggregate results.
             since: Restrict Facts to those that start at or after this time.
             until: Restrict Facts to those that end at or before this time.
             endless: If True, include the active Fact, if any, in the query.
@@ -131,15 +130,15 @@ class QueryTerms(object):
                 ``nark.Activity`` object whose name will be used. Defaults to
                 ``False``. To match Facts without an Activity assigned, set
                 ``activity=None``.
+            match_activities: Use to specify more than one exact Activity name
+                to match. Activities that exactly match any of the specified
+                names will be included.
             category (nark.Category, str, or False; optional): Matches only the
                 Category or the Activities assigned the Category with this exact
                 name. The category name can be specified as a string, or by
                 passing a ``nark.Caetgory`` object whose name will be used.
                 Defaults to ``False``. To match Activities without a Category
                 assigned, set ``category=None``.
-            match_activities: Use to specify more than one exact Activity name
-                to match. Activities that exactly match any of the specified
-                names will be included.
             match_categories: Use to specify more than one exact Category name
                 to match. Categories that exactly match any of the specified
                 names will be included.
@@ -162,26 +161,28 @@ class QueryTerms(object):
 
             limit (int, optional): Query "limit".
             offset (int, optional): Query "offset".
-
-            raw: If True, returns 'raw' SQLAlchemy items (e.g., AlchemyFact).
-                If False, returns first-class nark objects (e.g., Fact).
         """
-        self.key = key
+        self.raw = raw
         self.include_usage = include_usage
+
         self.count_results = count_results
+
+        self.key = key
         self.since = since
         self.until = until
         self.endless = endless
         self.partial = partial
         self.deleted = deleted
         self.search_term = search_term
+
         self.activity = activity
-        self.category = category
         self.match_activities = match_activities
+        self.category = category
         self.match_categories = match_categories
+
         self.sort_cols = sort_cols
         self.sort_orders = sort_orders
+
         self.limit = limit
         self.offset = offset
-        self.raw = raw
 
