@@ -73,6 +73,20 @@ def query_sort_order_at_index(sort_orders, idx):
     return direction
 
 
+def query_prepare_datetime(datetm):
+    # Be explicit with the format used by the SQL engine, otherwise,
+    #   e.g., and_(AlchemyFact.start > start) might match where
+    #   AlchemyFact.start == start. In the case of SQLite, the stored
+    #   date will be translated with the seconds, even if 0, e.g.,
+    #   "2018-06-29 16:32:00", but the datetime we use for the compare
+    #   gets translated without, e.g., "2018-06-29 16:32". And we
+    #   all know that "2018-06-29 16:32:00" > "2018-06-29 16:32".
+    # See also: func.datetime(AlchemyFact.start/end).
+    cmp_fmt = '%Y-%m-%d %H:%M:%S'
+    text = datetm.strftime(cmp_fmt)
+    return text
+
+
 # ***
 
 class BaseAlchemyManager(object):
@@ -296,8 +310,8 @@ class BaseAlchemyManager(object):
         self, query, since=None, until=None, endless=False, partial=False,
     ):
         def _query_filter_by_fact_times(query, since, until, endless, partial):
-            fmt_since = self._get_sql_datetime(since) if since else None
-            fmt_until = self._get_sql_datetime(until) if until else None
+            fmt_since = query_prepare_datetime(since) if since else None
+            fmt_until = query_prepare_datetime(until) if until else None
             if partial:
                 query = _get_partial_overlaps(query, fmt_since, fmt_until)
             else:

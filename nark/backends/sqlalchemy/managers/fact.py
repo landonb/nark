@@ -24,7 +24,12 @@ from datetime import datetime
 from sqlalchemy import asc, case, desc, distinct, func
 from sqlalchemy.sql.expression import and_, or_
 
-from . import BaseAlchemyManager, query_apply_limit_offset, query_apply_true_or_not
+from . import (
+    BaseAlchemyManager,
+    query_apply_limit_offset,
+    query_apply_true_or_not,
+    query_prepare_datetime
+)
 from ....managers.fact import BaseFactManager
 from ..objects import (
     AlchemyActivity,
@@ -796,7 +801,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # first if end is None, and use the 'now' time if so.
             endornow_col = case(
                 [(AlchemyFact.end != None, AlchemyFact.end)],  # noqa: E711
-                else_=self._get_sql_datetime(self.store.now),
+                else_=query_prepare_datetime(self.store.now),
             )
 
             span_col = _get_all_prepare_span_cols_group_span_dbms_specific(endornow_col)
@@ -1226,7 +1231,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         if fact.start is None:
             raise ValueError('No `start` for starting_at(fact).')
 
-        start_at = self._get_sql_datetime(fact.start)
+        start_at = query_prepare_datetime(fact.start)
         condition = and_(func.datetime(AlchemyFact.start) == start_at)
 
         # Excluded 'deleted' Facts.
@@ -1271,7 +1276,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         if fact.end is None:
             raise ValueError('No `end` for ending_at(fact).')
 
-        end_at = self._get_sql_datetime(fact.end)
+        end_at = query_prepare_datetime(fact.end)
         condition = and_(func.datetime(AlchemyFact.end) == end_at)
 
         # Excluded 'deleted' Facts.
@@ -1324,7 +1329,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         if not isinstance(ref_time, datetime):
             raise ValueError(_('No reference time for antecedent(fact).'))
 
-        ref_time = self._get_sql_datetime(ref_time)
+        ref_time = query_prepare_datetime(ref_time)
 
         before_ongoing_fact_start = and_(
             AlchemyFact.end == None,  # noqa: E711
@@ -1418,7 +1423,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         if ref_time is None:
             raise ValueError(_('No reference time for subsequent(fact).'))
 
-        ref_time = self._get_sql_datetime(ref_time)
+        ref_time = query_prepare_datetime(ref_time)
 
         if fact is None or fact.pk is None:
             condition = and_(func.datetime(AlchemyFact.start) >= ref_time)
@@ -1472,15 +1477,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         query = self.store.session.query(AlchemyFact)
 
         condition = and_(
-            func.datetime(AlchemyFact.start) >= self._get_sql_datetime(since),
+            func.datetime(AlchemyFact.start) >= query_prepare_datetime(since),
             or_(
                 and_(
                     AlchemyFact.end != None,  # noqa: E711
-                    func.datetime(AlchemyFact.end) <= self._get_sql_datetime(until),
+                    func.datetime(AlchemyFact.end) <= query_prepare_datetime(until),
                 ),
                 and_(
                     AlchemyFact.end == None,  # noqa: E711
-                    func.datetime(AlchemyFact.start) <= self._get_sql_datetime(until),
+                    func.datetime(AlchemyFact.start) <= query_prepare_datetime(until),
                 ),
             ),
         )
@@ -1536,7 +1541,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         """
         query = self.store.session.query(AlchemyFact)
 
-        cmp_time = self._get_sql_datetime(fact_time)
+        cmp_time = query_prepare_datetime(fact_time)
 
         if not inclusive:
             condition = and_(
