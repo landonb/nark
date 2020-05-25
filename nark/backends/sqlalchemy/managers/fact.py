@@ -544,7 +544,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_prepare_joins(query)
 
-            query = self.get_all_filter_partial(
+            query = self.query_filter_by_fact_times(
                 query, since=since, until=until, endless=endless, partial=partial,
             )
 

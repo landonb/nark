@@ -164,8 +164,8 @@ class BaseAlchemyManager(object):
 
             query, agg_cols = _get_all_start_query()
 
-            query = self.get_all_filter_partial(
-                query, since=qt.since, until=qt.until, endless=qt.endless, partial=qt.partial,
+            query = self.query_filter_by_fact_times(
+                query, qt.since, qt.until, qt.endless, qt.partial,
             )
 
             query = self._get_all_filter_by_activities(
@@ -286,10 +286,10 @@ class BaseAlchemyManager(object):
 
     # ***
 
-    def get_all_filter_partial(
+    def query_filter_by_fact_times(
         self, query, since=None, until=None, endless=False, partial=False,
     ):
-        def _get_all_filter_partial(query, since, until, endless, partial):
+        def _query_filter_by_fact_times(query, since, until, endless, partial):
             fmt_since = self._get_sql_datetime(since) if since else None
             fmt_until = self._get_sql_datetime(until) if until else None
             if partial:
@@ -343,7 +343,7 @@ class BaseAlchemyManager(object):
                 query = query.filter(AlchemyFact.end == None)  # noqa: E711
             return query
 
-        return _get_all_filter_partial(query, since, until, endless, partial)
+        return _query_filter_by_fact_times(query, since, until, endless, partial)
 
     # ***
 
