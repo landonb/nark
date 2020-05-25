@@ -146,16 +146,16 @@ class BaseAlchemyManager(object):
         qt = query_terms
 
         # If user is requesting sorting according to time, need Fact table.
-        requested_usage = qt.include_usage
-        qt.include_usage = (
+        requires_fact_table = (
             qt.include_usage
             or set(qt.sort_cols).intersection(('start', 'usage', 'time'))
+            or qt.since or qt.until or qt.endless
         )
 
         # Bounce to the simple get() method if a PK specified.
         if qt.key:
             activity = self.get(pk=qt.key, deleted=qt.deleted, raw=qt.raw)
-            if requested_usage:
+            if qt.include_usage:
                 activity = (activity,)
             return [activity]
 
@@ -202,27 +202,33 @@ class BaseAlchemyManager(object):
 
         def _get_all_start_query():
             agg_cols = []
-            if not (qt.include_usage or qt.since or qt.until or qt.endless):
+            if not requires_fact_table:
                 query = self.store.session.query(AlchemyActivity)
             else:
-                if qt.include_usage:
-                    count_col = func.count(AlchemyActivity.pk).label('uses')
-                    agg_cols.append(count_col)
-                    time_col = func.sum(
-                        func.julianday(AlchemyFact.end)
-                        - func.julianday(AlchemyFact.start)
-                    ).label('span')
-                    agg_cols.append(time_col)
-                    query = self.store.session.query(AlchemyFact, count_col, time_col)
+                if requires_fact_table:
+                    if qt.include_usage or 'usage' in qt.sort_cols:
+                        count_col = func.count(AlchemyActivity.pk).label('uses')
+                        agg_cols.append(count_col)
+                    if qt.include_usage or 'time' in qt.sort_cols:
+                        time_col = func.sum(
+                            func.julianday(AlchemyFact.end)
+                            - func.julianday(AlchemyFact.start)
+                        ).label('span')
+                        agg_cols.append(time_col)
+                query = self.store.session.query(AlchemyFact, *agg_cols)
                 query = query.join(AlchemyFact.activity)
-                # NOTE: (lb): SQLAlchemy will lazy load category if/when caller
-                #       references it. (I tried using query.options(joinedload(...))
-                #       but that route was a mess; and I don't know SQLAlchemy well.)
 
-            # SQLAlchemy automatically lazy-loads activity.category if we
-            # reference it after executing the query, so we don't need to
-            # join, except that we want to sort by category.name, so we do.
-            query = query.join(AlchemyCategory)
+            # Note that SQLAlchemy automatically lazy-loads any attribute
+            # that's another object but that we did not join. E.g., if this
+            # is query for Activity, and we did not join Category, then when
+            # the code references activity.category on one of the returned
+            # objects, the value will then be retrieved from the data store.
+            # So we do not need to join values we do not need until after the
+            # query. Except unless we want to sort by category.name, then we
+            # need to join the table, so we can reference category.name in the
+            # query.
+            if 'category' in qt.sort_cols:
+                query = query.join(AlchemyCategory)
 
             return query, agg_cols
 
@@ -276,8 +282,8 @@ class BaseAlchemyManager(object):
             return self._get_all_process_results_simple(
                 records,
                 raw=qt.raw,
-                include_usage=qt.include_usage,
-                requested_usage=requested_usage,
+                include_usage=requires_fact_table,
+                requested_usage=qt.include_usage,
             )
 
         # ***
