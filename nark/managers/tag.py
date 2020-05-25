@@ -181,7 +181,7 @@ class BaseTagManager(BaseManager):
 
     # ***
 
-    def _get_all(self, **kwargs):
+    def _get_all(self, query_terms):
         """
         Return a list of ``Tags`` matching given criteria.
         """
@@ -189,7 +189,7 @@ class BaseTagManager(BaseManager):
 
     # ***
 
-    def get_all_by_usage(self, **kwargs):
+    def get_all_by_usage(self, query_terms):
         """
         Similar to get_all(), but include count of Facts that reference each Tag.
         """

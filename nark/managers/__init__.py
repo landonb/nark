@@ -104,73 +104,44 @@ class BaseManager(object):
 
     # ***
 
-    def get_all(
-        self,
-        since=None,
-        until=None,
-        **kwargs
-    ):
+    def get_all(self, query_terms):
         """
-        Return all facts within a given timeframe that match given search terms.
-
-        # FIXME/2018-06-11: (lb): Update args help... this is stale:
-
-        Args:
-            since (datetime.datetime, optional): Consider only Facts
-                starting at or after this date. If a time is not specified,
-                "00:00:00" is used; otherwise the time of the object is used.
-                Defaults to ``None``.
-
-            until (datetime.datetime, optional): Consider only Facts ending
-                before or at this date. If not time is specified, "00:00:00"
-                is used. Defaults to ``None``.
-
-            filter_term (str, optional): Only consider ``Facts`` with this
-                string as part of their associated ``Activity.name``
-
-            deleted (boolean, optional): False to restrict to non-deleted
-                Facts; True to find only those marked deleted; None to find
-                all.
-
-            order (string, optional): 'asc' or 'desc'; re: Fact.start.
+        Return all items and any requested stats matching the given search criteria.
 
         Returns:
-            list: List of ``Facts`` matching given specifications.
+            list: List of results matching given specifications. Each results includes
+            an item or aggregated item and additional calculations as specified by the
+            query terms.
 
         Raises:
             TypeError: If ``since`` or ``until`` are not ``datetime.date``,
                 ``datetime.time`` or ``datetime.datetime`` objects.
 
             ValueError: If ``until`` is before ``since``.
-
-        Note:
-            * This public function only provides some sanity checks and
-                normalization. The actual backend query is handled by ``_get_all``.
-            * ``search_term`` should be prefixable with ``not`` in order to
-                invert matching.
-            * This only returns completed facts and does not include the
-                active Fact, whether or not it exists.
-            * This method will not return facts that start before *and* end
-                after (e.g. that span more than) the specified timeframe.
         """
-        def _get_all_verify_since_until(since, until, **kwargs):
-            self.store.logger.debug(
-                _('since: {since} / until: {until}').format(
-                    since=since, until=until
-                )
-            )
+        qt = query_terms
+
+        def _get_all():
+            qt.since, qt.until = _must_parse_since_until(qt.since, qt.until)
+            return self.gather(qt)
+
+        def _must_parse_since_until(since, until):
+            self.store.logger.debug('since: {} / until: {}'.format(since, until))
+
             # Convert the since and until time strings to datetimes.
             since = parse_dated(since, self.store.now) if since else None
             until = parse_dated(until, self.store.now) if until else None
-            since_dt = _get_all_verify_since(since)
-            until_dt = _get_all_verify_until(until)
+
+            since_dt = _must_verify_since(since)
+            until_dt = _must_verify_until(until)
             if since_dt and until_dt and (until_dt <= since_dt):
                 message = _("`until` cannot be earlier than `since`.")
                 self.store.logger.debug(message)
                 raise ValueError(message)
-            return self._get_all(since=since_dt, until=until_dt, **kwargs)
 
-        def _get_all_verify_since(since):
+            return since_dt, until_dt
+
+        def _must_verify_since(since):
             if since is None:
                 return since
 
@@ -198,7 +169,7 @@ class BaseManager(object):
                 raise TypeError(message)
             return since_dt
 
-        def _get_all_verify_until(until):
+        def _must_verify_until(until):
             if until is None:
                 return until
 
@@ -222,7 +193,7 @@ class BaseManager(object):
                 raise TypeError(message)
             return until_dt
 
-        return _get_all_verify_since_until(since, until, **kwargs)
+        return _get_all()
 
     # ***
 
