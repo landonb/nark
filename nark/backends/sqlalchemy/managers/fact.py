@@ -21,7 +21,7 @@ from gettext import gettext as _
 
 from datetime import datetime
 
-from sqlalchemy import asc, case, desc, func
+from sqlalchemy import asc, case, desc, distinct, func
 from sqlalchemy.sql.expression import and_, or_
 
 from . import BaseAlchemyManager, query_apply_limit_offset, query_apply_true_or_not
@@ -829,7 +829,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_prepare_span_cols_group_count(query):
             group_count_col = func.count(
-                AlchemyFact.pk
+                distinct(AlchemyFact.pk)
             ).label('group_count')
             query = query.add_columns(group_count_col)
             return query, group_count_col
