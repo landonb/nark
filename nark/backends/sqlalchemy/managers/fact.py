@@ -48,68 +48,6 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def _timeframe_available_for_fact(self, fact, ignore_pks=[]):
-        """
-        Determine if a timeframe given by the passed fact is already occupied.
-
-        This method takes also such facts into account that start before and end
-        after the fact in question. In that regard it exceeds what ``_get_all``
-        would return.
-
-        Args:
-            fact (Fact): The fact to check. Please note that the fact is expected to
-                have a ``start`` and ``end``.
-
-        Returns:
-            bool: ``True`` if the timeframe is available, ``False`` if not.
-
-        Note:
-            If the given fact is the only fact instance within the given timeframe
-            the timeframe is considered available (for this fact)!
-        """
-        # Use func.datetime and _get_sql_datetime to normalize time comparisons,
-        # so that equivalent times that are expressed differently are evaluated
-        # as equal, e.g., "2018-01-01 10:00" should match "2018-01-01 10:00:00".
-        # FIXME: func.datetime is SQLite-specific: need to abstract for other DBMSes.
-
-        start = self._get_sql_datetime(fact.start)
-        query = self.store.session.query(AlchemyFact)
-
-        # FIXME: Only use func.datetime on SQLite store.
-        #
-        #   (lb): SQLite stores datetimes as strings, so what's in the store
-        #   might vary depending on, say, changes to this code. As such, some
-        #   start and end times might include seconds, and some times might not.
-        #   Here we use func.datetime and _get_sql_datetime to normalize the
-        #   comparison. But this is SQLite-specific, so we should abstract
-        #   the operation for other DBMSes (and probably do nothing, since most
-        #   other databases have an actual datetime data type).
-        condition = and_(func.datetime(AlchemyFact.end) > start)
-        if fact.end is not None:
-            end = self._get_sql_datetime(fact.end)
-            condition = and_(condition, func.datetime(AlchemyFact.start) < end)
-        else:
-            # The fact is ongoing, so match the ongoing (active) Fact in the store.
-            # E711: `is None` breaks Alchemy, so use `== None`.
-            condition = or_(AlchemyFact.end == None, condition)  # noqa: E711
-
-        if fact.pk:
-            condition = and_(condition, AlchemyFact.pk != fact.pk)
-
-        if fact.split_from:
-            condition = and_(condition, AlchemyFact.pk != fact.split_from.pk)
-
-        if ignore_pks:
-            condition = and_(condition, AlchemyFact.pk.notin_(ignore_pks))
-
-        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
-
-        query = query.filter(condition)
-
-        return not bool(query.count())
-
-    # ***
-
     def _add(self, fact, raw=False, skip_commit=False, ignore_pks=[]):
         """
         Add a new fact to the database.
@@ -278,6 +216,68 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             )
             self.store.logger.error(msg)
             raise ValueError(msg)
+
+    # ***
+
+    def _timeframe_available_for_fact(self, fact, ignore_pks=[]):
+        """
+        Determine if a timeframe given by the passed fact is already occupied.
+
+        This method takes also such facts into account that start before and end
+        after the fact in question. In that regard it exceeds what ``_get_all``
+        would return.
+
+        Args:
+            fact (Fact): The fact to check. Please note that the fact is expected to
+                have a ``start`` and ``end``.
+
+        Returns:
+            bool: ``True`` if the timeframe is available, ``False`` if not.
+
+        Note:
+            If the given fact is the only fact instance within the given timeframe
+            the timeframe is considered available (for this fact)!
+        """
+        # Use func.datetime and query_prepare_datetime to normalize time comparisons,
+        # so that equivalent times that are expressed differently are evaluated
+        # as equal, e.g., "2018-01-01 10:00" should match "2018-01-01 10:00:00".
+        # FIXME: func.datetime is SQLite-specific: need to abstract for other DBMSes.
+
+        start = query_prepare_datetime(fact.start)
+        query = self.store.session.query(AlchemyFact)
+
+        # FIXME: Only use func.datetime on SQLite store.
+        #
+        #   (lb): SQLite stores datetimes as strings, so what's in the store
+        #   might vary depending on, say, changes to this code. As such, some
+        #   start and end times might include seconds, and some times might not.
+        #   Here we use func.datetime and query_prepare_datetime to normalize the
+        #   comparison. But this is SQLite-specific, so we should abstract
+        #   the operation for other DBMSes (and probably do nothing, since most
+        #   other databases have an actual datetime data type).
+        condition = and_(func.datetime(AlchemyFact.end) > start)
+        if fact.end is not None:
+            end = query_prepare_datetime(fact.end)
+            condition = and_(condition, func.datetime(AlchemyFact.start) < end)
+        else:
+            # The fact is ongoing, so match the ongoing (active) Fact in the store.
+            # E711: `is None` breaks Alchemy, so use `== None`.
+            condition = or_(AlchemyFact.end == None, condition)  # noqa: E711
+
+        if fact.pk:
+            condition = and_(condition, AlchemyFact.pk != fact.pk)
+
+        if fact.split_from:
+            condition = and_(condition, AlchemyFact.pk != fact.split_from.pk)
+
+        if ignore_pks:
+            condition = and_(condition, AlchemyFact.pk.notin_(ignore_pks))
+
+        condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
+
+        query = query.filter(condition)
+
+        return not bool(query.count())
 
     # ***
 
