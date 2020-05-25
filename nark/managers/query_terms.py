@@ -28,6 +28,29 @@ class QueryTerms(object):
     def __init__(self, **kwargs):
         self.setup_terms(**kwargs)
 
+    def __str__(self):
+        return ' / '.join([
+            'raw?: {}'.format(self.raw),
+            'named?: {}'.format(self.named),
+            'usage?: {}'.format(self.include_usage),
+            'count?: {}'.format(self.count_results),
+            'key: {}'.format(self.key),
+            'since: {}'.format(self.since),
+            'until: {}'.format(self.until),
+            'endless: {}'.format(self.endless),
+            'partial: {}'.format(self.partial),
+            'del?: {}'.format(self.deleted),
+            'terms: {}'.format(self.search_term),
+            'act: {}'.format(self.activity),
+            'acts: {}'.format(self.match_activities),
+            'cat: {}'.format(self.category),
+            'cats: {}'.format(self.match_categories),
+            'cols: {}'.format(self.sort_cols),
+            'ords: {}'.format(self.sort_orders),
+            'limit: {}'.format(self.limit),
+            'offset: {}'.format(self.offset),
+        ])
+
     def setup_terms(
         self,
 

@@ -159,19 +159,8 @@ class BaseAlchemyManager(object):
                 activity = (activity,)
             return [activity]
 
-        def _get_all_activities():
-            message = (
-                _('usage: {} / term: {} / cat.: {} / act.: {} / col: {} / order: {}')
-                .format(
-                    qt.include_usage,
-                    qt.search_term,
-                    qt.category,
-                    qt.activity,
-                    qt.sort_cols,
-                    qt.sort_orders,
-                )
-            )
-            self.store.logger.debug(message)
+        def _gather_items():
+            self.store.logger.debug(qt)
 
             query, agg_cols = _get_all_start_query()
 
@@ -291,7 +280,7 @@ class BaseAlchemyManager(object):
 
         # ***
 
-        return _get_all_activities()
+        return _gather_items()
 
     # ***
 
