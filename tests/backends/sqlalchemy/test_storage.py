@@ -27,6 +27,7 @@ from nark.backends.sqlalchemy.objects import (
     AlchemyFact,
     AlchemyTag
 )
+from nark.backends.sqlalchemy.managers.fact import FactManager
 from nark.backends.sqlalchemy.storage import SQLAlchemyStore
 from nark.config import decorate_config
 
@@ -1113,4 +1114,40 @@ class TestFactManager():
         assert result[0] == expect
 
     # ***
+
+    def test__get_all_no_params_match(self, alchemy_store, set_of_alchemy_facts):
+        """Verify basic FactManager._get_all finds the whole store."""
+        assert len(set_of_alchemy_facts) == 5
+        result = alchemy_store.facts._get_all()
+        # (lb): The result list should be equal, but the Fact.tags lists are
+        # not particularly ordered. So cannot compare lists directory.
+        assert len(result) == len(set_of_alchemy_facts)
+        assert str(result[0]) == str(set_of_alchemy_facts[0])
+        # etc.
+
+    def test__get_all_no_params_count(self, alchemy_store, set_of_alchemy_facts):
+        """Verify basic FactManager._get_all finds the whole store."""
+        assert len(set_of_alchemy_facts) == 5
+        result = alchemy_store.facts._get_all(count_results=True)
+        assert result == 5
+
+    def test__get_all_extras_raw_lazy(self, alchemy_store, set_of_alchemy_facts):
+        """Verify basic FactManager._get_all finds the whole store."""
+        assert len(set_of_alchemy_facts) == 5
+        result = alchemy_store.facts._get_all(
+            include_extras=True,
+            raw=True,
+            lazy_tags=True,
+        )
+        assert len(result) == 5
+        # Each result is the Fact and the aggregate columns.
+        fact_0, *cols_0 = result[0]
+        assert len(cols_0) == len(FactManager.RESULT_GRP_INDEX)
+        # Duration is days, and set_of_alchemy_facts are 20 mins. each.
+        i_duration = FactManager.RESULT_GRP_INDEX['duration']
+        assert round(cols_0[i_duration] * 24 * 60) == 20
+        # Each Fact is unique ((lb): not sure if guaranteed by faker,
+        # but at least anecdotally), so the aggregate count is 1.
+        i_group_count = FactManager.RESULT_GRP_INDEX['group_count']
+        assert cols_0[i_group_count] == 1
 
