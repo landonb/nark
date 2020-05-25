@@ -172,9 +172,11 @@ class BaseActivityManager(BaseManager):
 
     # ***
 
-    # NOTE: Unlike Category and Tag, there is no Activity.get_by_name.
-
-    # ***
+    # NOTE: Unlike Category and Tag, there is no Activity.get_by_name,
+    #       but you'll find Activity.get_by_composite instead. This is
+    #       because get_by_name returns one result, but more than one
+    #       Activity may have the same name, so we use the Category to
+    #       narrow down the matches to just one (or none).
 
     def get_by_composite(self, name, category):
         """
