@@ -1415,7 +1415,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         if fact is not None:
             if fact.start and isinstance(fact.start, datetime):
                 ref_time = fact.start
-            elif fact.end and isinstance(fact.end, datetime):
+            elif fact.end and isinstance(fact.end, datetime):  # pragma: no cover
+                # (lb): This would be unexpected, if not impossible:
+                #       a Fact with no start, but it has an end.
+                self.store.logger.warning('Unexpected path!')
                 ref_time = fact.end
         if ref_time is None:
             raise ValueError(_('No reference time for subsequent(fact).'))
