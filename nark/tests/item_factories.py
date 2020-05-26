@@ -17,8 +17,26 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-"""Fixtures that are of general use."""
+"""Basic item class object generators."""
 
-# Register the fact_factory, etc.
-from nark.tests.item_factories import *
+from pytest_factoryboy import register
+
+from nark.tests import factories
+
+# NOTE: To make the factories available to a test, import this file
+#       from the test module or from a conftest along its path.
+#       - You'll want to glob everything to get fact_factory, etc. E.g.,
+#         Use this style import:
+#           # Register the fact_factory, etc.
+#           from nark.tests.item_factories import *
+
+# For generating backend store items, see the Alchemy item generators:
+#
+#   nark/tests/backends/sqlalchemy/conftest.py
+
+
+register(factories.CategoryFactory)
+register(factories.ActivityFactory)
+register(factories.TagFactory)
+register(factories.FactFactory)
 

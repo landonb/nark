@@ -23,6 +23,9 @@ import datetime
 
 import pytest
 
+# Register the fact_factory, etc.
+from nark.tests.item_factories import *
+
 
 # ***
 

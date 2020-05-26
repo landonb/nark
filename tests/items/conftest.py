@@ -21,18 +21,10 @@
 
 import datetime
 
-#import faker as faker_
 import pytest
-from pytest_factoryboy import register
 
-from nark.tests import factories
-
-register(factories.CategoryFactory)
-register(factories.ActivityFactory)
-register(factories.TagFactory)
-register(factories.FactFactory)
-
-#faker = faker_.Faker()
+# Register the category_factory, etc.
+from nark.tests.item_factories import *
 
 
 # ***

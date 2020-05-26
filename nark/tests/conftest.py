@@ -23,17 +23,11 @@ import datetime
 
 import fauxfactory
 import pytest
-from pytest_factoryboy import register
 
 from nark.config import decorate_config
-from nark.tests import factories
 
-# Make factory fixtures, like alchemy_category_factory.
-#   ((lb) At least this is where I think it happens.)
-register(factories.CategoryFactory)
-register(factories.ActivityFactory)
-register(factories.TagFactory)
-register(factories.FactFactory)
+# Register the fact_factory, etc.
+from nark.tests.item_factories import *
 
 
 # This fixture is used by ``test_helpers`` and ``test_storage``.
