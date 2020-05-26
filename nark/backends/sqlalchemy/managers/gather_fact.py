@@ -499,9 +499,15 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             #   Because the concatenated names columns are strings, the caller can
             #   check if the value is not a string, but an integer (0) instead, to
             #   help decide which columns to use in the report output.
-            activities_col = '0'
-            actegories_col = '0'
-            categories_col = '0'
+            # - NOTE: Use literal_column() to avoid warning on with_entities:
+            #     /home/user/.virtualenvs/dob/lib/python3.8/site-packages/
+            #       sqlalchemy/orm/query.py:217:
+            #         SADeprecationWarning: Plain string expression passed to Query()
+            #         should be explicitly declared using literal_column();
+            #         automatic coercion of this value will be removed in SQLAlchemy 1.4
+            activities_col = literal_column('0')
+            actegories_col = literal_column('0')
+            categories_col = literal_column('0')
 
             if qt.group_activity and qt.group_category:
                 # The Activity@Category for each result is unique/not an aggregate.
