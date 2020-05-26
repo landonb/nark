@@ -402,23 +402,31 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
     def gather(
         self,
         query_terms,
-        # - The lazy_tags switch is an internal control for help developing,
-        #   - It's an option to lazy-load tags, but which should be avoided.
-        # - (lb): Any branching because `lazy_tags is True` is unreachable:
-        #         Nothing in the code sets lazy_tags.
-        #   - It's here for the benefit of developers only.
-        #   - We should always be able to preload tags (eager loading), which
-        #     is a lot quicker than lazy-loading tags, especially when exporting
-        #     all Facts. I.e., when eager loading, there's only one SELECT call;
-        #     but if lazy loading, there's one SELECT to get all the Facts, and
-        #     then one SELECT each to get the tags for each Fact; inefficient!).
-        #     In any case, if there are problems with pre-loading, you can flip
-        #     this switch to sample the other behavior, which is SQLAlchemy's
-        #     "default", which is to lazy-load.
+        # - The lazy_tags switch is an internal control that's (as of 2020-05-26)
+        #   always False, except for one test that uses it.
+        # - It's available if you need to fetch Tag IDs with the tag names.
+        #   - Normally when you fetch items in SQLAlchemy, you can reference an
+        #     attribute on an item that references data in another table, and
+        #     SQLAlchemy (like magic) will query the table and fetch that data.
+        #     - E.g., if we fetched from just the Facts table but then accessed
+        #       fact.tags on an item, SQLAlchemy runs a SELECT to get those Tags.
+        #   - But when building reports, all these extra queries can bog down
+        #     the processing. E.g., imagine quickly fetching 10,000 Facts with
+        #     one SELECT, but then running 10,000 additional SELECTs just to
+        #     get all the tags.
+        #     - So this method prefers to fetch tag names in the same query
+        #       as fetching the Facts (i.e., keeping the query to just one).
+        #       - But this comes at the expense of also fetching tag IDs.
+        #         - This method just concatenates tag names for each Fact,
+        #           and does not do the extra work of retaining the tag IDs.
+        # - tl;dr: Prefer eager loading tag names over lazy-loading Tag items,
+        #   so that exporting and reporting is fast.
+        #   - But if you (eventually) need Tag IDs associated with Facts
+        #     fetched by this method, enable lazy_tags (so called because
+        #     SQLAlchemy will lazy-load the Tag item when you access a Fact's
+        #     fact.tags attribute).
         lazy_tags=False,
     ):
-
-
         """
         Return matching facts, maybe each with stats, given some search criteria.
 
@@ -429,6 +437,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 The requested query settings used to find Activities,
                 and also the requested results settings. See the QueryTerms
                 class for details.
+
+            lazy_tags: Set True to skip concatenating tag names for each Fact,
+                but to instead have the actual Tag items lazy-loaded upon
+                accessing each fact.tags in the results.
 
         Returns:
             list: A list of matching item instances or (item, *statistics) tuples.
@@ -459,13 +471,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = self.store.session.query(AlchemyFact)
 
+            query, tags_subquery = _get_all_prepare_tags_subquery(query)
+
             query, span_cols = _get_all_prepare_span_cols(query)
 
             query, actg_cols = _get_all_prepare_actg_cols(query)
 
             query, date_col = _get_all_prepare_date_col(query)
-
-            query, tags_col = _get_all_prepare_tags_col(query)
 
             query = _get_all_prepare_joins(query)
 
@@ -486,13 +498,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             query = query_group_by_aggregate(query)
 
             query = self.query_order_by_sort_cols(
-                query, qt.sort_cols, qt.sort_orders, span_cols, date_col, tags_col,
+                query, qt.sort_cols, qt.sort_orders, span_cols, date_col, tags_subquery,
             )
 
             query = query_apply_limit_offset(query, qt.limit, qt.offset)
 
             query = query_select_with_entities(
-                query, span_cols, actg_cols, date_col, tags_col,
+                query, span_cols, actg_cols, date_col, tags_subquery,
             )
 
             self.query_prepared_trace(query)
@@ -545,8 +557,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         #       _get_all_prepare_actg_cols.
         #   - The order of aggregates is also reflected by RESULT_GRP_INDEX.
         # - The intermediate results might also end with a coalesced Tags value
-        #   (see _get_all_prepare_tags_col), but the tags_col is pulled before
-        #   the results are returned.
+        #   (see _get_all_prepare_tags_subquery), but the tags_subquery.tags_col
+        #   is pulled before the results are returned.
 
         def _gather_process_facts_only(records):
             if qt.raw:
@@ -654,9 +666,11 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _get_all_prepare_tags_col(query):
+        def _get_all_prepare_tags_subquery(query):
             if lazy_tags:
                 return query, None
+
+            tags_subquery = query
             # (lb): Always include tags. We could let SQLAlchemy lazy load,
             # but this can be slow. E.g., on 15K Facts, calling fact.tags on
             # each -- triggering lazy load -- takes 7 seconds on my machine.
@@ -665,19 +679,22 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             tags_col = func.group_concat(
                 AlchemyTag.name, magic_tag_sep,
             ).label("facts_tags")
-            query = query.add_columns(tags_col)
+            tags_subquery = tags_subquery.add_columns(tags_col)
             # (lb): Leaving this breadcrumb for now; feel free to delete later.
             # - sqlalchemy 1.2.x allowed ambiguous joins and would use the first
             #   instance of such a join for its ON clause. But sqlalchemy 1.3.x
             #   requires that you be more specific. Here's the original code:
-            #       query = query.outerjoin(fact_tags)
+            #       tags_subquery = tags_subquery.outerjoin(fact_tags)
             #   and following is (obviously) the new code. Note that this was
             #   the only place I found code that needed fixing, but I would not
             #   be surprised to find more. Hence this note-to-self, for later.
-            query = query.outerjoin(
+            tags_subquery = tags_subquery.outerjoin(
                 fact_tags, AlchemyFact.pk == fact_tags.columns.fact_id,
             )
-            query = query.outerjoin(AlchemyTag)
+            tags_subquery = tags_subquery.outerjoin(AlchemyTag)
+
+            tags_subquery = tags_subquery.group_by(AlchemyFact.pk)
+
             # (lb): 2019-01-22: Old comment re: joinedload. Leaving here as
             # documentation in case I try using joinedload again in future.
             #   # FIXME/2018-06-25: (lb): Not quite sure this'll work...
@@ -685,8 +702,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             #   #   # joined-eager-loading
             #   from sqlalchemy.orm import joinedload
             #   # 2019-01-22: Either did not need, or did not work, !remember which!
-            #   query = query.options(joinedload(AlchemyFact.tags))
-            return query, tags_col
+            #   tags_subquery = tags_subquery.options(joinedload(AlchemyFact.tags))
+            tags_subquery = tags_subquery.with_entities(AlchemyFact.pk, tags_col)
+            tags_subquery = tags_subquery.subquery('tag_names')
+            query = query.join(tags_subquery, AlchemyFact.pk == tags_subquery.c.id)
+
+            return query, tags_subquery
 
         # ***
 
@@ -1004,7 +1025,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def query_select_with_entities(
-            query, span_cols, actg_cols, date_col, tags_col,
+            query, span_cols, actg_cols, date_col, tags_subquery,
         ):
             # Even if grouping, we still want to fetch all columns. For one,
             # _process_results expects a Fact object as leading item in each
@@ -1025,10 +1046,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             if add_aggregates:
                 columns.append(date_col)
 
-            # Ensure tags_col is last, because _process_record_tags expects (pops) it.
-            if tags_col is not None:
+            # Ensure tags_subquery.tags_col is last, because
+            # _process_record_tags expects (pops) it.
+            if tags_subquery is not None:
                 assert not lazy_tags
-                columns.append(tags_col)
+                outer_tags_col = func.group_concat(
+                    tags_subquery.c.facts_tags, magic_tag_sep,
+                ).label("facts_tags")
+                columns.append(outer_tags_col)
 
             query = query.with_entities(*columns)
 
@@ -1048,7 +1073,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # The following columns are specific to a Fact gather.
         span_cols,
         date_col,
-        tags_col,
+        tags_subquery,
     ):
         if sort_col == 'start' or not sort_col:
             query = self.query_order_by_start(query, direction)
@@ -1085,16 +1110,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 or not qt.group_activity
             ):
                 query = query.order_by(direction(AlchemyCategory.name))
-        elif sort_col == 'tag' and tags_col is not None:
+        elif sort_col == 'tag' and tags_subquery is not None:
             # Don't sort by the aggregate column, because tags aren't
             # sorted in the aggregate (they're not even unique, it's
             # just a long string built from all the tags).
             # - So this won't sort the table:
-            #     query = query.order_by(direction(tags_col))
-            # But because we checked tags_col is not None, we know that
-            # the Tag table is joined -- so we can sort by the tag name.
-            # Except if grouping by activity or category, then the sort
-            # won't stick, so skip it in that case.
+            #     query = query.order_by(direction(tags_subquery))
+            # But because we checked tags_subquery is not None, we know
+            # that the Tag table is joined -- so we can sort by the tag
+            # name. Except if grouping by activity or category, then the
+            # sort won't stick, so skip it in that case.
             if not qt.group_activity and not qt.group_category:
                 query = query.order_by(direction(AlchemyTag.name))
         elif sort_col == 'usage' and span_cols is not None:
