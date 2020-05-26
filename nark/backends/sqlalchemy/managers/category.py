@@ -274,7 +274,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         requires_fact_table = (
             requires_fact_table
             or qt.activity
-            or 'activity' in qt.sort_cols
+            or qt.sort_cols_has_any('activity')
         )
 
         return requires_fact_table

@@ -370,7 +370,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # query. Same for matching category name.
         match_categories = qt.categories
         requires_category_table = (
-            'category' in qt.sort_cols
+            qt.sort_cols_has_any('category')
             or match_categories
         )
         if requires_category_table:

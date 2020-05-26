@@ -126,7 +126,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
         add_aggregates = (
             qt.include_stats
             or qt.is_grouped
-            or qt.sorts_on_stat
+            or qt.sorts_cols_has_stat
         )
 
         i_duration = GatherFactManager.RESULT_GRP_INDEX['duration']
@@ -602,8 +602,8 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
                 qt.is_grouped  # b/c _get_all_prepare_actg_cols_categories
                 or qt.categories
                 or qt.search_term
-                or 'activity' in qt.sort_cols
-                or 'category' in qt.sort_cols
+                or qt.sort_cols_has_any('activity')
+                or qt.sort_cols_has_any('category')
             )
             if (
                 add_aggregates

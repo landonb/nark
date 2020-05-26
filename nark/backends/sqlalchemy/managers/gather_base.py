@@ -78,7 +78,7 @@ class GatherBaseAlchemyManager(object):
         # the results, or if the user wants to sort the results accordingly.
         compute_usage = (
             qt.include_stats
-            or set(qt.sort_cols).intersection(('start', 'usage', 'time'))
+            or qt.sort_cols_has_any('start', 'usage', 'time')
         )
         # If user is requesting filtering or sorting according to time, join Fact.
         requires_fact_table = self._gather_query_requires_fact(qt, compute_usage)
@@ -130,12 +130,12 @@ class GatherBaseAlchemyManager(object):
             if not requires_fact_table:
                 query = self._gather_query_start_timeless(qt, alchemy_cls)
             else:
-                if qt.include_stats or 'usage' in qt.sort_cols:
+                if qt.include_stats or qt.sort_cols_has_any('usage'):
                     # Apply COUNT() on, e.g., AlchemyActivity.pk, but do
                     # not need DISTINCT, so that we count all in the group.
                     count_col = func.count(alchemy_cls.pk).label('uses')
                     agg_cols.append(count_col)
-                if qt.include_stats or 'time' in qt.sort_cols:
+                if qt.include_stats or qt.sort_cols_has_any('time'):
                     time_col = func.sum(
                         func.julianday(AlchemyFact.end)
                         - func.julianday(AlchemyFact.start)
@@ -372,7 +372,7 @@ class GatherBaseAlchemyManager(object):
     # ***
 
     def query_order_by_sort_cols(self, query, sort_cols, sort_orders, *agg_cols):
-        for idx, sort_col in enumerate(sort_cols):
+        for idx, sort_col in enumerate(sort_cols or []):
             direction = query_sort_order_at_index(sort_orders, idx)
             query = self.query_order_by_sort_col(query, sort_col, direction, *agg_cols)
         return query

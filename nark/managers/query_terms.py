@@ -336,10 +336,10 @@ class QueryTerms(object):
         )
         return is_grouped
 
+    def sort_cols_has_any(self, *args):
+        return set(self.sort_cols or []).intersection((*args))
+
     @property
-    def sorts_on_stat(self):
-        sorts_on_stat = set(self.sort_cols).intersection(
-            ('usage', 'time', 'day')
-        )
-        return sorts_on_stat
+    def sorts_cols_has_stat(self):
+        return self.sort_cols_has_any('usage', 'time', 'day')
 
