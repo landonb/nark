@@ -17,35 +17,5 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-"""Base fixtures available to all nark tests."""
-
-import pytest
-
-from nark.control import NarkControl
-from nark.manager import BaseStore
-
-from nark.tests import factories
-from nark.tests.conftest import *
-
-
-@pytest.yield_fixture
-def controller(base_config):
-    """Provide a basic controller."""
-    # [TODO] Parametrize over all available stores.
-    controller = NarkControl(base_config)
-    yield controller
-    controller.store.cleanup()
-
-
-@pytest.fixture
-def basestore(base_config):
-    """Provide a generic ``storage.BaseStore`` instance using ``baseconfig``."""
-    store = BaseStore(base_config)
-    return store
-
-
-@pytest.fixture
-def fact_factory():
-    """Return a factory class that generates non-persisting Fact instances."""
-    return factories.FactFactory.build
+"""Tests for nark.items items classes."""
 
