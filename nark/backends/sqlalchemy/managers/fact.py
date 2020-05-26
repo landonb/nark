@@ -504,6 +504,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query = query_filter_by_search_term(query)
 
+            query = self.query_filter_by_item_pk(query, AlchemyFact, qt.key)
+
             query = query_apply_true_or_not(query, AlchemyFact.deleted, qt.deleted)
 
             query = _get_all_filter_by_ongoing(query)

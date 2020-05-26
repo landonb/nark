@@ -1189,4 +1189,21 @@ class TestFactManager():
         # FIXME/2020-05-25: Create Facts with the same Activity, and test aggregates.
         i_group_count = FactManager.RESULT_GRP_INDEX['group_count']
         assert cols_0[i_group_count] == 1
+        # Because raw=True, the Tag objects were recreated, but without PKs.
+        assert not fact_0.tags[0].pk
+
+    def test__get_all_by_pk_with_stats_named(self, alchemy_store, set_of_alchemy_facts):
+        """Verify QueryTerms.named_tuples returns attribute-accessible results."""
+        assert len(set_of_alchemy_facts) == 5
+        expect = set_of_alchemy_facts[3]
+        results = alchemy_store.facts.get_all(
+            named_tuples=True,
+            include_stats=True,
+            key=expect.pk,
+        )
+        assert len(results) == 1
+        assert str(results[0].fact) == str(expect)
+        assert results[0].group_count == 1
+        # etc.
+
 

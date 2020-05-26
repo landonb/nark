@@ -214,13 +214,6 @@ class BaseAlchemyManager(object):
         # If user is requesting filtering or sorting according to time, join Fact.
         requires_fact_table = self._gather_query_requires_fact(qt, compute_usage)
 
-        # Bounce to the simple get() method if a PK specified.
-        if qt.key:
-            item = self.get(pk=qt.key, deleted=qt.deleted, raw=qt.raw)
-            if qt.include_stats:
-                item = (item,)
-            return [item]
-
         def _gather_items():
             self.store.logger.debug(qt)
 
@@ -235,6 +228,10 @@ class BaseAlchemyManager(object):
             query = self.query_filter_by_categories(query, qt.categories)
 
             query = query_filter_by_search_term(query)
+
+            query = self.query_filter_by_item_pk(query, alchemy_cls, qt.key)
+
+            query = query_apply_true_or_not(query, alchemy_cls.deleted, qt.deleted)
 
             query = query_group_by_aggregate(query, agg_cols)
 
@@ -354,6 +351,13 @@ class BaseAlchemyManager(object):
             or qt.endless
         )
         return requires_fact_table
+
+    # ***
+
+    def query_filter_by_item_pk(self, query, alchemy_cls, key):
+        if key is None:
+            return query
+        return query.filter(alchemy_cls.pk == key)
 
     # ***
 
