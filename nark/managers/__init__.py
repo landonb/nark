@@ -33,6 +33,8 @@ import datetime
 from ..items.item_base import BaseItem
 from ..helpers.parse_time import parse_dated
 
+from .query_terms import QueryTerms
+
 __all__ = ('BaseManager', )
 
 
@@ -104,7 +106,14 @@ class BaseManager(object):
 
     # ***
 
-    def get_all(self, query_terms):
+    def _gather_prepare_query_terms(self, query_terms, **kwargs):
+        if query_terms is not None:
+            return query_terms, kwargs
+        return QueryTerms(**kwargs), {}
+
+    # ***
+
+    def get_all(self, query_terms=None, **kwargs):
         """
         Return all items and any requested stats matching the given search criteria.
 
@@ -119,11 +128,13 @@ class BaseManager(object):
 
             ValueError: If ``until`` is before ``since``.
         """
-        qt = query_terms
+        qt, kwargs = self._gather_prepare_query_terms(query_terms, **kwargs)
 
         def _get_all():
+            # MAYBE: get_all has a side-effect of mutating qt.since and qt.until,
+            #   which is not necessarily desirable.
             qt.since, qt.until = _must_parse_since_until(qt.since, qt.until)
-            return self.gather(qt)
+            return self.gather(qt, **kwargs)
 
         def _must_parse_since_until(since, until):
             self.store.logger.debug('since: {} / until: {}'.format(since, until))

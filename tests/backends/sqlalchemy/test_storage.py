@@ -944,11 +944,12 @@ class TestFactManager():
         if end_filter:
             until = alchemy_fact.start + datetime.timedelta(days=end_filter)
 
-        results = alchemy_store.facts._get_all(
+        results = alchemy_store.facts.get_all(
             since=since, until=until, partial=bool_value_parametrized,
         )
         # ANSWER/2018-05-05: (lb): This test is failing. When did it break?
-        #   assert results == [alchemy_fact]
+        #                      assert results == [alchemy_fact]
+        #                    - 2020-05-26: Probably when lazy_tags=False added.
         assert len(results) == 1
         assert str(results[0]) == str(alchemy_fact)
 
@@ -981,13 +982,17 @@ class TestFactManager():
             since=since,
             until=until,
             partial=bool_value_parametrized,
-            # 2019-02-14: (lb): When lazy_tags=False, the `results == [alchemy_fact]`
-            # fails because results[0].tags != alchemy_fact.tags, because it seems
-            # query.all() loads Tag objects with proper PKs, but lazy_tags uses
-            # query-coalesce magic to assemble Tag labels without PKs, so PK=None.
-            # FIXME/TESTME/2019-02-14: (lb): What's behavior on, say, dob-list?
-            #   py.test --pdb -vv \
-            #       -k test_get_all_existing_fact_partialy_in_timerange tests/
+            # Use lazy_tags=True, so that we can compare Fact objects.
+            # - If lazy_tags=False, the query concatenates tag names to save
+            #   time, and does not load Tag PKs, and each Fact object is setup
+            #   with new Tags that do not have their PK set. As such, the
+            #   comparison, `results == [alchemy_fact]`, won't work.
+            #   (Alternatively, one could compare str(fact), which does not
+            #   include IDs.)
+            # - But when lazy_tags=True, this relies on SQLAlchemy magic that
+            #   fetches a Fact's Tag items when the fact.tags attribute is read.
+            #   It's slower (there's one additional SELECT for every fact.tags
+            #   read) but more complete.
             lazy_tags=True,
         )
         if bool_value_parametrized:
@@ -1001,6 +1006,7 @@ class TestFactManager():
         """Make sure facts with ``Fact.activity.name`` matching the term are returned."""
         assert len(set_of_alchemy_facts) == 5
         search_term = set_of_alchemy_facts[1].activity.name
+        # Use lazy_tags=True so Tag.pk are set, and results == [...] works.
         results = alchemy_store.facts.get_all(search_term=search_term, lazy_tags=True)
         assert len(results) == 1
         assert str(results[0]) == str(set_of_alchemy_facts[1])
@@ -1010,6 +1016,7 @@ class TestFactManager():
         """Make sure facts with ``Fact.category.name`` matching the term are returned."""
         assert len(set_of_alchemy_facts) == 5
         search_term = set_of_alchemy_facts[1].category.name
+        # Use lazy_tags=True so Tag.pk are set, and results == [...] works.
         results = alchemy_store.facts.get_all(search_term=search_term, lazy_tags=True)
         assert len(results) == 1
         assert str(results[0]) == str(set_of_alchemy_facts[1])
@@ -1125,39 +1132,61 @@ class TestFactManager():
 
     # ***
 
-    def test__get_all_no_params_match(self, alchemy_store, set_of_alchemy_facts):
-        """Verify basic FactManager._get_all finds the whole store."""
+    def test__get_all_no_query_terms_not_lazy(self, alchemy_store, set_of_alchemy_facts):
+        """Verify basic FactManager.get_all finds the whole store."""
         assert len(set_of_alchemy_facts) == 5
-        result = alchemy_store.facts._get_all()
-        # (lb): The result list should be equal, but the Fact.tags lists are
-        # not particularly ordered. So cannot compare lists directory.
-        assert len(result) == len(set_of_alchemy_facts)
-        assert str(result[0]) == str(set_of_alchemy_facts[0])
+        results = alchemy_store.facts.get_all(lazy_tags=False)
+        assert len(results) == len(set_of_alchemy_facts)
+        # (lb): The results list contain the same items, and the sort order is
+        # the same, because the Fact.get_all sort defaults to 'start'. But the
+        # lists are not equal, because the result Facts do not have the Tag PK.
+        # That is, lazy_tags enables a quicker query that just concatenates tag
+        # names, not bothering with the PK. So comparing lists will not work:
+        #   assert results == set_of_alchemy_facts
+        # but we can stringify and compare.
+        assert str(results[0]) == str(set_of_alchemy_facts[0])
         # etc.
 
+    def test__get_all_no_query_terms_yes_lazy(self, alchemy_store, set_of_alchemy_facts):
+        """Verify basic FactManager.get_all finds the whole store."""
+        assert len(set_of_alchemy_facts) == 5
+        # Use lazy_tags=True so Tag.pk are set, and results == ... works.
+        results = alchemy_store.facts.get_all(lazy_tags=True)
+        # (lb): This is similar to the previous test, but now lazy_tags is True,
+        # meaning, whenever we access a Tag item for the first time, SQLAlchemy
+        # will fetch it from the database. But it also means that the Fact.tags
+        # include PKs, so here, a direct list comparison is valid.
+        assert len(results) == len(set_of_alchemy_facts)
+        assert results == set_of_alchemy_facts
+
     def test__get_all_no_params_count(self, alchemy_store, set_of_alchemy_facts):
-        """Verify basic FactManager._get_all finds the whole store."""
+        """Verify FactManager.get_all count_results returns number of Facts."""
         assert len(set_of_alchemy_facts) == 5
         results = alchemy_store.facts.get_all(count_results=True)
         assert results == 5
 
-    def test__get_all_extras_raw_lazy(self, alchemy_store, set_of_alchemy_facts):
-        """Verify basic FactManager._get_all finds the whole store."""
+    def test__get_all_include_stats_return_raw(self, alchemy_store, set_of_alchemy_facts):
+        """Verify basic FactManager.get_all finds the whole store."""
         assert len(set_of_alchemy_facts) == 5
-        result = alchemy_store.facts._get_all(
-            include_extras=True,
+        results = alchemy_store.facts.get_all(
+            include_stats=True,
             raw=True,
-            lazy_tags=True,
         )
-        assert len(result) == 5
-        # Each result is the Fact and the aggregate columns.
-        fact_0, *cols_0 = result[0]
+        assert len(results) == 5
+        # Each results is the Fact and the aggregate columns.
+        fact_0, *cols_0 = results[0]
         assert len(cols_0) == len(FactManager.RESULT_GRP_INDEX)
         # Duration is days, and set_of_alchemy_facts are 20 mins. each.
         i_duration = FactManager.RESULT_GRP_INDEX['duration']
+        # Ensure that the duration calculation is correct. (For instance,
+        # if the SUM() aggregate happened before tags are coalesced, if a
+        # Fact had three tags, the duration calculation would be three times
+        # would it really should be.)
         assert round(cols_0[i_duration] * 24 * 60) == 20
-        # Each Fact is unique ((lb): not sure if guaranteed by faker,
-        # but at least anecdotally), so the aggregate count is 1.
+        # The group_count when not grouping is 1. (And even if we did group,
+        # faker seems to make it so all Activity, Category, and Tag names
+        # are unique.)
+        # FIXME/2020-05-25: Create Facts with the same Activity, and test aggregates.
         i_group_count = FactManager.RESULT_GRP_INDEX['group_count']
         assert cols_0[i_group_count] == 1
 

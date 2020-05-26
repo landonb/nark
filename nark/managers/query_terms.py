@@ -38,6 +38,7 @@ class QueryTerms(object):
             'since: {}'.format(self.since),
             'until: {}'.format(self.until),
             'endless: {}'.format(self.endless),
+            'excl-ongo?: {}'.format(self.exclude_ongoing),
             'partial: {}'.format(self.partial),
             'del?: {}'.format(self.deleted),
             'terms: {}'.format(self.search_term),
@@ -45,6 +46,10 @@ class QueryTerms(object):
             'acts: {}'.format(self.match_activities),
             'cat: {}'.format(self.category),
             'cats: {}'.format(self.match_categories),
+            'grp-acts?: {}'.format(self.group_activity),
+            'grp-cats?: {}'.format(self.group_category),
+            'grp-tags?: {}'.format(self.group_tags),
+            'grp-days?: {}'.format(self.group_days),
             'cols: {}'.format(self.sort_cols),
             'ords: {}'.format(self.sort_orders),
             'limit: {}'.format(self.limit),
@@ -63,6 +68,9 @@ class QueryTerms(object):
         since=None,
         until=None,
         endless=False,
+        # - Use exclude_ongoing to omit the final, active Fact, if any,
+        #   from the results.
+        exclude_ongoing=None,
         partial=False,
         # FIXME/2020-05-19: (lb): What's the status of the 'deleted' feature?
         # - There's code wired to 'delete' an Activity, but what does that mean?
@@ -91,6 +99,12 @@ class QueryTerms(object):
         #   search to Activities used on Facts with specific 'tags', but how
         #   complicated and useless does that sound.
 
+        # - Use the group_* flags to GROUP BY specific attributes.
+        group_activity=False,
+        group_category=False,
+        group_tags=False,
+        group_days=False,
+
         # - (lb): I added grouping support to FactManager.get_all via the options:
         #     group_activity
         #     group_category
@@ -102,7 +116,7 @@ class QueryTerms(object):
         #   to group query results, and use the --column option if you want to tweak
         #   the output report columns, e.g., to match this method's output.)
 
-        sort_cols=[],
+        sort_cols=None,
         sort_orders=[],
 
         limit=None,
@@ -139,6 +153,7 @@ class QueryTerms(object):
                 end after (e.g. that span more than) the specified timeframe.
 
             endless: If True, include the active Fact, if any, in the query.
+            exclude_ongoing: If True, excldues the active Fact, in any.
             partial: If True, restrict Facts to those that start or end within the
                 since-to-until time window.
             deleted: If True, include items marked 'deleted'.
@@ -169,6 +184,13 @@ class QueryTerms(object):
                 to match. Categories that exactly match any of the specified
                 names will be included.
 
+            group_activity: If True, GROUP BY the Activity name, unless group_category
+                is also True, then GROUP BY the Activity PK and the Category PK.
+            group_category: If True, GROUP BY the Category PK.
+            group_tags: If True, group by the Tag PK.
+            group_days: If True, group by the Fact start date (e.g., 1999-12-31,
+                i.e., truncating clock time).
+
             sort_cols (str list, optional): Which column(s) to sort by.
                 - If not aggregating results, defaults to 'name' and orders
                   by item name.
@@ -197,6 +219,7 @@ class QueryTerms(object):
         self.since = since
         self.until = until
         self.endless = endless
+        self.exclude_ongoing = exclude_ongoing
         self.partial = partial
         self.deleted = deleted
         self.search_term = search_term
@@ -205,6 +228,11 @@ class QueryTerms(object):
         self.match_activities = match_activities
         self.category = category
         self.match_categories = match_categories
+
+        self.group_activity = group_activity
+        self.group_category = group_category
+        self.group_tags = group_tags
+        self.group_days = group_days
 
         self.sort_cols = sort_cols
         self.sort_orders = sort_orders
@@ -227,4 +255,21 @@ class QueryTerms(object):
             act for act in self.match_categories + [self.category]
             if act is not False
         ]
+
+    @property
+    def is_grouped(self):
+        is_grouped = (
+            self.group_activity
+            or self.group_category
+            or self.group_tags
+            or self.group_days
+        )
+        return is_grouped
+
+    @property
+    def sorts_on_stat(self):
+        sorts_on_stat = set(self.sort_cols).intersection(
+            ('usage', 'time', 'day')
+        )
+        return sorts_on_stat
 

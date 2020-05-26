@@ -370,8 +370,19 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def get_all(self, *args, **kwargs):
-        return super(FactManager, self).get_all(*args, **kwargs)
+    def get_all(self, query_terms=None, lazy_tags=False, **kwargs):
+        query_terms, kwargs = self._gather_prepare_query_terms(query_terms, **kwargs)
+        if query_terms.sort_cols is None:
+            query_terms.sort_cols = ('start',)
+        return super(FactManager, self).get_all(
+            query_terms, lazy_tags=lazy_tags, **kwargs
+        )
+
+    # ***
+
+    def get_all_by_usage(self, query_terms, **kwargs):
+        """Raises if called, because base class defines method for non-Fact item."""
+        raise NotImplementedError
 
     # ***
 
@@ -388,79 +399,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def _get_all(
+    def gather(
         self,
-
-        # - If include_extras, returns a tuple for each result row: the Fact,
-        #   and then any additional columns added to the select.
-        include_extras=False,
-
-        # - If count_results, returns just the count (an int) of results.
-        count_results=False,
-
-        # - Use since and/or until to find Facts within a specific time range.
-        since=None,
-        until=None,
-        # - Use endless and partial to further influence the time range query.
-        # - Set endless=True to include the final, active Fact, if one exists.
-        endless=False,
-        # - Use exclude_ongoing to omit the final, active Fact, if any,
-        #   from the results.
-        exclude_ongoing=None,
-        # - Specify partial
-        # - MAYBE/2020-05-09: (lb): I don't see partial ever being True.
-        #   - Either add to a test, or remove it. (Or find a use for it.)
-        partial=False,
-
-        # - (lb): Note that 'deleted' is not super useful, given how 'deleted'
-        #   is used in a haphazard way to retain a Fact's edit history (though
-        #   really user's should use an external solution, like Git, and we
-        #   should remove the 'deleted' construct from herein, because nothing
-        #   actually does anything with deleted Facts (they just hang around
-        #   the database but that's it).
-        deleted=False,
-
-        search_term='',
-
-        # Leave activity=False or category=False to skip filtering on them.
-        # Or, set activity=None to find Facts without an Activity; likewise
-        # for category=None. Or set either to a string to do string matching
-        # on the activity or category name(s). Or set activity to Activity
-        # object, or category to Category object to match against exact item
-        # (i.e., using its PK).
-        activity=False,
-        category=False,
-        match_activities=[],
-        match_categories=[],
-
-        # - Use the group_* flags to GROUP BY specific attributes.
-        group_activity=False,
-        group_category=False,
-        group_tags=False,
-        group_days=False,
-
-        # - The user can specify one or more columns on which to sort,
-        #   and an 'asc' or 'desc' modifier for each column under sort.
-        sort_cols=[],
-        sort_orders=[],
-
-        # - The user can restrict the results with basic SQL limit-offset.
-        limit=None,
-        offset=None,
-
-        # - If raw, returns the SQLAlchemy result object, a first-class object
-        #   with attributes (upon which the caller can use dot.notation).
-        #   The first item in the object is an AlchemyFact object, and the
-        #   remainder are the additional query columns.
-        # - If not raw, converts each result into a tuple, and converts the
-        #   AlchemyFact object into a proper Fact object. Note that the
-        #   additional query columns are not themselves identified, so it's
-        #   up to the caller to know what's in the tuple (which is at least
-        #   always the same set of columns, regardless of the query params).
-        raw=False,
-
-        # - An option to lazy-load tags, but which should be avoided.
-        # - (lb): IMPOSSIBLE_BRANCH: Nothing in the code sets lazy_tags.
+        query_terms,
+        # - The lazy_tags switch is an internal control for help developing,
+        #   - It's an option to lazy-load tags, but which should be avoided.
+        # - (lb): Any branching because `lazy_tags is True` is unreachable:
+        #         Nothing in the code sets lazy_tags.
         #   - It's here for the benefit of developers only.
         #   - We should always be able to preload tags (eager loading), which
         #     is a lot quicker than lazy-loading tags, especially when exporting
@@ -472,51 +417,30 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         #     "default", which is to lazy-load.
         lazy_tags=False,
     ):
+
+
         """
-        Return all facts within a given timeframe that match given search terms.
+        Return matching facts, maybe each with stats, given some search criteria.
 
-        ``get_all`` already took care of any normalization required.
-
-        If no timeframe is given, return all facts.
+        If no search criteria is given, returns all facts.
 
         Args:
-            deleted (boolean, optional): False to restrict to non-deleted
-                Facts; True to find only those marked deleted; None to find
-                all.
-            since (datetime.datetime, optional):
-                Match Facts more recent than a specific dates.
-            until (datetime.datetime, optional):
-                Match Facts older than a specific dates.
-            search_term (str):
-                Case-insensitive strings to match ``Activity.name`` or
-                ``Category.name``.
-            deleted (boolean, optional): False to restrict to non-deleted
-                Facts; True to find only those marked deleted; None to find
-                all.
-            partial (bool):
-                If ``False`` only facts which start *and* end within the
-                timeframe will be considered. If ``True`` facts with
-                either ``start``, ``end`` or both within the timeframe
-                will be returned.
-            order (string, optional): 'asc' or 'desc'; re: Fact.start.
+            query_terms (nark.managers.query_terms.QueryTerms, required):
+                The requested query settings used to find Activities,
+                and also the requested results settings. See the QueryTerms
+                class for details.
 
         Returns:
-            list: List of ``nark.Facts`` instances.
-
-        Note:
-            This method will *NOT* return facts that start before and end after
-            (e.g. that span more than) the specified timeframe.
+            list: A list of matching item instances or (item, *statistics) tuples.
         """
+        qt = query_terms
+
         magic_tag_sep = '%%%%,%%%%'
 
-        is_grouped = (
-            group_activity or group_category or group_tags or group_days
-        )
-
         add_aggregates = (
-            include_extras
-            or is_grouped
-            or set(sort_cols).intersection(('usage', 'time', 'day'))
+            qt.include_stats
+            or qt.is_grouped
+            or qt.sorts_on_stat
         )
 
         i_duration = FactManager.RESULT_GRP_INDEX['duration']
@@ -529,11 +453,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # i_date_col = FactManager.RESULT_GRP_INDEX['date_col']
 
         def _get_all_facts():
-            message = _(
-                'since: {} / until: {} / srch_term: {} / srt_cols: {} / srt_ordrz: {}'
-                .format(since, until, search_term, sort_cols, sort_orders)
-            )
-            self.store.logger.debug(message)
+            self.store.logger.debug(qt)
 
             must_support_db_engine_funcs()
 
@@ -550,41 +470,39 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             query = _get_all_prepare_joins(query)
 
             query = self.query_filter_by_fact_times(
-                query, since=since, until=until, endless=endless, partial=partial,
+                query, qt.since, qt.until, qt.endless, qt.partial,
             )
 
-            query = self._get_all_filter_by_activities(
-                query, match_activities + [activity],
-            )
+            query = self.query_filter_by_activities(query, qt.activities)
 
-            query = self._get_all_filter_by_categories(
-                query, match_categories + [category],
-            )
+            query = self.query_filter_by_categories(query, qt.categories)
 
-            query = _get_all_filter_by_search_term(query)
+            query = query_filter_by_search_term(query)
 
-            query = query_apply_true_or_not(query, AlchemyFact.deleted, deleted)
+            query = query_apply_true_or_not(query, AlchemyFact.deleted, qt.deleted)
 
             query = _get_all_filter_by_ongoing(query)
 
-            query = _get_all_group_by(query)
+            query = query_group_by_aggregate(query)
 
-            query = self._get_all_order_by(
-                query, sort_cols, sort_orders, span_cols, date_col, tags_col,
+            query = self.query_order_by_sort_cols(
+                query, qt.sort_cols, qt.sort_orders, span_cols, date_col, tags_col,
             )
 
-            query = query_apply_limit_offset(query, limit=limit, offset=offset)
+            query = query_apply_limit_offset(query, qt.limit, qt.offset)
 
-            query = _get_all_with_entities(query, span_cols, actg_cols, date_col, tags_col)
+            query = query_select_with_entities(
+                query, span_cols, actg_cols, date_col, tags_col,
+            )
 
-            self._log_sql_query(query)
+            self.query_prepared_trace(query)
 
-            if count_results:
+            if qt.count_results:
                 results = query.count()
             else:
                 # Profiling: 2018-07-15: (lb): ~ 0.120 s. to fetch latest of 20K Facts.
                 records = query.all()
-                results = _process_results(records)
+                results = _gather_process_results(records)
 
             return results
 
@@ -604,14 +522,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _process_results(records):
+        def _gather_process_results(records):
             if (
                 not records
-                or (not include_extras and not add_aggregates and lazy_tags)
+                or (not qt.include_stats and not add_aggregates and lazy_tags)
             ):
-                return _process_records_facts_only(records)
+                return _gather_process_facts_only(records)
 
-            return _process_records_facts_and_aggs(records)
+            return _gather_process_facts_and_aggs(records)
 
         # The list of results returned to the user is one of:
         # - A list of raw AlchemyFact objects;
@@ -619,7 +537,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # - A list of tuples comprised of the AlchemyFact or Fact, followed by
         #   a number of calculated, aggregate columns (added when grouping).
         #   - The order of items in each tuple is determined by the function:
-        #       _get_all_with_entities
+        #       query_select_with_entities
         #     which calls query.with_entities with a list that starts with:
         #       AlchemyFact
         #     and then adds aggregate columns from the functions:
@@ -630,24 +548,24 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         #   (see _get_all_prepare_tags_col), but the tags_col is pulled before
         #   the results are returned.
 
-        def _process_records_facts_only(records):
-            if raw:
+        def _gather_process_facts_only(records):
+            if qt.raw:
                 return records
 
             # Because not add_aggregates, each result is a single item, the
             # AlchemyFact; or a list containing a single item, if not lazy_tags.
-            if not include_extras:
+            if not qt.include_stats:
                 records = [fact.as_hamster(self.store) for fact in records]
             else:
                 # (lb): I doubt this path happens, and I also don't doubt that
-                # it would be allowed, because include_extras is a method arg.
+                # it would be allowed, because qt.include_stats is a method arg.
                 assert(not records or len(records[0]) == 1)
                 records = [
                     fact.as_hamster(self.store) for fact, *_cols in records
                 ]
             return records
 
-        def _process_records_facts_and_aggs(records):
+        def _gather_process_facts_and_aggs(records):
             results = []
             # PROFILING: Here's a loop over all the results!
             # If the user didn't limit or restrict their query,
@@ -677,12 +595,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _process_record_prepare_fact(fact, new_tags):
             # Unless the caller wants raw results, create a Fact.
-            if not raw:
+            if not qt.raw:
                 # Create a new, first-class Fact (or FactDressed). And if
                 # the results are aggregate, create a frequency distribution,
                 # or number of uses per tag (stored at tag.freq).
                 return fact.as_hamster(
-                    self.store, new_tags, set_freqs=is_grouped,
+                    self.store, new_tags, set_freqs=qt.is_grouped,
                 )
 
             # Even if user wants raw results, still attach the tags.
@@ -696,7 +614,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # +++
 
         def _process_record_reduce_aggregates(cols):
-            if not cols or not include_extras:
+            if not cols or not qt.include_stats:
                 return
 
             _process_record_reduce_aggregate_activities(cols)
@@ -730,7 +648,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         def _process_record_new_fact_or_tuple(new_fact, cols):
             # Make a tuple with the calculated and group-by aggregates,
             # if any, when requested by the caller.
-            if include_extras:
+            if qt.include_stats:
                 return new_fact, *cols
             return new_fact
 
@@ -890,16 +808,16 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             actegories_col = '0'
             categories_col = '0'
 
-            if group_activity and group_category:
+            if qt.group_activity and qt.group_category:
                 # The Activity@Category for each result is unique/not an aggregate.
                 pass
-            elif group_activity:
+            elif qt.group_activity:
                 # One Activity per result, but one or more Categories were flattened.
                 query, categories_col = _get_all_prepare_actg_cols_categories(query)
-            elif group_category:
+            elif qt.group_category:
                 # One Category per result, but one or more Activities were flattened.
                 query, activities_col = _get_all_prepare_actg_cols_activities(query)
-            elif group_tags or group_days:
+            elif qt.group_tags or qt.group_days:
                 # When grouping by tags, both Activities and Categories are grouped.
                 query, actegories_col = _get_all_prepare_actg_cols_actegories(query)
 
@@ -949,7 +867,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         def _get_all_prepare_date_col(query):
             # If we were not going to return the date_col with the results,
             # rather than checking `not add_aggregates`, we would instead
-            # check `not group_days` and return if so.
+            # check `not qt.group_days` and return if so.
             if not add_aggregates:
                 return query, None
 
@@ -967,7 +885,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 AlchemyFact.start,
             ).label("date_col")
             query = query.add_columns(date_col)
-            if group_days:
+            if qt.group_days:
                 query = query.group_by(date_col)
 
             return query, date_col
@@ -976,18 +894,15 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         def _get_all_prepare_joins(query):
             join_category = (
-                group_activity  # b/c _get_all_prepare_actg_cols_categories
-                or group_category
-                or group_tags  # b/c _get_all_prepare_actg_cols_actegories
-                or group_days  # b/c _get_all_prepare_actg_cols_actegories
-                or (category is not False)
-                or search_term
-                or 'activity' in sort_cols
-                or 'category' in sort_cols
+                qt.is_grouped  # b/c _get_all_prepare_actg_cols_categories
+                or qt.categories
+                or qt.search_term
+                or 'activity' in qt.sort_cols
+                or 'category' in qt.sort_cols
             )
             if (
                 add_aggregates
-                or (activity is not False)
+                or qt.activities
                 or join_category
             ):
                 # Equivalent: AlchemyFact.activity or AlchemyActivity.
@@ -999,27 +914,23 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def _get_all_filter_by_search_term(query):
-            if search_term:
-                query = _filter_search_term(query)
-            return query
-
-        # ***
-
-        def _filter_search_term(query):
+        def query_filter_by_search_term(query):
             """
             Limit query to facts that match the search terms.
 
             Terms are matched against ``Category.name`` and ``Activity.name``.
             The matching is not case-sensitive.
             """
+            if not qt.search_term:
+                return query
+
             # FIXME/2018-06-09: (lb): Now with activity and category filters,
             #   search_term makes less sense. Unless we apply to all parts?
             #   E.g., match tags, and match description.
             query = query.filter(
                 or_(
-                    AlchemyActivity.name.ilike('%{}%'.format(search_term)),
-                    AlchemyCategory.name.ilike('%{}%'.format(search_term)),
+                    AlchemyActivity.name.ilike('%{}%'.format(qt.search_term)),
+                    AlchemyCategory.name.ilike('%{}%'.format(qt.search_term)),
                 )
             )
 
@@ -1028,33 +939,34 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def _get_all_filter_by_ongoing(query):
-            if not exclude_ongoing:
+            if not qt.exclude_ongoing:
                 return query
-            if exclude_ongoing:
+            if qt.exclude_ongoing:
                 query = query.filter(AlchemyFact.end != None)  # noqa: E711
             return query
 
         # ***
 
-        def _get_all_group_by(query):
-            if not is_grouped:
-                # Need to group by Fact.pk because of Tags join table.
-                return _get_all_group_by_pk(query)
-            return _get_all_group_by_meta(query)
+        def query_group_by_aggregate(query):
+            if not qt.is_grouped:
+                # Need to group by Fact.pk because some aggregates, e.g.,
+                # COUNT(), will want to collapse all rows.
+                return query_group_by_pk(query)
+            return query_group_by_meta(query)
 
-        def _get_all_group_by_pk(query):
+        def query_group_by_pk(query):
             # Group by Fact.pk, as there might be "duplicate" Facts because
             # of the fact_tags join. The 'facts_tags' column coalesces Tags.
             query = query.group_by(AlchemyFact.pk)
             return query
 
-        def _get_all_group_by_meta(query):
-            query = _get_all_group_by_activity_and_category(query)
-            query = _get_all_group_by_tags(query)
+        def query_group_by_meta(query):
+            query = query_group_by_activity_and_category(query)
+            query = query_group_by_tags(query)
             return query
 
-        def _get_all_group_by_activity_and_category(query):
-            if group_activity and group_category:
+        def query_group_by_activity_and_category(query):
+            if qt.group_activity and qt.group_category:
                 # NOTE:The wrong group-by returns 1 record:
                 #        query = query.group_by(AlchemyFact.activity)
                 #      generates:
@@ -1066,7 +978,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # so the group_by(AlchemyActivity.pk) is sufficient, but
                 # for completeness, group on the Category, too.
                 query = query.group_by(AlchemyCategory.pk)
-            elif group_activity:
+            elif qt.group_activity:
                 # This is kinda smudgy. What does it mean to group by the Activity?
                 # - Do you mean an Activity in the traditional sense, which is
                 #   Activity@Category? (in which case, group-by the Activity.pk,
@@ -1080,18 +992,20 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
                 # group by the Activity name. They can add the Category grouping
                 # if they want to group on the actual Activity@Category.
                 query = query.group_by(AlchemyActivity.name)
-            elif group_category:
+            elif qt.group_category:
                 query = query.group_by(AlchemyCategory.pk)
             return query
 
-        def _get_all_group_by_tags(query):
-            if group_tags:
+        def query_group_by_tags(query):
+            if qt.group_tags:
                 query = query.group_by(AlchemyTag.pk)
             return query
 
         # ***
 
-        def _get_all_with_entities(query, span_cols, actg_cols, date_col, tags_col):
+        def query_select_with_entities(
+            query, span_cols, actg_cols, date_col, tags_col,
+        ):
             # Even if grouping, we still want to fetch all columns. For one,
             # _process_results expects a Fact object as leading item in each
             # result tuple, and also because as_hamster expects certain fields
@@ -1126,7 +1040,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
-    def query_apply_order_by(
+    def query_order_by_sort_col(
         self,
         query,
         sort_col,
@@ -1151,7 +1065,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             #   `dob list facts --group category --sort activity`
             # But if also grouping by activity, or tags, order-by here works.
             # So sorting activity when grouping category is done by caller.
-            if group_activity or group_tags or group_days or not group_category:
+            if (
+                qt.group_activity
+                or qt.group_tags
+                or qt.group_days
+                or not qt.group_category
+            ):
                 query = query.order_by(direction(AlchemyActivity.name))
         elif sort_col == 'category':
             # If sorting by category but grouping by activity (or tags), the
@@ -1159,7 +1078,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # categories aggregate (which get_all returns as a set) into an
             # alphabetically ordered string. (We could sort here, but it
             # would have no effect, so might as well not.)
-            if group_category or group_tags or group_days or not group_activity:
+            if (
+                qt.group_category
+                or qt.group_tags
+                or qt.group_days
+                or not qt.group_activity
+            ):
                 query = query.order_by(direction(AlchemyCategory.name))
         elif sort_col == 'tag' and tags_col is not None:
             # Don't sort by the aggregate column, because tags aren't
@@ -1171,7 +1095,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # the Tag table is joined -- so we can sort by the tag name.
             # Except if grouping by activity or category, then the sort
             # won't stick, so skip it in that case.
-            if not group_activity and not group_category:
+            if not qt.group_activity and not qt.group_category:
                 query = query.order_by(direction(AlchemyTag.name))
         elif sort_col == 'usage' and span_cols is not None:
             query = query.order_by(direction(span_cols[i_group_count]))

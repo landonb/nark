@@ -138,6 +138,38 @@ class BaseAlchemyManager(object):
         return _add_and_commit()
 
     # ***
+
+    def get_all(self, query_terms=None, **kwargs):
+        """Returns matching items from the data store; and stats, if requested.
+
+        get_all() is similar to get_all_by_usage(), but get_all() prefers not to
+        include usage statistics in the results, and prefers to sort by item name.
+
+        See gather method and QueryTerms class docstrings for more details.
+        """
+        query_terms, kwargs = self._gather_prepare_query_terms(query_terms, **kwargs)
+        if query_terms.include_stats is None:
+            query_terms.include_stats = False
+        if query_terms.sort_cols is None:
+            query_terms.sort_cols = ('name',)
+        return super(BaseAlchemyManager, self).get_all(query_terms, **kwargs)
+
+    def get_all_by_usage(self, query_terms, **kwargs):
+        """Returns matching items from the data store; and stats, if requested.
+
+        get_all_by_usage() is an alias to get_all() that prefers to enable
+        include_stats, and to sort by the usage calculation.
+
+        See gather method and QueryTerms class docstrings for more details.
+        """
+        query_terms, kwargs = self._gather_prepare_query_terms(query_terms, **kwargs)
+        if query_terms.include_stats is None:
+            query_terms.include_stats = True
+        if query_terms.sort_cols is None:
+            query_terms.sort_cols = ('usage',)
+        return super(BaseAlchemyManager, self).get_all(query_terms, **kwargs)
+
+    # ***
     # *** gather() et al.
     # ***
 

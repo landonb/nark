@@ -172,6 +172,14 @@ class BaseFactManager(BaseManager):
 
     # ***
 
+    def get_all_by_usage(self, query_terms, **kwargs):
+        """
+        Similar to get_all(), but include count of Facts that reference each Activity.
+        """
+        raise NotImplementedError
+
+    # ***
+
     def get_today(self):
         """
         Return all facts for today, while respecting ``day_start``.

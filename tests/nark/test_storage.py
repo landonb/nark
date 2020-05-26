@@ -22,6 +22,7 @@ import datetime
 import pytest
 from freezegun import freeze_time
 
+from nark.managers.query_terms import QueryTerms
 
 # ***
 
@@ -304,14 +305,18 @@ class TestFactManager:
         self, basestore, mocker, since, until, filter_term, expectation,
     ):
         """Test that time conversion matches expectations."""
-        basestore.facts._get_all = mocker.MagicMock()
-        basestore.facts.get_all(since=since, until=until, search_term=filter_term)
-        assert basestore.facts._get_all.called
-        assert basestore.facts._get_all.call_args[1] == {
-            'since': expectation['since'],
-            'until': expectation['until'],
-            'search_term': filter_term,
-        }
+        basestore.facts.gather = mocker.MagicMock()
+        query_terms = QueryTerms(since=since, until=until, search_term=filter_term)
+        # MAYBE/2020-05-25: (lb): I don't quite like that get_all mutates query_terms.
+        basestore.facts.get_all(query_terms)
+        assert basestore.facts.gather.called
+        actual_qt = basestore.facts.gather.call_args[0][0]
+        expect_qt = QueryTerms(
+            since=expectation['since'],
+            until=expectation['until'],
+            search_term=filter_term,
+        )
+        assert actual_qt == expect_qt
 
     @pytest.mark.parametrize(
         ('since', 'until'),
@@ -329,7 +334,7 @@ class TestFactManager:
     def test_get_all_until_before_since(self, basestore, mocker, since, until):
         """Test that we throw an exception if passed until time is before since time."""
         with pytest.raises(ValueError):
-            basestore.facts.get_all(since, until)
+            basestore.facts.get_all(since=since, until=until)
 
     @pytest.mark.parametrize(('since', 'until'), [
         # (lb): This test used to cause TypeError, because get_all used to not
@@ -343,14 +348,14 @@ class TestFactManager:
     def test_get_all_invalid_date_types(self, basestore, mocker, since, until):
         """Test that we throw an exception if we receive invalid date/time objects."""
         with pytest.raises(ValueError):
-            basestore.facts.get_all(since, until)
+            basestore.facts.get_all(since=since, until=until)
 
     @freeze_time('2015-10-03 14:45')
     def test_get_today(self, basestore, mocker):
         """Make sure that method uses appropriate timeframe."""
         basestore.facts.get_all = mocker.MagicMock(return_value=[])
-        result = basestore.facts.get_today()
-        assert result == []
+        results = basestore.facts.get_today()
+        assert results == []
         assert (
             basestore.facts.get_all.call_args[1] == {
                 'since': datetime.datetime(2015, 10, 3, 5, 30, 0),
@@ -360,7 +365,7 @@ class TestFactManager:
 
     def test__get_all(self, basestore):
         with pytest.raises(NotImplementedError):
-            basestore.facts._get_all()
+            basestore.facts.get_all()
 
     @freeze_time('2019-02-01 18:00')
     @pytest.mark.parametrize('hint', (
