@@ -617,10 +617,18 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             # Even if user wants raw results, still attach the tags.
             if new_tags:
-                # Note that this is an AlchemyFact fact, and new_tags
-                # is a list of AlchemyTag objects, so not calling
-                # tags_replace.
-                fact.tags = new_tags
+                assert(not lazy_tags)  # Just FYI.
+                # Note that the group_concat reduced the Tag names to a single
+                # string that we pulled apart into a list, new_tags, while we
+                # need to convert to AlchemyTag to assign to the AlchemyFact.
+                # CAVEAT: These tags are without their IDs! This is fine for
+                #         reporting, but if you need Tag PKs, set lazy_tags=True.
+                pkless_tags = [
+                    AlchemyTag(pk=None, name=name, deleted=False, hidden=False)
+                    for name in new_tags
+                ]
+                fact.tags = pkless_tags
+
             return fact
 
         # +++
