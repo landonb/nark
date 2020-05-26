@@ -61,7 +61,7 @@ def query_apply_true_or_not(query, column, condition):
 
 def query_sort_order_at_index(sort_orders, idx):
     try:
-        direction = desc if sort_orders[idx] == 'desc' else asc
+        direction = desc if sort_orders and sort_orders[idx] == 'desc' else asc
     except IndexError:
         direction = asc
     return direction

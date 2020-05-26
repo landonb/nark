@@ -147,7 +147,7 @@ class QueryTerms(object):
         #   the output report columns, e.g., to match this method's output.)
 
         sort_cols=None,
-        sort_orders=[],
+        sort_orders=None,
 
         limit=None,
         offset=None
