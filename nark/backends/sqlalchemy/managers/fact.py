@@ -394,7 +394,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         'activities': 4,
         'actegories': 5,
         'categories': 6,
-        'date_col': 7,
+        'start_date': 7,
     }
 
     # ***
@@ -462,7 +462,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         i_activities = FactManager.RESULT_GRP_INDEX['activities']
         i_actegories = FactManager.RESULT_GRP_INDEX['actegories']
         i_categories = FactManager.RESULT_GRP_INDEX['categories']
-        # i_date_col = FactManager.RESULT_GRP_INDEX['date_col']
+        # i_start_date = FactManager.RESULT_GRP_INDEX['start_date']
 
         def _get_all_facts():
             self.store.logger.debug(qt)
@@ -477,7 +477,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             query, actg_cols = _get_all_prepare_actg_cols(query)
 
-            query, date_col = _get_all_prepare_date_col(query)
+            query, start_date = _get_all_prepare_start_date(query)
 
             query = _get_all_prepare_joins(query)
 
@@ -498,13 +498,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             query = query_group_by_aggregate(query)
 
             query = self.query_order_by_sort_cols(
-                query, qt.sort_cols, qt.sort_orders, span_cols, date_col, tags_subquery,
+                query, qt.sort_cols, qt.sort_orders, span_cols, start_date, tags_subquery,
             )
 
             query = query_apply_limit_offset(query, qt.limit, qt.offset)
 
             query = query_select_with_entities(
-                query, span_cols, actg_cols, date_col, tags_subquery,
+                query, span_cols, actg_cols, start_date, tags_subquery,
             )
 
             self.query_prepared_trace(query)
@@ -885,8 +885,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # that starts on the day by ends on the next will be have
         # all its time counted (over-count).
 
-        def _get_all_prepare_date_col(query):
-            # If we were not going to return the date_col with the results,
+        def _get_all_prepare_start_date(query):
+            # If we were not going to return the start_date with the results,
             # rather than checking `not add_aggregates`, we would instead
             # check `not qt.group_days` and return if so.
             if not add_aggregates:
@@ -902,14 +902,14 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # - MAYBE: Prepare Sprint reports using... not sure.
             #     if group_sprint???
 
-            date_col = func.date(
+            start_date = func.date(
                 AlchemyFact.start,
-            ).label("date_col")
-            query = query.add_columns(date_col)
+            ).label("start_date")
+            query = query.add_columns(start_date)
             if qt.group_days:
-                query = query.group_by(date_col)
+                query = query.group_by(start_date)
 
-            return query, date_col
+            return query, start_date
 
         # ***
 
@@ -1025,7 +1025,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def query_select_with_entities(
-            query, span_cols, actg_cols, date_col, tags_subquery,
+            query, span_cols, actg_cols, start_date, tags_subquery,
         ):
             # Even if grouping, we still want to fetch all columns. For one,
             # _process_results expects a Fact object as leading item in each
@@ -1044,7 +1044,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             if actg_cols is not None:
                 columns.extend(actg_cols)
             if add_aggregates:
-                columns.append(date_col)
+                columns.append(start_date)
 
             # Ensure tags_subquery.tags_col is last, because
             # _process_record_tags expects (pops) it.
@@ -1072,7 +1072,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         direction,
         # The following columns are specific to a Fact gather.
         span_cols,
-        date_col,
+        start_date,
         tags_subquery,
     ):
         if sort_col == 'start' or not sort_col:
@@ -1080,8 +1080,8 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         elif sort_col == 'time':
             query = query.order_by(direction(span_cols[i_duration]))
         elif sort_col == 'day':
-            assert(date_col is not None)
-            query = query.order_by(direction(date_col))
+            assert(start_date is not None)
+            query = query.order_by(direction(start_date))
         elif sort_col == 'activity':
             # If grouping by only category, this sort does not work: The
             # activity names are group_concat'enated into the 'activities'
