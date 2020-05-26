@@ -117,13 +117,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             ValueError: If the the passed activity does not have a PK assigned.
             ValueError: If the time window is already occupied.
         """
-        self.store.logger.debug(_("Received '{!r}', 'raw'={}.".format(fact, raw)))
+        self.store.logger.debug("Received: {!r} / raw: {}".format(fact, raw))
 
         if not fact.pk:
             message = _(
-                "{!r} does not seem to have a PK. We don't know"
-                "which entry to modify.".format(fact)
-            )
+                "The Fact passed ('{!r}') does not have a PK."
+                " We do not know which entry to modify."
+            ).format(fact)
             self.store.logger.error(message)
             raise ValueError(message)
 
@@ -131,12 +131,12 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         alchemy_fact = self.store.session.query(AlchemyFact).get(fact.pk)
         if not alchemy_fact:
-            message = _("No fact with PK: {} was found.".format(fact.pk))
+            message = _("No Fact with PK ‘{}’ was found.").format(fact.pk)
             self.store.logger.error(message)
             raise KeyError(message)
 
         if alchemy_fact.deleted:
-            message = _('Cannot edit deleted Fact: {!r}'.format(fact))
+            message = _('Cannot edit deleted Fact: ‘{!r}’.'.format(fact))
             self.store.logger.error(message)
             raise ValueError(message)
 
@@ -176,7 +176,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         self.store.session.commit()
 
-        self.store.logger.debug(_("Updated {!r}.".format(fact)))
+        self.store.logger.debug("Updated: {!r}".format(fact))
 
         if not raw:
             new_fact = new_fact.as_hamster(self.store)
@@ -187,7 +187,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     def must_validate_datetimes(self, fact, ignore_pks=[]):
         if not isinstance(fact.start, datetime):
-            raise TypeError(_('Missing start time for “{!r}”.').format(fact))
+            raise TypeError(_('Missing start time for ‘{!r}’.').format(fact))
 
         # Check for valid time range.
         invalid_range = False
@@ -297,19 +297,18 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
             KeyError: If no fact with passed PK was found.
         """
-        self.store.logger.debug(_("Received '{!r}'.".format(fact)))
+        self.store.logger.debug("Received: {!r}".format(fact))
 
         if not fact.pk:
             message = _(
-                "The fact passed ('{!r}') does not seem to havea PK. We don't know"
-                "which entry to remove.".format(fact)
-            )
+                "Fact ‘{!r}’ has no PK. Are you trying to remove a new Fact?"
+            ).format(fact)
             self.store.logger.error(message)
             raise ValueError(message)
 
         alchemy_fact = self.store.session.query(AlchemyFact).get(fact.pk)
         if not alchemy_fact:
-            message = _('No fact with given pk was found!')
+            message = _("No Fact with PK ‘{}’ was found.").format(fact.pk)
             self.store.logger.error(message)
             raise KeyError(message)
         if alchemy_fact.deleted:
@@ -321,7 +320,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         if purge:
             self.store.session.delete(alchemy_fact)
         self.store.session.commit()
-        self.store.logger.debug(_('{!r} has been removed.'.format(fact)))
+        self.store.logger.debug('Deleted: {!r}'.format(fact))
         return True
 
     # ***
@@ -346,7 +345,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         Raises:
             KeyError: If no Fact of given key was found.
         """
-        self.store.logger.debug(_("Received PK: {}', 'raw'={}.".format(pk, raw)))
+        self.store.logger.debug("Received PK: ‘{}’ / raw: {}.".format(pk, raw))
 
         if deleted is None:
             query = self.store.session.query(AlchemyFact)
@@ -360,13 +359,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             result = results[0] if results else None
 
         if not result:
-            message = _("No fact with given PK found.")
+            message = _("No Fact with PK ‘{}’ was found.").format(pk)
             self.store.logger.error(message)
             raise KeyError(message)
         if not raw:
             # Explain: Why is as_hamster optionable, when act/cat/tag do it always?
             result = result.as_hamster(self.store)
-        self.store.logger.debug(_("Returning {!r}.".format(result)))
+        self.store.logger.debug("Returning: {!r}".format(result))
         return result
 
     # ***
@@ -1208,7 +1207,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # Order by start time (end time, fact ID), ascending.
         query = self.query_order_by_start(query, asc)
 
-        self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
+        self.store.logger.debug('fact: {} / query: {}'.format(fact, str(query)))
 
         n_facts = query.count()
         if n_facts > 1:
@@ -1253,7 +1252,7 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # Order by start time (end time, fact ID), descending.
         query = self.query_order_by_start(query, desc)
 
-        self.store.logger.debug(_('fact: {} / query: {}'.format(fact, str(query))))
+        self.store.logger.debug('fact: {} / query: {}'.format(fact, str(query)))
 
         n_facts = query.count()
         if n_facts > 1:
@@ -1348,10 +1347,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.limit(1)
 
-        self.store.logger.debug(_(
+        self.store.logger.debug(
             'fact: {} / ref_time: {} / query: {}'
             .format(fact, ref_time, str(query))
-        ))
+        )
 
         found = query.one_or_none()
         found_fact = found.as_hamster(self.store) if found else None
@@ -1412,10 +1411,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.limit(1)
 
-        self.store.logger.debug(_(
+        self.store.logger.debug(
             'fact: {} / ref_time: {} / query: {}'
             .format(fact, ref_time, str(query))
-        ))
+        )
 
         found = query.one_or_none()
         found_fact = found.as_hamster(self.store) if found else None
@@ -1462,10 +1461,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = self.query_order_by_start(query, asc)
 
-        self.store.logger.debug(_(
+        self.store.logger.debug(
             'since: {} / until: {} / query: {}'
             .format(since, until, str(query))
-        ))
+        )
 
         # LATER: (lb): We'll let the client ask for as many records as they
         # want. But we might want to offer ways to deal more gracefully with
@@ -1534,11 +1533,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = self.query_order_by_start(query, asc)
 
-        self.store.logger.debug(_(
-            'fact_time: {} / query: {}'.format(
-                fact_time, str(query)
-            )
-        ))
+        self.store.logger.debug(
+            'fact_time: {} / query: {}'
+            .format(fact_time, str(query))
+        )
 
         if not inclusive:
             n_facts = query.count()
@@ -1573,9 +1571,13 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
         query = query.filter(condition)
 
-        self.store.logger.debug(_('query: {}'.format(str(query))))
+        self.store.logger.debug('query: {}'.format(str(query)))
 
         facts = query.all()
         found_facts = [fact.as_hamster(self.store) for fact in facts]
         return found_facts
+
+    # ***
+
+# ***
 

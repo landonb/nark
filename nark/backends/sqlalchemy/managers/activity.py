@@ -43,14 +43,13 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             nark.Activity: Activity.
         """
 
-        message = _("Received {!r}, raw={}.").format(activity, raw)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received: {!r} / raw: {}".format(activity, raw))
 
         try:
             result = self.get_by_composite(activity.name, activity.category, raw=raw)
         except KeyError:
             result = self._add(activity, raw=raw, skip_commit=skip_commit)
-        self.store.logger.debug(_("Returning {!r}.").format(result))
+        self.store.logger.debug("Returning: {!r}".format(result))
         return result
 
     # ***
@@ -75,8 +74,9 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         try:
             self.get_by_composite(activity.name, activity.category)
             # FIXME/2018-06-08: (lb): DRY: See "Our database already" elsewhere.
-            message = _("Our database already contains the passed name/category.name"
-                        "combination.")
+            message = _(
+                "The database already contains that name/category.name combination."
+            )
             self.store.logger.error(message)
             raise ValueError(message)
         except KeyError:
@@ -129,21 +129,22 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             KeyError: If the the passed activity.pk can not be found.
         """
 
-        message = _("Received {!r}.".format(activity))
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received: {!r}".format(activity))
 
         if not activity.pk:
             message = _(
-                "The activity passed ('{!r}') does not seem to havea PK. We don't know"
-                "which entry to modify.".format(activity))
+                "The Activity passed ('{!r}') does not have a PK."
+                " We do not know which entry to modify."
+            ).format(activity)
             self.store.logger.error(message)
             raise ValueError(message)
 
         try:
             self.get_by_composite(activity.name, activity.category)
             # FIXME/2018-06-08: (lb): DRY: See "Our database already" elsewhere.
-            message = _("Our database already contains the passed name/category.name"
-                        "combination.")
+            message = _(
+                "The database already contains that Activity and Category combination."
+            )
             self.store.logger.error(message)
             raise ValueError(message)
         except KeyError:
@@ -151,7 +152,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
         alchemy_activity = self.store.session.query(AlchemyActivity).get(activity.pk)
         if not alchemy_activity:
-            message = _("No activity with this pk can be found.")
+            message = _("No Activity with PK ‘{}’ was found.").format(activity.pk)
             self.store.logger.error(message)
             raise KeyError(message)
         alchemy_activity.name = activity.name
@@ -169,7 +170,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             self.store.logger.error(message)
             raise ValueError(message)
         result = alchemy_activity.as_hamster(self.store)
-        self.store.logger.debug(_("Returning: {!r}.").format(result))
+        self.store.logger.debug("Returning: {!r}".format(result))
         return result
 
     # ***
@@ -188,28 +189,28 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             KeyError: If the given ``Activity`` can not be found in the database.
         """
 
-        message = _("Received {!r}.").format(activity)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received: {!r}".format(activity))
 
         if not activity.pk:
             message = _(
-                "The activity you passed does not have a PK. Please provide one."
-            )
+                "Activity ‘{!r}’ has no PK. Are you trying to remove a new Activity?"
+            ).format(activity)
             self.store.logger.error(message)
             raise ValueError(message)
 
         alchemy_activity = self.store.session.query(AlchemyActivity).get(activity.pk)
         if not alchemy_activity:
-            message = _("The activity you try to remove does not seem to exist.")
+            message = _("No Activity with PK ‘{}’ was found.").format(activity.pk)
             self.store.logger.error(message)
             raise KeyError(message)
+
         if alchemy_activity.facts:
             alchemy_activity.deleted = True
             self.store.activities._update(alchemy_activity)
         else:
             self.store.session.delete(alchemy_activity)
         self.store.session.commit()
-        self.store.logger.debug(_("Deleted {!r}.").format(activity))
+        self.store.logger.debug("Deleted: {!r}".format(activity))
         return True
 
     # ***
@@ -229,8 +230,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             KeyError: If no such pk was found.
         """
 
-        message = _("Received PK: '{}', raw={}.").format(pk, raw)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received PK: ‘{}’ / raw: {}.".format(pk, raw))
 
         if deleted is None:
             result = self.store.session.query(AlchemyActivity).get(pk)
@@ -243,12 +243,12 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             result = results[0] if results else None
 
         if not result:
-            message = _("No Activity with 'pk: {}' was found!").format(pk)
+            message = _("No Activity with PK ‘{}’ was found.").format(pk)
             self.store.logger.error(message)
             raise KeyError(message)
         if not raw:
             result = result.as_hamster(self.store)
-        self.store.logger.debug(_("Returning: {!r}.").format(result))
+        self.store.logger.debug("Returning: {!r}.".format(result))
         return result
 
     # ***
@@ -280,11 +280,9 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             constraint of the underlying table.
         """
 
-        message = _(
-            "Received name: '{}' and {!r} with 'raw'={}."
-        ).format(name, category, raw)
-
-        self.store.logger.debug(message)
+        self.store.logger.debug(
+            "Received: {!r} / name: ‘{}’ / raw: {}".format(category, name, raw)
+        )
 
         if category:
             category = category.name
@@ -311,13 +309,13 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             result = query.one()
         except NoResultFound:
             message = _(
-                "No activity named '{name}' of category '{category}' was found"
+                "No activity named ‘{name}’ of category ‘{category}’ was found."
             ).format(name=name, category=category)
             self.store.logger.debug(message)
             raise KeyError(message)
         if not raw:
             result = result.as_hamster(self.store)
-        self.store.logger.debug(_("Returning: {!r}.").format(result))
+        self.store.logger.debug("Returning: {!r}.".format(result))
         return result
 
     # ***

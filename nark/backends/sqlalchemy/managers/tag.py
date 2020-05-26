@@ -48,9 +48,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         Returns:
             nark.Tag or None: Tag.
         """
-
-        message = _("Received {!r} and raw={}.").format(tag, raw)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received: {!r} / raw: {}".format(tag, raw))
 
         try:
             tag = self.get_by_name(tag.name, raw=raw)
@@ -112,21 +110,18 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             ValueError: If tag passed does not have a PK.
             KeyError: If no tag with passed PK was found.
         """
-
-        message = _("Received {!r}.").format(tag)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received: {!r}".format(tag))
 
         if not tag.pk:
             message = _(
-                "The tag passed ('{!r}') does not seem to havea PK. "
-                "We don't know which entry to modify."
+                "The Tag passed ('{!r}') does not have a PK."
+                " We do not know which entry to modify."
             ).format(tag)
-
             self.store.logger.error(message)
             raise ValueError(message)
         alchemy_tag = self.store.session.query(AlchemyTag).get(tag.pk)
         if not alchemy_tag:
-            message = _("No tag with PK: {} was found!").format(tag.pk)
+            message = _("No Tag with PK ‘{}’ was found.").format(tag.pk)
             self.store.logger.error(message)
             raise KeyError(message)
         alchemy_tag.name = tag.name
@@ -160,22 +155,24 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             ValueError: If tag passed does not have an pk.
         """
 
-        message = _("Received {!r}.").format(tag)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received: {!r}".format(tag))
 
         if not tag.pk:
-            message = _("PK-less Tag. Are you trying to remove a new Tag?")
+            message = _(
+                "Tag ‘{!r}’ has no PK. Are you trying to remove a new Tag?"
+            ).format(tag)
             self.store.logger.error(message)
             raise ValueError(message)
+
         alchemy_tag = self.store.session.query(AlchemyTag).get(tag.pk)
         if not alchemy_tag:
-            message = _("``Tag`` can not be found by the backend.")
+            message = _("No Tag with PK ‘{}’ was found.").format(tag.pk)
             self.store.logger.error(message)
             raise KeyError(message)
+
         self.store.session.delete(alchemy_tag)
         self.store.session.commit()
-        message = _("{!r} successfully deleted.").format(tag)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Deleted: {!r}".format(tag))
 
     # ***
 
@@ -195,9 +192,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         Note:
             We need this for now, as the service just provides pks, not names.
         """
-
-        message = _("Received PK: '{}'.").format(pk)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received PK: ‘{}’".format(pk))
 
         if deleted is None:
             result = self.store.session.query(AlchemyTag).get(pk)
@@ -210,11 +205,10 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             result = results[0] if results else None
 
         if not result:
-            message = _("No tag with 'pk: {}' was found!").format(pk)
+            message = _("No Tag with PK ‘{}’ was found.").format(pk)
             self.store.logger.error(message)
             raise KeyError(message)
-        message = _("Returning {!r}.").format(result)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Returning: {!r}".format(result))
         return result.as_hamster(self.store)
 
     # ***
@@ -234,20 +228,18 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             KeyError: If no tag matching the name was found.
 
         """
-
-        message = _("Received name: '{}', raw={}.").format(name, raw)
-        self.store.logger.debug(message)
+        self.store.logger.debug("Received name: ‘{}’ / raw: {}.".format(name, raw))
 
         try:
             result = self.store.session.query(AlchemyTag).filter_by(name=name).one()
         except NoResultFound:
-            message = _("No tag named '{}' was found").format(name)
+            message = _("No Tag named ‘{}’ was found.").format(name)
             self.store.logger.debug(message)
             raise KeyError(message)
 
         if not raw:
             result = result.as_hamster(self.store)
-            self.store.logger.debug(_("Returning: {!r}.").format(result))
+            self.store.logger.debug("Returning: {!r}".format(result))
         return result
 
     # ***
