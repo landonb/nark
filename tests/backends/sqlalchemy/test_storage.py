@@ -1236,4 +1236,11 @@ class TestFactManager():
         assert results[0].group_count == 1
         # etc.
 
+    def test__get_all_limit_offset(self, alchemy_store, set_of_alchemy_facts):
+        """Verify FactManager.get_all count_results returns number of Facts."""
+        assert len(set_of_alchemy_facts) == 5
+        results = alchemy_store.facts.get_all(limit=2, offset=2, lazy_tags=True)
+        assert len(results) == 2
+        assert results == set_of_alchemy_facts[2:4]
+
 
