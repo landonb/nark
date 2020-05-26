@@ -129,15 +129,6 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             or qt.sorts_cols_has_stat
         )
 
-        i_duration = GatherFactManager.RESULT_GRP_INDEX['duration']
-        i_group_count = GatherFactManager.RESULT_GRP_INDEX['group_count']
-        # i_first_start = GatherFactManager.RESULT_GRP_INDEX['first_start']
-        # i_final_end = GatherFactManager.RESULT_GRP_INDEX['final_end']
-        i_activities = GatherFactManager.RESULT_GRP_INDEX['activities']
-        i_actegories = GatherFactManager.RESULT_GRP_INDEX['actegories']
-        i_categories = GatherFactManager.RESULT_GRP_INDEX['categories']
-        # i_start_date = GatherFactManager.RESULT_GRP_INDEX['start_date']
-
         def _get_all_facts():
             self.store.logger.debug(qt)
 
@@ -309,12 +300,15 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             _process_record_reduce_aggregate_categories(cols)
 
         def _process_record_reduce_aggregate_activities(cols):
+            i_activities = GatherFactManager.RESULT_GRP_INDEX['activities']
             _process_record_reduce_aggregate_value(cols, i_activities)
 
         def _process_record_reduce_aggregate_actegories(cols):
+            i_actegories = GatherFactManager.RESULT_GRP_INDEX['actegories']
             _process_record_reduce_aggregate_value(cols, i_actegories)
 
         def _process_record_reduce_aggregate_categories(cols):
+            i_categories = GatherFactManager.RESULT_GRP_INDEX['categories']
             _process_record_reduce_aggregate_value(cols, i_categories)
 
         def _process_record_reduce_aggregate_value(cols, index):
@@ -762,6 +756,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
         if sort_col == 'start' or not sort_col:
             query = self.query_order_by_start(query, direction)
         elif sort_col == 'time':
+            i_duration = GatherFactManager.RESULT_GRP_INDEX['duration']
             query = query.order_by(direction(span_cols[i_duration]))
         elif sort_col == 'day':
             assert(start_date is not None)
@@ -807,6 +802,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             if not qt.group_activity and not qt.group_category:
                 query = query.order_by(direction(AlchemyTag.name))
         elif sort_col == 'usage' and span_cols is not None:
+            i_group_count = GatherFactManager.RESULT_GRP_INDEX['group_count']
             query = query.order_by(direction(span_cols[i_group_count]))
         elif sort_col == 'name':
             # It makes sense to sort Activities, Categories, and Tags by their
