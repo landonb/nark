@@ -15,7 +15,5 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-"""Global fixtures."""
-
-from nark.tests.conftest import *
+"""Tests infrasture for backends package."""
 

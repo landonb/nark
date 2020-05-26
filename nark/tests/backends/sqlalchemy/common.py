@@ -2,7 +2,9 @@
 #
 #   https://github.com/hotoffthehamster/nark
 #
-# Copyright © 2018-2020 Landon Bouma. All rights reserved.
+# Copyright © 2018-2020 Landon Bouma
+# Copyright © 2015-2016 Eric Goller
+# All  rights  reserved.
 #
 # 'nark' is free software: you can redistribute it and/or modify it under the terms
 # of the GNU General Public License  as  published by the Free Software Foundation,
@@ -15,7 +17,17 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-"""Global fixtures."""
+"""
+Provide a central global Session-object.
 
-from nark.tests.conftest import *
+This way it can be referencecd by fixtures and factories.
+[Details](http://factoryboy.readthedocs.org/en/latest/orms.html#sqlalchemy)
+"""
+
+from sqlalchemy import orm
+
+# (lb): Haha, here's what factoryboi says about this putrid global:
+#   "A global (test-only?) file holds the scoped_session"
+# test-only? Sure, why not. Anything goes in testland.
+Session = orm.scoped_session(orm.sessionmaker())
 
