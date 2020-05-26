@@ -21,6 +21,7 @@ from collections import namedtuple
 
 QueryTermsTuple = namedtuple('QueryTermsTuple', (
     'raw',
+    'named_tuples',
     'include_stats',
     'count_results',
     'key',
@@ -59,7 +60,7 @@ class QueryTerms(object):
     def __str__(self):
         return ' / '.join([
             'raw?: {}'.format(self.raw),
-            'named?: {}'.format(self.named),
+            'named?: {}'.format(self.named_tuples),
             'stats?: {}'.format(self.include_stats),
             'count?: {}'.format(self.count_results),
             'key: {}'.format(self.key),
@@ -88,6 +89,7 @@ class QueryTerms(object):
         self,
 
         raw=False,
+        named_tuples=False,
         include_stats=None,
 
         count_results=False,
@@ -161,6 +163,10 @@ class QueryTerms(object):
         Args:
             raw: If True, returns 'raw' SQLAlchemy items (e.g., AlchemyFact).
                 If False, returns first-class nark objects (e.g., Fact).
+            named_tuples: If True, each result is a attribute-accessible tuple
+                (like a namedtuple). If False, each result is a simple list. In
+                either case, the first entry in always the item, and the order
+                of additional details is always the same.
             include_stats: If True, computes additional details for each item or set
                 of grouped items, and returns a list of tuples (with the item or
                 aggregated item as the first element). Otherwise, if False, returns
@@ -239,6 +245,7 @@ class QueryTerms(object):
             offset (int, optional): Query "offset".
         """
         self.raw = raw
+        self.named_tuples = named_tuples
         self.include_stats = include_stats
 
         self.count_results = count_results
@@ -273,6 +280,7 @@ class QueryTerms(object):
     def as_tuple(self):
         return QueryTermsTuple(
             raw=self.raw,
+            named_tuples=self.named_tuples,
             include_stats=self.include_stats,
             count_results=self.count_results,
             key=self.key,

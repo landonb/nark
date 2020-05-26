@@ -19,6 +19,7 @@
 
 from gettext import gettext as _
 
+from collections import namedtuple
 from datetime import datetime
 
 from sqlalchemy import asc, case, desc, distinct, func
@@ -386,6 +387,18 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
 
     # ***
 
+    FactStatsTuple = namedtuple('FactStatsTuple', (
+        'fact',
+        'duration',
+        'group_count',
+        'first_start',
+        'final_end',
+        'activities',
+        'actegories',
+        'categories',
+        'start_date',
+    ))
+
     RESULT_GRP_INDEX = {
         'duration': 0,
         'group_count': 1,
@@ -669,7 +682,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             # Make a tuple with the calculated and group-by aggregates,
             # if any, when requested by the caller.
             if qt.include_stats:
-                return new_fact, *cols
+                if not qt.named_tuples:
+                    return new_fact, *cols
+                else:
+                    return FactManager.FactStatsTuple(new_fact, *cols)
             return new_fact
 
         # ***
