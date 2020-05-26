@@ -17,6 +17,34 @@
 
 """Query class module."""
 
+from collections import namedtuple
+
+QueryTermsTuple = namedtuple('QueryTermsTuple', (
+    'raw',
+    'include_stats',
+    'count_results',
+    'key',
+    'since',
+    'until',
+    'endless',
+    'exclude_ongoing',
+    'partial',
+    'deleted',
+    'search_term',
+    'activity',
+    'match_activities',
+    'category',
+    'match_categories',
+    'group_activity',
+    'group_category',
+    'group_tags',
+    'group_days',
+    'sort_cols',
+    'sort_orders',
+    'limit',
+    'offset',
+))
+
 
 class QueryTerms(object):
     """
@@ -239,6 +267,40 @@ class QueryTerms(object):
 
         self.limit = limit
         self.offset = offset
+
+    # ***
+
+    def as_tuple(self):
+        return QueryTermsTuple(
+            raw=self.raw,
+            include_stats=self.include_stats,
+            count_results=self.count_results,
+            key=self.key,
+            since=self.since,
+            until=self.until,
+            endless=self.endless,
+            exclude_ongoing=self.exclude_ongoing,
+            partial=self.partial,
+            deleted=self.deleted,
+            search_term=self.search_term,
+            activity=self.activity,
+            match_activities=self.match_activities,
+            category=self.category,
+            match_categories=self.match_categories,
+            group_activity=self.group_activity,
+            group_category=self.group_category,
+            group_tags=self.group_tags,
+            group_days=self.group_days,
+            sort_cols=self.sort_cols,
+            sort_orders=self.sort_orders,
+            limit=self.limit,
+            offset=self.offset,
+        )
+
+    def __eq__(self, other):
+        if other is not None and not isinstance(other, QueryTermsTuple):
+            other = other.as_tuple()
+        return self.as_tuple() == other
 
     # ***
 
