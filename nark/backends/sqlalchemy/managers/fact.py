@@ -550,12 +550,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def _gather_process_results(records):
-            if (
-                not records
-                or (not qt.include_stats and not add_aggregates and lazy_tags)
-            ):
+            if not records:
+                return records
+            elif not qt.include_stats and not add_aggregates and lazy_tags:
                 return _gather_process_facts_only(records)
-
             return _gather_process_facts_and_aggs(records)
 
         # The list of results returned to the user is one of:
@@ -579,17 +577,10 @@ class FactManager(BaseAlchemyManager, BaseFactManager):
             if qt.raw:
                 return records
 
-            # Because not add_aggregates, each result is a single item, the
-            # AlchemyFact; or a list containing a single item, if not lazy_tags.
-            if not qt.include_stats:
-                records = [fact.as_hamster(self.store) for fact in records]
-            else:
-                # (lb): I doubt this path happens, and I also don't doubt that
-                # it would be allowed, because qt.include_stats is a method arg.
-                assert(not records or len(records[0]) == 1)
-                records = [
-                    fact.as_hamster(self.store) for fact, *_cols in records
-                ]
+            # Because not add_aggregates, results are single items, AlchemyFact.
+            # Note also that we ignore qt.named_tuples here (which does not
+            # apply unless also qt.include_stats, which is not True here).
+            records = [fact.as_hamster(self.store) for fact in records]
             return records
 
         def _gather_process_facts_and_aggs(records):
