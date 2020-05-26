@@ -229,11 +229,11 @@ class TestCategoryManager():
         assert result == category
 
     def test_get_all(self, alchemy_store, set_of_categories):
-        result = alchemy_store.categories.get_all()
-        assert len(result) == len(set_of_categories)
-        assert len(result) == alchemy_store.session.query(AlchemyCategory).count()
+        results = alchemy_store.categories.get_all()
+        assert len(results) == len(set_of_categories)
+        assert len(results) == alchemy_store.session.query(AlchemyCategory).count()
         for category in set_of_categories:
-            assert category.as_hamster(alchemy_store) in result
+            assert category.as_hamster(alchemy_store) in results
 
     # Test convenience methods.
     def test_get_or_create_get(self, alchemy_store, alchemy_category_factory):
@@ -536,45 +536,44 @@ class TestActivityManager():
 
     def test_get_all_without_category(self, alchemy_store, alchemy_activity):
         """Make sure method returns all activities."""
-        result = alchemy_store.activities.get_all()
-        assert len(result) == 1
+        results = alchemy_store.activities.get_all()
+        assert len(results) == 1
 
     def test_get_all_with_category_none(
         self, alchemy_store, alchemy_activity, alchemy_activity_factory,
     ):
-        """Make sure only activities without a category are are returned."""
-        # FIXME: Do we care about _activity? result ==/is _activity ?
-        #   activity = alchemy_activity_factory(category=None)
-        alchemy_activity_factory(category=None)
-        result = alchemy_store.activities.get_all(category=alchemy_activity.category)
-        assert len(result) == 1
+        """Make sure only activity without a category is returned."""
+        activity_without_category = alchemy_activity_factory(category=None)
+        results = alchemy_store.activities.get_all(category=None)
+        assert len(results) == 1
+        assert results[0] == activity_without_category
 
     def test_get_all_with_category(self, alchemy_store, alchemy_activity):
         """
         Make sure that activities matching the given alchemy_category are returned.
         """
         activity = alchemy_activity.as_hamster(alchemy_store)
-        result = alchemy_store.activities.get_all(category=activity.category)
-        assert len(result) == 1
+        results = alchemy_store.activities.get_all(category=activity.category)
+        assert len(results) == 1
 
     def test_get_all_with_search_term(self, alchemy_store, alchemy_activity):
         """
         Make sure that activities matching the given term ass name are returned.
         """
         activity = alchemy_activity.as_hamster(alchemy_store)
-        result = alchemy_store.activities.get_all(
+        results = alchemy_store.activities.get_all(
             category=activity.category,
             search_term=activity.name,
         )
-        assert len(result) == 1
+        assert len(results) == 1
 
     def test_get_all_with_category_miss(self, alchemy_store, alchemy_activity):
         """
         Make sure that activities matching the given alchemy_category are returned.
         """
         activity = alchemy_activity.as_hamster(alchemy_store)
-        result = alchemy_store.activities.get_all(category='miss')
-        assert len(result) == 0
+        results = alchemy_store.activities.get_all(category='miss')
+        assert len(results) == 0
 
 
 class TestTagManager():
@@ -694,11 +693,11 @@ class TestTagManager():
         assert result == tag
 
     def test_get_all(self, alchemy_store, set_of_tags):
-        result = alchemy_store.tags.get_all()
-        assert len(result) == len(set_of_tags)
-        assert len(result) == alchemy_store.session.query(AlchemyTag).count()
+        results = alchemy_store.tags.get_all()
+        assert len(results) == len(set_of_tags)
+        assert len(results) == alchemy_store.session.query(AlchemyTag).count()
         for tag in set_of_tags:
-            assert tag.as_hamster(alchemy_store) in result
+            assert tag.as_hamster(alchemy_store) in results
 
     # Test convenience methods.
     def test_get_or_create_get(self, alchemy_store, alchemy_tag_factory):
@@ -884,9 +883,9 @@ class TestFactManager():
         assert result == fact
 
     def test_get_all(self, set_of_alchemy_facts, alchemy_store):
-        result = alchemy_store.facts._get_all()
-        assert len(result) == len(set_of_alchemy_facts)
-        assert len(result) == alchemy_store.session.query(AlchemyFact).count()
+        results = alchemy_store.facts.get_all()
+        assert len(results) == len(set_of_alchemy_facts)
+        assert len(results) == alchemy_store.session.query(AlchemyFact).count()
 
     @pytest.mark.parametrize(('start_filter', 'end_filter'), (
         (10, 12),
@@ -908,10 +907,10 @@ class TestFactManager():
         if end_filter:
             until = alchemy_fact.start + datetime.timedelta(days=end_filter)
 
-        result = alchemy_store.facts._get_all(
+        results = alchemy_store.facts.get_all(
             since=since, until=until, partial=bool_value_parametrized,
         )
-        assert result == []
+        assert results == []
 
     @pytest.mark.parametrize(('start_filter', 'end_filter'), (
         (-1, 5),
@@ -934,13 +933,13 @@ class TestFactManager():
         if end_filter:
             until = alchemy_fact.start + datetime.timedelta(days=end_filter)
 
-        result = alchemy_store.facts._get_all(
+        results = alchemy_store.facts._get_all(
             since=since, until=until, partial=bool_value_parametrized,
         )
         # ANSWER/2018-05-05: (lb): This test is failing. When did it break?
-        #   assert result == [alchemy_fact]
-        assert len(result) == 1
-        assert str(result[0]) == str(alchemy_fact)
+        #   assert results == [alchemy_fact]
+        assert len(results) == 1
+        assert str(results[0]) == str(alchemy_fact)
 
     @pytest.mark.parametrize(('start_filter', 'end_filter'), (
         # Fact.start is in time window.
@@ -967,12 +966,12 @@ class TestFactManager():
             since = alchemy_fact.start + datetime.timedelta(minutes=start_filter)
         if end_filter:
             until = alchemy_fact.start + datetime.timedelta(minutes=end_filter)
-        result = alchemy_store.facts._get_all(
+        results = alchemy_store.facts.get_all(
             since=since,
             until=until,
             partial=bool_value_parametrized,
-            # 2019-02-14: (lb): When lazy_tags=False, the `result == [alchemy_fact]`
-            # fails because result[0].tags != alchemy_fact.tags, because it seems
+            # 2019-02-14: (lb): When lazy_tags=False, the `results == [alchemy_fact]`
+            # fails because results[0].tags != alchemy_fact.tags, because it seems
             # query.all() loads Tag objects with proper PKs, but lazy_tags uses
             # query-coalesce magic to assemble Tag labels without PKs, so PK=None.
             # FIXME/TESTME/2019-02-14: (lb): What's behavior on, say, dob-list?
@@ -981,29 +980,29 @@ class TestFactManager():
             lazy_tags=True,
         )
         if bool_value_parametrized:
-            assert len(result) == 1
-            assert str(result[0]) == str(alchemy_fact)
-            assert result == [alchemy_fact]
+            assert len(results) == 1
+            assert str(results[0]) == str(alchemy_fact)
+            assert results == [alchemy_fact]
         else:
-            assert result == []
+            assert results == []
 
     def test_get_all_search_matches_activity(self, alchemy_store, set_of_alchemy_facts):
         """Make sure facts with ``Fact.activity.name`` matching the term are returned."""
         assert len(set_of_alchemy_facts) == 5
         search_term = set_of_alchemy_facts[1].activity.name
-        result = alchemy_store.facts._get_all(search_term=search_term, lazy_tags=True)
-        assert len(result) == 1
-        assert str(result[0]) == str(set_of_alchemy_facts[1])
-        assert result == [set_of_alchemy_facts[1]]
+        results = alchemy_store.facts.get_all(search_term=search_term, lazy_tags=True)
+        assert len(results) == 1
+        assert str(results[0]) == str(set_of_alchemy_facts[1])
+        assert results == [set_of_alchemy_facts[1]]
 
     def test_get_all_search_matches_category(self, alchemy_store, set_of_alchemy_facts):
         """Make sure facts with ``Fact.category.name`` matching the term are returned."""
         assert len(set_of_alchemy_facts) == 5
         search_term = set_of_alchemy_facts[1].category.name
-        result = alchemy_store.facts._get_all(search_term=search_term, lazy_tags=True)
-        assert len(result) == 1
-        assert str(result[0]) == str(set_of_alchemy_facts[1])
-        assert result == [set_of_alchemy_facts[1]]
+        results = alchemy_store.facts.get_all(search_term=search_term, lazy_tags=True)
+        assert len(results) == 1
+        assert str(results[0]) == str(set_of_alchemy_facts[1])
+        assert results == [set_of_alchemy_facts[1]]
 
     def test_starting_at(self, alchemy_store, alchemy_fact):
         """Verify FactManager.starting_at."""
@@ -1059,10 +1058,10 @@ class TestFactManager():
         """Verify FactManager.strictly_during finds a range of Facts."""
         assert len(set_of_alchemy_facts) == 5
         expect = set_of_alchemy_facts[1:2]
-        result = alchemy_store.facts.strictly_during(
+        results = alchemy_store.facts.strictly_during(
             since=expect[0].start, until=expect[-1].end,
         )
-        assert result == expect
+        assert results == expect
 
     # ***
 
@@ -1071,16 +1070,16 @@ class TestFactManager():
         assert len(set_of_alchemy_facts) == 5
         any_fact = set_of_alchemy_facts[2]
         fact_time = any_fact.start
-        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=False)
-        assert result == []
+        results = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=False)
+        assert results == []
 
     def test_surrounding_exclusive_inner(self, alchemy_store, set_of_alchemy_facts):
         """Verify exclusive surrounding finds Fact given time between start and end."""
         assert len(set_of_alchemy_facts) == 5
         any_fact = set_of_alchemy_facts[2]
         fact_time = any_fact.end - ((any_fact.end - any_fact.start) / 2)
-        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=False)
-        assert result[0] == any_fact
+        results = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=False)
+        assert results[0] == any_fact
 
 
     def test_surrounding_inclusive_outer(
@@ -1093,16 +1092,16 @@ class TestFactManager():
             set_of_alchemy_facts_contiguous[2],
         ]
         fact_time = expect[-1].start
-        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=True)
-        assert result == expect
+        results = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=True)
+        assert results == expect
 
     def test_surrounding_inclusive_inner(self, alchemy_store, set_of_alchemy_facts):
         """Verify inclusive surrounding finds Fact given time between start and end."""
         assert len(set_of_alchemy_facts) == 5
         any_fact = set_of_alchemy_facts[2]
         fact_time = any_fact.end - ((any_fact.end - any_fact.start) / 2)
-        result = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=True)
-        assert result[0] == any_fact
+        results = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=True)
+        assert results[0] == any_fact
 
     # ***
 
@@ -1110,8 +1109,8 @@ class TestFactManager():
         """Verify FactManager.endless finds the active Fact."""
         assert len(set_of_alchemy_facts_active) == 5
         expect = set_of_alchemy_facts_active[-1]
-        result = alchemy_store.facts.endless()
-        assert result[0] == expect
+        results = alchemy_store.facts.endless()
+        assert results[0] == expect
 
     # ***
 
@@ -1128,8 +1127,8 @@ class TestFactManager():
     def test__get_all_no_params_count(self, alchemy_store, set_of_alchemy_facts):
         """Verify basic FactManager._get_all finds the whole store."""
         assert len(set_of_alchemy_facts) == 5
-        result = alchemy_store.facts._get_all(count_results=True)
-        assert result == 5
+        results = alchemy_store.facts.get_all(count_results=True)
+        assert results == 5
 
     def test__get_all_extras_raw_lazy(self, alchemy_store, set_of_alchemy_facts):
         """Verify basic FactManager._get_all finds the whole store."""
