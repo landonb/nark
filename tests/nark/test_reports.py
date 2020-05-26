@@ -22,8 +22,10 @@ import datetime
 import os.path
 import xml
 
-import pytest
 from icalendar import Calendar
+
+import pytest
+
 from nark import reports
 
 
@@ -54,7 +56,8 @@ def xml_writer(path):
     return reports.XMLWriter(path)
 
 
-# Tests
+# ***
+
 class TestReportWriter(object):
     @pytest.mark.parametrize('datetime_format', [None, '%Y-%m-%d'])
     def test_init_stores_datetime_format(self, path, datetime_format):
@@ -93,6 +96,8 @@ class TestReportWriter(object):
         report_writer._close()
         assert report_writer.file.closed
 
+
+# ***
 
 class TestTSVWriter(object):
     def test_init_csv_writer(self, tsv_writer):
@@ -150,6 +155,8 @@ class TestTSVWriter(object):
                     assert field.decode('utf-8') == expectation
 
 
+# ***
+
 class TestICALWriter(object):
     """Make sure the iCal writer works as expected."""
     def test_init(self, ical_writer):
@@ -198,6 +205,8 @@ class TestICALWriter(object):
             result = Calendar.from_ical(fobj.read())
             assert result.walk()
 
+
+# ***
 
 class TestXMLWriter(object):
     """Make sure the XML writer works as expected."""
