@@ -31,6 +31,10 @@ from . import (
 )
 from .gather_fact import GatherFactManager
 
+__all__ = (
+    'FactManager',
+)
+
 
 class FactManager(GatherFactManager):
     """

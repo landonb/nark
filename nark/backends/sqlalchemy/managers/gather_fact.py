@@ -29,16 +29,20 @@ from ..objects import (
     fact_tags
 )
 from . import (
-    BaseAlchemyManager,
     query_apply_limit_offset,
     query_apply_true_or_not,
     query_prepare_datetime
 )
+from .manager_base import BaseAlchemyManager
+
+__all__ = (
+    'GatherFactManager',
+)
 
 
 class GatherFactManager(BaseAlchemyManager, BaseFactManager):
-    """
-    """
+    """Fact class aggregate query implementation for FactManager."""
+
     def __init__(self, *args, **kwargs):
         super(GatherFactManager, self).__init__(*args, **kwargs)
 

@@ -24,9 +24,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import or_
 
-from . import BaseAlchemyManager, query_apply_limit_offset, query_apply_true_or_not
 from ....managers.activity import BaseActivityManager
 from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
+from . import query_apply_limit_offset, query_apply_true_or_not
+from .manager_base import BaseAlchemyManager
+
+__all__ = (
+    'ActivityManager',
+)
 
 
 class ActivityManager(BaseAlchemyManager, BaseActivityManager):
