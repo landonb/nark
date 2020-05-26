@@ -220,7 +220,7 @@ class FactManager(GatherFactManager):
         Determine if a timeframe given by the passed fact is already occupied.
 
         This method takes also such facts into account that start before and end
-        after the fact in question. In that regard it exceeds what ``_get_all``
+        after the fact in question. In that regard it exceeds what ``gather``
         would return.
 
         Args:
