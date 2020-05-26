@@ -163,6 +163,11 @@ class AlchemyTag(Tag):
             hidden=bool(self.hidden),
         )
 
+    def __repr__(self):
+        # Don't print Tag.facts, otherwise printing a Fact creates a huge
+        # string block because circular recursion.
+        return super(AlchemyTag, self).__repr__(ignore=set(['facts']))
+
 
 class AlchemyFact(Fact):
     def __init__(self, pk, activity, start, end, description, deleted, split_from):

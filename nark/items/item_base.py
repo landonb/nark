@@ -29,9 +29,11 @@ class BaseItem(object):
         self.pk = pk
         self.name = name
 
-    def __repr__(self):
+    def __repr__(self, ignore=()):
         parts = []
         for key in sorted(self.__dict__.keys()):
+            if key in ignore:
+                continue
             parts.append(
                 "{key}={val}".format(key=key, val=repr(getattr(self, key)))
             )
