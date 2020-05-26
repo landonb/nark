@@ -26,8 +26,9 @@ This way it can be referencecd by fixtures and factories.
 
 from sqlalchemy import orm
 
-# (lb): Haha, here's what factoryboi says about this putrid global:
+# (lb): Haha, here's what factoryboi says about this global:
 #   "A global (test-only?) file holds the scoped_session"
-# test-only? Sure, why not. Anything goes in testland.
+# This session is so the Alchemy item factories all deposit
+# their items in the same backend.
 Session = orm.scoped_session(orm.sessionmaker())
 
