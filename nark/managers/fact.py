@@ -164,7 +164,7 @@ class BaseFactManager(BaseManager):
 
     # ***
 
-    def _get_all(self, **kwargs):
+    def gather(self, query_terms):
         """
         Return a list of ``Facts`` matching given criteria.
         """

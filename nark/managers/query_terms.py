@@ -32,7 +32,7 @@ class QueryTerms(object):
         return ' / '.join([
             'raw?: {}'.format(self.raw),
             'named?: {}'.format(self.named),
-            'usage?: {}'.format(self.include_usage),
+            'stats?: {}'.format(self.include_stats),
             'count?: {}'.format(self.count_results),
             'key: {}'.format(self.key),
             'since: {}'.format(self.since),
@@ -55,7 +55,7 @@ class QueryTerms(object):
         self,
 
         raw=False,
-        include_usage=False,
+        include_stats=None,
 
         count_results=False,
 
@@ -82,7 +82,7 @@ class QueryTerms(object):
         deleted=False,
         search_term=None,
 
-        # Note that item name matching is strict -- case and exactness count.
+        # - Note that item name matching is strict -- case and exactness count.
         activity=False,
         match_activities=[],
         category=False,
@@ -119,22 +119,25 @@ class QueryTerms(object):
         Args:
             raw: If True, returns 'raw' SQLAlchemy items (e.g., AlchemyFact).
                 If False, returns first-class nark objects (e.g., Fact).
-            include_usage: If True, computes additional details for each item or set
+            include_stats: If True, computes additional details for each item or set
                 of grouped items, and returns a list of tuples (with the item or
                 aggregated item as the first element). Otherwise, if False, returns
                 a list of matching items only. For Attribute, Category, and Tag
-                queries, enable include_usage to receive a count of Facts that use
+                queries, enable include_stats to receive a count of Facts that use
                 the item, as well as the cumulative duration (end - start) of those
                 Facts. For Facts, includes additional aggregate details.
 
             count_results: If True, return only a count of query matches (an integer).
                 By default, count_results is False, and the method returns a list of
-                results (of either items or tuples, depending on include_usage).
+                results (of either items or tuples, depending on include_stats).
 
             key: If specified, look for an item with this PK. See also the get()
                 method, if you do not need aggregate results.
             since: Restrict Facts to those that start at or after this time.
             until: Restrict Facts to those that end at or before this time.
+                Note that a query will *not* match any Facts that start before and
+                end after (e.g. that span more than) the specified timeframe.
+
             endless: If True, include the active Fact, if any, in the query.
             partial: If True, restrict Facts to those that start or end within the
                 since-to-until time window.
@@ -151,8 +154,8 @@ class QueryTerms(object):
                 Activity or the Facts assigned the Activity with this exact name.
                 The activity name can be specified as a string, or by passing a
                 ``nark.Activity`` object whose name will be used. Defaults to
-                ``False``. To match Facts without an Activity assigned, set
-                ``activity=None``.
+                ``False``, which skips the match. To match Facts without an
+                Activity assigned, set ``activity=None``.
             match_activities: Use to specify more than one exact Activity name
                 to match. Activities that exactly match any of the specified
                 names will be included.
@@ -160,8 +163,8 @@ class QueryTerms(object):
                 Category or the Activities assigned the Category with this exact
                 name. The category name can be specified as a string, or by
                 passing a ``nark.Caetgory`` object whose name will be used.
-                Defaults to ``False``. To match Activities without a Category
-                assigned, set ``category=None``.
+                Defaults to ``False``, which skips the match. To match Activities
+                without a Category assigned, set ``category=None``.
             match_categories: Use to specify more than one exact Category name
                 to match. Categories that exactly match any of the specified
                 names will be included.
@@ -169,11 +172,11 @@ class QueryTerms(object):
             sort_cols (str list, optional): Which column(s) to sort by.
                 - If not aggregating results, defaults to 'name' and orders
                   by item name.
-                - When aggregating results (include_usage=True) or searching
+                - When aggregating results (include_stats=True) or searching
                   Facts, defaults to 'start', and orders results by Fact start.
                 - Choices include: 'start', 'time', 'day', 'name', 'activity,
                   'category', 'tag', 'usage', and 'fact'.
-                - Note that 'start' and 'usage' only apply if include_usage,
+                - Note that 'start' and 'usage' only apply if include_stats,
                   and 'day' is only valid when group_days is True.
             sort_orders (str list, optional): Specifies the direction of each
                 sort specified by sort_cols. Use the string 'asc' or 'desc'
@@ -186,7 +189,7 @@ class QueryTerms(object):
             offset (int, optional): Query "offset".
         """
         self.raw = raw
-        self.include_usage = include_usage
+        self.include_stats = include_stats
 
         self.count_results = count_results
 
@@ -208,4 +211,20 @@ class QueryTerms(object):
 
         self.limit = limit
         self.offset = offset
+
+    # ***
+
+    @property
+    def activities(self):
+        return [
+            act for act in self.match_activities + [self.activity]
+            if act is not False
+        ]
+
+    @property
+    def categories(self):
+        return [
+            act for act in self.match_categories + [self.category]
+            if act is not False
+        ]
 

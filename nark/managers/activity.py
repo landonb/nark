@@ -204,7 +204,7 @@ class BaseActivityManager(BaseManager):
 
     # ***
 
-    def _get_all(self, query_terms):
+    def gather(self, query_terms):
         """
         Return a list of ``Activities`` matching given criteria.
         """

@@ -321,53 +321,52 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         return result
 
     # ***
-
-    def get_all(self, *args, include_usage=False, sort_cols=('name',), **kwargs):
-        """
-        Return all matching activities.
-
-        Args:
-            category (nark.Category, optional): Limit activities to this category.
-                Defaults to ``False``. If ``category=None`` only activities without a
-                category will be considered.
-            search_term (str, optional): Limit activities to those matching this string
-                a substring in their name. Defaults to ``empty string``.
-
-        Returns:
-            list: List of ``nark.Activity`` instances matching constrains.
-                This list is ordered by ``Activity.name``.
-
-        Note:
-            * This method combines legacy ``storage.db.__get_activities`` and
-                ``storage.db.____get_category_activities``.
-            * Can search terms be prefixed with 'not'?
-            * Original implementation in ``nark.storage.db.__get_activities`` returns
-                activity names converted to lowercase!
-            * Does exclude activities with ``deleted=True``.
-        """
-        kwargs['include_usage'] = include_usage
-        kwargs['sort_cols'] = sort_cols
-        return super(ActivityManager, self).get_all(*args, **kwargs)
-
-    def get_all_by_usage(self, *args, sort_cols=('usage',), **kwargs):
-        assert(not args)
-        kwargs['include_usage'] = True
-        kwargs['sort_cols'] = sort_cols
-        return super(ActivityManager, self).get_all(*args, **kwargs)
-
+    # *** gather() call-outs (used by get_all/get_all_by_usage).
     # ***
 
-    def query_apply_order_by(
-        self, query, sort_col, direction, count_col=None, time_col=None,
-    ):
-        return self.query_usage_order_by(
-            query,
-            sort_col,
-            direction,
-            default='activity',
-            count_col=count_col,
-            time_col=time_col,
+    @property
+    def _gather_query_alchemy_cls(self):
+        return AlchemyActivity
+
+    @property
+    def _gather_query_order_by_name_col(self):
+        return 'activity'
+
+    def _gather_query_start_timeless(self, qt, alchemy_cls):
+        # Query on AlchemyActivity.
+        query = super(
+            ActivityManager, self
+        )._gather_query_start_timeless(qt, alchemy_cls)
+
+        query = self._gather_query_join_category(qt, query)
+        return query
+
+    def _gather_query_start_aggregate(self, qt, agg_cols):
+        query = self.store.session.query(AlchemyFact, *agg_cols)
+        query = query.outerjoin(AlchemyFact.activity)
+
+        query = self._gather_query_join_category(qt, query)
+        return query
+
+    def _gather_query_join_category(self, qt, query):
+        # Note that SQLAlchemy automatically lazy-loads any attribute
+        # that's another object but that we did not join. E.g., in a
+        # query for Activity, if we did not join Category, then if/when
+        # the code references activity.category on one of the returned
+        # objects, the value will then be retrieved from the data store.
+        # So we do not need to join values we do not need until after the
+        # query. Except unless we want to sort by category.name, then we
+        # need to join the table, so we can reference category.name in the
+        # query. Same for matching category name.
+        match_categories = qt.categories
+        requires_category_table = (
+            'category' in qt.sort_cols
+            or match_categories
         )
+        if requires_category_table:
+            query = query.outerjoin(AlchemyCategory)
+
+        return query
 
     # ***
 

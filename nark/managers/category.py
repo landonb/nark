@@ -189,7 +189,7 @@ class BaseCategoryManager(BaseManager):
 
     # ***
 
-    def _get_all(self, query_terms):
+    def gather(self, query_terms):
         """
         Return a list of ``Categories`` matching given criteria.
         """

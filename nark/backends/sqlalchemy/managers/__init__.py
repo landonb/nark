@@ -138,123 +138,124 @@ class BaseAlchemyManager(object):
         return _add_and_commit()
 
     # ***
-
-    # ***
-    # *** _get_all() et al
+    # *** gather() et al.
     # ***
 
-    def _get_all(self, query_terms):
+    def gather(self, query_terms):
         """
-        Retrieve all matching activities stored in the backend.
+        Returns matching items from the data store; and stats, if requested.
 
         Args:
             query_terms (nark.managers.query_terms.QueryTerms, required):
-                The requested query settings used to find Activities,
-                and also the requested results settings. See the QueryTerms
-                class for details.
+                The QueryTerms object defines the query settings used to find
+                matching items, and it also defines how the results should be
+                packaged. See the QueryTerms class for details.
 
         Returns:
-            list: List of ``nark.Activity`` instances matching constrains.
-                The list is ordered by ``Activity.name``.
+            list: A list of matching item instances or (item, *statistics) tuples.
+            - If raw results are requested, each item is the Alchemy<Item> object
+              from SQLAlchemy (e.g., nark.backends.sqlalchemy.objects.AlchemyActivity).
+              Otherwise, by default, each item is a first-class <Item> instance,
+              hydrated from the Alchemy object (e.g., nark.items.activity.Activity).
+            - If include_stats is requested, each result is a tuple consisting of
+              the item as the first element, followed by additional calculated
+              values (aggregates) pertaining to the query.
+            - The list of results will be ordered according to the QueryTerms
+              sort_cols and sort_orders options, if possible. Otherwise, for
+              some queries that concatenate and post-process a value that is to
+              be sorted on, the sorting is left as an exercise for the caller
+              (because often the caller must do some post-processing of its own,
+              so this method does not waste the cycles using, say, a subquery to
+              do the sort in an outer query).
         """
         qt = query_terms
 
-        # If user is requesting sorting according to time, need Fact table.
-        requires_fact_table = (
-            qt.include_usage
+        # Get the Alchemy class, e.g., AlchemyActivity.
+        alchemy_cls = self._gather_query_alchemy_cls
+
+        # Compute the aggregate values if the user wants them returned with
+        # the results, or if the user wants to sort the results accordingly.
+        compute_usage = (
+            qt.include_stats
             or set(qt.sort_cols).intersection(('start', 'usage', 'time'))
-            or qt.since or qt.until or qt.endless
         )
+        # If user is requesting filtering or sorting according to time, join Fact.
+        requires_fact_table = self._gather_query_requires_fact(qt, compute_usage)
 
         # Bounce to the simple get() method if a PK specified.
         if qt.key:
-            activity = self.get(pk=qt.key, deleted=qt.deleted, raw=qt.raw)
-            if qt.include_usage:
-                activity = (activity,)
-            return [activity]
+            item = self.get(pk=qt.key, deleted=qt.deleted, raw=qt.raw)
+            if qt.include_stats:
+                item = (item,)
+            return [item]
 
         def _gather_items():
             self.store.logger.debug(qt)
 
-            query, agg_cols = _get_all_start_query()
+            query, agg_cols = _gather_query_start()
 
             query = self.query_filter_by_fact_times(
                 query, qt.since, qt.until, qt.endless, qt.partial,
             )
 
-            query = self._get_all_filter_by_activities(
-                query, qt.match_activities + [qt.activity],
-            )
+            query = self.query_filter_by_activities(query, qt.activities)
 
-            query = self._get_all_filter_by_categories(
-                query, qt.match_categories + [qt.category],
-            )
+            query = self.query_filter_by_categories(query, qt.categories)
 
-            query = _get_all_filter_by_search_term(query)
+            query = query_filter_by_search_term(query)
 
-            query = _get_all_group_by(query, agg_cols)
+            query = query_group_by_aggregate(query, agg_cols)
 
-            query = self._get_all_order_by(
+            query = self.query_order_by_sort_cols(
                 query, qt.sort_cols, qt.sort_orders, *agg_cols,
             )
 
             query = query_apply_limit_offset(query, qt.limit, qt.offset)
 
-            query = _get_all_with_entities(query, agg_cols)
+            query = query_select_with_entities(query, agg_cols)
 
-            self._log_sql_query(query)
+            self.query_prepared_trace(query)
 
             if qt.count_results:
                 results = query.count()
             else:
                 results = query.all()
-                results = _process_results(results)
+                results = _gather_process_results(results)
 
             return results
 
         # ***
 
-        def _get_all_start_query():
+        def _gather_query_start():
             agg_cols = []
-            if not requires_fact_table:
-                query = self.store.session.query(AlchemyActivity)
-            else:
-                if requires_fact_table:
-                    if qt.include_usage or 'usage' in qt.sort_cols:
-                        count_col = func.count(AlchemyActivity.pk).label('uses')
-                        agg_cols.append(count_col)
-                    if qt.include_usage or 'time' in qt.sort_cols:
-                        time_col = func.sum(
-                            func.julianday(AlchemyFact.end)
-                            - func.julianday(AlchemyFact.start)
-                        ).label('span')
-                        agg_cols.append(time_col)
-                query = self.store.session.query(AlchemyFact, *agg_cols)
-                query = query.join(AlchemyFact.activity)
 
-            # Note that SQLAlchemy automatically lazy-loads any attribute
-            # that's another object but that we did not join. E.g., if this
-            # is query for Activity, and we did not join Category, then when
-            # the code references activity.category on one of the returned
-            # objects, the value will then be retrieved from the data store.
-            # So we do not need to join values we do not need until after the
-            # query. Except unless we want to sort by category.name, then we
-            # need to join the table, so we can reference category.name in the
-            # query.
-            if 'category' in qt.sort_cols:
-                query = query.join(AlchemyCategory)
+            if not requires_fact_table:
+                query = self._gather_query_start_timeless(qt, alchemy_cls)
+            else:
+                if qt.include_stats or 'usage' in qt.sort_cols:
+                    # Apply COUNT() on, e.g., AlchemyActivity.pk, but do
+                    # not need DISTINCT, so that we count all in the group.
+                    count_col = func.count(alchemy_cls.pk).label('uses')
+                    agg_cols.append(count_col)
+                if qt.include_stats or 'time' in qt.sort_cols:
+                    time_col = func.sum(
+                        func.julianday(AlchemyFact.end)
+                        - func.julianday(AlchemyFact.start)
+                    ).label('span')
+                    agg_cols.append(time_col)
+                query = self._gather_query_start_aggregate(qt, agg_cols)
 
             return query, agg_cols
 
         # ***
 
-        def _get_all_filter_by_search_term(query):
+        def query_filter_by_search_term(query):
             if not qt.search_term:
                 return query
 
             condits = None
             for term in qt.search_term:
-                condit = AlchemyActivity.name.ilike('%{}%'.format(term))
+                condit = alchemy_cls.name.ilike('%{}%'.format(term))
                 if condits is None:
                     condits = condit
                 else:
@@ -265,44 +266,62 @@ class BaseAlchemyManager(object):
 
         # ***
 
-        def _get_all_group_by(query, agg_cols):
+        def query_group_by_aggregate(query, agg_cols):
             if not agg_cols:
                 return query
-            query = query.group_by(AlchemyActivity.pk)
+            query = query.group_by(alchemy_cls.pk)
             return query
 
         # ***
 
-        def _get_all_with_entities(query, agg_cols):
+        def query_select_with_entities(query, agg_cols):
             if not agg_cols:
                 return query
-            # (lb): Get tricky with it. The query now SELECTs all Fact columns,
-            #  and it JOINs and GROUPs BY activities to produce the counts. But
-            #  the Fact is meaningless after the group-by; we want the Activity
-            #  instead. So use with_entities trickery to tell SQLAlchemy which
-            #  columns we really want -- it'll transform the query so that the
-            #  SELECT fetches all the Activity columns; but the JOIN and GROUP BY
-            #  remain the same! (I'm not quite sure how it works, but it does.)
-            # And as an aside, because of the 1-to-many relationship, the
-            #  Activity table does not reference Fact, so, e.g., this wouldn't
-            #  work, or at least I assume not, but maybe SQLAlchemy would figure
-            #  it out: self.store.session.query(AlchemyActivity).join(AlchemyFact).
-            query = query.with_entities(AlchemyActivity, *agg_cols)
+            # (lb): The aggregate query SELECTs all Fact columns, and it OUTER
+            #  JOINs and GROUPs BY activities and categories or tags to produce
+            #  the counts. But the Fact is meaningless after the group-by, as it
+            #  represents a grouping. And we're not after the Fact; we want the
+            #  attribute item (Activity, Category, or Tag). So we use with_entities
+            #  to tell SQLAlchemy which columns to select -- it'll transform the
+            #  query so that the SELECT fetches all the Activity columns; but the
+            #  JOIN and GROUP BY remain the same. (Hey hey it's magic.)
+            query = query.with_entities(alchemy_cls, *agg_cols)
             return query
 
         # ***
 
-        def _process_results(records):
-            return self._get_all_process_results_simple(
+        def _gather_process_results(records):
+            return self.query_process_results(
                 records,
                 raw=qt.raw,
-                include_usage=requires_fact_table,
-                requested_usage=qt.include_usage,
+                include_stats=compute_usage,
+                requested_usage=qt.include_stats,
             )
 
         # ***
 
         return _gather_items()
+
+    # ***
+
+    def _gather_query_start_timeless(self, qt, alchemy_cls):
+        # Query on, e.g., AlchemyActivity.
+        query = self.store.session.query(alchemy_cls)
+        return query
+
+    def _gather_query_start_aggregate(self, qt, agg_cols):
+        raise NotImplementedError
+
+    # ***
+
+    def _gather_query_requires_fact(self, qt, compute_usage):
+        requires_fact_table = (
+            compute_usage
+            or qt.since
+            or qt.until
+            or qt.endless
+        )
+        return requires_fact_table
 
     # ***
 
@@ -332,6 +351,7 @@ class BaseAlchemyManager(object):
             elif not since and until:
                 # (lb): Checking AlchemyFact.start <= until is sorta redundant,
                 # because AlchemyFact.end <= until should guarantee that.
+                # - Except maybe for an Active Fact?
                 query = query.filter(
                     or_(
                         func.datetime(AlchemyFact.start) <= until,
@@ -367,35 +387,35 @@ class BaseAlchemyManager(object):
 
     # ***
 
-    def _get_all_filter_by_activities(self, query, activities=[]):
-        filters = []
+    def query_filter_by_activities(self, query, activities=[]):
+        criteria = []
         for activity in activities:
-            item_filter = self._get_all_filter_by_activity(activity)
-            if item_filter is not None:
-                filters.append(item_filter)
-        if filters:
-            query = query.filter(or_(*filters))
+            criterion = self.query_filter_by_activity(activity)
+            if criterion is not None:
+                criteria.append(criterion)
+        if criteria is not None:
+            query = query.filter(or_(*criteria))
         return query
 
-    def _get_all_filter_by_activity(self, activity):
+    def query_filter_by_activity(self, activity):
         if activity is False:
             return None
 
-        item_filter = None
         if activity is not None:
-            activity_name = self._get_all_filter_by_activity_name(activity)
+            activity_name = self.query_filter_by_activity_name(activity)
             if activity_name is None:
-                item_filter = AlchemyActivity.pk == activity.pk
+                criterion = (AlchemyActivity.pk == activity.pk)
             else:
                 # NOTE: Strict name matching, case and exactness.
                 #       Not, say, func.lower(name) == func.lower(...),
                 #       or using sqlalchemy ilike().
-                item_filter = AlchemyActivity.name == activity_name
-        else:  # activity is None.
-            item_filter = AlchemyFact.activity == None  # noqa: E711
-        return item_filter
+                criterion = (AlchemyActivity.name == activity_name)
+        else:
+            # activity is None.
+            criterion = (AlchemyFact.activity == None)  # noqa: E711
+        return criterion
 
-    def _get_all_filter_by_activity_name(self, activity):
+    def query_filter_by_activity_name(self, activity):
         activity_name = None
         try:
             if not activity.pk:
@@ -406,33 +426,36 @@ class BaseAlchemyManager(object):
 
     # ***
 
-    def _get_all_filter_by_categories(self, query, categories=[]):
-        filters = []
+    def query_filter_by_categories(self, query, categories=[]):
+        criteria = []
         for category in categories:
-            item_filter = self._get_all_filter_by_category(category)
-            if item_filter is not None:
-                filters.append(item_filter)
-        if filters:
-            query = query.filter(or_(*filters))
+            criterion = self.query_filter_by_category(category)
+            if criterion is not None:
+                criteria.append(criterion)
+        if criteria is not None:
+            query = query.filter(or_(*criteria))
         return query
 
-    def _get_all_filter_by_category(self, category):
+    def query_filter_by_category(self, category):
         if category is False:
             return None
 
-        item_filter = None
         if category is not None:
-            category_name = self._get_all_filter_by_category_name(category)
+            category_name = self.query_filter_by_category_name(category)
             if category_name is None:
-                item_filter = AlchemyCategory.pk == category.pk
+                criterion = (AlchemyCategory.pk == category.pk)
             else:
-                # NOTE: Strict name matching, case and exactness.
-                item_filter = AlchemyCategory.name == category_name
+                # NOTE: Strict name matching. Case and exactness count.
+                criterion = (AlchemyCategory.name == category_name)
         else:
-            item_filter = AlchemyFact.category == None  # noqa: E711
-        return item_filter
+            # (lb): I tried to avoid delinting using is_, e.g.,
+            #   criterion = (AlchemyActivity.category.is_(None))
+            # but didn't happen:
+            #   *** NotImplementedError: <function is_ at 0x7f75030f0280>
+            criterion = (AlchemyActivity.category == None)  # noqa: E711
+        return criterion
 
-    def _get_all_filter_by_category_name(self, category):
+    def query_filter_by_category_name(self, category):
         category_name = None
         try:
             if not category.pk:
@@ -443,28 +466,30 @@ class BaseAlchemyManager(object):
 
     # ***
 
-    def _get_all_order_by(self, query, sort_cols, sort_orders, *agg_cols):
+    def query_order_by_sort_cols(self, query, sort_cols, sort_orders, *agg_cols):
         for idx, sort_col in enumerate(sort_cols):
             direction = query_sort_order_at_index(sort_orders, idx)
-            query = self.query_apply_order_by(query, sort_col, direction, *agg_cols)
+            query = self.query_order_by_sort_col(query, sort_col, direction, *agg_cols)
         return query
 
-    def query_apply_order_by(
+    def query_order_by_sort_col(
         self,
         query,
         sort_col,
         direction,
         # The following columns are specific to Activity, Category, and Tag
-        # gather calls. The FactManager.gather will override query_apply_order_by
+        # gather() calls. The FactManager.gather overrides query_order_by_sort_col
         # to pass its own specific query columns.
         count_col=None,
         time_col=None,
     ):
+        # Get the 'name' sort column, e.g., 'activity', 'category', or 'tag'.
+        name_col = self._gather_query_order_by_name_col
         return self.query_usage_order_by(
             query,
             sort_col,
             direction,
-            default='tag',
+            name_col=name_col,
             count_col=count_col,
             time_col=time_col,
         )
@@ -474,13 +499,15 @@ class BaseAlchemyManager(object):
         query,
         sort_col,
         direction,
-        default,
+        name_col,
         count_col=None,
         time_col=None,
     ):
-        # Each get_all() method maintains an include_usage that indicates
-        # if AlchemyFact is joined, but we can glean same if the agg_cols,
-        # count_col and time_col, are not None; that'll mean Fact avail, too.
+        # The query builder is responsible for ensuring that columns necessary
+        # for the specified sort are included in the query. So this method can
+        # assume that the necessary table (such as Fact, for order_by_start)
+        # or aggregate columns (such as count_col or time_col) are available
+        # when required for the sort.
         target = None
         check_agg = False
         if sort_col == 'start':
@@ -493,17 +520,17 @@ class BaseAlchemyManager(object):
             check_agg = True
         elif (
             sort_col == 'activity'
-            or (default == 'activity' and (sort_col == 'name' or not sort_col))
+            or (name_col == 'activity' and (sort_col == 'name' or not sort_col))
         ):
             target = AlchemyActivity.name
         elif (
             sort_col == 'category'
-            or (default == 'category' and (sort_col == 'name' or not sort_col))
+            or (name_col == 'category' and (sort_col == 'name' or not sort_col))
         ):
             target = AlchemyCategory.name
         elif (
             sort_col == 'tag'
-            or (default == 'tag' and (sort_col == 'name' or not sort_col))
+            or (name_col == 'tag' and (sort_col == 'name' or not sort_col))
         ):
             target = AlchemyTag.name
 
@@ -529,15 +556,27 @@ class BaseAlchemyManager(object):
 
     # ***
 
-    def _get_all_process_results_simple(
+    def query_prepared_trace(self, query):
+        if self.store.config['dev.catch_errors']:
+            # 2020-05-21: I don't generally like more noise in my tmux dev environment
+            # logger pane, but I do like seeing the query, especially with all the
+            # recent gather() development (improved grouping, sorting, and aggregates).
+            logf = self.store.logger.warn
+        else:
+            logf = self.store.logger.debug
+        logf('Query: {}'.format(str(query)))
+
+    # ***
+
+    def query_process_results(
         self,
         records,
         raw,
-        include_usage,
+        include_stats,
         requested_usage,
     ):
-        def _process_results(records):
-            if not records or not include_usage:
+        def _query_process_results(records):
+            if not records or not include_stats:
                 return _process_records_items_only(records)
             return _process_records_items_and_aggs(records)
 
@@ -556,34 +595,7 @@ class BaseAlchemyManager(object):
                 return [(item.as_hamster(self.store), *cols) for item, *cols in records]
             return [item.as_hamster(self.store) for item, *cols in records]
 
-        return _process_results(records)
-
-    # ***
-
-    def _get_sql_datetime(self, datetm):
-        # Be explicit with the format used by the SQL engine, otherwise,
-        #   e.g., and_(AlchemyFact.start > start) might match where
-        #   AlchemyFact.start == start. In the case of SQLite, the stored
-        #   date will be translated with the seconds, even if 0, e.g.,
-        #   "2018-06-29 16:32:00", but the datetime we use for the compare
-        #   gets translated without, e.g., "2018-06-29 16:32". And we
-        #   all know that "2018-06-29 16:32:00" > "2018-06-29 16:32".
-        # See also: func.datetime(AlchemyFact.start/end).
-        cmp_fmt = '%Y-%m-%d %H:%M:%S'
-        text = datetm.strftime(cmp_fmt)
-        return text
-
-    # ***
-
-    def _log_sql_query(self, query):
-        if self.store.config['dev.catch_errors']:
-            # 2020-05-21: I don't generally like more noise in my tmux dev environment
-            # logger pane, but I do like seeing the query, especially with all the
-            # recent get_all() tweaks (improved grouping, sorting, and aggregates).
-            logf = self.store.logger.warn
-        else:
-            logf = self.store.logger.debug
-        logf('Query: {}'.format(str(query)))
+        return _query_process_results(records)
 
     # ***
 

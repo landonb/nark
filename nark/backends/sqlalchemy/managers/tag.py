@@ -251,215 +251,34 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         return result
 
     # ***
-
-    def get_all(self, *args, include_usage=False, sort_cols=('name',), **kwargs):
-        """
-        Get all tags, with filtering and sorting options.
-
-        Returns:
-            list: List of all Tags present in the database,
-                  ordered by lower(name), or most recently
-                  used; possibly filtered by a search term.
-        """
-        kwargs['include_usage'] = include_usage
-        kwargs['sort_cols'] = sort_cols
-        return super(TagManager, self).get_all(*args, **kwargs)
-
-    def get_all_by_usage(self, *args, sort_cols=('usage',), **kwargs):
-        assert(not args)
-        kwargs['include_usage'] = True
-        kwargs['sort_cols'] = sort_cols
-        return super(TagManager, self).get_all(*args, **kwargs)
-
-    # DRY: This fcn. very much similar between activity/category/tag.
-    # - See FactManager.get_all and ActivityManager.get_all for more
-    #   comments about this method.
-    def _get_all(
-        self,
-        # FIXME/2018-06-20: (lb): Do what with key now?
-        key=None,
-        include_usage=True,
-        count_results=False,
-        since=None,
-        until=None,
-        endless=False,
-        # FIXME/2020-05-09: (lb): I don't see partial ever being True.
-        partial=False,
-        deleted=False,
-        search_term=None,
-        activity=False,
-        category=False,
-        match_activities=[],
-        match_categories=[],
-        sort_cols=[],
-        sort_orders=[],
-        limit=None,
-        offset=None,
-        raw=False,
-    ):
-        """
-        Get all tags, with filtering and sorting options.
-
-        Returns:
-            list: List of all Tags present in the database,
-                  ordered by lower(name), or most recently
-                  used; possibly filtered by a search term.
-        """
-        # If user is requesting sorting according to time, need Fact table.
-        requested_usage = include_usage
-        include_usage = (
-            include_usage
-            or set(sort_cols).intersection(('start', 'usage', 'time'))
-        )
-
-        def _get_all_tags():
-            message = _('usage: {} / term: {} / col: {} / order: {}').format(
-                include_usage, search_term, sort_cols, sort_orders,
-            )
-            self.store.logger.debug(message)
-
-            query, agg_cols = _get_all_start_query()
-
-            query = self.get_all_filter_partial(
-                query, since=since, until=until, endless=endless, partial=partial,
-            )
-
-            query = _get_all_filter_by_activities(query)
-
-            query = _get_all_filter_by_categories(query)
-
-            query = _get_all_filter_by_search_term(query)
-
-            # FIXME/MIGRATIONS: (lb): Add column: Fact.deleted.
-            #  condition = and_(condition, not AlchemyFact.deleted)
-            #  query = query.filter(condition)
-
-            query = _get_all_group_by(query, agg_cols)
-
-            query = self._get_all_order_by(query, sort_cols, sort_orders, *agg_cols)
-
-            query = query_apply_limit_offset(query, limit=limit, offset=offset)
-
-            query = _get_all_with_entities(query, agg_cols)
-
-            self._log_sql_query(query)
-
-            if count_results:
-                results = query.count()
-            else:
-                results = query.all()
-                results = _process_results(results)
-
-            return results
-
-        # ***
-
-        def _get_all_start_query():
-            agg_cols = []
-            if not (include_usage or since or until or endless):
-                query = self.store.session.query(AlchemyTag)
-            else:
-                if include_usage:
-                    count_col = func.count(AlchemyTag.pk).label('uses')
-                    agg_cols.append(count_col)
-                    time_col = func.sum(
-                        func.julianday(AlchemyFact.end)
-                        - func.julianday(AlchemyFact.start)
-                    ).label('span')
-                    agg_cols.append(time_col)
-                    query = self.store.session.query(AlchemyTag, count_col, time_col)
-                query = query.join(
-                    fact_tags, AlchemyTag.pk == fact_tags.columns.tag_id,
-                )
-                query = query.join(AlchemyFact)
-
-            return query, agg_cols
-
-        # ***
-
-        def _get_all_filter_by_activities(query):
-            if activity is False:
-                return query
-
-            query = query.join(AlchemyActivity)
-
-            query = self._get_all_filter_by_activities(
-                query, match_activities + [activity],
-            )
-
-            return query
-
-        def _get_all_filter_by_categories(query):
-            if category is False:
-                return query
-
-            # (lb): This wouldn't double-join Activity, would it?
-            query = query.join(AlchemyActivity).join(AlchemyCategory)
-
-            query = self._get_all_filter_by_categories(
-                query, match_categories + [category],
-            )
-
-            return query
-
-        def _get_all_filter_by_search_term(query):
-            if not search_term:
-                return query
-
-            condits = None
-            for term in search_term:
-                condit = AlchemyTag.name.ilike('%{}%'.format(term))
-                if condits is None:
-                    condits = condit
-                else:
-                    condits = or_(condits, condit)
-
-            query = query.filter(condits)
-            return query
-
-        # ***
-
-        def _get_all_group_by(query, agg_cols):
-            if not agg_cols:
-                return query
-            query = query.group_by(AlchemyTag.pk)
-            return query
-
-        # ***
-
-        def _get_all_with_entities(query, agg_cols):
-            if not agg_cols:
-                return query
-            query = query.with_entities(AlchemyTag, *agg_cols)
-            return query
-
-        # ***
-
-        def _process_results(records):
-            return self._get_all_process_results_simple(
-                records,
-                raw=raw,
-                include_usage=include_usage,
-                requested_usage=requested_usage,
-            )
-
-        # ***
-
-        return _get_all_tags()
-
+    # *** gather() call-outs (used by get_all/get_all_by_usage).
     # ***
 
-    def query_apply_order_by(
-        self, query, sort_col, direction, count_col=None, time_col=None,
-    ):
-        return self.query_usage_order_by(
-            query,
-            sort_col,
-            direction,
-            default='tag',
-            count_col=count_col,
-            time_col=time_col,
+    @property
+    def _gather_query_alchemy_cls(self):
+        return AlchemyTag
+
+    @property
+    def _gather_query_order_by_name_col(self):
+        return 'tag'
+
+    def _gather_query_start_aggregate(self, qt, agg_cols):
+        query = self.store.session.query(AlchemyTag, *agg_cols)
+        query = query.join(
+            fact_tags, AlchemyTag.pk == fact_tags.columns.tag_id,
         )
+        query = query.join(AlchemyFact)
+        return query
+
+    def query_filter_by_activity(self, activity):
+        if activity is not False:
+            query = query.join(AlchemyActivity)
+        return super(TagManager, self).query_filter_by_activity(activity)
+
+    def query_filter_by_category(self, category):
+        if category is not False:
+            query = query.join(AlchemyActivity).join(AlchemyCategory)
+        return super(TagManager, self).query_filter_by_category(category)
 
     # ***
 

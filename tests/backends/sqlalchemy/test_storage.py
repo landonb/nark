@@ -548,13 +548,24 @@ class TestActivityManager():
         assert len(results) == 1
         assert results[0] == activity_without_category
 
-    def test_get_all_with_category(self, alchemy_store, alchemy_activity):
-        """
-        Make sure that activities matching the given alchemy_category are returned.
-        """
-        activity = alchemy_activity.as_hamster(alchemy_store)
-        results = alchemy_store.activities.get_all(category=activity.category)
+    def test_get_all_with_category_named(
+        self, alchemy_store, alchemy_activity, alchemy_activity_factory,
+    ):
+        """Make sure only activity matching the given alchemy_category is returned."""
+        _activity_without_category = alchemy_activity_factory(category=None)
+        results = alchemy_store.activities.get_all(category=alchemy_activity.category)
         assert len(results) == 1
+        assert results[0] == alchemy_activity
+
+    def test_get_all_with_category_both_none_and_named(
+        self, alchemy_store, alchemy_activity, alchemy_activity_factory,
+    ):
+        """Make sure both activities with category name and with none are returned."""
+        _activity_without_category = alchemy_activity_factory(category=None)
+        results = alchemy_store.activities.get_all(
+            match_categories=[None, alchemy_activity.category],
+        )
+        assert len(results) == 2
 
     def test_get_all_with_search_term(self, alchemy_store, alchemy_activity):
         """
