@@ -31,7 +31,8 @@ from nark.tests.conftest import *
 @pytest.yield_fixture
 def controller(base_config):
     """Provide a basic controller."""
-    # [TODO] Parametrize over all available stores.
+    # From hamster-lib: "[TODO] Parametrize over all available stores."
+    # (lb): And yet in dob there's still just the one for SQLite.
     controller = NarkControl(base_config)
     yield controller
     controller.store.cleanup()
@@ -42,10 +43,4 @@ def basestore(base_config):
     """Provide a generic ``storage.BaseStore`` instance using ``baseconfig``."""
     store = BaseStore(base_config)
     return store
-
-
-@pytest.fixture
-def fact_factory():
-    """Return a factory class that generates non-persisting Fact instances."""
-    return factories.FactFactory.build
 

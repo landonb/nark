@@ -40,3 +40,10 @@ register(factories.ActivityFactory)
 register(factories.TagFactory)
 register(factories.FactFactory)
 
+# Note that registering the FactFactory, for example, is essentially:
+#
+#   @pytest.fixture
+#   def fact_factory():
+#       """Return a factory class that generates non-persisting Fact instances."""
+#       return factories.FactFactory.build
+
