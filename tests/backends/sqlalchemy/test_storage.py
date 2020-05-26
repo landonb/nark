@@ -1147,7 +1147,9 @@ class TestFactManager():
         assert str(results[0]) == str(set_of_alchemy_facts[0])
         # etc.
 
-    def test__get_all_no_query_terms_yes_lazy(self, alchemy_store, set_of_alchemy_facts):
+    def test__get_all_no_query_terms_yes_lazy(
+        self, alchemy_store, set_of_alchemy_facts,
+    ):
         """Verify basic FactManager.get_all finds the whole store."""
         assert len(set_of_alchemy_facts) == 5
         # Use lazy_tags=True so Tag.pk are set, and results == ... works.
@@ -1165,7 +1167,9 @@ class TestFactManager():
         results = alchemy_store.facts.get_all(count_results=True)
         assert results == 5
 
-    def test__get_all_include_stats_return_raw(self, alchemy_store, set_of_alchemy_facts):
+    def test__get_all_include_stats_return_raw(
+        self, alchemy_store, set_of_alchemy_facts,
+    ):
         """Verify basic FactManager.get_all finds the whole store."""
         assert len(set_of_alchemy_facts) == 5
         results = alchemy_store.facts.get_all(
