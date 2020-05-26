@@ -439,7 +439,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             #     support as needed (i.e., as users' non-SQLite interests dictate).
             if self.store.config['db.engine'] == 'sqlite':
                 return _get_all_prepare_span_cols_group_span_sqlite(endornow_col)
-            else:
+            else:  # pragma: no cover
                 # See exception thrown by must_support_db_engine_funcs() if not SQLite.
                 assert(False)  # Not reachable.
 

@@ -197,7 +197,7 @@ class FactManager(GatherFactManager):
 
         if invalid_range:
             message = _('Invalid time range for “{!r}”.').format(fact)
-            if fact.start == fact.end:
+            if fact.start == fact.end:  # pragma: no cover
                 assert False  # (lb): Preserved in case we revert == policy.
                 message += _(' The start time cannot be the same as the end time.')
             else:
