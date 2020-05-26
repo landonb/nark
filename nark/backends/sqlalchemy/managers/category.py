@@ -30,6 +30,13 @@ from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 
 
 class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
+    """
+    """
+    def __init__(self, *args, **kwargs):
+        super(CategoryManager, self).__init__(*args, **kwargs)
+
+    # ***
+
     def get_or_create(self, category, raw=False, skip_commit=False):
         """
         Custom version of the default method in order to provide access

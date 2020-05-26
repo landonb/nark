@@ -30,6 +30,13 @@ from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact
 
 
 class ActivityManager(BaseAlchemyManager, BaseActivityManager):
+    """
+    """
+    def __init__(self, *args, **kwargs):
+        super(ActivityManager, self).__init__(*args, **kwargs)
+
+    # ***
+
     def get_or_create(self, activity, raw=False, skip_commit=False):
         """
         Custom version of the default method in order to provide access to

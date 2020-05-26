@@ -36,6 +36,13 @@ from ..objects import (
 
 
 class TagManager(BaseAlchemyManager, BaseTagManager):
+    """
+    """
+    def __init__(self, *args, **kwargs):
+        super(TagManager, self).__init__(*args, **kwargs)
+
+    # ***
+
     def get_or_create(self, tag, raw=False, skip_commit=False):
         """
         Custom version of the default method in order to provide access to
