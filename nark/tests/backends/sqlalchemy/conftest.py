@@ -70,10 +70,10 @@ def implement_transactional_support_fully(engine):
         conn.execute("BEGIN")
 
 
-# (lb): Use 'module' scope so that the Session is only configured once
-# for all tests. (Note: I also tried `scope='session'`, which seemed to
-# work similarly.)
-@pytest.fixture(scope='module')
+# (lb): Use 'session' scope so that the Session is only configured once
+# for all tests. (Note: I also tried `scope='module'`, which seemed to
+# work similarly, but 'session' is the intent, so use that scope.)
+@pytest.fixture(scope='session')
 def alchemy_runner(request):
     """
     Bind an in-memory mock-db to the session object.
