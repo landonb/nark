@@ -172,7 +172,7 @@ class BaseFactManager(BaseManager):
 
     # ***
 
-    def get_all_by_usage(self, query_terms, **kwargs):
+    def get_all_by_usage(self, query_terms=None, **kwargs):
         """
         Similar to get_all(), but include count of Facts that reference each Activity.
         """

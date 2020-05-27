@@ -98,7 +98,7 @@ class BaseAlchemyManager(GatherBaseAlchemyManager):
             query_terms.sort_cols = ('name',)
         return super(BaseAlchemyManager, self).get_all(query_terms, **kwargs)
 
-    def get_all_by_usage(self, query_terms, **kwargs):
+    def get_all_by_usage(self, query_terms=None, **kwargs):
         """Returns matching items from the data store; and stats, if requested.
 
         get_all_by_usage() is an alias to get_all() that prefers to enable

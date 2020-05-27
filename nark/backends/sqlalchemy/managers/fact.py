@@ -374,7 +374,7 @@ class FactManager(GatherFactManager):
 
     # ***
 
-    def get_all_by_usage(self, query_terms, **kwargs):
+    def get_all_by_usage(self, query_terms=None, **kwargs):
         """Raises if called, because base class defines method for non-Fact item."""
         raise NotImplementedError
 
