@@ -104,9 +104,7 @@ class GatherBaseAlchemyManager(object):
 
             query = query_group_by_aggregate(query, agg_cols)
 
-            query = self.query_order_by_sort_cols(
-                query, qt.sort_cols, qt.sort_orders, *agg_cols,
-            )
+            query = self.query_order_by_sort_cols(query, qt, *agg_cols)
 
             query = query_apply_limit_offset(query, qt.limit, qt.offset)
 
@@ -371,15 +369,18 @@ class GatherBaseAlchemyManager(object):
 
     # ***
 
-    def query_order_by_sort_cols(self, query, sort_cols, sort_orders, *agg_cols):
-        for idx, sort_col in enumerate(sort_cols or []):
-            direction = query_sort_order_at_index(sort_orders, idx)
-            query = self.query_order_by_sort_col(query, sort_col, direction, *agg_cols)
+    def query_order_by_sort_cols(self, query, query_terms, *agg_cols):
+        for idx, sort_col in enumerate(query_terms.sort_cols or []):
+            direction = query_sort_order_at_index(query_terms.sort_orders, idx)
+            query = self.query_order_by_sort_col(
+                query, query_terms, sort_col, direction, *agg_cols,
+            )
         return query
 
     def query_order_by_sort_col(
         self,
         query,
+        query_terms,
         sort_col,
         direction,
         # The following columns are specific to Activity, Category, and Tag

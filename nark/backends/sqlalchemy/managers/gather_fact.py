@@ -165,7 +165,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             query = query_group_by_aggregate(query)
 
             query = self.query_order_by_sort_cols(
-                query, qt.sort_cols, qt.sort_orders, span_cols, start_date, tags_subquery,
+                query, qt, span_cols, start_date, tags_subquery,
             )
 
             query = query_apply_limit_offset(query, qt.limit, qt.offset)
@@ -746,6 +746,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
     def query_order_by_sort_col(
         self,
         query,
+        query_terms,
         sort_col,
         direction,
         # The following columns are specific to a Fact gather.
@@ -753,6 +754,8 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
         start_date,
         tags_subquery,
     ):
+        qt = query_terms
+
         if sort_col == 'start' or not sort_col:
             query = self.query_order_by_start(query, direction)
         elif sort_col == 'time':
