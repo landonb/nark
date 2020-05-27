@@ -42,8 +42,7 @@ def endless_fact(fact_factory):
     return fact
 
 
-@pytest.fixture
-def base_config(tmpdir):
+def _base_config(tmpdir):
     """Provide a generic baseline configuration."""
     base_config = {
         'db': {
@@ -75,6 +74,20 @@ def base_config(tmpdir):
     config_root = decorate_config(base_config)
     config = config_root.as_dict()
     return config
+
+
+@pytest.fixture
+def base_config(tmpdir):
+    return _base_config(tmpdir)
+
+
+# 2020-05-27: (lb): tmpdir needed? Not used in _base_config.
+# Also, tmpdir is 'function'-scoped, would never work here.
+# (But see `py.path.local(tempfile.mkdtemp())` workaround
+# used in another session-scoped fixture if you need tmpdir.)
+@pytest.fixture(scope="session")
+def base_config_ro():
+    return _base_config(tmpdir=None)
 
 
 @pytest.fixture
@@ -125,6 +138,13 @@ def start_end_datetimes(start_end_datetimes_from_offset_now):
 
 @pytest.fixture
 def start_datetime():
+    """Provide an arbitrary datetime."""
+    # (lb): Because Freezegun, datetime.now() is datetime.utcnow().
+    return datetime.datetime.utcnow().replace(microsecond=0)
+
+
+@pytest.fixture(scope="session")
+def start_datetime_ro():
     """Provide an arbitrary datetime."""
     # (lb): Because Freezegun, datetime.now() is datetime.utcnow().
     return datetime.datetime.utcnow().replace(microsecond=0)

@@ -94,8 +94,7 @@ def alchemy_runner(request):
     common.Session.configure(bind=engine)
 
 
-@pytest.fixture
-def alchemy_session(request):
+def _alchemy_session(request):
     """
     Create a new session for each test.
 
@@ -147,6 +146,16 @@ def alchemy_session(request):
     return session
 
 
+@pytest.fixture
+def alchemy_session(request):
+    return _alchemy_session(request)
+
+
+@pytest.fixture(scope="session")
+def alchemy_session_ro(request):
+    return _alchemy_session(request)
+
+
 @pytest.fixture(params=[
     fauxfactory.gen_utf8(),
     fauxfactory.gen_alphanumeric(),
@@ -161,8 +170,7 @@ def db_path_parametrized(request, tmpdir):
     return path
 
 
-@pytest.fixture
-def alchemy_config(request, base_config):
+def _alchemy_config(request, base_config):
     """Provide a config that is suitable for sqlalchemy stores."""
     config = copy.deepcopy(base_config)
     # MEH/2020-01-07: (lb): This changes nothing; already the base_config default...
@@ -173,6 +181,17 @@ def alchemy_config(request, base_config):
         'path': ':memory:',
     })
     return config
+
+
+@pytest.fixture
+def alchemy_config(request, base_config):
+    """Provide a config that is suitable for sqlalchemy stores."""
+    return _alchemy_config(request, base_config)
+
+
+@pytest.fixture(scope="session")
+def alchemy_config_ro(request, base_config_ro):
+    return _alchemy_config(request, base_config_ro)
 
 
 @pytest.fixture(
@@ -266,22 +285,7 @@ def alchemy_config_missing_store_config_parametrized(request, alchemy_config):
     return config
 
 
-@pytest.fixture
-@patch('nark.backends.sqlalchemy.storage.create_engine',
-       lambda *args, **kwargs: None)
-@patch('nark.backends.sqlalchemy.objects.metadata.create_all',
-       lambda *args, **kwargs: None)
-@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.db_version',
-       lambda *args, **kwargs: None)
-@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.downgrade',
-       lambda *args, **kwargs: None)
-@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.upgrade',
-       lambda *args, **kwargs: None)
-@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.version_control',
-       lambda *args, **kwargs: None)
-# (lb): 'sqlalchemy_migrate_hotoffthehamster.versioning.api.version'
-#       is more complicated; see with-patch, below.
-def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
+def _alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
     """
     Provide a SQLAlchemyStore that uses our test-session.
 
@@ -306,6 +310,32 @@ def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
         store.standup(alchemy_session)
     return store
 
+
+@pytest.fixture
+@patch('nark.backends.sqlalchemy.storage.create_engine',
+       lambda *args, **kwargs: None)
+@patch('nark.backends.sqlalchemy.objects.metadata.create_all',
+       lambda *args, **kwargs: None)
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.db_version',
+       lambda *args, **kwargs: None)
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.downgrade',
+       lambda *args, **kwargs: None)
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.upgrade',
+       lambda *args, **kwargs: None)
+@patch('sqlalchemy_migrate_hotoffthehamster.versioning.api.version_control',
+       lambda *args, **kwargs: None)
+# (lb): 'sqlalchemy_migrate_hotoffthehamster.versioning.api.version'
+#       is more complicated; see with-patch, below.
+def alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session):
+    return _alchemy_store(request, alchemy_config, alchemy_runner, alchemy_session)
+
+
+@pytest.fixture(scope="session")
+def alchemy_store_ro(request, alchemy_config_ro, alchemy_runner, alchemy_session_ro):
+    return _alchemy_store(request, alchemy_config_ro, alchemy_runner, alchemy_session_ro)
+
+
+# ***
 
 @pytest.fixture
 def alchemy_activity_deleted(alchemy_activity_factory):
@@ -373,6 +403,19 @@ def set_of_alchemy_facts_contiguous(start_datetime, alchemy_fact_factory):
         start_datetime, alchemy_fact_factory, endless=False, contiguous=True,
     )
 
+
+@pytest.fixture(scope="session")
+def set_of_alchemy_facts_ro(start_datetime_ro):
+    # (lb): This confuses me. If pytest-factoryboy `register()` is inherently
+    # 'function'-scoped, how does accessing the factory directly seem to work
+    # just fine?
+    alchemy_fact_factory_ro = factories.AlchemyFactFactory
+    return _set_of_alchemy_facts(
+        start_datetime_ro, alchemy_fact_factory_ro, endless=False,
+    )
+
+
+# ***
 
 # Fallback nark object and factory fixtures. Unless we know how factories
 # interact.
