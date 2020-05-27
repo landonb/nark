@@ -223,7 +223,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             self.store.session.delete(alchemy_activity)
         self.store.session.commit()
         self.store.logger.debug("Deleted: {!r}".format(activity))
-        return True
 
     # ***
 

@@ -200,9 +200,8 @@ class TestActivityManager():
         """Make sure removing an existsing alchemy_activity works as intended."""
         assert alchemy_store.session.query(AlchemyActivity).count() == 1
         activity = alchemy_activity.as_hamster(alchemy_store)
-        result = alchemy_store.activities.remove(activity)
+        alchemy_store.activities.remove(activity)
         assert alchemy_store.session.query(AlchemyActivity).count() == 0
-        assert result is True
 
     def test_remove_no_pk(self, alchemy_store, activity):
         """

@@ -316,7 +316,6 @@ class FactManager(GatherFactManager):
             self.store.session.delete(alchemy_fact)
         self.store.session.commit()
         self.store.logger.debug('Deleted: {!r}'.format(fact))
-        return True
 
     # ***
 

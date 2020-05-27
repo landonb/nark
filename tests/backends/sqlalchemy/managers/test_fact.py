@@ -182,10 +182,9 @@ class TestFactManager():
         count_before = alchemy_store.session.query(AlchemyFact).count()
         tags_before = alchemy_store.session.query(AlchemyTag).count()
         fact = alchemy_fact.as_hamster(alchemy_store)
-        result = alchemy_store.facts.remove(fact, purge=True)
+        alchemy_store.facts.remove(fact, purge=True)
         count_after = alchemy_store.session.query(AlchemyFact).count()
         assert count_after < count_before
-        assert result is True
         assert alchemy_store.session.query(AlchemyFact).get(fact.pk) is None
         assert alchemy_store.session.query(AlchemyTag).count() == tags_before
 
@@ -194,14 +193,14 @@ class TestFactManager():
         fact = alchemy_fact.as_hamster(alchemy_store)
         fact.pk = None
         with pytest.raises(ValueError):
-            result = alchemy_store.facts.remove(fact)
+            alchemy_store.facts.remove(fact)
 
     def test_remove_fails_unknown_pk(self, alchemy_store, alchemy_fact):
         """Ensure remove() raises ValueError when passed Fack with unknown PK."""
         fact = alchemy_fact.as_hamster(alchemy_store)
         fact.pk += 1
         with pytest.raises(KeyError):
-            result = alchemy_store.facts.remove(fact)
+            alchemy_store.facts.remove(fact)
 
     def test_remove_fails_already_deleted(self, alchemy_store, alchemy_fact):
         """Ensure remove() raises ValueError when passed Fack marked deleted."""
@@ -209,7 +208,7 @@ class TestFactManager():
         fact.deleted = True
         alchemy_store.facts.save(fact)
         with pytest.raises(Exception):
-            result = alchemy_store.facts.remove(fact)
+            alchemy_store.facts.remove(fact)
 
     # ***
 

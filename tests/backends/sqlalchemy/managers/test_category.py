@@ -116,8 +116,7 @@ class TestCategoryManager():
         """Make sure passing a valid alchemy_category removes it from the db."""
         alchemy_category = alchemy_category_factory()
         category = alchemy_category.as_hamster(alchemy_store)
-        result = alchemy_store.categories.remove(category)
-        assert result is None
+        alchemy_store.categories.remove(category)
         assert alchemy_store.session.query(AlchemyCategory).get(category.pk) is None
 
     def test_remove_no_pk(self, alchemy_store, alchemy_category_factory):

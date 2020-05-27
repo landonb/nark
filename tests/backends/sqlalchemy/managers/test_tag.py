@@ -104,8 +104,7 @@ class TestTagManager():
     def test_remove(self, alchemy_store, alchemy_tag_factory):
         """Make sure passing a valid alchemy_tag removes it from the db."""
         tag = alchemy_tag_factory().as_hamster(alchemy_store)
-        result = alchemy_store.tags.remove(tag)
-        assert result is None
+        alchemy_store.tags.remove(tag)
         assert alchemy_store.session.query(AlchemyTag).get(tag.pk) is None
 
     def test_remove_no_pk(self, alchemy_store, alchemy_tag_factory):
