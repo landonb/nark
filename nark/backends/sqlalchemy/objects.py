@@ -127,7 +127,9 @@ class AlchemyActivity(Activity):
         if not activity_name:
             if self.deleted:
                 activity_name = '<unnamed>'
-                store.logger.warn(_('Activity in database has no name: {}').format(self))
+                store.logger.warning(
+                    _('Activity in database has no name: {}').format(self),
+                )
             # else, let Activity() raise ValueError; at least for now.
             # MAYBE: else, if this is an issue, add a migration option to
             #              fix nameless activities. Or something.

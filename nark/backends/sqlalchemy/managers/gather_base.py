@@ -441,9 +441,9 @@ class GatherBaseAlchemyManager(object):
             target = AlchemyTag.name
 
         if check_agg and target is None:
-            self.store.logger.warn("Invalid sort_col: {}".format(sort_col))
+            self.store.logger.warning("Invalid sort_col: {}".format(sort_col))
         elif target is None:
-            self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
+            self.store.logger.warning("Unknown sort_col: {}".format(sort_col))
         else:
             query = query.order_by(direction(target))
         return query
@@ -467,7 +467,7 @@ class GatherBaseAlchemyManager(object):
             # 2020-05-21: I don't generally like more noise in my tmux dev environment
             # logger pane, but I do like seeing the query, especially with all the
             # recent gather() development (improved grouping, sorting, and aggregates).
-            logf = self.store.logger.warn
+            logf = self.store.logger.warning
         else:
             logf = self.store.logger.debug
         logf('Query: {}'.format(str(query)))
