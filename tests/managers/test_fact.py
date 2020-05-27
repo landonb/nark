@@ -33,7 +33,7 @@ class TestFactManager:
         active fact') triggers the correct method.
         """
         magic_fact = {}
-        basestore.facts._add = mocker.MagicMock(return_value=magic_fact)
+        mocker.patch.object(basestore.facts, '_add', return_value=magic_fact)
         fact.end = None
         new_fact = basestore.facts.save(fact)
         assert basestore.facts._add.called
@@ -92,7 +92,7 @@ class TestFactManager:
         self, basestore, mocker, since, until, filter_term, expectation,
     ):
         """Test that time conversion matches expectations."""
-        basestore.facts.gather = mocker.MagicMock()
+        mocker.patch.object(basestore.facts, 'gather', )
         query_terms = QueryTerms(since=since, until=until, search_term=filter_term)
         # MAYBE/2020-05-25: (lb): I don't quite like that get_all mutates query_terms.
         basestore.facts.get_all(query_terms)
@@ -140,7 +140,7 @@ class TestFactManager:
     @freeze_time('2015-10-03 14:45')
     def test_get_today(self, basestore, mocker):
         """Make sure that method uses appropriate timeframe."""
-        basestore.facts.get_all = mocker.MagicMock(return_value=[])
+        mocker.patch.object(basestore.facts, 'get_all', return_value=[])
         results = basestore.facts.get_today()
         assert results == []
         assert (
@@ -208,8 +208,8 @@ class TestFactManager:
         else:
             # NOTE: Because freeze_time, datetime.now() === datetime.utcnow().
             expected_end = datetime.datetime.now().replace(microsecond=0)
-        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
-        basestore.facts._add = mocker.MagicMock()
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
+        mocker.patch.object(basestore.facts, '_add', )
         basestore.facts.stop_current_fact(hint)
         assert basestore.facts.endless.called
         assert basestore.facts._add.called
@@ -230,8 +230,8 @@ class TestFactManager:
         """
         # Set start to the freeze_time time, above.
         endless_fact.start = datetime.datetime.now()
-        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
-        basestore.facts._add = mocker.MagicMock()
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
+        mocker.patch.object(basestore.facts, '_add', )
         with pytest.raises(ValueError):
             basestore.facts.stop_current_fact(hint)
         assert basestore.facts.endless.called
@@ -244,7 +244,7 @@ class TestFactManager:
         Make sure that stopping with an offset hint that results in end > start
         raises an error.
         """
-        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
         now = datetime.datetime.now().replace(microsecond=0)
         offset = (now - endless_fact.start).total_seconds() + 100
         offset = datetime.timedelta(seconds=-1 * offset)
@@ -258,7 +258,7 @@ class TestFactManager:
         Make sure that stopping with a datetime hint that results in end > start
         raises an error.
         """
-        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
         with pytest.raises(ValueError):
             basestore.facts.stop_current_fact(
                 endless_fact.start - datetime.timedelta(minutes=30),
@@ -268,7 +268,7 @@ class TestFactManager:
         self, basestore, endless_fact, mocker,
     ):
         """Make sure that passing an invalid hint type raises an error."""
-        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
         with pytest.raises(TypeError):
             basestore.facts.stop_current_fact(str())
 
@@ -277,7 +277,7 @@ class TestFactManager:
         Make sure that trying to call stop when there is no 'endless fact'
         raises an error.
         """
-        basestore.facts.endless = mocker.MagicMock(return_value=[])
+        mocker.patch.object(basestore.facts, 'endless', return_value=[])
         with pytest.raises(KeyError):
             basestore.facts.stop_current_fact()
             # KeyError: 'No ongoing Fact found.'
@@ -286,21 +286,21 @@ class TestFactManager:
         self, basestore, endless_fact, fact, mocker,
     ):
         """Make sure we return the 'ongoing_fact'."""
-        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
         fact = basestore.facts.endless()
         assert fact == fact
         assert fact is fact
 
     def test_get_endless_fact_without_ongoing_fact(self, basestore, mocker):
         """Make sure that we raise a KeyError if there is no 'ongoing fact'."""
-        basestore.facts.endless = mocker.MagicMock(return_value=[])
+        mocker.patch.object(basestore.facts, 'endless', return_value=[])
         fact = basestore.facts.endless()
         assert fact == []
 
     def test_cancel_current_fact(self, basestore, endless_fact, fact, mocker):
         """Make sure we return the 'ongoing_fact'."""
-        basestore.facts.endless = mocker.MagicMock(return_value=[endless_fact])
-        basestore.facts.remove = mocker.MagicMock()
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
+        mocker.patch.object(basestore.facts, 'remove', )
         result = basestore.facts.cancel_current_fact()
         assert basestore.facts.endless.called
         assert basestore.facts.remove.called
@@ -309,7 +309,7 @@ class TestFactManager:
 
     def test_cancel_current_fact_without_endless_fact(self, basestore, mocker):
         """Make sure that we raise a KeyError if there is no 'ongoing fact'."""
-        basestore.facts.endless = mocker.MagicMock(return_value=[])
+        mocker.patch.object(basestore.facts, 'endless', return_value=[])
         with pytest.raises(KeyError):
             basestore.facts.cancel_current_fact()
         assert basestore.facts.endless.called

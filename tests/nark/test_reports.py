@@ -79,8 +79,8 @@ class TestReportWriter(object):
         """Make sure that each ``Fact`` instances triggers a new line."""
         number_of_facts = 10
         facts = list_of_facts(number_of_facts)
-        report_writer._write_fact = mocker.MagicMock(return_value=None)
-        report_writer._fact_to_tuple = mocker.MagicMock(return_value=None)
+        mocker.patch.object(report_writer, '_write_fact', return_value=None)
+        mocker.patch.object(report_writer, '_fact_to_tuple', return_value=None)
         report_writer.write_report(facts)
         assert report_writer._write_fact.call_count == number_of_facts
 
@@ -187,7 +187,7 @@ class TestICALWriter(object):
     def test_write_fact(self, ical_writer, fact, mocker):
         """Make sure that the fact attached to the calendar matches our expectations."""
         fact_tuple = ical_writer._fact_to_tuple(fact)
-        ical_writer.calendar.add_component = mocker.MagicMock()
+        mocker.patch.object(ical_writer.calendar, 'add_component')
         ical_writer._write_fact(fact_tuple)
         result = ical_writer.calendar.add_component.call_args[0][0]
         assert result.get('dtstart').dt == fact_tuple.start
@@ -235,7 +235,7 @@ class TestXMLWriter(object):
     def test_write_fact(self, xml_writer, fact, mocker):
         """Make sure that the attributes attached to the fact matche our expectations."""
         fact_tuple = xml_writer._fact_to_tuple(fact)
-        xml_writer.fact_list.appendChild = mocker.MagicMock()
+        mocker.patch.object(xml_writer.fact_list, 'appendChild')
         xml_writer._write_fact(fact_tuple)
         result = xml_writer.fact_list.appendChild.call_args[0][0]
         assert result.getAttribute('start') == fact_tuple.start

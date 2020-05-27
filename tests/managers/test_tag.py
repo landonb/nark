@@ -47,7 +47,7 @@ class TestTagManager():
 
     def test_save_new(self, basestore, tag, mocker):
         """Make sure that saving an new tag calls ``__add``."""
-        basestore.tags._add = mocker.MagicMock(return_value=tag)
+        mocker.patch.object(basestore.tags, '_add', return_value=tag)
         try:
             basestore.tags.save(tag)
         except NotImplementedError:
@@ -56,7 +56,7 @@ class TestTagManager():
 
     def test_save_existing(self, basestore, tag, mocker):
         tag.pk = 0
-        basestore.tags._update = mocker.MagicMock(return_value=tag)
+        mocker.patch.object(basestore.tags, '_update', return_value=tag)
         try:
             basestore.tags.save(tag)
         except NotImplementedError:
@@ -65,8 +65,8 @@ class TestTagManager():
 
     def test_get_or_create_existing(self, basestore, tag, mocker):
         """Make sure the tag is beeing looked up and no new one is created."""
-        basestore.tags.get_by_name = mocker.MagicMock(return_value=tag)
-        basestore.tags._add = mocker.MagicMock(return_value=tag)
+        mocker.patch.object(basestore.tags, 'get_by_name', return_value=tag)
+        mocker.patch.object(basestore.tags, '_add', return_value=tag)
         try:
             basestore.tags.get_or_create(tag.name)
         except NotImplementedError:
@@ -76,8 +76,8 @@ class TestTagManager():
 
     def test_get_or_create_new_tag(self, basestore, tag, mocker):
         """Make sure the tag is beeing looked up and new one is created."""
-        basestore.tags._add = mocker.MagicMock(return_value=tag)
-        basestore.tags.get_by_name = mocker.MagicMock(side_effect=KeyError)
+        mocker.patch.object(basestore.tags, '_add', return_value=tag)
+        mocker.patch.object(basestore.tags, 'get_by_name', side_effect=KeyError)
         try:
             basestore.tags.get_or_create(tag.name)
         except NotImplementedError:

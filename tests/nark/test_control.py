@@ -45,7 +45,7 @@ class TestController:
 
     def test_update_config(self, controller, base_config, mocker):
         """Make sure we assign new config and get a new store."""
-        controller._get_store = mocker.MagicMock()
+        mocker.patch.object(controller, '_get_store')
         controller.update_config(base_config)
         assert controller.config.as_dict() == base_config
         assert controller._get_store.called

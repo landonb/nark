@@ -47,7 +47,7 @@ class TestCategoryManager():
 
     def test_save_new(self, basestore, category, mocker):
         """Make sure that saving an new category calls ``__add``."""
-        basestore.categories._add = mocker.MagicMock(return_value=category)
+        mocker.patch.object(basestore.categories, '_add', return_value=category)
         try:
             basestore.categories.save(category)
         except NotImplementedError:
@@ -56,7 +56,7 @@ class TestCategoryManager():
 
     def test_save_existing(self, basestore, category, mocker):
         category.pk = 0
-        basestore.categories._update = mocker.MagicMock(return_value=category)
+        mocker.patch.object(basestore.categories, '_update', return_value=category)
         try:
             basestore.categories.save(category)
         except NotImplementedError:
@@ -65,8 +65,8 @@ class TestCategoryManager():
 
     def test_get_or_create_existing(self, basestore, category, mocker):
         """Make sure the category is beeing looked up and no new one is created."""
-        basestore.categories.get_by_name = mocker.MagicMock(return_value=category)
-        basestore.categories._add = mocker.MagicMock(return_value=category)
+        mocker.patch.object(basestore.categories, 'get_by_name', return_value=category)
+        mocker.patch.object(basestore.categories, '_add', return_value=category)
         try:
             basestore.categories.get_or_create(category.name)
         except NotImplementedError:
@@ -76,8 +76,8 @@ class TestCategoryManager():
 
     def test_get_or_create_new_category(self, basestore, category, mocker):
         """Make sure the category is beeing looked up and new one is created."""
-        basestore.categories._add = mocker.MagicMock(return_value=category)
-        basestore.categories.get_by_name = mocker.MagicMock(side_effect=KeyError)
+        mocker.patch.object(basestore.categories, '_add', return_value=category)
+        mocker.patch.object(basestore.categories, 'get_by_name', side_effect=KeyError)
         try:
             basestore.categories.get_or_create(category.name)
         except NotImplementedError:
