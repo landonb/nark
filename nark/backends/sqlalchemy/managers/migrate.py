@@ -23,6 +23,8 @@ import lazy_import
 from ....helpers.legacy_db import upgrade_legacy_db_hamster_applet
 from ....managers.migrate import BaseMigrationsManager
 
+from nark.backends.sqlalchemy import objects
+
 # Profiling: Loading `migrate` takes ~ 0.090 seconds.
 migrate_exceptions = lazy_import.lazy_module(
     'sqlalchemy_migrate_hotoffthehamster.exceptions'
@@ -50,11 +52,36 @@ class MigrationsManager(BaseMigrationsManager):
 
     # ***
 
-    def control(self, version=None):
+    # - Prefer using an existing SQLAlchemy Engine, rather than opening the URL.
+    # - The migrate class accepts either a database URL, or an existing Engine
+    #   object. Given a path, the migrate_versioning package will just open a
+    #   new connection to the URL, which works fine for files on disk or actual
+    #   URLs on the net. But for tests, especially those run via CliRunner where
+    #   it's more difficult to mock or otherwise skip normal initialization code,
+    #   use the existing Engine object.
+    #   - This supports using an SQLite store in :memory:, for which there is no
+    #     other way to connect to the same database other than through the Engine
+    #     ((lb): At least, not that I know of; and makes sense there wouldn't be).
+    # - Note that using CliRunner poses a challenge with passing variables, and
+    #   test variables that need to be applied to the Click code under test
+    #   generally need to be applied using a MagicMock or a PropertyMock. However,
+    #   the Engine is already always available at a global location (at least the
+    #   way we've got our code wired, which follows convention), so rather than
+    #   mock it in, we just always look for the existing Engine, even in production.
+    #   - The SQLAlchemy Engine object is stashed at objects.metadata.bind, and is
+    #     meant to be "held globally for the lifetime of a single application...."
+    #       https://docs.sqlalchemy.org/en/13/core/connections.html
+    @property
+    def engine_or_url(self):
+        return objects.metadata.bind or self.store.db_url
+
+    # ***
+
+    def control(self, version=None, engine=None):
         """Mark a database as under version control."""
         current_ver = self.version()
         if current_ver is None:
-            url = self.store.db_url
+            url = self.engine_or_url
             try:
                 migrate_versioning_api.version_control(
                     url, self.basepath, version=version, config=self.config,
@@ -80,7 +107,7 @@ class MigrationsManager(BaseMigrationsManager):
         assert current_ver <= latest_ver
         if current_ver > 0:
             next_version = current_ver - 1
-            url = self.store.db_url
+            url = self.engine_or_url
             migrate_versioning_api.downgrade(
                 url, self.basepath, version=next_version, config=self.config,
             )
@@ -101,7 +128,7 @@ class MigrationsManager(BaseMigrationsManager):
         assert current_ver <= latest_ver
         if current_ver < latest_ver:
             next_version = current_ver + 1
-            url = self.store.db_url
+            url = self.engine_or_url
             migrate_versioning_api.upgrade(
                 url, self.basepath, version=next_version, config=self.config,
             )
@@ -111,7 +138,7 @@ class MigrationsManager(BaseMigrationsManager):
 
     def version(self):
         """Returns the current migration of the active database."""
-        url = self.store.db_url
+        url = self.engine_or_url
         try:
             return migrate_versioning_api.db_version(
                 url, self.basepath, config=self.config,
