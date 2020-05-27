@@ -164,8 +164,9 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
 
             query = query_group_by_aggregate(query)
 
+            has_facts = True
             query = self.query_order_by_sort_cols(
-                query, qt, span_cols, start_date, tags_subquery,
+                query, qt, has_facts, span_cols, start_date, tags_subquery,
             )
 
             query = query_apply_limit_offset(query, qt.limit, qt.offset)

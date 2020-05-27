@@ -104,7 +104,8 @@ class GatherBaseAlchemyManager(object):
 
             query = query_group_by_aggregate(query, agg_cols)
 
-            query = self.query_order_by_sort_cols(query, qt, *agg_cols)
+            has_facts = requires_fact_table
+            query = self.query_order_by_sort_cols(query, qt, has_facts, *agg_cols)
 
             query = query_apply_limit_offset(query, qt.limit, qt.offset)
 
@@ -369,11 +370,11 @@ class GatherBaseAlchemyManager(object):
 
     # ***
 
-    def query_order_by_sort_cols(self, query, query_terms, *agg_cols):
+    def query_order_by_sort_cols(self, query, query_terms, has_facts, *agg_cols):
         for idx, sort_col in enumerate(query_terms.sort_cols or []):
             direction = query_sort_order_at_index(query_terms.sort_orders, idx)
             query = self.query_order_by_sort_col(
-                query, query_terms, sort_col, direction, *agg_cols,
+                query, query_terms, sort_col, direction, has_facts, *agg_cols,
             )
         return query
 
@@ -383,6 +384,7 @@ class GatherBaseAlchemyManager(object):
         query_terms,
         sort_col,
         direction,
+        has_facts,
         # The following columns are specific to Activity, Category, and Tag
         # gather() calls. The FactManager.gather overrides query_order_by_sort_col
         # to pass its own specific query columns.
@@ -395,6 +397,7 @@ class GatherBaseAlchemyManager(object):
             query,
             sort_col,
             direction,
+            has_facts,
             name_col=name_col,
             count_col=count_col,
             time_col=time_col,
@@ -405,6 +408,7 @@ class GatherBaseAlchemyManager(object):
         query,
         sort_col,
         direction,
+        has_facts,
         name_col,
         count_col=None,
         time_col=None,
@@ -414,50 +418,59 @@ class GatherBaseAlchemyManager(object):
         # assume that the necessary table (such as Fact, for order_by_start)
         # or aggregate columns (such as count_col or time_col) are available
         # when required for the sort.
-        target = None
+        order_cols = []
         check_agg = False
         if sort_col == 'start':
-            query = self.query_order_by_start(query, direction)
+            if has_facts:
+                order_cols = self.cols_order_by_start(query)
+            else:
+                # Print a warning.
+                check_agg = True
         elif sort_col == 'usage':
-            target = count_col
+            order_cols = [count_col]
             check_agg = True
         elif sort_col == 'time':
-            target = time_col
+            order_cols = [time_col]
             check_agg = True
         elif (
             sort_col == 'activity'
             or (name_col == 'activity' and (sort_col == 'name' or not sort_col))
         ):
-            target = AlchemyActivity.name
+            order_cols = [AlchemyActivity.name]
         elif (
             sort_col == 'category'
             or (name_col == 'category' and (sort_col == 'name' or not sort_col))
         ):
-            target = AlchemyCategory.name
+            order_cols = [AlchemyCategory.name]
         elif (
             sort_col == 'tag'
             or (name_col == 'tag' and (sort_col == 'name' or not sort_col))
         ):
-            target = AlchemyTag.name
+            order_cols = [AlchemyTag.name]
 
-        if check_agg and target is None:
+        if not order_cols and check_agg:
             self.store.logger.warning("Invalid sort_col: {}".format(sort_col))
-        elif target is None:
+        elif not order_cols:
             self.store.logger.warning("Unknown sort_col: {}".format(sort_col))
         else:
-            query = query.order_by(direction(target))
+            query = self.query_order_by_cols(query, direction, order_cols)
         return query
 
     # ***
 
-    def query_order_by_start(self, query, direction):
+    def cols_order_by_start(self, query):
         # Include end so that momentaneous Facts are sorted properly.
         # - And add PK, too, so momentaneous Facts are sorted predictably.
-        query = query.order_by(
-            direction(AlchemyFact.start),
-            direction(AlchemyFact.end),
-            direction(AlchemyFact.pk),
-        )
+        return [AlchemyFact.start, AlchemyFact.end, AlchemyFact.pk]
+
+    def query_order_by_start(self, query, direction):
+        order_cols = self.cols_order_by_start(query)
+        query = self.query_order_by_cols(query, direction, order_cols)
+        return query
+
+    def query_order_by_cols(self, query, direction, order_cols):
+        directional_cols = [direction(col) for col in order_cols]
+        query = query.order_by(*directional_cols)
         return query
 
     # ***
