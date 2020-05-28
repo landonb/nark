@@ -181,17 +181,17 @@ class BaseTagManager(BaseManager):
 
     # ***
 
-    def gather(self, query_terms):
+    def get_all_by_usage(self, query_terms=None, **kwargs):
         """
-        Return a list of ``Tags`` matching given criteria.
+        Similar to get_all(), but include count of Facts that reference each Tag.
         """
         raise NotImplementedError
 
     # ***
 
-    def get_all_by_usage(self, query_terms=None, **kwargs):
+    def gather(self, query_terms):
         """
-        Similar to get_all(), but include count of Facts that reference each Tag.
+        Return a list of ``Tags`` matching given criteria.
         """
         raise NotImplementedError
 

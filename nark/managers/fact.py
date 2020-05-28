@@ -164,17 +164,17 @@ class BaseFactManager(BaseManager):
 
     # ***
 
-    def gather(self, query_terms):
+    def get_all_by_usage(self, query_terms=None, **kwargs):
         """
-        Return a list of ``Facts`` matching given criteria.
+        Similar to get_all(), but include count of Facts that reference each Activity.
         """
         raise NotImplementedError
 
     # ***
 
-    def get_all_by_usage(self, query_terms=None, **kwargs):
+    def gather(self, query_terms):
         """
-        Similar to get_all(), but include count of Facts that reference each Activity.
+        Return a list of ``Facts`` matching given criteria.
         """
         raise NotImplementedError
 
