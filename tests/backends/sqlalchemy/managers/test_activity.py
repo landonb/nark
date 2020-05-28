@@ -337,10 +337,15 @@ class TestActivityManager():
         """
         Make sure that activities matching the given term ass name are returned.
         """
-        activity = alchemy_activity.as_hamster(alchemy_store)
+        # (lb): This test previously hydrated the AlchemyActivity into a proper
+        # Activity, but it passes fine without. So not sure if I'm missing
+        # something, but we can skip this step:
+        #   activity = alchemy_activity.as_hamster(alchemy_store)
+        # (and could probably do the same elsewhere in this file, but not
+        # really worth the time -- just something I wanted to note).
         results = alchemy_store.activities.get_all(
-            category=activity.category,
-            search_term=activity.name,
+            category=alchemy_activity.category,
+            search_term=alchemy_activity.name,
         )
         assert len(results) == 1
 
@@ -348,7 +353,7 @@ class TestActivityManager():
         """
         Make sure that activities matching the given alchemy_category are returned.
         """
-        activity = alchemy_activity.as_hamster(alchemy_store)
         results = alchemy_store.activities.get_all(category='miss')
         assert len(results) == 0
+        assert alchemy_activity == alchemy_store.activities.get_all()[0]
 
