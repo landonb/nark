@@ -64,6 +64,10 @@ class TestFactManager:
 
     def test_get_all_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
+            # Note that BaseManager.get_all actually *is* implemented, but
+            # it calls self.gather(), which won't be implemented in basestore.
+            # So this runs a little code (checking for and converting the 'since'
+            # and 'until' arguments to datetime objects) before the raise.
             basestore.facts.get_all()
 
     def test_get_all_by_usage_not_implemented(self, basestore):
@@ -73,6 +77,12 @@ class TestFactManager:
     def test_gather_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts.gather(query_terms=None)
+
+    # *** get_all since/until argument tests.
+
+    # (lb): I think these were from old hamster-lib where it made more sense
+    # for these to be complicated. The code has been refactored so much that
+    # these tests do a lot of work for not much code or unique branch coverage.
 
     @pytest.mark.parametrize(('since', 'until', 'filter_term', 'expectation'), [
         (None, None, '', {
@@ -149,6 +159,8 @@ class TestFactManager:
         with pytest.raises(ValueError):
             basestore.facts.get_all(since=since, until=until)
 
+    # ***
+
     @freeze_time('2015-10-03 14:45')
     def test_get_today(self, basestore, mocker):
         """Make sure that method uses appropriate timeframe."""
@@ -161,6 +173,8 @@ class TestFactManager:
                 'until': datetime.datetime(2015, 10, 4, 5, 29, 59),
             }
         )
+
+    # *** stop_current_fact tests.
 
     @freeze_time('2019-02-01 18:00')
     @pytest.mark.parametrize('hint', (
@@ -290,6 +304,11 @@ class TestFactManager:
             basestore.facts.stop_current_fact()
             # KeyError: 'No ongoing Fact found.'
 
+    # ***
+
+    # Note that get_current_fact() gets tested by way of stop_current_fact()
+    # as well as find_latest_fact().
+
     def test_get_endless_fact_with_ongoing_fact(
         self, basestore, endless_fact, fact, mocker,
     ):
@@ -321,4 +340,34 @@ class TestFactManager:
         with pytest.raises(KeyError):
             basestore.facts.cancel_current_fact()
         assert basestore.facts.endless.called
+
+    # ***
+
+    def test_starting_at_not_implemented(self, basestore, fact):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.starting_at(fact)
+
+    def test_ending_at_not_implemented(self, basestore, fact):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.ending_at(fact)
+
+    def test_antecedent_not_implemented(self, basestore, fact):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.antecedent()
+
+    def test_subsequent_not_implemented(self, basestore, fact):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.subsequent()
+
+    def test_strictly_during_not_implemented(self, basestore, fact):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.strictly_during(start=None, end=None)
+
+    def test_surrounding_not_implemented(self, basestore, fact):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.surrounding(fact_time=None)
+
+    def test_endless_not_implemented(self, basestore, fact):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.endless()
 
