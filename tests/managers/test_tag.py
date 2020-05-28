@@ -21,30 +21,6 @@ import pytest
 
 
 class TestTagManager():
-    def test_add(self, basestore, tag):
-        with pytest.raises(NotImplementedError):
-            basestore.tags._add(tag)
-
-    def test_update(self, basestore, tag):
-        with pytest.raises(NotImplementedError):
-            basestore.tags._update(tag)
-
-    def test_remove(self, basestore, tag):
-        with pytest.raises(NotImplementedError):
-            basestore.tags.remove(tag)
-
-    def test_get_invalid_pk(self, basestore):
-        with pytest.raises(NotImplementedError):
-            basestore.tags.get(12)
-
-    def test_get_invalid_pk_type(self, basestore):
-        with pytest.raises(NotImplementedError):
-            basestore.tags.get_by_name('fooo')
-
-    def test_save_wrong_type(self, basestore, tag):
-        with pytest.raises(TypeError):
-            basestore.tags.save([])
-
     def test_save_new(self, basestore, tag, mocker):
         """Make sure that saving an new tag calls ``__add``."""
         mocker.patch.object(basestore.tags, '_add', return_value=tag)
@@ -62,6 +38,10 @@ class TestTagManager():
         except NotImplementedError:
             pass
         assert basestore.tags._update.called
+
+    def test_save_wrong_type(self, basestore, tag):
+        with pytest.raises(TypeError):
+            basestore.tags.save([])
 
     def test_get_or_create_existing(self, basestore, tag, mocker):
         """Make sure the tag is beeing looked up and no new one is created."""
@@ -85,7 +65,35 @@ class TestTagManager():
         assert basestore.tags.get_by_name.called
         assert basestore.tags._add.called
 
-    def test_get_all(self, basestore):
+    def test_add_not_implemented(self, basestore, tag):
+        with pytest.raises(NotImplementedError):
+            basestore.tags._add(tag)
+
+    def test_update_not_implemented(self, basestore, tag):
+        with pytest.raises(NotImplementedError):
+            basestore.tags._update(tag)
+
+    def test_remove_not_implemented(self, basestore, tag):
+        with pytest.raises(NotImplementedError):
+            basestore.tags.remove(tag)
+
+    def test_get_not_implemented_invalid_pk(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.tags.get(12)
+
+    def test_get_not_implemented_invalid_pk_type(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.tags.get_by_name('fooo')
+
+    def test_get_all_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.tags.get_all()
+
+    def test_get_all_by_usage_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.tags.get_all_by_usage()
+
+    def test_gather_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.tags.gather(query_terms=None)
 

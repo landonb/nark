@@ -21,30 +21,6 @@ import pytest
 
 
 class TestCategoryManager():
-    def test_add(self, basestore, category):
-        with pytest.raises(NotImplementedError):
-            basestore.categories._add(category)
-
-    def test_update(self, basestore, category):
-        with pytest.raises(NotImplementedError):
-            basestore.categories._update(category)
-
-    def test_remove(self, basestore, category):
-        with pytest.raises(NotImplementedError):
-            basestore.categories.remove(category)
-
-    def test_get_invalid_pk(self, basestore):
-        with pytest.raises(NotImplementedError):
-            basestore.categories.get(12)
-
-    def test_get_invalid_pk_type(self, basestore):
-        with pytest.raises(NotImplementedError):
-            basestore.categories.get_by_name('fooo')
-
-    def test_save_wrong_type(self, basestore, category):
-        with pytest.raises(TypeError):
-            basestore.categories.save([])
-
     def test_save_new(self, basestore, category, mocker):
         """Make sure that saving an new category calls ``__add``."""
         mocker.patch.object(basestore.categories, '_add', return_value=category)
@@ -62,6 +38,10 @@ class TestCategoryManager():
         except NotImplementedError:
             pass
         assert basestore.categories._update.called
+
+    def test_save_wrong_type(self, basestore, category):
+        with pytest.raises(TypeError):
+            basestore.categories.save([])
 
     def test_get_or_create_existing(self, basestore, category, mocker):
         """Make sure the category is beeing looked up and no new one is created."""
@@ -85,7 +65,35 @@ class TestCategoryManager():
         assert basestore.categories.get_by_name.called
         assert basestore.categories._add.called
 
-    def test_get_all(self, basestore):
+    def test_add_not_implemented(self, basestore, category):
+        with pytest.raises(NotImplementedError):
+            basestore.categories._add(category)
+
+    def test_update_not_implemented(self, basestore, category):
+        with pytest.raises(NotImplementedError):
+            basestore.categories._update(category)
+
+    def test_remove_not_implemented(self, basestore, category):
+        with pytest.raises(NotImplementedError):
+            basestore.categories.remove(category)
+
+    def test_get_not_implemented_invalid_pk(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.categories.get(12)
+
+    def test_get_not_implemented_invalid_pk_type(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.categories.get_by_name('fooo')
+
+    def test_get_all_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.categories.get_all()
+
+    def test_get_all_by_usage_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.categories.get_all_by_usage()
+
+    def test_gather_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.categories.gather(query_terms=None)
 

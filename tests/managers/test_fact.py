@@ -27,7 +27,7 @@ from nark.managers.query_terms import QueryTerms
 # ***
 
 class TestFactManager:
-    def test_save_endless_fact(self, basestore, fact, mocker):
+    def test_save_fact_endless_active(self, basestore, fact, mocker):
         """
         Make sure that passing a fact without end (aka 'endless, ongoing,
         active fact') triggers the correct method.
@@ -39,28 +39,40 @@ class TestFactManager:
         assert basestore.facts._add.called
         assert new_fact is magic_fact
 
-    def test_save_to_brief_fact(self, basestore, fact):
+    def test_save_fact_too_brief_value_error(self, basestore, fact):
         """Ensure that a fact with too small of a time delta raises an exception."""
         delta = datetime.timedelta(seconds=(basestore.config['time.fact_min_delta'] - 1))
         fact.end = fact.start + delta
         with pytest.raises(ValueError):
             basestore.facts.save(fact)
 
-    def test_add(self, basestore, fact):
+    def test_add_not_implemented(self, basestore, fact):
         with pytest.raises(NotImplementedError):
             basestore.facts._add(fact)
 
-    def test_update(self, basestore, fact):
+    def test_update_not_implemented(self, basestore, fact):
         with pytest.raises(NotImplementedError):
             basestore.facts._update(fact)
 
-    def test_remove(self, basestore, fact):
+    def test_remove_not_implemented(self, basestore, fact):
         with pytest.raises(NotImplementedError):
             basestore.facts.remove(fact)
 
-    def test_get(self, basestore):
+    def test_get_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts.get(12)
+
+    def test_get_all_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.get_all()
+
+    def test_get_all_by_usage_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.get_all_by_usage()
+
+    def test_gather_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.facts.gather(query_terms=None)
 
     @pytest.mark.parametrize(('since', 'until', 'filter_term', 'expectation'), [
         (None, None, '', {
@@ -149,10 +161,6 @@ class TestFactManager:
                 'until': datetime.datetime(2015, 10, 4, 5, 29, 59),
             }
         )
-
-    def test__get_all(self, basestore):
-        with pytest.raises(NotImplementedError):
-            basestore.facts.get_all()
 
     @freeze_time('2019-02-01 18:00')
     @pytest.mark.parametrize('hint', (

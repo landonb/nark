@@ -54,27 +54,35 @@ class TestActivityManager:
         assert result.name == activity.name
         assert basestore.activities.save.called is True
 
-    def test_add(self, basestore, activity):
+    def test_add_not_implemented(self, basestore, activity):
         with pytest.raises(NotImplementedError):
             basestore.activities._add(activity)
 
-    def test_update(self, basestore, activity):
+    def test_update_not_implemented(self, basestore, activity):
         with pytest.raises(NotImplementedError):
             basestore.activities._update(activity)
 
-    def test_remove(self, basestore, activity):
+    def test_remove_not_implemented(self, basestore, activity):
         with pytest.raises(NotImplementedError):
             basestore.activities.remove(activity)
 
-    def test_get_by_composite(self, basestore, activity):
+    def test_get_by_composite_not_implemented(self, basestore, activity):
         with pytest.raises(NotImplementedError):
             basestore.activities.get_by_composite(activity.name, activity.category)
 
-    def test_get(self, basestore):
+    def test_get_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.activities.get(12)
 
-    def test_get_all(self, basestore):
+    def test_get_all_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.activities.get_all()
+
+    def test_get_all_by_usage_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.activities.get_all_by_usage()
+
+    def test_gather_not_implemented(self, basestore):
+        with pytest.raises(NotImplementedError):
+            basestore.activities.gather(query_terms=None)
 
