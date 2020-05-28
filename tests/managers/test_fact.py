@@ -229,8 +229,10 @@ class TestFactManager:
         #   complaint, if end isn't far enough ahead of start.
         max_delta_secs = base_config['time']['fact_min_delta']
         if hint and isinstance(hint, datetime.timedelta) and hint.total_seconds() < 0:
-            # Add hint's seconds, which is a negative value, so really, subtract.
-            max_delta_secs += hint.total_seconds()
+            # Subtract hint's seconds, which is a negative value, so really,
+            # increase the max_delta_secs, because hint will be subtracted
+            # from now later (expected_end = now + hint).
+            max_delta_secs -= hint.total_seconds()
         max_start = None
         if max_delta_secs:
             max_start = now - datetime.timedelta(seconds=max_delta_secs)
@@ -242,9 +244,8 @@ class TestFactManager:
             if isinstance(hint, datetime.datetime):
                 expected_end = hint
             else:
-                # (lb): This operation is same as = now + hint, isn't it.
-                # - MAGIC_NUMBER: Same as freeze_time, above.
-                expected_end = datetime.datetime(2019, 2, 1, 18) + hint
+                # Add hint to now, e.g., datetime.datetime(2019, 2, 1, 18) + hint.
+                expected_end = now + hint
         else:
             # NOTE: Because freeze_time, datetime.now() === datetime.utcnow().
             expected_end = datetime.datetime.now().replace(microsecond=0)
