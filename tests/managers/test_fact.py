@@ -46,6 +46,17 @@ class TestFactManager:
         with pytest.raises(ValueError):
             basestore.facts.save(fact)
 
+    def test_save_fact_no_fact_min_delta(self, basestore, fact, mocker):
+        """Ensure that a fact with too small of a time delta raises an exception."""
+        magic_fact = {}
+        mocker.patch.object(basestore.facts, '_add', return_value=magic_fact)
+        # Note that out config defined the type as int, so use 0, not None.
+        basestore.config['time.fact_min_delta'] = 0
+        fact.end = fact.start
+        new_fact = basestore.facts.save(fact)
+        assert basestore.facts._add.called
+        assert new_fact is magic_fact
+
     def test_add_not_implemented(self, basestore, fact):
         with pytest.raises(NotImplementedError):
             basestore.facts._add(fact)
@@ -174,6 +185,13 @@ class TestFactManager:
             }
         )
 
+    @freeze_time('2015-10-03 14:45')
+    def test_day_end_datetime_no_end_date(self, basestore):
+        """Make sure that method uses appropriate timeframe."""
+        basestore.config['time.day_start'] = datetime.time(5, 30)
+        until = basestore.facts.day_end_datetime(end_date=None)
+        assert until == datetime.datetime(2015, 10, 4, 5, 29, 59)
+
     # *** stop_current_fact tests.
 
     @freeze_time('2019-02-01 18:00')
@@ -298,6 +316,15 @@ class TestFactManager:
 
     # Note that get_current_fact() also gets tested by way of
     # stop_current_fact(), as well as find_latest_fact().
+
+    def test_get_current_fact_datebase_integrity_issue_multiple_active_facts(
+        self, basestore, endless_fact, mocker,
+    ):
+        """Make sure that if 2 Facts are Active, get_current_fact fails."""
+        two_endless = [endless_fact, endless_fact]
+        mocker.patch.object(basestore.facts, 'endless', return_value=two_endless)
+        with pytest.raises(Exception):
+            basestore.facts.get_current_fact()
 
     def test_get_endless_fact_with_ongoing_fact(
         self, basestore, endless_fact, fact, mocker,
