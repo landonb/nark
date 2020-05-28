@@ -327,6 +327,65 @@ class TestFactManager:
         with pytest.raises(Exception):
             basestore.facts.get_current_fact()
 
+    # *** find_latest_fact
+
+    def test_find_latest_fact_finds_fact_ongoing_exists(
+        self, basestore, endless_fact, mocker,
+    ):
+        """Ensure find_latest_fact finds 'ongoing' Fact."""
+        mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
+        restrict = 'ongoing'
+        found = basestore.facts.find_latest_fact(restrict=restrict)
+        assert found is endless_fact
+
+    def test_find_latest_fact_finds_fact_ongoing_not_found(
+        self, basestore, endless_fact, mocker,
+    ):
+        """Ensure find_latest_fact returns None when no 'ongoing' Fact."""
+        mocker.patch.object(basestore.facts, 'endless', return_value=[])
+        restrict = 'ongoing'
+        found = basestore.facts.find_latest_fact(restrict=restrict)
+        assert found is None
+
+    def test_find_latest_fact_finds_fact_ongoing_too_many(
+        self, basestore, endless_fact, mocker,
+    ):
+        """Ensure find_latest_fact raises when there is more than 1 'ongoing' Fact."""
+        two_endless = [endless_fact, endless_fact]
+        mocker.patch.object(basestore.facts, 'endless', return_value=two_endless)
+        restrict = 'ongoing'
+        with pytest.raises(Exception):
+            basestore.facts.find_latest_fact(restrict=restrict)
+
+    def test_find_latest_fact_finds_fact_ended(
+        self, basestore, fact, mocker,
+    ):
+        """Ensure find_latest_fact find an 'ended' Fact."""
+        mocker.patch.object(basestore.facts, 'get_all', return_value=[fact])
+        restrict = 'ended'
+        found = basestore.facts.find_latest_fact(restrict=restrict)
+        assert found is fact
+
+    # *** find_oldest_fact
+
+    def test_find_oldest_fact_found(
+        self, basestore, fact, mocker,
+    ):
+        """Ensure find_oldest_fact find a fact when get_all returns one."""
+        mocker.patch.object(basestore.facts, 'get_all', return_value=[fact])
+        found = basestore.facts.find_oldest_fact()
+        assert found is fact
+
+    def test_find_oldest_fact_not_found(
+        self, basestore, fact, mocker,
+    ):
+        """Ensure find_oldest_fact find a fact when get_all returns none."""
+        mocker.patch.object(basestore.facts, 'get_all', return_value=[])
+        found = basestore.facts.find_oldest_fact()
+        assert found is None
+
+    # *** endless
+
     def test_get_endless_fact_with_ongoing_fact(
         self, basestore, endless_fact, fact, mocker,
     ):
