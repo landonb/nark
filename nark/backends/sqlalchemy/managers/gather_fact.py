@@ -150,9 +150,9 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
                 query, qt.since, qt.until, qt.endless, qt.partial,
             )
 
-            query = self.query_filter_by_activities(query, qt.activities)
+            query = self.query_filter_by_activities(query, qt)
 
-            query = self.query_filter_by_categories(query, qt.categories)
+            query = self.query_filter_by_categories(query, qt)
 
             query = query_filter_by_search_term(query)
 
@@ -750,12 +750,15 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
         query_terms,
         sort_col,
         direction,
+        has_facts,
         # The following columns are specific to a Fact gather.
         span_cols,
         start_date,
         tags_subquery,
     ):
         qt = query_terms
+
+        assert has_facts
 
         if sort_col == 'start' or not sort_col:
             query = self.query_order_by_start(query, direction)

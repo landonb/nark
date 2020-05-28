@@ -92,9 +92,9 @@ class GatherBaseAlchemyManager(object):
                 query, qt.since, qt.until, qt.endless, qt.partial,
             )
 
-            query = self.query_filter_by_activities(query, qt.activities)
+            query = self.query_filter_by_activities(query, qt)
 
-            query = self.query_filter_by_categories(query, qt.categories)
+            query = self.query_filter_by_categories(query, qt)
 
             query = query_filter_by_search_term(query)
 
@@ -291,15 +291,19 @@ class GatherBaseAlchemyManager(object):
 
     # ***
 
-    def query_filter_by_activities(self, query, activities=[]):
-        criteria = []
-        for activity in activities:
-            criterion = self.query_filter_by_activity(activity)
-            if criterion is not None:
-                criteria.append(criterion)
+    def query_filter_by_activities(self, query, qt):
+        query, criteria = self.query_criteria_filter_by_activities(query, qt)
         if criteria is not None:
             query = query.filter(or_(*criteria))
         return query
+
+    def query_criteria_filter_by_activities(self, query, qt):
+        criteria = []
+        for activity in qt.activities or []:
+            criterion = self.query_filter_by_activity(activity)
+            if criterion is not None:
+                criteria.append(criterion)
+        return query, criteria
 
     def query_filter_by_activity(self, activity):
         if activity is False:
@@ -308,6 +312,15 @@ class GatherBaseAlchemyManager(object):
         if activity is not None:
             activity_name = self.query_filter_by_activity_name(activity)
             if activity_name is None:
+                # (lb): This seems like a tedious branch to test and support. Same
+                # goes for `activity is None` (the last else branch of this method).
+                # Furthermore, the CLI does not let the user query for Activity
+                # where name is None. Though at least the QueryTerms support
+                # setting Activity=None (which is the last else branch of the
+                # outer if-block). But as far as passing an Activity object to this
+                # method, there's no production code that does that; you'd only
+                # get here from a new test. Or maybe for some reason wiring
+                # this path for some new feature.
                 criterion = (AlchemyActivity.pk == activity.pk)
             else:
                 # NOTE: Strict name matching, case and exactness.
@@ -316,6 +329,11 @@ class GatherBaseAlchemyManager(object):
                 criterion = (AlchemyActivity.name == activity_name)
         else:
             # activity is None.
+            # (lb): Note that there's no production path that'll bring execution here.
+            # - MAYBE: See preceding long comment: Add test; maybe wire from CLI.
+            #   But what's the use case? You can find nameless Activities with `-a ''`.
+            #   And there shouldn't be any Facts where Activity is NONE, right?
+            #   Only unnamed Activities, and there's only at most one of those.
             criterion = (AlchemyFact.activity == None)  # noqa: E711
         return criterion
 
@@ -330,15 +348,19 @@ class GatherBaseAlchemyManager(object):
 
     # ***
 
-    def query_filter_by_categories(self, query, categories=[]):
-        criteria = []
-        for category in categories:
-            criterion = self.query_filter_by_category(category)
-            if criterion is not None:
-                criteria.append(criterion)
+    def query_filter_by_categories(self, query, qt):
+        query, criteria = self.query_criteria_filter_by_categories(query, qt)
         if criteria is not None:
             query = query.filter(or_(*criteria))
         return query
+
+    def query_criteria_filter_by_categories(self, query, qt):
+        criteria = []
+        for category in qt.categories or []:
+            criterion = self.query_filter_by_category(category)
+            if criterion is not None:
+                criteria.append(criterion)
+        return query, criteria
 
     def query_filter_by_category(self, category):
         if category is False:

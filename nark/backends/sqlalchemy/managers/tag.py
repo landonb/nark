@@ -274,15 +274,28 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         query = query.join(AlchemyFact)
         return query
 
-    def query_filter_by_activity(self, activity):
-        if activity is not False:
+    def query_criteria_filter_by_activities(self, query, qt):
+        query, criteria = super(
+            TagManager, self,
+        ).query_criteria_filter_by_activities(query, qt)
+        if criteria:
             query = query.join(AlchemyActivity)
-        return super(TagManager, self).query_filter_by_activity(activity)
+        # (lb): I'm not sure if there's a way to check the query to see
+        #       if it contains a table already; or whether the query is
+        #       smart enough to discard multiple joins of the same table.
+        #       So make a note to self that we joined the Activity table.
+        qt.joined_activity = bool(criteria)
+        return query, criteria
 
-    def query_filter_by_category(self, category):
-        if category is not False:
-            query = query.join(AlchemyActivity).join(AlchemyCategory)
-        return super(TagManager, self).query_filter_by_category(category)
+    def query_criteria_filter_by_categories(self, query, qt):
+        query, criteria = super(
+            TagManager, self,
+        ).query_criteria_filter_by_categories(query, qt)
+        if criteria:
+            if qt.joined_activity:
+                query = query.join(AlchemyActivity)
+            query = query.join(AlchemyCategory)
+        return query, criteria
 
     # ***
 
