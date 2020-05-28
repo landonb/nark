@@ -199,7 +199,7 @@ class BaseManager(object):
                 message = _(
                     'Unable to convert the until input to a datetime.'
                     ' Neither date, nor time, nor datetime: ‘{}’'
-                    .format(str(since))
+                    .format(str(until))
                 )
                 raise TypeError(message)
             return until_dt
