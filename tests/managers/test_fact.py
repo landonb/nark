@@ -151,7 +151,7 @@ class TestFactManager:
             ),
         ],
     )
-    def test_get_all_until_before_since(self, basestore, mocker, since, until):
+    def test_get_all_until_before_since(self, basestore, since, until):
         """Test that we throw an exception if passed until time is before since time."""
         with pytest.raises(ValueError):
             basestore.facts.get_all(since=since, until=until)
@@ -342,6 +342,8 @@ class TestFactManager:
         fact = basestore.facts.endless()
         assert fact == []
 
+    # *** cancel_current_fact
+
     def test_cancel_current_fact(self, basestore, endless_fact, fact, mocker):
         """Make sure we return the 'ongoing_fact'."""
         mocker.patch.object(basestore.facts, 'endless', return_value=[endless_fact])
@@ -369,23 +371,23 @@ class TestFactManager:
         with pytest.raises(NotImplementedError):
             basestore.facts.ending_at(fact)
 
-    def test_antecedent_not_implemented(self, basestore, fact):
+    def test_antecedent_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts.antecedent()
 
-    def test_subsequent_not_implemented(self, basestore, fact):
+    def test_subsequent_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts.subsequent()
 
-    def test_strictly_during_not_implemented(self, basestore, fact):
+    def test_strictly_during_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts.strictly_during(start=None, end=None)
 
-    def test_surrounding_not_implemented(self, basestore, fact):
+    def test_surrounding_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts.surrounding(fact_time=None)
 
-    def test_endless_not_implemented(self, basestore, fact):
+    def test_endless_not_implemented(self, basestore):
         with pytest.raises(NotImplementedError):
             basestore.facts.endless()
 
