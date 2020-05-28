@@ -336,10 +336,14 @@ class BaseFactManager(BaseManager):
                 sort_orders=('desc',),
                 limit=1,
                 exclude_ongoing=True,
+                # Just to be clear, we want just the Facts.
+                include_stats=False,
             )
             if len(results) > 0:
                 assert len(results) == 1
-                fact, = results
+                # (lb) Silly, since 2018-06-28 I had `fact, = results`.
+                # Was I trying to be clever? Indexing seems more readable.
+                fact = results[0]
         return fact
 
     # ***
@@ -353,7 +357,7 @@ class BaseFactManager(BaseManager):
         )
         if len(results) > 0:
             assert len(results) == 1
-            fact, = results
+            fact = results[0]
         return fact
 
     # ***
