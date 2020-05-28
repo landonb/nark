@@ -353,7 +353,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
     def _gather_query_start_aggregate(self, qt, agg_cols):
         query = self.store.session.query(AlchemyFact, *agg_cols)
         query = query.outerjoin(AlchemyFact.activity)
-
         query = self._gather_query_join_category(qt, query)
         return query
 
