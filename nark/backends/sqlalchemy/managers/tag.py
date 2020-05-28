@@ -267,6 +267,20 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         return 'tag'
 
     def _gather_query_start_aggregate(self, qt, agg_cols):
+        # NOTE: We do not need a subquery here, unlike in gather_fact.py.
+        #       - In _get_all_prepare_tags_subquery, which adds tags to the Fact
+        #         gather query, the join-on-tags is performed in a subquery
+        #         so that the (outer) group by aggregate functions do not
+        #         inadvertently count each Fact more than once. In the case of
+        #         a Fact gather, the tags names are being joined together for
+        #         each Fact. But here, we actually want all the rows to be
+        #         included in the aggregates, because we're counting usage the
+        #         other way around -- how many Facts use each Tag; rather than
+        #         how it is for the Fact gather, which is how many Tags of each
+        #         name there are for each Fact. In any case, mostly just a note
+        #         to self, because I looked at this and thought it smelled funny,
+        #         because there's a subquery in the Fact gather query; but we
+        #         don't need one here.
         query = self.store.session.query(AlchemyTag, *agg_cols)
         query = query.join(
             fact_tags, AlchemyTag.pk == fact_tags.columns.tag_id,
