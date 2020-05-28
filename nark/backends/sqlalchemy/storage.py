@@ -226,7 +226,13 @@ class SQLAlchemyStore(BaseStore):
         return engine
 
     def create_storage_tables(self, engine):
+        # Such magic: Stash the Engine() object in the SQLAlchemy package
+        # where the Alchemy items will find it and use it by default.
+        # - Per docs, store the object at objects.metadata.bind, where it can
+        #   be "held globally for the lifetime of a single application...."
+        #     https://docs.sqlalchemy.org/en/13/core/connections.html
         objects.metadata.bind = engine
+
         created_fresh = False
         try:
             # Create the database store at db_path.
