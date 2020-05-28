@@ -19,10 +19,8 @@
 
 from gettext import gettext as _
 
-from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import or_
 
 from ....managers.tag import BaseTagManager
 from ..objects import (
@@ -32,7 +30,7 @@ from ..objects import (
     AlchemyTag,
     fact_tags
 )
-from . import query_apply_limit_offset, query_apply_true_or_not
+from . import query_apply_true_or_not
 from .manager_base import BaseAlchemyManager
 
 __all__ = (
