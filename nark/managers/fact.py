@@ -164,6 +164,13 @@ class BaseFactManager(BaseManager):
 
     # ***
 
+    # Note that get_all() is implemented, by the BaseManager, so it can
+    # wrap the 'since' and 'until' inputs, and convert them to datatime
+    # objects, before calling gather(), which is implemented by the
+    # backends.sqlalchemy.managers GatherFactManager.
+
+    # ***
+
     def get_all_by_usage(self, query_terms=None, **kwargs):
         """
         Similar to get_all(), but include count of Facts that reference each Activity.
@@ -253,21 +260,20 @@ class BaseFactManager(BaseManager):
         else:
             end = self.store.now
 
+        # Note that get_current_fact raises KeyError if no Active Fact.
         fact = self.get_current_fact()
-        if fact:
-            if fact.start > end:
-                raise ValueError(_(
-                    'Cannot end the Fact before it started.'
-                    ' Try editing the Fact instead.'
-                ))
-            else:
-                fact.end = end
-            new_fact = self.save(fact)
-            self.store.logger.debug(_("Current fact is now history!"))
+
+        if fact.start > end:
+            raise ValueError(_(
+                'Cannot end the Fact before it started.'
+                ' Try editing the Fact instead.'
+            ))
         else:
-            message = _("Trying to stop a nonexistent active fact.")
-            self.store.logger.debug(message)
-            raise ValueError(message)
+            fact.end = end
+        new_fact = self.save(fact)
+
+        self.store.logger.debug(_("Current fact is now history!"))
+
         return new_fact
 
     # ***
@@ -364,12 +370,8 @@ class BaseFactManager(BaseManager):
             KeyError: If no ongoing, active fact found.
         """
         self.store.logger.debug(_("Cancelling 'active fact'."))
-
+        # Note that get_current_fact raises KeyError if no Active Fact.
         fact = self.get_current_fact()
-        if not fact:
-            message = _("Trying to stop a nonexistent active fact.")
-            self.store.logger.debug(message)
-            raise KeyError(message)
         self.remove(fact, purge)
         return fact
 

@@ -294,20 +294,10 @@ class TestFactManager:
         with pytest.raises(TypeError):
             basestore.facts.stop_current_fact(str())
 
-    def test_stop_current_fact_non_existing(self, basestore, mocker):
-        """
-        Make sure that trying to call stop when there is no 'endless fact'
-        raises an error.
-        """
-        mocker.patch.object(basestore.facts, 'endless', return_value=[])
-        with pytest.raises(KeyError):
-            basestore.facts.stop_current_fact()
-            # KeyError: 'No ongoing Fact found.'
-
     # ***
 
-    # Note that get_current_fact() gets tested by way of stop_current_fact()
-    # as well as find_latest_fact().
+    # Note that get_current_fact() also gets tested by way of
+    # stop_current_fact(), as well as find_latest_fact().
 
     def test_get_endless_fact_with_ongoing_fact(
         self, basestore, endless_fact, fact, mocker,
