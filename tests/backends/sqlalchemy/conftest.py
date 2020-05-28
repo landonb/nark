@@ -1,4 +1,4 @@
- # This file exists within 'nark':
+# This file exists within 'nark':
 #
 #   https://github.com/hotoffthehamster/nark
 #
@@ -17,5 +17,5 @@
 
 """Fixtures for testing the SQLAlchemy backend."""
 
-from nark.tests.backends.sqlalchemy.conftest import *
+from nark.tests.backends.sqlalchemy.conftest import *  # noqa: F401, F403
 

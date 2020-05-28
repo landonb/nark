@@ -23,8 +23,9 @@ import datetime
 
 import pytest
 
+from nark.tests import factories
 # Register the category_factory, etc.
-from nark.tests.item_factories import *
+from nark.tests.item_factories import *  # noqa: F401, F403
 
 
 # ***
@@ -43,6 +44,7 @@ def category_valid_parametrized(
         result = None
     return result
 
+
 # +++
 
 # (lb): Unused.
@@ -58,6 +60,7 @@ def category_valid_parametrized_without_none(
     but not ``category=None``.
     """
     return category_factory(name=name_string_valid_parametrized)
+
 
 # Activities
 @pytest.fixture
@@ -75,6 +78,7 @@ def activity_valid_parametrized(
         deleted=deleted_valid_parametrized,
     )
 
+
 @pytest.fixture
 def new_activity_values(category):
     """Return garanteed modified values for a given activity."""
@@ -83,6 +87,7 @@ def new_activity_values(category):
             'name': activity.name + 'foobar',
         }
     return modify
+
 
 # ***
 
@@ -112,6 +117,7 @@ def invalid_raw_fact_parametrized(request):
     """Return various invalid ``raw fact`` strings."""
     return request.param
 
+
 # +++
 
 # (lb): Unused.
@@ -132,6 +138,7 @@ def not_today_fact(fact_factory):
     start = datetime.datetime.utcnow() - datetime.timedelta(days=2)
     end = start + datetime.timedelta(minutes=30)
     return fact_factory(start=start, end=end)
+
 
 @pytest.fixture
 def current_fact(fact_factory):

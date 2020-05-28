@@ -304,7 +304,6 @@ class TestFactManager():
         results = alchemy_store.facts.surrounding(fact_time=fact_time, inclusive=False)
         assert results[0] == any_fact
 
-
     def test_surrounding_inclusive_outer(
         self, alchemy_store, set_of_alchemy_facts_contiguous,
     ):

@@ -28,12 +28,11 @@ from nark.tests import factories
 #       - You'll want to glob everything to get fact_factory, etc. E.g.,
 #         Use this style import:
 #           # Register the fact_factory, etc.
-#           from nark.tests.item_factories import *
+#           from nark.tests.item_factories import *  # noqa: F401, F403
 
 # For generating backend store items, see the Alchemy item generators:
 #
 #   nark/tests/backends/sqlalchemy/conftest.py
-
 
 register(factories.CategoryFactory)
 register(factories.ActivityFactory)

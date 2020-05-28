@@ -24,8 +24,18 @@ import pytest
 from nark.control import NarkControl
 from nark.manager import BaseStore
 
-from nark.tests import factories
-from nark.tests.conftest import *
+# (lb): I moved lots of conftest functions to nark.tests so that downstream
+#   packages can reuse the same fixtures. However, it's uncouth to `import *`,
+#   so the linter lets us have it. But conftest.py is already magic -- pytest
+#   loads conftest for every test_xxx.py file -- so it's already akin to being
+#   *-glob imported. Which is what we do here, linter and best practices be
+#   damned. Furthermore, the pytest-factoryboy register() functions also
+#   magically injects fixtures into the namespace (that themselves are mutated
+#   from a corresponding classname, e.g., FactFactory becomes a fixture named
+#   fact_factory). So I don't know what all the fuss is about, just import *.
+# F401 'nark.tests.conftest.*' imported but unused
+# F403 'from nark.tests.conftest import *' used; unable to detect undefined names
+from nark.tests.conftest import *  # noqa: F401, F403
 
 
 @pytest.yield_fixture

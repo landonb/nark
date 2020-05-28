@@ -17,5 +17,5 @@
 
 """Shim to packaged test fixtures for test nark SQLAlchemy backends."""
 
-from nark.tests.backends.sqlalchemy.common import *
+from nark.tests.backends.sqlalchemy.common import *  # noqa: F401, F403
 

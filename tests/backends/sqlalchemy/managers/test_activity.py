@@ -315,7 +315,9 @@ class TestActivityManager():
         self, alchemy_store, alchemy_activity, alchemy_activity_factory,
     ):
         """Make sure only activity matching the given alchemy_category is returned."""
-        _activity_without_category = alchemy_activity_factory(category=None)
+        # Add Activity without Category to data store.
+        # F841 local variable 'foo' is assigned to but never used
+        _activity_sans_category = alchemy_activity_factory(category=None)  # noqa: F841
         results = alchemy_store.activities.get_all(category=alchemy_activity.category)
         assert len(results) == 1
         assert results[0] == alchemy_activity
@@ -324,7 +326,8 @@ class TestActivityManager():
         self, alchemy_store, alchemy_activity, alchemy_activity_factory,
     ):
         """Make sure both activities with category name and with none are returned."""
-        _activity_without_category = alchemy_activity_factory(category=None)
+        # Add Activity without Category to data store.
+        _activity_sans_category = alchemy_activity_factory(category=None)  # noqa: F841
         results = alchemy_store.activities.get_all(
             match_categories=[None, alchemy_activity.category],
         )

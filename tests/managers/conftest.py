@@ -20,5 +20,5 @@
 """Fixtures that are of general use."""
 
 # Register the fact_factory, etc.
-from nark.tests.item_factories import *
+from nark.tests.item_factories import *  # noqa: F401, F403
 
