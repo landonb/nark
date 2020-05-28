@@ -17,7 +17,7 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-"""Fixtures in order to test the SQLAlchemy backend."""
+"""Fixtures to help test the SQLAlchemy backend."""
 
 import copy
 import datetime
