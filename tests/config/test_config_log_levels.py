@@ -30,7 +30,7 @@ from nark.config.log_levels import get_log_level_safe, must_verify_log_level
 class TestConfigLogLevels:
     def test_must_verify_log_level_valid(self, log_level_valid_parametrized):
         _log_level = must_verify_log_level(log_level_valid_parametrized)
-        assert(isinstance(_log_level, int))
+        assert isinstance(_log_level, int)
 
     def test_must_verify_log_level_invalid(self, log_level_invalid_parametrized):
         with pytest.raises(ValueError):
@@ -38,11 +38,11 @@ class TestConfigLogLevels:
 
     def test_get_log_level_safe_valid(self, log_level_valid_parametrized):
         _log_level = get_log_level_safe(log_level_valid_parametrized)
-        assert(isinstance(_log_level, int))
+        assert isinstance(_log_level, int)
 
     def test_get_log_level_safe_invalid(self, log_level_invalid_parametrized):
         _log_level = get_log_level_safe(log_level_invalid_parametrized)
-        assert(isinstance(_log_level, int))
+        assert isinstance(_log_level, int)
 
     def test_get_log_level_on_completion(self):
         testargs = [
@@ -51,5 +51,5 @@ class TestConfigLogLevels:
         ]
         with patch.object(sys, 'argv', testargs):
             _log_level = get_log_level_safe(logging.DEBUG)
-            assert(_log_level == (logging.CRITICAL + 1))
+            assert _log_level == (logging.CRITICAL + 1)
 

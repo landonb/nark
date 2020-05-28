@@ -276,7 +276,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
 
             # Even if user wants raw results, still attach the tags.
             if new_tags:
-                assert(not lazy_tags)  # Just FYI.
+                assert not lazy_tags  # Just FYI.
                 # Note that the group_concat reduced the Tag names to a single
                 # string that we pulled apart into a list, new_tags, while we
                 # need to convert to AlchemyTag to assign to the AlchemyFact.
@@ -436,7 +436,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
                 return _get_all_prepare_span_cols_group_span_sqlite(endornow_col)
             else:  # pragma: no cover
                 # See exception thrown by must_support_db_engine_funcs() if not SQLite.
-                assert(False)  # Not reachable.
+                assert False  # Not reachable.
 
         def _get_all_prepare_span_cols_group_span_sqlite(endornow_col):
             span_col = (
@@ -766,7 +766,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             i_duration = GatherFactManager.RESULT_GRP_INDEX['duration']
             query = query.order_by(direction(span_cols[i_duration]))
         elif sort_col == 'day':
-            assert(start_date is not None)
+            assert start_date is not None
             query = query.order_by(direction(start_date))
         elif sort_col == 'activity':
             # If grouping by only category, this sort does not work: The

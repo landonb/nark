@@ -68,7 +68,7 @@ class NarkAppDirs(appdirs.AppDirs, metaclass=Singleton):
         super(NarkAppDirs, self).__init__(*args, **kwargs)
 
         # This constructor only called once, because Singleton.
-        assert(NarkAppDirs.APP_DIRS is None)
+        assert NarkAppDirs.APP_DIRS is None
         # A hacky class variable so nark knows when the instance is ready.
         NarkAppDirs.APP_DIRS = self
 

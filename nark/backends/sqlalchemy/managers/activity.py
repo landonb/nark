@@ -250,7 +250,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             query = query.filter(AlchemyActivity.pk == pk)
             query = query_apply_true_or_not(query, AlchemyActivity.deleted, deleted)
             results = query.all()
-            assert(len(results) <= 1)
+            assert len(results) <= 1
             result = results[0] if results else None
 
         if not result:

@@ -349,7 +349,7 @@ class FactManager(GatherFactManager):
             query = query.filter(AlchemyFact.pk == pk)
             query = query_apply_true_or_not(query, AlchemyFact.deleted, deleted)
             results = query.all()
-            assert(len(results) <= 1)
+            assert len(results) <= 1
             result = results[0] if results else None
 
         if not result:
