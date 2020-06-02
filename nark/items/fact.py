@@ -198,8 +198,9 @@ class Fact(BaseItem):
         Provide a tuple representation of this facts relevant attributes.
 
         Args:
-            include_pk (bool): Whether to include the instances pk or not. Note that if
-            ``False`` ``tuple.pk = False``!
+            include_pk (bool): Whether to set the pk to the Fact ID or False.
+                Note that if ``False`` ``tuple.pk = False``. This is useful
+                for comparing logical Fact equality.
 
         Returns:
             nark.FactTuple: Representing this categories values.
