@@ -17,6 +17,8 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
+"""XML writer output format module."""
+
 from . import FactTuple, ReportWriter
 
 __all__ = (

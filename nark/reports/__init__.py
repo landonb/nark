@@ -17,12 +17,12 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-"""
-Module to provide generic reporting capabilities for easy adaption by clients.
+"""nark export reporter formatters.
 
-The basic idea is to provide ``Writer`` classes that take care of the bulk
-of the setup upon instantiation so all the client needs to do is to call
-``write_report`` with a list of ``FactTuples`` as arguments.
+This module defines a base output format class.
+
+- The user will just have to instantiate the output class they desire, and
+  then call its write_format() method with a collection of Fact tuples to use.
 """
 
 import sys

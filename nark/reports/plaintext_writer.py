@@ -17,6 +17,8 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
+"""Base class for CSVWriter and TSVWriter output formats."""
+
 from gettext import gettext as _
 
 import csv
