@@ -27,7 +27,7 @@ from nark.reports.xml_writer import XMLWriter
 
 @pytest.fixture
 def path(tmpdir):
-    path = tmpdir.mkdir('reports').join('report.csv').strpath
+    path = tmpdir.mkdir('reports').join('export.fmt').strpath
     return path
 
 
