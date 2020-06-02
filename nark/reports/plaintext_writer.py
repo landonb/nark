@@ -23,7 +23,7 @@ from gettext import gettext as _
 
 import csv
 
-from . import FactTuple, ReportWriter
+from . import ReportWriter
 
 __all__ = (
     'PlaintextWriter',
@@ -38,8 +38,8 @@ class PlaintextWriter(ReportWriter):
     def __init__(
         self,
         path,
-        duration_fmt,
         datetime_format="%Y-%m-%d %H:%M:%S",
+        duration_fmt="%H:%M",
         output_b=False,
         dialect='excel',
         **fmtparams
@@ -49,14 +49,26 @@ class PlaintextWriter(ReportWriter):
 
         Besides our default behaviour we create a localized heading.
         Also, we need to make sure that our heading is UTF-8 encoded on python 2!
-        In that case ``self.file`` will be openend in binary mode and ready to accept
-        those encoded headings.
+        In that case ``self.fileout`` will be openend in binary mode and ready to
+        accept those encoded headings.
         """
         super(PlaintextWriter, self).__init__(
-            path, datetime_format, output_b=output_b,
+            path,
+            datetime_format=datetime_format,
+            output_b=output_b,
         )
-        self.csv_writer = csv.writer(self.file, dialect=dialect, **fmtparams)
-        # SYNC_ME: FactTuple and PlaintextWriter's headers.
+        self.csv_writer = csv.writer(self.fileout, dialect=dialect, **fmtparams)
+        results = []
+        for header in self._report_headers():
+            results.append(header)
+        self.csv_writer.writerow(results)
+
+    def _report_headers(self):
+        """Export a tuple indicating the report column headers.
+
+        Note that _report_headers and _report_row return matching
+        sequences of Fact attributes.
+        """
         headers = (
             _("start time"),
             _("end time"),
@@ -66,49 +78,24 @@ class PlaintextWriter(ReportWriter):
             _("description"),
             _("deleted"),
         )
-        results = []
-        for header in headers:
-            results.append(header)
-        self.csv_writer.writerow(results)
-        self.duration_fmt = duration_fmt
+        return headers
 
-    def _fact_to_tuple(self, fact):
+    def _report_row(self):
+        """Export a tuple indicating a single report row values.
+
+        Note that _report_headers and _report_row return matching
+        sequences of Fact attributes.
         """
-        Convert a ``Fact`` to its normalized tuple.
-
-        This is where all type conversion for ``Fact`` attributes to strings as well
-        as any normalization happens.
-
-        Args:
-            fact (nark.Fact): Fact to be converted.
-
-        Returns:
-            FactTuple: Tuple representing the original ``Fact``.
-        """
-        # Fields that allow ``None`` values will be represented by empty ''s.
-        # FIXME/DRY/2020-01-16: (lb): This block repeated throughout this file:
-        if fact.activity:
-            activity = fact.activity.name
-        else:
-            activity = ''
-        if fact.category:
-            category = fact.category.name
-        else:
-            category = ''
-        description = fact.description or ''
-
-        start = fact.start.strftime(self.datetime_format) if fact.start else ''
-        end = fact.end.strftime(self.datetime_format) if fact.end else ''
-
-        return FactTuple(
-            start=start,
-            end=end,
-            duration=fact.format_delta(style=self.duration_fmt),
-            activity=activity,
-            category=category,
-            description=description,
-            deleted=str(fact.deleted),
+        row = (
+            fact.start_fmt(self.datetime_format),
+            fact.end_fmt(self.datetime_format),
+            fact.format_delta(style=self.duration_fmt),
+            fact.activity_name,
+            fact.category_name,
+            fact.description_or_empty,
+            str(fact.deleted),
         )
+        return row
 
     def _write_fact(self, fact_tuple):
         """
@@ -119,7 +106,7 @@ class PlaintextWriter(ReportWriter):
         binary mode.
         """
         results = []
-        for value in fact_tuple:
+        for value in self._report_row(fact):
             results.append(value)
         self.csv_writer.writerow(results)
 

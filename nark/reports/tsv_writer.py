@@ -27,11 +27,10 @@ __all__ = (
 
 
 class TSVWriter(PlaintextWriter):
-    def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
+    def __init__(self, *args, **kwargs):
         super(TSVWriter, self).__init__(
-            path,
-            duration_fmt='%H:%M',
-            datetime_format=datetime_format,
+            *args,
             dialect='excel-tab',
+            **kwargs,
         )
 

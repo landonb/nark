@@ -23,7 +23,7 @@ import datetime
 
 import lazy_import
 
-from . import FactTuple, ReportWriter
+from . import ReportWriter
 
 __all__ = (
     'ICALWriter',
@@ -35,7 +35,7 @@ icalendar = lazy_import.lazy_module('icalendar')
 
 class ICALWriter(ReportWriter):
     """A simple ical writer for fact export."""
-    def __init__(self, path, datetime_format="%Y-%m-%d %H:%M:%S"):
+    def __init__(self, *args, **kwargs):
         """
         Initiate new instance and open an output file like object.
 
@@ -44,54 +44,16 @@ class ICALWriter(ReportWriter):
                 will be directed to. datetime_format (str): String specifying
                 how datetime information is to be rendered in the output.
         """
-        super(ICALWriter, self).__init__(path, datetime_format, output_b=True)
+        kwargs['output_b'] = True
+        super(ICALWriter, self).__init__(*args, **kwargs)
         self.calendar = icalendar.Calendar()
 
-    def _fact_to_tuple(self, fact):
-        """
-        Convert a ``Fact`` to its normalized tuple.
-
-        This is where all type conversion for ``Fact`` attributes to strings as
-            well as any normalization happens.
-
-        Note:
-            Because different writers may require different types, we need to
-                so this individualy.
-
-        Args:
-            fact (nark.Fact): Fact to be converted.
-
-        Returns:
-            FactTuple: Tuple representing the original ``Fact``.
-        """
-        # Fields that allow ``None`` values will be represented by empty ''s.
-        # FIXME/DRY/2020-01-16: (lb): This block repeated throughout this file:
-        if fact.activity:
-            activity = fact.activity.name
-        else:
-            activity = ''
-        if fact.category:
-            category = fact.category.name
-        else:
-            category = ''
-        description = fact.description or ''
-
-        return FactTuple(
-            start=fact.start,
-            end=fact.end,
-            duration=None,
-            activity=activity,
-            category=category,
-            description=description,
-            deleted=str(fact.deleted),
-        )
-
-    def _write_fact(self, fact_tuple):
+    def _write_fact(self, fact):
         """
         Write a singular fact to our report.
 
         Note:
-            * ``dtent`` is non-inclusive according to Page 54 of RFC 5545
+            * ``dtend`` is non-inclusive according to Page 54 of RFC 5545
 
         Returns:
             None: If everything worked out alright.
@@ -100,15 +62,17 @@ class ICALWriter(ReportWriter):
         # It apears that date/time requirements for VEVENT have changed between
         # RFCs. 5545 now seems to require a 'dstamp' and a 'uid'!
         event = icalendar.Event()
-        event.add('dtstart', fact_tuple.start)
-        event.add('dtend', fact_tuple.end + datetime.timedelta(seconds=1))
-        event.add('categories', fact_tuple.category)
-        event.add('summary', fact_tuple.activity)
-        event.add('description', fact_tuple.description)
+        event.add('dtstart', fact.start)
+        # MAGIC_NUMBER: (lb): I'm guessing based on `dtend` comment above that
+        # since the end time is non-inclusive, add one second to it.
+        event.add('dtend', fact.end + datetime.timedelta(seconds=1))
+        event.add('categories', fact.category_name)
+        event.add('summary', fact.activity_name)
+        event.add('description', fact.description_or_empty)
         self.calendar.add_component(event)
 
     def _close(self):
         """Custom close method to make sure the calendar is actually writen do disk."""
-        self.file.write(self.calendar.to_ical())
+        self.fileout.write(self.calendar.to_ical())
         return super(ICALWriter, self)._close()
 

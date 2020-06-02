@@ -299,6 +299,10 @@ class Fact(BaseItem):
         # use self._start except in self.start()/=.
         self._start = fact_time.must_be_datetime_or_relative(start)
 
+    def start_fmt(self, datetime_format="%Y-%m-%d %H:%M:%S"):
+        """If start, return a ``strftime``-formatted string, otherwise return ``''``."""
+        return self.start.strftime(datetime_format) if self.start else ''
+
     @property
     def start_fmt_utc(self):
         """FIXME: Document"""
@@ -334,6 +338,10 @@ class Fact(BaseItem):
                 (sub-)class or ``None``.
         """
         self._end = fact_time.must_be_datetime_or_relative(end)
+
+    def end_fmt(self, datetime_format="%Y-%m-%d %H:%M:%S"):
+        """If end, return a ``strftime``-formatted string, otherwise return ``''``."""
+        return self.end.strftime(datetime_format) if self.end else ''
 
     @property
     def end_fmt_utc(self):
@@ -503,6 +511,10 @@ class Fact(BaseItem):
             description = None
         self._description = description
 
+    @property
+    def description_or_empty(self):
+        return self.description or ''
+
     # +++
 
     def tagnames(self, *args, **kwargs):
@@ -583,7 +595,7 @@ class Fact(BaseItem):
         return act_cat
 
     def oid_description(self, cut_width=None, sep=', '):
-        description = self.description or ''
+        description = self.description_or_empty
         if description:
             if cut_width is not None:
                 description = format_value_truncate(description, cut_width)

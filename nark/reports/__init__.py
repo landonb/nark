@@ -30,23 +30,7 @@ import sys
 from collections import namedtuple
 
 __all__ = (
-    'FactTuple',
     'ReportWriter',
-)
-
-
-# SYNC_ME: FactTuple and PlaintextWriter's headers.
-FactTuple = namedtuple(
-    'FactTuple',
-    (
-        'start',
-        'end',
-        'duration',
-        'activity',
-        'category',
-        'description',
-        'deleted',
-    )
 )
 
 
@@ -65,32 +49,40 @@ class ReportWriter(object):
             probably the method to extend.
 
         Args:
-            path: File like object to be opened. This is where all output
-              will be directed to. datetime_format (str): String specifying how
-              datetime information is to be rendered in the output.
+            path: File-like object or string of path to be opened.
+
+            datetime_format (str): String (sent to strftime) specifying how datetime
+                values (Fact start and end) are presented in the output.
+
+            output_b: Whether to open the ``path`` for binary output.
         """
         self.datetime_format = datetime_format
-        # No matter through what loops we jump, at the end of the day py27
-        # ``writerow`` will insist on casting our data to binary str()
-        # instances. This clearly conflicts with any generic open() that provides
-        # transparent text input/output and would take care of the encoding
-        # instead.
+        self.duration_fmt = duration_fmt
+        self.fileout = self.open_output_file(path, output_b)
 
-        # [FIXME]
-        # If it turns out that this is specific to csv handling we may move it
-        # there and use a simpler default behaviour for our base method.
+    def open_output_file(self, path, output_b=False):
+        # FIXME/2020-06-02: Revisit output_b=True, may be different in py3,
+        # per these hamster-lib comments:
+        #
+        #   # No matter through what loops we jump, at the end of the day py27
+        #   # ``writerow`` will insist on casting our data to binary str()
+        #   # instances. This clearly conflicts with any generic open() that provides
+        #   # transparent text input/output and would take care of the encoding
+        #   # instead.
+        #
+        #   # [FIXME]
+        #   # If it turns out that this is specific to csv handling we may move it
+        #   # there and use a simpler default behaviour for our base method.
         if not path:
-            self.file = sys.stdout
-        else:
-            self.open_file(path, output_b=output_b)
+            return sys.stdout
+        return self.open_file(path, output_b)
 
     def open_file(self, path, output_b=False):
         if not output_b:
-            self.file = open(path, 'w', encoding='utf-8')
-        else:
-            self.file = open(path, 'wb')
+            return open(path, 'w', encoding='utf-8')
+        return open(path, 'wb')
 
-    def write_report(self, facts):
+    def write_report(self, facts, include_deleted=False):
         """
         Write facts to output file and close the file like object.
 
@@ -101,37 +93,19 @@ class ReportWriter(object):
             None: If everything worked as expected.
         """
         for fact in facts:
-            self._write_fact(self._fact_to_tuple(fact))
+            if not include_deleted and fact.deleted:
+                continue
+            self._write_fact(fact)
         self._close()
-
-    def _fact_to_tuple(self, fact):
-        """
-        Convert a ``Fact`` to its normalized tuple.
-
-        This is where all type conversion for ``Fact`` attributes to strings as well
-        as any normalization happens.
-
-        Note:
-            Because different writers may require different types, we need to so this
-            individualy.
-
-        Args:
-            fact (nark.Fact): Fact to be converted.
-
-        Returns:
-            FactTuple: Tuple representing the original ``Fact``.
-        """
-        raise NotImplementedError
 
     def _write_fact(self, fact):
         """
         Represent one ``Fact`` in the output file.
 
         What this means exactly depends on the format and kind of output.
-        At this point all type conversions and normalization have already been done.
 
         Args:
-            fact (FactTuple): The individual fact to be written.
+            fact (Fact): The Fact to be written.
 
         Returns:
             None
@@ -140,7 +114,7 @@ class ReportWriter(object):
 
     def _close(self):
         """Default teardown method."""
-        if self.file is sys.stdout:
-            return
-        self.file.close()
+        if self.fileout is not sys.stdout:
+            self.fileout.close()
+        self.fileout = None
 
