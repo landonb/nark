@@ -20,7 +20,9 @@
 import pytest
 
 from nark.reports import ReportWriter
+from nark.reports.csv_writer import CSVWriter
 from nark.reports.ical_writer import ICALWriter
+from nark.reports.plaintext_writer import PlaintextWriter
 from nark.reports.tsv_writer import TSVWriter
 from nark.reports.xml_writer import XMLWriter
 
@@ -37,8 +39,18 @@ def report_writer(path):
 
 
 @pytest.fixture
+def csv_writer(path):
+    return CSVWriter(path)
+
+
+@pytest.fixture
 def ical_writer(path):
     return ICALWriter(path)
+
+
+@pytest.fixture
+def plaintext_writer(path):
+    return PlaintextWriter(path)
 
 
 @pytest.fixture
