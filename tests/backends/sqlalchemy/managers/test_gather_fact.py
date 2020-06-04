@@ -244,3 +244,19 @@ class TestGatherFactManager():
         assert len(results) == 2
         assert results == set_of_alchemy_facts[2:4]
 
+    # ***
+
+    def test__get_all_fails_on_unsupported_store(self, controller, alchemy_store):
+        """Ensure get_all/GatherFactManager.gather raised on unsupported store type."""
+        # MAYBE/2020-05-26: Add support for other data stores (other than SQLite),
+        #   which requires using and wiring the appropriate DBMS-specific aggregate
+        #   functions.
+        #   - For now, dob is at least nice enough to print an error message.
+        controller.store.config['db.engine'] += '_not'
+        with pytest.raises(NotImplementedError) as excinfo:
+            results = alchemy_store.facts.get_all()  # noqa: F841 local variable...
+            assert False  # Unreachable.
+        # See: must_support_db_engine_funcs.
+        expect = 'This feature does not work with the current DBMS engine'
+        assert str(excinfo.value).startswith(expect)
+

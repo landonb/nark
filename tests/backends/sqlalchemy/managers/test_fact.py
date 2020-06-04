@@ -20,6 +20,7 @@
 import datetime
 
 import pytest
+from freezegun import freeze_time
 
 from nark.backends.sqlalchemy.objects import AlchemyActivity, AlchemyFact, AlchemyTag
 
@@ -216,6 +217,23 @@ class TestFactManager():
         fact = alchemy_fact.as_hamster(alchemy_store)
         result = alchemy_store.facts.get(fact.pk)
         assert result == fact
+
+    # Most of the get_all tests are in test_gather_fact, except this one.
+    @freeze_time('2015-12-12 18:00')
+    def test_get_all_since_until(
+        self, alchemy_store, mocker, fact, search_parameter_parametrized,
+    ):
+        """Ensure since and until are converted to datetime for backend function."""
+        # See also: nark's test_get_all_various_since_and_until_times
+        since, until, description, expectation = search_parameter_parametrized
+        mocker.patch.object(alchemy_store.facts, 'gather', return_value=[fact])
+        # F841 local variable '_facts' is assigned to but never used
+        _facts = alchemy_store.facts.get_all(since=since, until=until)  # noqa: F841
+        assert alchemy_store.facts.gather.called
+        # call_args is (args, kwargs), and QueryTerms is the first args arg.
+        query_terms = alchemy_store.facts.gather.call_args[0][0]
+        assert query_terms.since == expectation['since']
+        assert query_terms.until == expectation['until']
 
     # ***
 
