@@ -19,11 +19,16 @@
 
 """XML writer output format module."""
 
+import lazy_import
+
 from . import ReportWriter
 
 __all__ = (
     'XMLWriter',
 )
+
+# Profiling: load Document: ~ 0.004 secs.
+minidom = lazy_import.lazy_module('xml.dom.minidom')
 
 
 class XMLWriter(ReportWriter):
@@ -38,26 +43,46 @@ class XMLWriter(ReportWriter):
     def __init__(self, *args, **kwargs):
         """Setup the writer including a main xml document."""
         super(XMLWriter, self).__init__(*args, output_b=True, **kwargs)
-        # Profiling: load Document: ~ 0.004 secs.
-        from xml.dom.minidom import Document
-        self.document = Document()
-        self.fact_list = self.document.createElement("facts")
 
-    def _write_fact(self, fact):
+    def start_document(self, element_name):
+        # Profiling: load Document: ~ 0.004 secs.
+        self.document = minidom.Document()
+        self.fact_list = self.document.createElement(element_name)
+
+    def write_facts(self, facts):
+        self.start_document('facts')
+        return super(XMLWriter, self).write_facts(facts)
+
+    def _write_fact(self, idx, fact):
+        """
+        Create new fact element and populate attributes.
+
+        Once the child is prepared append it to ``fact_list``.
+        """
+        elem = self.document.createElement("fact")
+
+        # MAYBE/2018-04-22: (lb): Should this be start, or start_time? end, or end_time?
+        elem.setAttribute('start', fact.start_fmt(self.datetime_format))
+        elem.setAttribute('end', fact.end_fmt(self.datetime_format))
+        elem.setAttribute('activity', fact.activity_name)
+        elem.setAttribute('duration', fact.format_delta(style=self.duration_fmt))
+        elem.setAttribute('category', fact.category_name)
+        elem.setAttribute('description', fact.description_or_empty)
+        self.fact_list.appendChild(elem)
+
+    def write_report(self, table, columns):
+        self.start_document('results')
+        return super(XMLWriter, self).write_report(table, columns)
+
+    def _write_result(self, row, columns):
         """
         Create new fact element and populate attributes.
 
         Once the child is prepared append it to ``fact_list``.
         """
         fact = self.document.createElement("fact")
-
-        # MAYBE/2018-04-22: (lb): Should this be start, or start_time? end, or end_time?
-        fact.setAttribute('start', fact.start_fmt(self.datetime_format))
-        fact.setAttribute('end', fact.end_fmt(self.datetime_format))
-        fact.setAttribute('activity', fact.activity_name)
-        fact.setAttribute('duration', fact.format_delta(style=self.duration_fmt))
-        fact.setAttribute('category', fact.category_name)
-        fact.setAttribute('description', fact.description_or_empty)
+        for idx, col_name in enumerate(columns):
+            fact.setAttribute(col_name, row[idx])
         self.fact_list.appendChild(fact)
 
     def _close(self):

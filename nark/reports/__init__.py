@@ -27,8 +27,6 @@ This module defines a base output format class.
 
 import sys
 
-from collections import namedtuple
-
 __all__ = (
     'ReportWriter',
 )
@@ -103,7 +101,9 @@ class ReportWriter(object):
             return open(path, 'w', encoding='utf-8', newline=newline)
         return open(path, 'wb')
 
-    def write_report(self, facts, include_deleted=False):
+    # ***
+
+    def write_facts(self, facts):
         """
         Write facts to output file and close the file like object.
 
@@ -113,13 +113,17 @@ class ReportWriter(object):
         Returns:
             None: If everything worked as expected.
         """
-        for fact in facts:
-            if not include_deleted and fact.deleted:
-                continue
-            self._write_fact(fact)
+        n_written = 0
+        for idx, fact in enumerate(facts):
+            self._write_fact(idx, fact)
+            n_written += 1
+            if self.row_limit > 0 and n_written >= self.row_limit:
+                break
         self._close()
 
-    def _write_fact(self, fact):
+        return n_written
+
+    def _write_fact(self, idx, fact):
         """
         Represent one ``Fact`` in the output file.
 
@@ -132,6 +136,44 @@ class ReportWriter(object):
             None
         """
         raise NotImplementedError
+
+    # ***
+
+    @property
+    def requires_table(self):
+        return False
+
+    def write_report(self, table, columns):
+        """
+        Write facts to output file and close the file like object.
+
+        Args:
+            facts (Iterable): Iterable of ``nark.Fact`` instances to export.
+
+        Returns:
+            None: If everything worked as expected.
+        """
+        for row in table:
+            self._write_result(row, columns)
+        self._close()
+        return len(table)
+
+    def _write_result(self, row, columns):
+        """
+        Represent one ``Fact`` or aggregate result in the output file.
+
+        What this means exactly depends on the format and kind of output
+        and search paramaters.
+
+        Args:
+            fact (Fact): The Fact to be written.
+
+        Returns:
+            None
+        """
+        raise NotImplementedError
+
+    # ***
 
     def _close(self):
         """Default teardown method."""

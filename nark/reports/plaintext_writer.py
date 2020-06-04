@@ -66,29 +66,44 @@ class PlaintextWriter(ReportWriter):
         return super(PlaintextWriter, self).open_file(
             path=path, output_b=output_b, newline=newline,
         )
+
+    # ***
+
+    def write_facts(self, facts):
+        self.csv_writer.writerow(self.facts_headers())
+        return super(PlaintextWriter, self).write_facts(facts)
+
+    def _write_fact(self, idx, fact):
+        """
+        Write a single fact.
+
+        On python 2 we need to make sure we encode our data accordingly so we
+        can feed it to our file object which in this case needs to be opened in
+        binary mode.
+        """
         results = []
-        for header in self._report_headers():
-            results.append(header)
+        for value in self.fact_as_tuple(fact):
+            results.append(value)
         self.csv_writer.writerow(results)
 
-    def _report_headers(self):
+    def facts_headers(self):
         """Export a tuple indicating the report column headers.
 
         Note that _report_headers and _report_row return matching
         sequences of Fact attributes.
         """
         headers = (
-            _("start time"),
-            _("end time"),
-            _("duration minutes"),
-            _("activity"),
-            _("category"),
-            _("description"),
-            _("deleted"),
+            _("Start time"),
+            _("End time"),
+            _("Duration"),
+            _("Activity"),
+            _("Category"),
+            _("Description"),
+            _("Deleted"),
         )
         return headers
 
-    def _report_row(self):
+    def fact_as_tuple(self, fact):
         """Export a tuple indicating a single report row values.
 
         Note that _report_headers and _report_row return matching
@@ -105,7 +120,13 @@ class PlaintextWriter(ReportWriter):
         )
         return row
 
-    def _write_fact(self, fact_tuple):
+    # ***
+
+    def write_report(self, table, columns):
+        self.csv_writer.writerow(columns)
+        return super(PlaintextWriter, self).write_report(table, columns)
+
+    def _write_result(self, row, columns):
         """
         Write a single fact.
 
@@ -113,8 +134,6 @@ class PlaintextWriter(ReportWriter):
         can feed it to our file object which in this case needs to be opened in
         binary mode.
         """
-        results = []
-        for value in self._report_row(fact):
-            results.append(value)
-        self.csv_writer.writerow(results)
+        self.csv_writer.writerow(row)
+
 
