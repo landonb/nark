@@ -134,9 +134,15 @@ class GatherBaseAlchemyManager(object):
                 query = self._gather_query_start_timeless(qt, alchemy_cls)
             else:
                 if qt.include_stats or qt.sort_cols_has_any('usage'):
-                    # Apply COUNT() on, e.g., AlchemyActivity.pk, but do
-                    # not need DISTINCT, so that we count all in the group.
-                    count_col = func.count(alchemy_cls.pk).label('uses')
+                    # (lb): I tried the COUNT() on the pk, e.g.,
+                    #   count_col = func.count(alchemy_cls.pk).label('uses')
+                    # but then if alchemy_cls is NULL (e.g., if Fact has an
+                    # Activity where Category IS NULL), the count is 0, (e.g.,
+                    # because COUNT(categories.id)). So do a broad COUNT(*), and
+                    # then NULL rows will be counted (e.g., try `dob usage cat`).
+                    # Just be sure there's a GROUP BY, otherwise the COUNT(*)
+                    # will collapse all rows.
+                    count_col = func.count().label('uses')
                     agg_cols.append(count_col)
                 if qt.include_stats or qt.sort_cols_has_any('time'):
                     time_col = func.sum(
