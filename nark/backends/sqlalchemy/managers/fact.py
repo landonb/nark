@@ -590,9 +590,10 @@ class FactManager(GatherFactManager):
         if fact is not None:
             if fact.start and isinstance(fact.start, datetime):
                 ref_time = fact.start
-            elif fact.end and isinstance(fact.end, datetime):  # pragma: no cover
-                # (lb): This would be unexpected, if not impossible:
-                #       a Fact with no start, but it has an end.
+            elif fact.end and isinstance(fact.end, datetime):
+                # EXPLAIN: A Fact with no start, but it has an end?
+                # FIXME/SPIKE: (lb): Investigate this. There is a test- in dob!:
+                #                      py.test -x tests/facts/test_add_fact.py
                 self.store.logger.warning('Unexpected path!')
                 ref_time = fact.end
         if ref_time is None:
