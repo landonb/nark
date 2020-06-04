@@ -328,7 +328,7 @@ class QueryTerms(object):
         return is_grouped
 
     def sort_cols_has_any(self, *args):
-        return set(self.sort_cols or []).intersection((*args))
+        return set(self.sort_cols or []).intersection(set(args))
 
     @property
     def sorts_cols_has_stat(self):
