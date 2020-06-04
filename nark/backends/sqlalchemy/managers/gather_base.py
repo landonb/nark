@@ -533,7 +533,7 @@ class GatherBaseAlchemyManager(object):
 
         def _process_records_items_only(records):
             if not raw:
-                return [item.as_hamster(self.store) for item in records]
+                return [_as_hamster_or_none(item) for item in records]
             return records
 
         def _process_records_items_and_aggs(records):
@@ -543,8 +543,15 @@ class GatherBaseAlchemyManager(object):
 
         def _process_records_items_and_aggs_hydrate(records):
             if requested_usage:
-                return [(item.as_hamster(self.store), *cols) for item, *cols in records]
-            return [item.as_hamster(self.store) for item, *cols in records]
+                return [(_as_hamster_or_none(item), *cols) for item, *cols in records]
+            return [_as_hamster_or_none(item) for item, *cols in records]
+
+        def _as_hamster_or_none(item):
+            # If query used outer join, and if, say, a Fact has an Activity set NULL,
+            # or if an Activity has a Category set NULL, return None for the item.
+            if item is not None:
+                return item.as_hamster(self.store)
+            return None
 
         return _query_process_results(records)
 
