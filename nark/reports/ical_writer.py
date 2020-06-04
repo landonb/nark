@@ -48,7 +48,7 @@ class ICALWriter(ReportWriter):
         super(ICALWriter, self).__init__(*args, **kwargs)
         self.calendar = icalendar.Calendar()
 
-    def _write_fact(self, fact):
+    def _write_fact(self, idx, fact):
         """
         Write a singular fact to our report.
 
@@ -73,6 +73,6 @@ class ICALWriter(ReportWriter):
 
     def _close(self):
         """Custom close method to make sure the calendar is actually writen do disk."""
-        self.fileout.write(self.calendar.to_ical())
+        self.output_file.write(self.calendar.to_ical())
         return super(ICALWriter, self)._close()
 

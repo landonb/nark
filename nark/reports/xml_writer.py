@@ -68,6 +68,6 @@ class XMLWriter(ReportWriter):
         """
 
         self.document.appendChild(self.fact_list)
-        self.fileout.write(self.document.toxml(encoding='utf-8'))
+        self.output_file.write(self.document.toxml(encoding='utf-8'))
         return super(XMLWriter, self)._close()
 

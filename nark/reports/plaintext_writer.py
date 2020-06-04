@@ -31,16 +31,10 @@ __all__ = (
 
 
 class PlaintextWriter(ReportWriter):
-    # HINT: For list of dialects:
-    #   >>> import csv
-    #   >>> csv.list_dialects()
-    #   ['excel-tab', 'excel', 'unix']
     def __init__(
         self,
-        path,
-        datetime_format="%Y-%m-%d %H:%M:%S",
-        duration_fmt="%H:%M",
         output_b=False,
+        # dialect and **fmtparams passed to csv.writer().
         dialect='excel',
         **fmtparams
     ):
@@ -49,15 +43,29 @@ class PlaintextWriter(ReportWriter):
 
         Besides our default behaviour we create a localized heading.
         Also, we need to make sure that our heading is UTF-8 encoded on python 2!
-        In that case ``self.fileout`` will be openend in binary mode and ready to
+        In that case ``self.output_file`` will be opened in binary mode and will
         accept those encoded headings.
         """
-        super(PlaintextWriter, self).__init__(
-            path,
-            datetime_format=datetime_format,
-            output_b=output_b,
+        super(PlaintextWriter, self).__init__(output_b=output_b)
+        self.dialect = dialect
+        self.fmtparams = fmtparams
+
+    def output_setup(self, *args, output_obj, **kwargs):
+        super(PlaintextWriter, self).output_setup(*args, output_obj=output_obj, **kwargs)
+        # Note that csv only requires that csvfile has a write() method.
+        # Note that dialects are loaded at runtime and the list is not
+        # documented other than to show the default dialect is 'excel'.
+        #   >>> csv.list_dialects()
+        #   ['excel', 'excel-tab', 'unix']
+        self.csv_writer = csv.writer(
+            self.output_file, dialect=self.dialect, **self.fmtparams,
         )
-        self.csv_writer = csv.writer(self.fileout, dialect=dialect, **fmtparams)
+
+    def open_file(self, path, output_b=False, newline=''):
+        # Per docs: "If csvfile is a file object, it should be opened with newline=''".
+        return super(PlaintextWriter, self).open_file(
+            path=path, output_b=output_b, newline=newline,
+        )
         results = []
         for header in self._report_headers():
             results.append(header)

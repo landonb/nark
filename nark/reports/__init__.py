@@ -37,8 +37,6 @@ __all__ = (
 class ReportWriter(object):
     def __init__(
         self,
-        path,
-        datetime_format="%Y-%m-%d %H:%M:%S",
         output_b=False,
     ):
         """
@@ -56,11 +54,30 @@ class ReportWriter(object):
 
             output_b: Whether to open the ``path`` for binary output.
         """
-        self.datetime_format = datetime_format
-        self.duration_fmt = duration_fmt
-        self.fileout = self.open_output_file(path, output_b)
+        self.output_b = output_b
 
-    def open_output_file(self, path, output_b=False):
+    # ***
+
+    def output_setup(
+        self,
+        output_obj,
+        row_limit=0,
+        datetime_format=None,
+        duration_fmt=None,
+    ):
+        self.output_file = self.open_output_file(output_obj, self.output_b)
+
+        self.row_limit = row_limit or 0
+
+        self.datetime_format = datetime_format
+        if self.datetime_format is None:
+            self.datetime_format = '%Y-%m-%d %H:%M:%S'
+
+        self.duration_fmt = duration_fmt
+        if self.duration_fmt is None:
+            self.duration_fmt = '%H:%M'
+
+    def open_output_file(self, output_obj, output_b=False):
         # FIXME/2020-06-02: Revisit output_b=True, may be different in py3,
         # per these hamster-lib comments:
         #
@@ -73,13 +90,17 @@ class ReportWriter(object):
         #   # [FIXME]
         #   # If it turns out that this is specific to csv handling we may move it
         #   # there and use a simpler default behaviour for our base method.
-        if not path:
+        self.output_ours = False
+        if not output_obj:
             return sys.stdout
-        return self.open_file(path, output_b)
+        elif not isinstance(output_obj, str):
+            return output_obj
+        return self.open_file(output_obj, output_b)
 
-    def open_file(self, path, output_b=False):
+    def open_file(self, path, output_b=False, newline=None):
+        self.output_ours = True
         if not output_b:
-            return open(path, 'w', encoding='utf-8')
+            return open(path, 'w', encoding='utf-8', newline=newline)
         return open(path, 'wb')
 
     def write_report(self, facts, include_deleted=False):
@@ -114,7 +135,9 @@ class ReportWriter(object):
 
     def _close(self):
         """Default teardown method."""
-        if self.fileout is not sys.stdout:
-            self.fileout.close()
-        self.fileout = None
+        if self.output_ours:
+            self.output_file.close()
+        self.output_file = None
+
+# ***
 
