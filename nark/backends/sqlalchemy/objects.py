@@ -41,8 +41,6 @@ Note:
     cause be added here.
 """
 
-from gettext import gettext as _
-
 # Profiling: Loading sqlalchemy takes about ~ 0.150 secs.
 # (lb): And there's probably not a way to avoid it.
 from sqlalchemy import (
@@ -117,22 +115,6 @@ class AlchemyActivity(Activity):
         else:
             category = None
         activity_name = self.name
-        # Play nice with "corrupt" databases (lacking integrity):
-        #   Allow nameless items, rather than raising ValueError.
-        # User can easily discover problem through CLI, and they can fix it.
-        # Try this to find nameless activities and their IDs:
-        #   dob list activities ''
-        # Then, e.g.,
-        #   dob edit activity #24 newname@newcategory
-        if not activity_name:
-            if self.deleted:
-                activity_name = '<unnamed>'
-                store.logger.warning(
-                    _('Activity in database has no name: {}').format(self),
-                )
-            # else, let Activity() raise ValueError; at least for now.
-            # MAYBE: else, if this is an issue, add a migration option to
-            #              fix nameless activities. Or something.
         return Activity(
             pk=self.pk,
             name=activity_name,
