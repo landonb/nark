@@ -133,6 +133,7 @@ def format_delta(delta, style='%M', **kwargs):
         style (str): Specifies the output format.
 
           Valid choices are:
+            * ``'%S'``: As seconds, to the second.
             * ``'%M'``: As minutes, rounded down.
             * ``'%H:%M'``: As 'hours:minutes'. rounded down.
             * ``HHhMMm``: As '{hours} hour(s) {minutes} minute(s)'.
@@ -150,9 +151,11 @@ def format_delta(delta, style='%M', **kwargs):
             seconds = delta if delta is not None else 0
         if not style:
             return format_pedantic(seconds)
+        elif style == '%S':
+            return str(seconds)
         elif style == '%M':
             minutes = int(seconds / 60)
-            return format_mins(minutes)
+            return str(minutes)
         else:
             hours = int(seconds / 3600)
             minutes = int((seconds % 3600) / 60)
@@ -161,9 +164,6 @@ def format_delta(delta, style='%M', **kwargs):
             elif style == 'HHhMMm':
                 return format_hours_h_mins_m(hours, minutes)
         raise ValueError(_("Invalid format_delta style ‘{}’.").format(style))
-
-    def format_mins(minutes):
-        return str(minutes)
 
     def format_hours_mins(hours, minutes):
         return '{0:02d}:{1:02d}'.format(hours, minutes)
