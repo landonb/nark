@@ -24,7 +24,6 @@ from ..objects import AlchemyActivity, AlchemyCategory, AlchemyFact, AlchemyTag
 
 from . import (
     query_apply_limit_offset,
-    query_apply_true_or_not,
     query_prepare_datetime,
     query_sort_order_at_index,
 )
@@ -100,7 +99,12 @@ class GatherBaseAlchemyManager(object):
 
             query = self.query_filter_by_item_pk(query, alchemy_cls, qt.key)
 
-            query = query_apply_true_or_not(query, alchemy_cls.deleted, qt.deleted)
+            # FIXME/2020-06-03: Activity.deleted should not be used/useful.
+            # (lb): And I've got some deleted = 0 and some deleted = 1 in my
+            # database, but mostly deleted IS NULL, so skip deleted in WHERE
+            # for attributes. (Remove this when removing deleted/hidden.)
+            #  from . import query_apply_true_or_not
+            #  query = query_apply_true_or_not(query, alchemy_cls.deleted, qt.deleted)
 
             query = query_group_by_aggregate(query, agg_cols)
 
