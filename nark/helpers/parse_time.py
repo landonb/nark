@@ -177,19 +177,19 @@ class HamsterTimeSpec(object):
             '(?:(\d{8}|\d{4}-\d{1,2}(-\d{1,2})?))'
         )
         # BEWARE: Does not verify hours and minutes in range 0..59.
-        pattern_time = (  # noqa: E131
+        pattern_time = (
             # (lb): We could allow 3-digit times... but, no.
             #   '(?:\d{1,2})'
             '(?:\d{2})'
             '(?::?\d{2}'
-                '(?::?\d{2}'
-                    '(?:\.\d+)?'
+                '(?::?\d{2}'  # noqa: E131
+                    '(?:\.\d+)?'  # noqa: E131
                 ')?'
             ')?'
         )
-        pattern_zone = (  # noqa: E131
+        pattern_zone = (
             '(?:('
-                'Z'
+                'Z'  # noqa: E131
             '|'
                 '[+-]\d{2}(:?\d{2})?'
             '))?'
