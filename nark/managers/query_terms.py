@@ -97,27 +97,18 @@ class QueryTerms(object):
         key=None,
         since=None,
         until=None,
+
+        # - SPIKE: (lb): Are 'endless' and 'exclude_ongoing' just opposites?
         endless=False,
         # - Use exclude_ongoing to omit the final, active Fact, if any,
         #   from the results.
         exclude_ongoing=None,
+
         partial=False,
-        # FIXME/2020-05-19: (lb): What's the status of the 'deleted' feature?
-        # - There's code wired to 'delete' an Activity, but what does that mean?
-        # - Really, the user should be able to 'orphan' an Activity (by removing
-        #   it from all Facts), but if an Activity is still being used by Facts,
-        #   what would delete do? Would we want to remove the Activity from all
-        #   the Facts it's applied to?
-        #   - I think an 'orphaned' option makes sense here. And maybe a feature
-        #     to "rename" an Activity, or really to assign a different Activity
-        #     to some collection of Facts. Then maybe 'delete' is okay, i.e.,
-        #     once a Activity is orphaned, then it can be deleted.
-        #   - In the meantime, the user can hide Activities from the CLI front
-        #     end using the ignore feature, which omits matching Activities
-        #     from the auto-complete and suggestion widgets.
-        # In any case, this 'deleted' option is still wired in the CLI, so
-        # maintaining support here. For now.
+
+        # The `deleted` option only applies to Facts.
         deleted=False,
+
         search_term=None,
 
         # - Note that item name matching is strict -- case and exactness count.
