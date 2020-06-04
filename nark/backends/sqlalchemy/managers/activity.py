@@ -355,19 +355,21 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         return query
 
     def _gather_query_join_category(self, qt, query):
-        # Note that SQLAlchemy automatically lazy-loads any attribute
-        # that's another object but that we did not join. E.g., in a
-        # query for Activity, if we did not join Category, then if/when
-        # the code references activity.category on one of the returned
-        # objects, the value will then be retrieved from the data store.
-        # So we do not need to join values we do not need until after the
-        # query. Except unless we want to sort by category.name, then we
-        # need to join the table, so we can reference category.name in the
-        # query. Same for matching category name.
-        match_categories = qt.categories
+        # We'll usually join the Category table now, so that we can get all
+        # the data we need in one query, to avoid SQLAlchemy lazy-loading
+        # the Category separately for each Activity.
+        # - If we don't join Category now, SQLAlchemy will fetch the Category
+        #   the first time we reference activity.category.
+        # - It not raw, query_process_results will call as_hamster on the
+        #   Activity, which will reference activity.category. So join now
+        #   if not qt.raw and avoid fetching the Category separately for
+        #   each Activity.
+        # - If sorting on Category, we'll need to join the table.
+        # - If matching on Category, we'll need to join the table.
         requires_category_table = (
-            qt.sort_cols_has_any('category')
-            or match_categories
+            not qt.raw
+            or qt.categories
+            or qt.sort_cols_has_any('category')
         )
         if requires_category_table:
             query = query.outerjoin(AlchemyCategory)
