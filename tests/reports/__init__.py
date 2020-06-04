@@ -17,50 +17,5 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
-"""Test for report modules."""
-
-import os.path
-
-import pytest
-
-from nark.reports import ReportWriter
-
-
-class TestReportWriter(object):
-    @pytest.mark.parametrize('datetime_format', [None, '%Y-%m-%d'])
-    def test_init_stores_datetime_format(self, path, datetime_format):
-        """Make sure that Writer initialization stores the ``datetime_format``."""
-        writer = ReportWriter(path, datetime_format)
-        assert writer.datetime_format == datetime_format
-
-    def test_init_file_opened(self, path):
-        """Make sure a file like object is beeing opened."""
-        writer = ReportWriter(path)
-        assert os.path.isfile(path)
-        assert writer.file.closed is False
-
-    def test__fact_to_tuple(self, report_writer, fact):
-        with pytest.raises(NotImplementedError):
-            report_writer._fact_to_tuple(fact)
-
-    def test_write_report_write_lines(self, mocker, report_writer, list_of_facts):
-        """Make sure that each ``Fact`` instances triggers a new line."""
-        number_of_facts = 10
-        facts = list_of_facts(number_of_facts)
-        mocker.patch.object(report_writer, '_write_fact', return_value=None)
-        mocker.patch.object(report_writer, '_fact_to_tuple', return_value=None)
-        report_writer.write_report(facts)
-        assert report_writer._write_fact.call_count == number_of_facts
-
-    def test_write_report_file_closed(self, report_writer, list_of_facts):
-        """Make sure our output file is closed at the end."""
-        facts = list_of_facts(10)
-        with pytest.raises(NotImplementedError):
-            report_writer.write_report(facts)
-        assert report_writer.file.closed is False
-
-    def test__close(self, report_writer, path):
-        """Ensure that the the output gets closed."""
-        report_writer._close()
-        assert report_writer.file.closed
+"""Tests for report modules."""
 
