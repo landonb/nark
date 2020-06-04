@@ -174,7 +174,7 @@ class GatherBaseAlchemyManager(object):
         # ***
 
         def query_group_by_aggregate(query, agg_cols):
-            if not agg_cols:
+            if not agg_cols and not requires_fact_table:
                 return query
             query = query.group_by(alchemy_cls.pk)
             return query
@@ -182,7 +182,7 @@ class GatherBaseAlchemyManager(object):
         # ***
 
         def query_select_with_entities(query, agg_cols):
-            if not agg_cols:
+            if not agg_cols and not requires_fact_table:
                 return query
             # (lb): The aggregate query SELECTs all Fact columns, and it OUTER
             #  JOINs and GROUPs BY activities and categories or tags to produce
