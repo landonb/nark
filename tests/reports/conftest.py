@@ -24,6 +24,7 @@ import pytest
 from nark.reports import ReportWriter
 from nark.reports.csv_writer import CSVWriter
 from nark.reports.ical_writer import ICALWriter
+from nark.reports.json_writer import JSONWriter
 from nark.reports.plaintext_writer import PlaintextWriter
 from nark.reports.tsv_writer import TSVWriter
 from nark.reports.xml_writer import XMLWriter
