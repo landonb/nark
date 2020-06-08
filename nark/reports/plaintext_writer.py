@@ -50,8 +50,8 @@ class PlaintextWriter(ReportWriter):
         self.dialect = dialect
         self.fmtparams = fmtparams
 
-    def output_setup(self, *args, output_obj, **kwargs):
-        super(PlaintextWriter, self).output_setup(*args, output_obj=output_obj, **kwargs)
+    def output_setup(self, *args, **kwargs):
+        super(PlaintextWriter, self).output_setup(*args, **kwargs)
         # Note that csv only requires that csvfile has a write() method.
         # Note that dialects are loaded at runtime and the list is not
         # documented other than to show the default dialect is 'excel'.
