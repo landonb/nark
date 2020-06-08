@@ -110,14 +110,18 @@ class ReportWriter(object):
         Returns:
             None: If everything worked as expected.
         """
+        n_written = self.write_facts_list(facts)
+        self._close()
+        return n_written
+
+    def write_facts_list(self, facts):
+        """Write facts to output file."""
         n_written = 0
         for idx, fact in enumerate(facts):
             self._write_fact(idx, fact)
             n_written += 1
             if self.row_limit > 0 and n_written >= self.row_limit:
                 break
-        self._close()
-
         return n_written
 
     def _write_fact(self, idx, fact):
@@ -142,7 +146,7 @@ class ReportWriter(object):
 
     def write_report(self, table, columns):
         """
-        Write facts to output file and close the file like object.
+        Write report to output file and close the file like object.
 
         Args:
             facts (Iterable): Iterable of ``nark.Fact`` instances to export.
@@ -150,10 +154,19 @@ class ReportWriter(object):
         Returns:
             None: If everything worked as expected.
         """
+        n_written = self.write_report_table(table, columns)
+        self._close()
+        return n_written
+
+    def write_report_table(self, table, columns):
+        """Write report to output file."""
+        n_written = 0
         for row in table:
             self._write_result(row, columns)
-        self._close()
-        return len(table)
+            n_written += 1
+            if self.row_limit > 0 and n_written >= self.row_limit:
+                break
+        return n_written
 
     def _write_result(self, row, columns):
         """
