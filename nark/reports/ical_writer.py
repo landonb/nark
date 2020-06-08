@@ -66,7 +66,7 @@ class ICALWriter(ReportWriter):
         # MAGIC_NUMBER: (lb): I'm guessing based on `dtend` comment above that
         # since the end time is non-inclusive, add one second to it.
         event.add('dtend', fact.end + datetime.timedelta(seconds=1))
-        event.add('categories', fact.category_name)
+        event.add('categories', [fact.category_name])
         event.add('summary', fact.activity_name)
         event.add('description', fact.description_or_empty)
         self.calendar.add_component(event)
