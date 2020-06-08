@@ -61,14 +61,26 @@ class ICALWriter(ReportWriter):
         # [FIXME]
         # It apears that date/time requirements for VEVENT have changed between
         # RFCs. 5545 now seems to require a 'dstamp' and a 'uid'!
+
+        # (lb): I'm not sure the utility of this export format without
+        # ever personally having tested importing it anywhere. For
+        # instance, maybe exporting the Activity@Category is a better
+        # idea than using the separate "categories" and "summary" fields
+        # (and I'm not sure how those fields are intended to be used, nor
+        # how different applications might show their values). In any case,
+        # I've maintained this format because it existed in hamster-lib, and
+        # it seems like something people might want.
+
         event = icalendar.Event()
+
         event.add('dtstart', fact.start)
-        # MAGIC_NUMBER: (lb): I'm guessing based on `dtend` comment above that
-        # since the end time is non-inclusive, add one second to it.
-        event.add('dtend', fact.end + datetime.timedelta(seconds=1))
+        if fact.end:
+            # MAGIC_NUMBER: (lb): Add one second, because `dtend` is non-inclusive.
+            event.add('dtend', fact.end + datetime.timedelta(seconds=1))
         event.add('categories', [fact.category_name])
         event.add('summary', fact.activity_name)
         event.add('description', fact.description_or_empty)
+
         self.calendar.add_component(event)
 
     def _close(self):
