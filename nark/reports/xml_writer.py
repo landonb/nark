@@ -42,7 +42,8 @@ class XMLWriter(ReportWriter):
 
     def __init__(self, *args, **kwargs):
         """Setup the writer including a main xml document."""
-        super(XMLWriter, self).__init__(*args, output_b=True, **kwargs)
+        kwargs['output_b'] = True
+        super(XMLWriter, self).__init__(*args, **kwargs)
 
     def start_document(self, element_name):
         # Profiling: load Document: ~ 0.004 secs.
@@ -60,8 +61,6 @@ class XMLWriter(ReportWriter):
         Once the child is prepared append it to ``fact_list``.
         """
         elem = self.document.createElement("fact")
-
-        # MAYBE/2018-04-22: (lb): Should this be start, or start_time? end, or end_time?
         elem.setAttribute('start', fact.start_fmt(self.datetime_format))
         elem.setAttribute('end', fact.end_fmt(self.datetime_format))
         elem.setAttribute('activity', fact.activity_name)
