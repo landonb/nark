@@ -17,55 +17,42 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
+import pytest
+
 import datetime
 from icalendar import Calendar
 
 
 class TestICALWriter(object):
     """Make sure the iCal writer works as expected."""
-    def test_init(self, ical_writer):
+    def test_ical_writer_init(self, ical_writer):
         """Make sure that init creates a new calendar instance to add events to."""
         assert ical_writer.calendar
 
-    def test__fact_to_tuple(self, ical_writer, fact):
-        """Make sure that our general expection about conversions are matched."""
-        result = ical_writer._fact_to_tuple(fact)
-        assert result.start == fact.start
-        assert result.end == fact.end
-        assert result.activity == fact.activity.name
-        assert result.duration is None
-        assert result.category == fact.category.name
-        assert result.description == fact.description
-
-    def test__fact_to_tuple_no_category(self, ical_writer, fact):
-        """Make sure that ``None`` category values translate to ``empty strings``."""
-        fact.activity.category = None
-        result = ical_writer._fact_to_tuple(fact)
-        assert result.category == ''
-
-    def test__fact_to_tuple_with_category(self, ical_writer, fact):
-        """Make sure that category references translate to their names."""
-        result = ical_writer._fact_to_tuple(fact)
-        assert result.category == fact.category.name
-
-    def test_write_fact(self, ical_writer, fact, mocker):
+    def test_ical_writer_write_facts_expected(self, ical_writer, fact, mocker):
         """Make sure that the fact attached to the calendar matches our expectations."""
-        fact_tuple = ical_writer._fact_to_tuple(fact)
         mocker.patch.object(ical_writer.calendar, 'add_component')
-        ical_writer._write_fact(fact_tuple)
+        ical_writer.write_facts([fact])
+        # Retrieve the generated icalendar.Event.
         result = ical_writer.calendar.add_component.call_args[0][0]
-        assert result.get('dtstart').dt == fact_tuple.start
-        assert result.get('dtend').dt == fact_tuple.end + datetime.timedelta(seconds=1)
-        assert result.get('summary') == fact_tuple.activity
+        assert result.get('dtstart').dt == fact.start
+        assert result.get('dtend').dt == fact.end + datetime.timedelta(seconds=1)
+        assert result.get('summary') == fact.activity_name
         # Make lists of [vText] and [str], else comparison fails.
-        #  NO: assert result.get('categories') == fact_tuple.category
-        assert list(result.get('categories').cats) == list(fact_tuple.category)
-        assert result.get('description') == fact_tuple.description
+        #  NO: assert result.get('categories') == fact.category
+        assert list(result.get('categories').cats) == list([fact.category_name])
+        assert result.get('categories').cats[0] == fact.category_name
+        assert result.get('description') == fact.description_or_empty
 
-    def test__close(self, ical_writer, fact, path):
-        """Make sure the calendar is actually written do disk before file is closed."""
-        ical_writer.write_report((fact,))
-        with open(path, 'rb') as fobj:
+    def test_ical_writer_write_report_not_implemented(self, ical_writer):
+        with pytest.raises(NotImplementedError):
+            ical_writer.write_report(table=[], headers=[])
+
+    def test_ical_writer_write_facts_written(self, ical_writer, fact, path):
+        """Make sure the calendar is actually written to disk before file is closed."""
+        ical_writer.write_facts([fact])
+        with open(path, 'r') as fobj:
+            # Create an icalendar.cal.Calendar from the file contents.
             result = Calendar.from_ical(fobj.read())
             assert result.walk()
 

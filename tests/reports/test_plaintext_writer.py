@@ -19,18 +19,19 @@
 
 from gettext import gettext as _
 
+import pytest
+
 import csv
 
 
 class TestPlaintextWriter(object):
-    def test_init_csv_writer(self, plaintext_writer):
+    def test_plaintext_writer_init(self, plaintext_writer):
         """Make sure that initialition provides us with a ``csv.writer`` instance."""
         assert plaintext_writer.csv_writer
         assert plaintext_writer.csv_writer.dialect == csv.get_dialect('excel')
 
-    def test_init_heading(self, path, plaintext_writer):
+    def test_plaintext_writer_headers(self, path, plaintext_writer):
         """Make sure that initialition writes header as expected."""
-
         expectations = (
             'Start time',
             'End time',
@@ -40,9 +41,8 @@ class TestPlaintextWriter(object):
             'Description',
             'Deleted',
         )
-
-        plaintext_writer._close()
-        with open(path, 'r') as fobj:
+        plaintext_writer.write_facts(facts=[])
+        with open(plaintext_writer.output_file.name, 'r') as fobj:
             reader = csv.reader(fobj, dialect='excel')
             header = next(reader)
         for field, expectation in zip(header, expectations):
@@ -51,31 +51,47 @@ class TestPlaintextWriter(object):
             else:
                 assert field.decode('utf-8') == expectation
 
-    def test_fact_as_tuple_no_category(self, plaintext_writer, fact):
+    def test_plaintext_writer_fact_as_tuple_no_category(self, plaintext_writer, fact):
         """Make sure that ``None`` category values translate to ``empty strings``."""
         fact.activity.category = None
         result = plaintext_writer.fact_as_tuple(fact)
         cat_idx = plaintext_writer.facts_headers().index(_('Category'))
         assert result[cat_idx] == ''
 
-    def test_fact_as_tuple_with_category(self, plaintext_writer, fact):
+    def test_plaintext_writer_fact_as_tuple_with_category(self, plaintext_writer, fact):
         """Make sure that category references translate to their names."""
         result = plaintext_writer.fact_as_tuple(fact)
         cat_idx = plaintext_writer.facts_headers().index(_('Category'))
         assert result[cat_idx] == fact.category.name
 
-    def test__write_fact(self, path, fact, plaintext_writer):
+    def test_plaintext_writer__write_fact(self, fact, plaintext_writer):
         """Make sure the writen fact is what we expect."""
         fact_tuple = plaintext_writer.fact_as_tuple(fact)
-        plaintext_writer._write_fact(fact_tuple)
+        plaintext_writer._write_fact(idx=0, fact=fact)
         plaintext_writer._close()
-        with open(path, 'r') as fobj:
-            reader = csv.reader(fobj, dialect='excel-tab')
-            next(reader)
+        with open(plaintext_writer.output_file.name, 'r') as fobj:
+            reader = csv.reader(fobj, dialect=plaintext_writer.dialect)
+            # If we had called write_facts, would need to ignore headers,
+            # e.g.,
+            #   next(reader)
+            # and then fetch the line.
             line = next(reader)
             for field, expectation in zip(line, fact_tuple):
                 if isinstance(field, str):
                     assert field == expectation
                 else:
                     assert field.decode('utf-8') == expectation
+
+    def test_plaintext_writer_write_report(self, plaintext_writer, table, columns):
+        plaintext_writer.write_report(table, columns)
+        with open(plaintext_writer.output_file.name, 'r') as fobj:
+            reader = csv.reader(fobj, dialect=plaintext_writer.dialect)
+            # The first line is the headers.
+            headers = next(reader)
+            assert headers == columns
+            # Remaining lines are columns.
+            for row in table:
+                assert row == next(reader)
+            with pytest.raises(StopIteration):
+                next(reader)
 

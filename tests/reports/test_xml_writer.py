@@ -23,44 +23,57 @@ import xml
 class TestXMLWriter(object):
     """Make sure the XML writer works as expected."""
 
-    def test_init_(self, xml_writer):
+    def test_xml_writer_start_document(self, xml_writer, faker):
         """Make sure a XML main document and a facts list child element is set up."""
+        ename = faker.word()
+        xml_writer.start_document(ename)
         assert xml_writer.document
         assert xml_writer.fact_list
+        assert xml_writer.fact_list.tagName == ename
 
-    def test_fact_to_tuple(self, xml_writer, fact):
-        """Make sure type conversion and normalization matches our expectations."""
-        result = xml_writer._fact_to_tuple(fact)
-        assert result.start == fact.start.strftime(xml_writer.datetime_format)
-        assert result.end == fact.end.strftime(xml_writer.datetime_format)
-        assert result.activity == fact.activity.name
-        assert result.duration == fact.format_delta(style='%M')
-        assert result.category == fact.category.name
-        assert result.description == fact.description
-
-    def test__fact_to_tuple_no_category(self, xml_writer, fact):
-        """Make sure that ``None`` category values translate to ``empty strings``."""
-        fact.activity.category = None
-        result = xml_writer._fact_to_tuple(fact)
-        assert result.category == ''
-
-    def test_write_fact(self, xml_writer, fact, mocker):
+    def test_xml_writer__write_fact(self, xml_writer, fact, mocker):
         """Make sure that the attributes attached to the fact matche our expectations."""
-        fact_tuple = xml_writer._fact_to_tuple(fact)
+        # (lb): I tried patching the Class method so we could call write_facts, e.g.,
+        #   from xml.dom.minidom import Node
+        #   mocker.patch.object(Node, 'appendChild')
+        #   xml_writer.write_facts([fact])
+        # But then the elem.setAttribute() methods do not work.
+        # So call _write_fact directly, and test write_facts elsewhere.
+        xml_writer.start_document('facts')
         mocker.patch.object(xml_writer.fact_list, 'appendChild')
-        xml_writer._write_fact(fact_tuple)
+        xml_writer._write_fact(idx=0, fact=fact)
+        # Grab the document element created and passed to appendChild.
         result = xml_writer.fact_list.appendChild.call_args[0][0]
-        assert result.getAttribute('start') == fact_tuple.start
-        assert result.getAttribute('end') == fact_tuple.end
-        assert result.getAttribute('duration') == fact_tuple.duration
-        assert result.getAttribute('activity') == fact_tuple.activity
-        assert result.getAttribute('category') == fact_tuple.category
-        assert result.getAttribute('description') == fact_tuple.description
+        fact_start = fact.start_fmt(xml_writer.datetime_format)
+        fact_end = fact.end_fmt(xml_writer.datetime_format)
+        fact_duration = fact.format_delta(style=xml_writer.duration_fmt)
+        assert result.getAttribute('start') == fact_start
+        assert result.getAttribute('end') == fact_end
+        assert result.getAttribute('duration') == fact_duration
+        assert result.getAttribute('activity') == fact.activity_name
+        assert result.getAttribute('category') == fact.category_name
+        assert result.getAttribute('description') == fact.description_or_empty
 
-    def test__close(self, xml_writer, fact, path):
+    def test_xml_writer_write_report(self, xml_writer, mocker, columns, row):
+        xml_writer.start_document('results')
+        mocker.patch.object(xml_writer.fact_list, 'appendChild')
+        xml_writer._write_result(row, columns)
+        result = xml_writer.fact_list.appendChild.call_args[0][0]
+        for idx, col in enumerate(columns):
+            assert result.getAttribute(col) == row[idx]
+
+    def test_xml_writer_write_facts__close(self, xml_writer, fact, path):
         """Make sure the calendar is actually written do disk before file is closed."""
-        xml_writer.write_report((fact,))
-        with open(path, 'rb') as fobj:
+        xml_writer.write_facts([fact])
+        with open(path, 'r') as fobj:
+            result = xml.dom.minidom.parse(fobj)
+            assert result.toxml()
+
+    def test_xml_writer_write_report__close(self, xml_writer, table, columns):
+        """Make sure the calendar is actually written do disk before file is closed."""
+        output_path = xml_writer.output_file.name
+        xml_writer.write_report(table, columns)
+        with open(output_path, 'r') as fobj:
             result = xml.dom.minidom.parse(fobj)
             assert result.toxml()
 

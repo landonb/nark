@@ -21,7 +21,7 @@ import csv
 
 
 class TestTSVWriter(object):
-    def test_init_csv_writer(self, tsv_writer):
+    def test_tsv_writer_init(self, tsv_writer):
         """Make sure that initialition provides us with a ``csv.writer`` instance."""
         assert tsv_writer.csv_writer
         assert tsv_writer.csv_writer.dialect == csv.get_dialect('excel-tab')

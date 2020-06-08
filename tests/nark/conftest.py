@@ -23,37 +23,8 @@ import datetime
 
 import pytest
 
-# Register the fact_factory, etc.
-from nark.tests.item_factories import *  # noqa: F401, F403
 
-
-# ***
-
-# Fixture(s) for: tests/nark/test_reports.py.
-
-@pytest.fixture
-def list_of_facts(fact_factory):
-    """
-    Provide a factory that returns a list with given amount of Fact instances.
-
-    The key point here is that these fact *do not overlap*!
-    """
-    def get_list_of_facts(number_of_facts):
-        facts = []
-        # MAYBE: Use controller.store.now ?
-        old_start = datetime.datetime.utcnow().replace(microsecond=0)
-        offset = datetime.timedelta(hours=4)
-        for i in range(number_of_facts):
-            start = old_start + offset
-            facts.append(fact_factory(start=start))
-            old_start = start
-        return facts
-    return get_list_of_facts
-
-
-# ***
-
-# (lb): Unused.
+# *** (lb): Unused.
 
 def convert_time_to_datetime(time_string):
     """
@@ -68,6 +39,8 @@ def convert_time_to_datetime(time_string):
         datetime.datetime.strptime(time_string, "%H:%M").time()
     )
 
+
+# *** (lb): Unused.
 
 @pytest.fixture
 def raw_fact_with_persistent_activity(persistent_activity):

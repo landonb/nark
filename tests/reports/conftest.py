@@ -17,6 +17,8 @@
 # You can find the GNU General Public License reprinted in the file titled 'LICENSE',
 # or visit <http://www.gnu.org/licenses/>.
 
+import datetime
+
 import pytest
 
 from nark.reports import ReportWriter
@@ -25,6 +27,9 @@ from nark.reports.ical_writer import ICALWriter
 from nark.reports.plaintext_writer import PlaintextWriter
 from nark.reports.tsv_writer import TSVWriter
 from nark.reports.xml_writer import XMLWriter
+
+# Register the fact_factory, etc.
+from nark.tests.item_factories import *  # noqa: F401, F403
 
 
 @pytest.fixture
@@ -35,30 +40,96 @@ def path(tmpdir):
 
 @pytest.fixture
 def report_writer(path):
-    return ReportWriter(path)
+    report_writer = ReportWriter()
+    report_writer.output_setup(path)
+    return report_writer
 
 
 @pytest.fixture
 def csv_writer(path):
-    return CSVWriter(path)
+    csv_writer = CSVWriter()
+    csv_writer.output_setup(path)
+    return csv_writer
 
 
 @pytest.fixture
 def ical_writer(path):
-    return ICALWriter(path)
+    ical_writer = ICALWriter()
+    ical_writer.output_setup(path)
+    return ical_writer
+
+
+@pytest.fixture
+def json_writer(path):
+    json_writer = JSONWriter()
+    json_writer.output_setup(path)
+    return json_writer
 
 
 @pytest.fixture
 def plaintext_writer(path):
-    return PlaintextWriter(path)
+    plaintext_writer = PlaintextWriter()
+    plaintext_writer.output_setup(path)
+    return plaintext_writer
 
 
 @pytest.fixture
 def tsv_writer(path):
-    return TSVWriter(path)
+    tsv_writer = TSVWriter()
+    tsv_writer.output_setup(path)
+    return tsv_writer
 
 
 @pytest.fixture
 def xml_writer(path):
-    return XMLWriter(path)
+    xml_writer = XMLWriter()
+    xml_writer.output_setup(path)
+    return xml_writer
+
+
+# ***
+
+@pytest.fixture
+def list_of_facts(fact_factory):
+    """
+    Provide a factory that returns a list with given amount of Fact instances.
+
+    The key point here is that these fact *do not overlap*!
+    """
+    def get_list_of_facts(number_of_facts):
+        facts = []
+        # MAYBE: Use controller.store.now ?
+        old_start = datetime.datetime.utcnow().replace(microsecond=0)
+        offset = datetime.timedelta(hours=4)
+        for i in range(number_of_facts):
+            start = old_start + offset
+            facts.append(fact_factory(start=start))
+            old_start = start
+        return facts
+    return get_list_of_facts
+
+
+# ***
+
+FAKER_WORDS_NB = 6
+
+FAKER_TABLE_LEN = 3
+
+
+@pytest.fixture
+def columns(faker):
+    return faker.words(nb=FAKER_WORDS_NB)
+
+
+@pytest.fixture
+def row(faker):
+    return faker.words(nb=FAKER_WORDS_NB)
+
+
+@pytest.fixture
+def table(faker):
+    table = []
+    for iters in range(FAKER_TABLE_LEN):
+        table.append(faker.words(nb=FAKER_WORDS_NB))
+    return table
 
