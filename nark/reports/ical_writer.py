@@ -83,6 +83,9 @@ class ICALWriter(ReportWriter):
 
         self.calendar.add_component(event)
 
+    def write_report(self, table, headers):
+        raise NotImplementedError
+
     def _close(self):
         """Custom close method to make sure the calendar is actually writen do disk."""
         self.output_file.write(self.calendar.to_ical())
