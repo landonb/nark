@@ -189,7 +189,8 @@ class ReportWriter(object):
         """Default teardown method."""
         if self.output_ours:
             self.output_file.close()
-        self.output_file = None
+        # Rather than clear the file handle, leave set, so caller can inspect.
+        #  self.output_file = None
 
 # ***
 
