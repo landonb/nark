@@ -127,7 +127,7 @@ class TestFactManager:
     ):
         """Test that time conversion matches expectations."""
         mocker.patch.object(basestore.facts, 'gather', )
-        query_terms = QueryTerms(since=since, until=until, search_term=filter_term)
+        query_terms = QueryTerms(since=since, until=until, search_terms=filter_term)
         # MAYBE/2020-05-25: (lb): I don't quite like that get_all mutates query_terms.
         basestore.facts.get_all(query_terms)
         assert basestore.facts.gather.called
@@ -135,7 +135,7 @@ class TestFactManager:
         expect_qt = QueryTerms(
             since=expectation['since'],
             until=expectation['until'],
-            search_term=filter_term,
+            search_terms=filter_term,
         )
         assert actual_qt == expect_qt
 

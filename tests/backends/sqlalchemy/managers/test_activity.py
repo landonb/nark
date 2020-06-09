@@ -345,7 +345,7 @@ class TestActivityManager():
         # really worth the time -- just something I wanted to note).
         results = alchemy_store.activities.get_all(
             category=alchemy_activity.category,
-            search_term=alchemy_activity.name,
+            search_terms=alchemy_activity.name,
         )
         assert len(results) == 1
 

@@ -598,7 +598,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             join_category = (
                 qt.is_grouped  # b/c _get_all_prepare_actg_cols_categories
                 or qt.categories
-                or qt.search_term
+                or qt.search_terms
                 or qt.sort_cols_has_any('activity')
                 or qt.sort_cols_has_any('category')
             )
@@ -623,16 +623,16 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             Terms are matched against ``Category.name`` and ``Activity.name``.
             The matching is not case-sensitive.
             """
-            if not qt.search_term:
+            if not qt.search_terms:
                 return query
 
             # FIXME/2018-06-09: (lb): Now with activity and category filters,
-            #   search_term makes less sense. Unless we apply to all parts?
+            #   search_terms makes less sense. Unless we apply to all parts?
             #   E.g., match tags, and match description.
             query = query.filter(
                 or_(
-                    AlchemyActivity.name.ilike('%{}%'.format(qt.search_term)),
-                    AlchemyCategory.name.ilike('%{}%'.format(qt.search_term)),
+                    AlchemyActivity.name.ilike('%{}%'.format(qt.search_terms)),
+                    AlchemyCategory.name.ilike('%{}%'.format(qt.search_terms)),
                 )
             )
 

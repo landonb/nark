@@ -31,7 +31,7 @@ QueryTermsTuple = namedtuple('QueryTermsTuple', (
     'exclude_ongoing',
     'partial',
     'deleted',
-    'search_term',
+    'search_terms',
     'activity',
     'match_activities',
     'category',
@@ -70,7 +70,7 @@ class QueryTerms(object):
             'excl-ongo?: {}'.format(self.exclude_ongoing),
             'partial: {}'.format(self.partial),
             'del?: {}'.format(self.deleted),
-            'terms: {}'.format(self.search_term),
+            'terms: {}'.format(self.search_terms),
             'act: {}'.format(self.activity),
             'acts: {}'.format(self.match_activities),
             'cat: {}'.format(self.category),
@@ -109,7 +109,7 @@ class QueryTerms(object):
         # The `deleted` option only applies to Facts.
         deleted=False,
 
-        search_term=None,
+        search_terms=None,
 
         # - Note that item name matching is strict -- case and exactness count.
         activity=False,
@@ -182,7 +182,7 @@ class QueryTerms(object):
             partial: If True, restrict Facts to those that start or end within the
                 since-to-until time window.
             deleted: If True, include items marked 'deleted'.
-            search_term (None, or str list): Use to restrict to items whose name
+            search_terms (None, or str list): Use to restrict to items whose name
                 matches any on the specified search terms. Each comparison is case
                 insensitive, and the match can occur in the middle of a string. If
                 an item name matches one or more of the search terms, if any, it
@@ -248,7 +248,8 @@ class QueryTerms(object):
         self.exclude_ongoing = exclude_ongoing
         self.partial = partial
         self.deleted = deleted
-        self.search_term = search_term
+
+        self.search_terms = search_terms
 
         self.activity = activity
         self.match_activities = match_activities
@@ -281,7 +282,7 @@ class QueryTerms(object):
             exclude_ongoing=self.exclude_ongoing,
             partial=self.partial,
             deleted=self.deleted,
-            search_term=self.search_term,
+            search_terms=self.search_terms,
             activity=self.activity,
             match_activities=self.match_activities,
             category=self.category,

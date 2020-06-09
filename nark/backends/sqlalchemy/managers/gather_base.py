@@ -157,11 +157,11 @@ class GatherBaseAlchemyManager(object):
         # ***
 
         def query_filter_by_search_term(query):
-            if not qt.search_term:
+            if not qt.search_terms:
                 return query
 
             condits = None
-            for term in qt.search_term:
+            for term in qt.search_terms:
                 condit = alchemy_cls.name.ilike('%{}%'.format(term))
                 if condits is None:
                     condits = condit
