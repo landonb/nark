@@ -305,7 +305,7 @@ class GatherBaseAlchemyManager(object):
 
     def query_criteria_filter_by_activities(self, query, qt):
         criteria = []
-        for activity in qt.activities or []:
+        for activity in qt.match_activities or []:
             criterion = self.query_filter_by_activity(activity)
             if criterion is not None:
                 criteria.append(criterion)
@@ -362,7 +362,7 @@ class GatherBaseAlchemyManager(object):
 
     def query_criteria_filter_by_categories(self, query, qt):
         criteria = []
-        for category in qt.categories or []:
+        for category in qt.match_categories or []:
             criterion = self.query_filter_by_category(category)
             if criterion is not None:
                 criteria.append(criterion)

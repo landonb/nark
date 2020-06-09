@@ -271,7 +271,7 @@ class CategoryManager(BaseAlchemyManager, BaseCategoryManager):
         # the user is matching on or ordering by Activity.
         requires_fact_table = (
             requires_fact_table
-            or qt.activity
+            or qt.match_activities
             or qt.sort_cols_has_any('activity')
         )
 

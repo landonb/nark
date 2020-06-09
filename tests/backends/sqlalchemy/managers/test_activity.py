@@ -307,7 +307,7 @@ class TestActivityManager():
     ):
         """Make sure only activity without a category is returned."""
         activity_without_category = alchemy_activity_factory(category=None)
-        results = alchemy_store.activities.get_all(category=None)
+        results = alchemy_store.activities.get_all(match_categories=[None])
         assert len(results) == 1
         assert results[0] == activity_without_category
 
@@ -318,7 +318,9 @@ class TestActivityManager():
         # Add Activity without Category to data store.
         # F841 local variable 'foo' is assigned to but never used
         _activity_sans_category = alchemy_activity_factory(category=None)  # noqa: F841
-        results = alchemy_store.activities.get_all(category=alchemy_activity.category)
+        results = alchemy_store.activities.get_all(
+            match_categories=[alchemy_activity.category],
+        )
         assert len(results) == 1
         assert results[0] == alchemy_activity
 
@@ -344,7 +346,7 @@ class TestActivityManager():
         # (and could probably do the same elsewhere in this file, but not
         # really worth the time -- just something I wanted to note).
         results = alchemy_store.activities.get_all(
-            category=alchemy_activity.category,
+            match_categories=[alchemy_activity.category],
             search_terms=[alchemy_activity.name],
         )
         assert len(results) == 1
@@ -353,7 +355,7 @@ class TestActivityManager():
         """
         Make sure that activities matching the given alchemy_category are returned.
         """
-        results = alchemy_store.activities.get_all(category='miss')
+        results = alchemy_store.activities.get_all(match_categories=['miss'])
         assert len(results) == 0
         assert alchemy_activity == alchemy_store.activities.get_all()[0]
 

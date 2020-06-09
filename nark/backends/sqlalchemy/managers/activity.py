@@ -368,7 +368,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         # - If matching on Category, we'll need to join the table.
         requires_category_table = (
             not qt.raw
-            or qt.categories
+            or qt.match_categories
             or qt.sort_cols_has_any('category')
         )
         if requires_category_table:

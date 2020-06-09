@@ -597,14 +597,14 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
         def _get_all_prepare_joins(query):
             join_category = (
                 qt.is_grouped  # b/c _get_all_prepare_actg_cols_categories
-                or qt.categories
+                or qt.match_categories
                 or qt.search_terms
                 or qt.sort_cols_has_any('activity')
                 or qt.sort_cols_has_any('category')
             )
             if (
                 add_aggregates
-                or qt.activities
+                or qt.match_activities
                 or join_category
             ):
                 # Equivalent: AlchemyFact.activity or AlchemyActivity.

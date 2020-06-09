@@ -33,9 +33,7 @@ QueryTermsTuple = namedtuple('QueryTermsTuple', (
     'deleted',
     'search_terms',
     'fuzzy_terms',
-    'activity',
     'match_activities',
-    'category',
     'match_categories',
     'group_activity',
     'group_category',
@@ -73,9 +71,7 @@ class QueryTerms(object):
             'del?: {}'.format(self.deleted),
             'terms: {}'.format(self.search_terms),
             'fuzzy: {}'.format(self.fuzzy_terms),
-            'act: {}'.format(self.activity),
             'acts: {}'.format(self.match_activities),
-            'cat: {}'.format(self.category),
             'cats: {}'.format(self.match_categories),
             'grp-acts?: {}'.format(self.group_activity),
             'grp-cats?: {}'.format(self.group_category),
@@ -115,9 +111,7 @@ class QueryTerms(object):
         fuzzy_terms=False,
 
         # - Note that item name matching is strict -- case and exactness count.
-        activity=False,
         match_activities=[],
-        category=False,
         match_categories=[],
         # - MEH: (lb): For parity, could add a 'tags' option to restrict the
         #   search to Activities used on Facts with specific 'tags', but how
@@ -195,24 +189,23 @@ class QueryTerms(object):
             fuzzy_terms: If True, apply search_terms fuzzy search to activity,
                 category, and tag names.
 
-            activity (nark.Activity, str, or False; optional): Matches only the
-                Activity or the Facts assigned the Activity with this exact name.
+            match_activities (list of items, each a nark.Activity, str, or None;
+                optional): Matches only Activity(ies) or Facts that use the
+                indicated Activity(ies) or Activity name(s) (exactly matched).
                 The activity name can be specified as a string, or by passing a
-                ``nark.Activity`` object whose name will be used. Defaults to
-                ``False``, which skips the match. To match Facts without an
-                Activity assigned, set ``activity=None``.
-            match_activities: Use to specify more than one exact Activity name
-                to match. Activities that exactly match any of the specified
-                names will be included.
-            category (nark.Category, str, or False; optional): Matches only the
-                Category or the Activities assigned the Category with this exact
-                name. The category name can be specified as a string, or by
-                passing a ``nark.Caetgory`` object whose name will be used.
-                Defaults to ``False``, which skips the match. To match Activities
-                without a Category assigned, set ``category=None``.
-            match_categories: Use to specify more than one exact Category name
-                to match. Categories that exactly match any of the specified
-                names will be included.
+                ``nark.Activity`` object whose name will be used. To match Facts
+                without an Activity assigned, use ``None``. If ``match_activities``
+                contains more than one item, Activities that exactly match or
+                Facts that use *any* of the specified Activities will be included.
+            match_categories (list of items, each a nark.Category, str, or None;
+                optional): Matches only Category(ies) or Facts that use Activities
+                that use the indicated Category(ies) or Category name(s) (exactly
+                matched). The category name can be specified as a string, or by
+                passing a ``nark.Category`` object whose name will be used. To match
+                Facts with an Activity that does not have a Category assigned, use
+                ``None``. If ``match_categories`` contains more than one item,
+                Categories that exactly match or Facts that use an Activity with
+                *any* of the specified Categories will be included.
 
             group_activity: If True, GROUP BY the Activity name, unless group_category
                 is also True, then GROUP BY the Activity PK and the Category PK.
@@ -257,9 +250,7 @@ class QueryTerms(object):
         self.search_terms = search_terms
         self.fuzzy_terms = fuzzy_terms
 
-        self.activity = activity
         self.match_activities = match_activities
-        self.category = category
         self.match_categories = match_categories
 
         self.group_activity = group_activity
@@ -290,9 +281,7 @@ class QueryTerms(object):
             deleted=self.deleted,
             search_terms=self.search_terms,
             fuzzy_terms=self.fuzzy_terms,
-            activity=self.activity,
             match_activities=self.match_activities,
-            category=self.category,
             match_categories=self.match_categories,
             group_activity=self.group_activity,
             group_category=self.group_category,
@@ -310,20 +299,6 @@ class QueryTerms(object):
         return self.as_tuple() == other
 
     # ***
-
-    @property
-    def activities(self):
-        return [
-            act for act in self.match_activities + [self.activity]
-            if act is not False
-        ]
-
-    @property
-    def categories(self):
-        return [
-            act for act in self.match_categories + [self.category]
-            if act is not False
-        ]
 
     @property
     def is_grouped(self):
