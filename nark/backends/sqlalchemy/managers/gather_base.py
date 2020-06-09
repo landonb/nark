@@ -299,22 +299,17 @@ class GatherBaseAlchemyManager(object):
 
     def query_filter_by_activities(self, query, qt):
         query, criteria = self.query_criteria_filter_by_activities(query, qt)
-        if criteria is not None:
-            query = query.filter(or_(*criteria))
+        query = query.filter(or_(*criteria))
         return query
 
     def query_criteria_filter_by_activities(self, query, qt):
         criteria = []
         for activity in qt.match_activities or []:
             criterion = self.query_filter_by_activity(activity)
-            if criterion is not None:
-                criteria.append(criterion)
+            criteria.append(criterion)
         return query, criteria
 
     def query_filter_by_activity(self, activity):
-        if activity is False:
-            return None
-
         if activity is not None:
             activity_name = self.query_filter_by_activity_name(activity)
             if activity_name is None:
@@ -356,25 +351,22 @@ class GatherBaseAlchemyManager(object):
 
     def query_filter_by_categories(self, query, qt):
         query, criteria = self.query_criteria_filter_by_categories(query, qt)
-        if criteria is not None:
-            query = query.filter(or_(*criteria))
+        query = query.filter(or_(*criteria))
         return query
 
     def query_criteria_filter_by_categories(self, query, qt):
         criteria = []
         for category in qt.match_categories or []:
             criterion = self.query_filter_by_category(category)
-            if criterion is not None:
-                criteria.append(criterion)
+            criteria.append(criterion)
         return query, criteria
 
     def query_filter_by_category(self, category):
-        if category is False:
-            return None
-
         if category is not None:
             category_name = self.query_filter_by_category_name(category)
             if category_name is None:
+                # See comment in query_filter_by_activity: this path not
+                # reachable via production code.
                 criterion = (AlchemyCategory.pk == category.pk)
             else:
                 # NOTE: Strict name matching. Case and exactness count.
