@@ -32,6 +32,7 @@ QueryTermsTuple = namedtuple('QueryTermsTuple', (
     'partial',
     'deleted',
     'search_terms',
+    'fuzzy_terms',
     'activity',
     'match_activities',
     'category',
@@ -71,6 +72,7 @@ class QueryTerms(object):
             'partial: {}'.format(self.partial),
             'del?: {}'.format(self.deleted),
             'terms: {}'.format(self.search_terms),
+            'fuzzy: {}'.format(self.fuzzy_terms),
             'act: {}'.format(self.activity),
             'acts: {}'.format(self.match_activities),
             'cat: {}'.format(self.category),
@@ -110,6 +112,7 @@ class QueryTerms(object):
         deleted=False,
 
         search_terms=None,
+        fuzzy_terms=False,
 
         # - Note that item name matching is strict -- case and exactness count.
         activity=False,
@@ -189,6 +192,8 @@ class QueryTerms(object):
                 will be included in the results.
                 * Use ``not`` before a search term to exclude its matches from the
                   results.
+            fuzzy_terms: If True, apply search_terms fuzzy search to activity,
+                category, and tag names.
 
             activity (nark.Activity, str, or False; optional): Matches only the
                 Activity or the Facts assigned the Activity with this exact name.
@@ -250,6 +255,7 @@ class QueryTerms(object):
         self.deleted = deleted
 
         self.search_terms = search_terms
+        self.fuzzy_terms = fuzzy_terms
 
         self.activity = activity
         self.match_activities = match_activities
@@ -283,6 +289,7 @@ class QueryTerms(object):
             partial=self.partial,
             deleted=self.deleted,
             search_terms=self.search_terms,
+            fuzzy_terms=self.fuzzy_terms,
             activity=self.activity,
             match_activities=self.match_activities,
             category=self.category,

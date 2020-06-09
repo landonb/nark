@@ -151,6 +151,30 @@ class TestGatherFactManager():
         assert str(results[0]) == str(set_of_alchemy_facts[1])
         assert results == [set_of_alchemy_facts[1]]
 
+    def test_get_all_search_matches_activity(self, alchemy_store, set_of_alchemy_facts):
+        """Make sure facts with ``Fact.activity.name`` matching the term are returned."""
+        assert len(set_of_alchemy_facts) == 5
+        search_terms = [set_of_alchemy_facts[1].activity.name]
+        # Use lazy_tags=True so Tag.pk are set, and results == [...] works.
+        results = alchemy_store.facts.get_all(
+            search_terms=search_terms, fuzzy_terms=True, lazy_tags=True,
+        )
+        assert len(results) == 1
+        assert str(results[0]) == str(set_of_alchemy_facts[1])
+        assert results == [set_of_alchemy_facts[1]]
+
+    def test_get_all_search_matches_category(self, alchemy_store, set_of_alchemy_facts):
+        """Make sure facts with ``Fact.category.name`` matching the term are returned."""
+        assert len(set_of_alchemy_facts) == 5
+        search_terms = [set_of_alchemy_facts[1].category.name]
+        # Use lazy_tags=True so Tag.pk are set, and results == [...] works.
+        results = alchemy_store.facts.get_all(
+            search_terms=search_terms, fuzzy_terms=True, lazy_tags=True,
+        )
+        assert len(results) == 1
+        assert str(results[0]) == str(set_of_alchemy_facts[1])
+        assert results == [set_of_alchemy_facts[1]]
+
     # ***
 
     def test__get_all_no_query_terms_not_lazy(self, alchemy_store, set_of_alchemy_facts):
