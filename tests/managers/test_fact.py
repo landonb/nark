@@ -96,38 +96,38 @@ class TestFactManager:
     # for these to be complicated. The code has been refactored so much that
     # these tests do a lot of work for not much code or unique branch coverage.
 
-    @pytest.mark.parametrize(('since', 'until', 'filter_term', 'expectation'), [
-        (None, None, '', {
+    @pytest.mark.parametrize(('since', 'until', 'expectation'), [
+        (None, None, {
             'since': None,
             'until': None}),
         # Various since info.
-        (datetime.date(2014, 4, 1), None, '', {
+        (datetime.date(2014, 4, 1), None, {
             'since': datetime.datetime(2014, 4, 1, 5, 30, 0),
             'until': None}),
-        (datetime.time(13, 40, 25), None, '', {
+        (datetime.time(13, 40, 25), None, {
             'since': datetime.datetime(2015, 4, 1, 13, 40, 25),
             'until': None}),
-        (datetime.datetime(2014, 4, 1, 13, 40, 25), None, '', {
+        (datetime.datetime(2014, 4, 1, 13, 40, 25), None, {
             'since': datetime.datetime(2014, 4, 1, 13, 40, 25),
             'until': None}),
         # Various until info.
-        (None, datetime.date(2014, 2, 1), '', {
+        (None, datetime.date(2014, 2, 1), {
             'since': None,
             'until': datetime.datetime(2014, 2, 2, 5, 29, 59)}),
-        (None, datetime.time(13, 40, 25), '', {
+        (None, datetime.time(13, 40, 25), {
             'since': None,
             'until': datetime.datetime(2015, 4, 1, 13, 40, 25)}),
-        (None, datetime.datetime(2014, 4, 1, 13, 40, 25), '', {
+        (None, datetime.datetime(2014, 4, 1, 13, 40, 25), {
             'since': None,
             'until': datetime.datetime(2014, 4, 1, 13, 40, 25)}),
     ])
     @freeze_time('2015-04-01 18:00')
     def test_get_all_various_since_and_until_times(
-        self, basestore, mocker, since, until, filter_term, expectation,
+        self, basestore, mocker, since, until, expectation,
     ):
         """Test that time conversion matches expectations."""
         mocker.patch.object(basestore.facts, 'gather', )
-        query_terms = QueryTerms(since=since, until=until, search_terms=filter_term)
+        query_terms = QueryTerms(since=since, until=until)
         # MAYBE/2020-05-25: (lb): I don't quite like that get_all mutates query_terms.
         basestore.facts.get_all(query_terms)
         assert basestore.facts.gather.called
@@ -135,7 +135,6 @@ class TestFactManager:
         expect_qt = QueryTerms(
             since=expectation['since'],
             until=expectation['until'],
-            search_terms=filter_term,
         )
         assert actual_qt == expect_qt
 

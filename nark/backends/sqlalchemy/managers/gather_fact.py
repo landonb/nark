@@ -626,15 +626,10 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             if not qt.search_terms:
                 return query
 
-            # FIXME/2018-06-09: (lb): Now with activity and category filters,
-            #   search_terms makes less sense. Unless we apply to all parts?
-            #   E.g., match tags, and match description.
-            query = query.filter(
-                or_(
-                    AlchemyActivity.name.ilike('%{}%'.format(qt.search_terms)),
-                    AlchemyCategory.name.ilike('%{}%'.format(qt.search_terms)),
-                )
-            )
+            filters = []
+            for term in qt.search_terms:
+                filters.append(AlchemyFact.description.ilike('%{}%'.format(term)))
+            query = query.filter(or_(*filters))
 
             return query
 
