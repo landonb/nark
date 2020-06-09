@@ -35,6 +35,7 @@ QueryTermsTuple = namedtuple('QueryTermsTuple', (
     'fuzzy_terms',
     'match_activities',
     'match_categories',
+    'match_tags',
     'group_activity',
     'group_category',
     'group_tags',
@@ -73,6 +74,7 @@ class QueryTerms(object):
             'fuzzy: {}'.format(self.fuzzy_terms),
             'acts: {}'.format(self.match_activities),
             'cats: {}'.format(self.match_categories),
+            'tags: {}'.format(self.match_tags),
             'grp-acts?: {}'.format(self.group_activity),
             'grp-cats?: {}'.format(self.group_category),
             'grp-tags?: {}'.format(self.group_tags),
@@ -113,6 +115,7 @@ class QueryTerms(object):
         # - Note that item name matching is strict -- case and exactness count.
         match_activities=[],
         match_categories=[],
+        match_tags=[],
         # - MEH: (lb): For parity, could add a 'tags' option to restrict the
         #   search to Activities used on Facts with specific 'tags', but how
         #   complicated and useless does that sound.
@@ -206,6 +209,14 @@ class QueryTerms(object):
                 ``None``. If ``match_categories`` contains more than one item,
                 Categories that exactly match or Facts that use an Activity with
                 *any* of the specified Categories will be included.
+            match_tags (list of items, each a nark.Tag, str, or None; optional):
+                Matchies only Tag(s) or Facts that use the indicated Tag(s) or
+                Tag name(s) (exactly matched). The tag name can be specified as
+                a string, or by passing a ``nark.Tag`` object whose name will be
+                used. To match Facts without a Tag assigned, use ``tag=None``.
+                If ``match_tags`` contains more than one item, Tags that exactly
+                match or Facts that use an Tag with *any* of the specified Tags
+                will be included.
 
             group_activity: If True, GROUP BY the Activity name, unless group_category
                 is also True, then GROUP BY the Activity PK and the Category PK.
@@ -252,6 +263,7 @@ class QueryTerms(object):
 
         self.match_activities = match_activities
         self.match_categories = match_categories
+        self.match_tags = match_tags
 
         self.group_activity = group_activity
         self.group_category = group_category
@@ -283,6 +295,7 @@ class QueryTerms(object):
             fuzzy_terms=self.fuzzy_terms,
             match_activities=self.match_activities,
             match_categories=self.match_categories,
+            match_tags=self.match_tags,
             group_activity=self.group_activity,
             group_category=self.group_category,
             group_tags=self.group_tags,

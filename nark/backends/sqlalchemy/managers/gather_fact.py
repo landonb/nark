@@ -342,7 +342,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
         # ***
 
         def _get_all_prepare_tags_subquery(query):
-            if lazy_tags:
+            if lazy_tags and not qt.match_tags:
                 return query, None
 
             tags_subquery = query
@@ -367,6 +367,9 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
                 fact_tags, AlchemyFact.pk == fact_tags.columns.fact_id,
             )
             tags_subquery = tags_subquery.outerjoin(AlchemyTag)
+
+            if qt.match_tags:
+                tags_subquery = self.query_filter_by_tags(tags_subquery, qt)
 
             tags_subquery = tags_subquery.group_by(AlchemyFact.pk)
 

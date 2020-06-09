@@ -95,6 +95,11 @@ class GatherBaseAlchemyManager(object):
 
             query = self.query_filter_by_categories(query, qt)
 
+            # (lb): We could add the match_tags option, but it'd be tricky
+            # (we'd need to join on Facts, etc.), and does not seem of much
+            # utility.
+            #  query = self.query_filter_by_tags(query, qt)
+
             query = query_filter_by_search_term(query)
 
             query = self.query_filter_by_item_pk(query, alchemy_cls, qt.key)
@@ -387,6 +392,43 @@ class GatherBaseAlchemyManager(object):
         except AttributeError:
             category_name = category
         return category_name
+
+    # ***
+
+    def query_filter_by_tags(self, query, qt):
+        criteria = self.query_criteria_filter_by_tags(qt)
+        query = query.filter(or_(*criteria))
+        return query
+
+    def query_criteria_filter_by_tags(self, qt):
+        criteria = []
+        for tag in qt.match_tags or []:
+            criterion = self.query_filter_by_tag(tag)
+            criteria.append(criterion)
+        return criteria
+
+    def query_filter_by_tag(self, tag):
+        if tag is not None:
+            tag_name = self.query_filter_by_tag_name(tag)
+            if tag_name is None:
+                # See comment in query_filter_by_activity: this path not
+                # reachable via production code.
+                criterion = (AlchemyTag.pk == tag.pk)
+            else:
+                criterion = (AlchemyTag.name == tag_name)
+        else:
+            # tag is None.
+            criterion = (AlchemyFact.tags == None)  # noqa: E711
+        return criterion
+
+    def query_filter_by_tag_name(self, tag):
+        tag_name = None
+        try:
+            if not tag.pk:
+                tag_name = tag.name
+        except AttributeError:
+            tag_name = tag
+        return tag_name
 
     # ***
 
