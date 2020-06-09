@@ -28,6 +28,30 @@ nark.backends.sqlalchemy.managers.fact module
    :undoc-members:
    :show-inheritance:
 
+nark.backends.sqlalchemy.managers.gather\_base module
+-----------------------------------------------------
+
+.. automodule:: nark.backends.sqlalchemy.managers.gather_base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+nark.backends.sqlalchemy.managers.gather\_fact module
+-----------------------------------------------------
+
+.. automodule:: nark.backends.sqlalchemy.managers.gather_fact
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+nark.backends.sqlalchemy.managers.manager\_base module
+------------------------------------------------------
+
+.. automodule:: nark.backends.sqlalchemy.managers.manager_base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 nark.backends.sqlalchemy.managers.migrate module
 ------------------------------------------------
 

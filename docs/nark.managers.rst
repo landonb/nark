@@ -36,6 +36,14 @@ nark.managers.migrate module
    :undoc-members:
    :show-inheritance:
 
+nark.managers.query\_terms module
+---------------------------------
+
+.. automodule:: nark.managers.query_terms
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 nark.managers.tag module
 ------------------------
 

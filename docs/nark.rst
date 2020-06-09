@@ -13,6 +13,7 @@ Subpackages
    nark.items
    nark.managers
    nark.migrations
+   nark.reports
    nark.tests
 
 Submodules
@@ -30,14 +31,6 @@ nark.manager module
 -------------------
 
 .. automodule:: nark.manager
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-nark.reports module
--------------------
-
-.. automodule:: nark.reports
    :members:
    :undoc-members:
    :show-inheritance:
