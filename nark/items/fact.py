@@ -575,12 +575,15 @@ class Fact(BaseItem):
         """
         return oid_text
 
-    def oid_actegory(self, shellify=False, omit_empty_actegory=False):
+    def oid_actegory(self, shellify=False, empty_actegory_placeholder=None):
         # (lb): We can skip delimiter after time when using ISO 8601.
         # MAYBE/2020-05-18: I cannot remember, did I want to make '@' char configable?
         if not self.activity_name:
             if not self.category_name:
-                act_cat = '' if omit_empty_actegory else '@'
+                if empty_actegory_placeholder is None:
+                    act_cat = '@'
+                else:
+                    act_cat = empty_actegory_placeholder
             else:
                 act_cat = '@{}'.format(self.category_name)
         else:
@@ -642,7 +645,7 @@ class Fact(BaseItem):
         include_id=False,
         cut_width=None,
         show_elapsed=False,
-        omit_empty_actegory=False,
+        empty_actegory_placeholder=None,
     ):
         """
         Flexible Fact serializer.
@@ -657,7 +660,7 @@ class Fact(BaseItem):
             parts = [
                 get_id_string(),
                 get_times_string(),
-                self.oid_actegory(shellify, omit_empty_actegory),
+                self.oid_actegory(shellify, empty_actegory_placeholder),
             ]
             parts_str = ' '.join(list(filter(None, parts)))
             tags = get_tags_string()
