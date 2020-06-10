@@ -22,15 +22,13 @@ __all__ = (
 )
 
 
+# (lb): This function differs from textwrap/ansiwrap.shorten in at least two respects:
+# - It truncates regardless of whitespace, i.e., inside words, e.g., "it'll trunca...".
+# - It replaces each newline with its escape sequence ("\n"), to provide more context,
+#   while also avoiding line breakages.
 def format_value_truncate(val, trunc_width=None):
     if not val:
         return val
-    # (lb): First attempt was to only short first line [of Fact description]:
-    #   vals = val.splitlines()
-    #   if len(vals) > 1:
-    #       val = vals[0] + '...'
-    # but replacing newlines with representation of same
-    # is more meaningful, and less confusing to end user.
     val = '\\n'.join(str(val).splitlines())
     if trunc_width is not None:
         if len(val) > trunc_width and trunc_width >= 0:

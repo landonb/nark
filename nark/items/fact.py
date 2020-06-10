@@ -785,8 +785,8 @@ class Fact(BaseItem):
         (lb): Not actually called by any code, but useful for debugging!
         """
         # HARDCODED: Truncate description at 39 chars. If this method was
-        # actually used, and not just be a DEV on the PDB prompt, we might
-        # care to move this value to the config, or at least a class attr.
+        # actually used, and not just by a DEV on the PDB prompt, we might
+        # care to move this value to the config, or at least to a class attr.
         return self.friendly_str(include_id=True, cut_width=39)
 
     # ***
