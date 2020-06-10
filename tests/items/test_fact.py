@@ -431,7 +431,7 @@ class TestFact(object):
                 'tags': set([Tag('math'), Tag('science')]),
                 'description': 'something clever ...',
             },
-            '2016-01-01 18:00:00 to <now> '
+            'at 2016-01-01 18:00:00 '
             'homework@school: #math #science: something clever ...',
         ),
     ))
@@ -526,7 +526,7 @@ class TestFact(object):
 
     def test__str__no_end(self, fact):
         fact.end = None
-        expect_f = "{start} to <now> {activity}@{category}: {tags}: {description}"
+        expect_f = "at {start} {activity}@{category}: {tags}: {description}"
         expectation = expect_f.format(
             start=fact.start.strftime('%Y-%m-%d %H:%M:%S'),
             activity=fact.activity.name,

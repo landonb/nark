@@ -696,27 +696,30 @@ class Fact(BaseItem):
         def get_times_string_start():
             if not self.start:
                 return ''
+            prefix = ''
+            if not self.end:
+                prefix = self.oid_stylize('at', '{} '.format(_('at')))
             if not self.localize:
                 start_time = self.start_fmt_utc
             else:
                 start_time = self.start_fmt_local
             start_time = self.oid_stylize('start', start_time)
-            return start_time
+            return prefix + start_time
 
         def get_times_string_end(times):
-            # NOTE: The CLI's DATE_TO_DATE_SEPARATORS[0] is 'to'.
-            prefix = self.oid_stylize('to', ' to ') if times else ''
             if not self.end:
-                if not times:
-                    end_time = ''
-                else:
-                    # (lb): What's a good term here? '<active>'? Or just 'now'?
-                    end_time = _('<now>')
-            elif not self.localize:
-                end_time = self.end_fmt_utc
+                # (lb): Rather than show, e.g., "2020-01-01 01:01 to <now> ...",
+                # show a parsable, Factoid-compatible time, "at 2020-01-01 01:01 ...".
+                prefix = ''
+                end_time = ''
             else:
-                end_time = self.end_fmt_local
-            end_time = self.oid_stylize('end', end_time)
+                # NOTE: The CLI's DATE_TO_DATE_SEPARATORS[0] is 'to'.
+                prefix = self.oid_stylize('to', ' {} '.format(_('to'))) if times else ''
+                if not self.localize:
+                    end_time = self.end_fmt_utc
+                else:
+                    end_time = self.end_fmt_local
+                end_time = self.oid_stylize('end', end_time)
             return prefix + end_time
 
         def get_times_duration():
