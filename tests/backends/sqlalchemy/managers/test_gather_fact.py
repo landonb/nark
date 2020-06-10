@@ -157,7 +157,7 @@ class TestGatherFactManager():
         search_terms = [set_of_alchemy_facts[1].activity.name]
         # Use lazy_tags=True so Tag.pk are set, and results == [...] works.
         results = alchemy_store.facts.get_all(
-            search_terms=search_terms, fuzzy_terms=True, lazy_tags=True,
+            search_terms=search_terms, broad_match=True, lazy_tags=True,
         )
         assert len(results) == 1
         assert str(results[0]) == str(set_of_alchemy_facts[1])
@@ -169,7 +169,7 @@ class TestGatherFactManager():
         search_terms = [set_of_alchemy_facts[1].category.name]
         # Use lazy_tags=True so Tag.pk are set, and results == [...] works.
         results = alchemy_store.facts.get_all(
-            search_terms=search_terms, fuzzy_terms=True, lazy_tags=True,
+            search_terms=search_terms, broad_match=True, lazy_tags=True,
         )
         assert len(results) == 1
         assert str(results[0]) == str(set_of_alchemy_facts[1])

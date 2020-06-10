@@ -32,7 +32,7 @@ QueryTermsTuple = namedtuple('QueryTermsTuple', (
     'partial',
     'deleted',
     'search_terms',
-    'fuzzy_terms',
+    'broad_match',
     'match_activities',
     'match_categories',
     'match_tags',
@@ -71,7 +71,7 @@ class QueryTerms(object):
             'partial: {}'.format(self.partial),
             'del?: {}'.format(self.deleted),
             'terms: {}'.format(self.search_terms),
-            'fuzzy: {}'.format(self.fuzzy_terms),
+            'broad: {}'.format(self.broad_match),
             'acts: {}'.format(self.match_activities),
             'cats: {}'.format(self.match_categories),
             'tags: {}'.format(self.match_tags),
@@ -110,7 +110,7 @@ class QueryTerms(object):
         deleted=False,
 
         search_terms=None,
-        fuzzy_terms=False,
+        broad_match=False,
 
         # - Note that item name matching is strict -- case and exactness count.
         match_activities=[],
@@ -189,7 +189,7 @@ class QueryTerms(object):
                 will be included in the results.
                 * Use ``not`` before a search term to exclude its matches from the
                   results.
-            fuzzy_terms: If True, apply search_terms fuzzy search to activity,
+            broad_match: If True, apply search_terms fuzzy search to activity,
                 category, and tag names.
 
             match_activities (list of items, each a nark.Activity, str, or None;
@@ -259,7 +259,7 @@ class QueryTerms(object):
         self.deleted = deleted
 
         self.search_terms = search_terms
-        self.fuzzy_terms = fuzzy_terms
+        self.broad_match = broad_match
 
         self.match_activities = match_activities
         self.match_categories = match_categories
@@ -292,7 +292,7 @@ class QueryTerms(object):
             partial=self.partial,
             deleted=self.deleted,
             search_terms=self.search_terms,
-            fuzzy_terms=self.fuzzy_terms,
+            broad_match=self.broad_match,
             match_activities=self.match_activities,
             match_categories=self.match_categories,
             match_tags=self.match_tags,

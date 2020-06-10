@@ -632,7 +632,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             filters = []
             for term in qt.search_terms:
                 filters.append(AlchemyFact.description.ilike('%{}%'.format(term)))
-                if qt.fuzzy_terms:
+                if qt.broad_match:
                     filters.append(AlchemyActivity.name.ilike('%{}%'.format(term)))
                     filters.append(AlchemyCategory.name.ilike('%{}%'.format(term)))
                     filters.append(AlchemyTag.name.ilike('%{}%'.format(term)))
