@@ -13,15 +13,81 @@ History
 
 .. :changelog:
 
+3.2.2 (2020-06-18)
+==================
+
+- Feature: Useful Reporting.
+
+  - Extend search options to produce interesting reports.
+
+  - Add grouping, all the ways.
+
+    - For instance, group by Activity, Category, and Day to see
+      how much time was spent on each Activity@Category each day.
+
+  - Add multi-column sorting.
+
+    - For instance, group by Activity, Category, and Day, and sort
+      by day and usage to see results ordered by which tasks had the
+      most time spent on them recently.
+
+  - Add search on Fact description.
+
+    - For instance, find all Facts whose description contains one
+      or more search terms.
+
+  - Add tag frequency distributions.
+
+     - Show the number of times each tag was used in a result group.
+
+- Feature: JSON output format.
+
+   - Use case: To prepare data to transmit elsewhere, such as <third-
+     party timesheet server>.
+
+- Improve: Support human-friendly relative dates (like '1 day ago').
+
+   - E.g., ``dob find --since yesterday``.
+
+- Improve: Add since/until options to activity, category, and tag searches.
+
+- Improve: Add max-width option to Fact.friendly_str.
+
+  - It previously applied to just the description, but now can be applied
+    to the complete friendly string.
+
+  - Also make ANSI-aware, so that strings with colors or ornamentation
+    are not truncated prematurely.
+
+- Improve: Use 'at ...' syntax for Factoid with no end, not ' to <now>'.
+
+   - So that the active Fact writ as a Factoid is parsable on import.
+
+- Restrict: Raise error on search if SQLite is not the engine.
+
+  - This conflicts with the goal (set by hamster-lib, and loftily sought
+    by nark) to support any DBMS, but the necessary SQL aggregate functions
+    are DBMS-specific, and SQLite is all that's been plumbed in this release.
+
+    However, SQLite has been the only back end under test, so nark should
+    probably not claim to support other DBMSes without also testing them.
+
+    Which is to say, nark now only truly supports SQLite. (Although other
+    DBMS support could be wired without too much code disruption.)
+
+- Bugfix: Aggregate results for Facts with two or more tags is incorrect.
+
+- Bugfix: Both ``antecedent`` and ``subsequent`` mishandle momentaneous Facts.
+
 3.2.1 (2020-04-26)
 ==================
 
-- Bugfix: Additional sqlalchemy 1.3 support.
+- Bugfix: Additional SQLAlchemy 1.3 support.
 
 3.2.0 (2020-04-26)
 ==================
 
-- Bugfix: Windows support, aka upgrade to sqlalchemy 1.3.
+- Bugfix: Windows support, aka upgrade to SQLAlchemy 1.3.
 
 3.1.1 (2020-04-25)
 ==================
@@ -53,7 +119,7 @@ History
 3.0.5 (2020-04-09)
 ==================
 
-- Bugfix: Interactive editor `gg` (jump to first Fact) fails.
+- Bugfix: Interactive editor ``gg`` (jump to first Fact) fails.
 
 3.0.4 (2020-04-08)
 ==================
