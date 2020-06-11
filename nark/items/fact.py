@@ -601,6 +601,8 @@ class Fact(BaseItem):
         description = self.description_or_empty
         if description:
             if cut_width is not None:
+                # Note: whether or not the description length is larger than
+                # cut_width, newlines will always be replaced by literal '\n'.
                 description = format_value_truncate(description, cut_width)
             description = '{}{}'.format(sep, description)
         return description
@@ -643,7 +645,8 @@ class Fact(BaseItem):
         tags_sep=': ',
         localize=False,
         include_id=False,
-        cut_width=None,
+        cut_width_complete=None,
+        cut_width_description=None,
         show_elapsed=False,
         empty_actegory_placeholder=None,
     ):
@@ -651,9 +654,10 @@ class Fact(BaseItem):
         Flexible Fact serializer.
         """
         def _friendly_str():
-            # MAYBE/2019-01-28: Truncate meta per cut_width or similar.
             meta = assemble_parts()
-            result = format_result(meta)
+            result = append_description(meta)
+            if cut_width_complete is not None:
+                result = format_value_truncate(result, cut_width_complete)
             return result
 
         def assemble_parts():
@@ -668,12 +672,15 @@ class Fact(BaseItem):
             parts_str += _(" [del]") if self.deleted else ''
             return parts_str
 
-        def format_result(meta):
-            result = '{fact_meta}{description}'.format(
-                fact_meta=meta,
-                description=self.oid_description(cut_width, description_sep),
-            )
-            return result
+        def append_description(meta):
+            # Specify the cut_width if one specified for the complete friendly_str,
+            # so that newlines are collapsed into literal '\n' strings, which is a
+            # side-effect-feature of using cut_width.
+            cut_width = cut_width_description
+            if cut_width_complete is not None and cut_width is None:
+                cut_width = max(cut_width_complete - len(meta), 0)
+            description = self.oid_description(cut_width, description_sep)
+            return meta + description
 
         def get_id_string():
             if not include_id:
@@ -790,10 +797,9 @@ class Fact(BaseItem):
 
         (lb): Not actually called by any code, but useful for debugging!
         """
-        # HARDCODED: Truncate description at 39 chars. If this method was
-        # actually used, and not just by a DEV on the PDB prompt, we might
-        # care to move this value to the config, or at least to a class attr.
-        return self.friendly_str(include_id=True, cut_width=39)
+        # HARDCODED: Truncate the string at some length. (This method is for
+        # the DEV to use on a PDB prompt, so hardcoding this value if fine.)
+        return self.friendly_str(include_id=True, cut_width_complete=59)
 
     # ***
 

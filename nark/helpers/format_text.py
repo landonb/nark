@@ -32,6 +32,7 @@ def format_value_truncate(val, trunc_width=None):
     val = '\\n'.join(str(val).splitlines())
     if trunc_width is not None:
         if len(val) > trunc_width and trunc_width >= 0:
-            val = val[:trunc_width - 3] + '...'
+            ellipsis = '...'
+            val = val[:trunc_width - len(ellipsis)] + ellipsis
     return val
 
