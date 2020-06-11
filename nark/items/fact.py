@@ -19,7 +19,7 @@
 
 from gettext import gettext as _
 
-from ansiwrap import ansilen
+from ansiwrap import ansilen  # See also: click._compat.term_len
 from collections import namedtuple
 from collections import Counter
 from datetime import datetime
