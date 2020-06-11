@@ -69,11 +69,11 @@ class XMLWriter(ReportWriter):
         elem.setAttribute('description', fact.description_or_empty)
         self.fact_list.appendChild(elem)
 
-    def write_report(self, table, columns):
+    def write_report(self, table, columns, max_widths=None):
         self.start_document('results')
         return super(XMLWriter, self).write_report(table, columns)
 
-    def _write_result(self, row, columns):
+    def _write_result(self, row, columns, max_widths=None):
         """
         Create new fact element and populate attributes.
 

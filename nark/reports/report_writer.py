@@ -144,7 +144,7 @@ class ReportWriter(object):
     def requires_table(self):
         return False
 
-    def write_report(self, table, columns):
+    def write_report(self, table, columns, max_widths=None):
         """
         Write report to output file and close the file like object.
 
@@ -154,21 +154,21 @@ class ReportWriter(object):
         Returns:
             None: If everything worked as expected.
         """
-        n_written = self.write_report_table(table, columns)
+        n_written = self.write_report_table(table, columns, max_widths)
         self._close()
         return n_written
 
-    def write_report_table(self, table, columns):
+    def write_report_table(self, table, columns, max_widths=None):
         """Write report to output file."""
         n_written = 0
         for row in table:
-            self._write_result(row, columns)
+            self._write_result(row, columns, max_widths)
             n_written += 1
             if self.row_limit > 0 and n_written >= self.row_limit:
                 break
         return n_written
 
-    def _write_result(self, row, columns):
+    def _write_result(self, row, columns, max_widths=None):
         """
         Represent one ``Fact`` or aggregate result in the output file.
 

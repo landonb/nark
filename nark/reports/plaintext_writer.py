@@ -122,11 +122,11 @@ class PlaintextWriter(ReportWriter):
 
     # ***
 
-    def write_report(self, table, columns):
+    def write_report(self, table, columns, max_widths=None):
         self.csv_writer.writerow(columns)
         return super(PlaintextWriter, self).write_report(table, columns)
 
-    def _write_result(self, row, columns):
+    def _write_result(self, row, columns, max_widths=None):
         """
         Write a single fact.
 
