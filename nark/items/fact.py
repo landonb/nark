@@ -19,6 +19,7 @@
 
 from gettext import gettext as _
 
+from ansiwrap import ansilen
 from collections import namedtuple
 from collections import Counter
 from datetime import datetime
@@ -600,7 +601,7 @@ class Fact(BaseItem):
     def oid_description(self, cut_width=None, sep=', '):
         description = self.description_or_empty
         if description:
-            if cut_width is not None:
+            if cut_width is not None and cut_width > 0:
                 # Note: whether or not the description length is larger than
                 # cut_width, newlines will always be replaced by literal '\n'.
                 description = format_value_truncate(description, cut_width)
@@ -656,7 +657,7 @@ class Fact(BaseItem):
         def _friendly_str():
             meta = assemble_parts()
             result = append_description(meta)
-            if cut_width_complete is not None:
+            if cut_width_complete is not None and cut_width_complete > 0:
                 result = format_value_truncate(result, cut_width_complete)
             return result
 
@@ -678,7 +679,7 @@ class Fact(BaseItem):
             # side-effect-feature of using cut_width.
             cut_width = cut_width_description
             if cut_width_complete is not None and cut_width is None:
-                cut_width = max(cut_width_complete - len(meta), 0)
+                cut_width = max(cut_width_complete - ansilen(meta), 0)
             description = self.oid_description(cut_width, description_sep)
             return meta + description
 

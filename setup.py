@@ -19,6 +19,9 @@ from setuptools import find_packages, setup
 # *** Package requirements.
 
 requirements = [
+    # "textwrap, but savvy to ANSI colors"
+    #  https://github.com/jonathaneunice/ansiwrap
+    'ansiwrap >= 0.8.4, < 1',
     # Platform-specific directory magic.
     #  https://github.com/ActiveState/appdirs
     'appdirs >= 1.4.3, < 2',
