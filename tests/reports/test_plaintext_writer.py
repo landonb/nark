@@ -82,14 +82,14 @@ class TestPlaintextWriter(object):
                 else:
                     assert field.decode('utf-8') == expectation
 
-    def test_plaintext_writer_write_report(self, plaintext_writer, table, columns):
-        plaintext_writer.write_report(table, columns)
+    def test_plaintext_writer_write_report(self, plaintext_writer, table, headers):
+        plaintext_writer.write_report(table, headers)
         with open(plaintext_writer.output_file.name, 'r') as fobj:
             reader = csv.reader(fobj, dialect=plaintext_writer.dialect)
             # The first line is the headers.
-            headers = next(reader)
-            assert headers == columns
-            # Remaining lines are columns.
+            csv_headers = next(reader)
+            assert csv_headers == headers
+            # Remaining lines are data rows.
             for row in table:
                 assert row == next(reader)
             with pytest.raises(StopIteration):

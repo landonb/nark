@@ -83,7 +83,7 @@ class ICALWriter(ReportWriter):
 
         self.calendar.add_component(event)
 
-    def write_report(self, table, headers, max_widths=None):
+    def write_report(self, table, headers, tabulation=None):
         raise NotImplementedError
 
     def _close(self):

@@ -118,7 +118,7 @@ FAKER_TABLE_LEN = 3
 
 
 @pytest.fixture
-def columns(faker):
+def headers(faker):
     return faker.words(nb=FAKER_WORDS_NB)
 
 

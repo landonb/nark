@@ -106,29 +106,29 @@ class TestReportWriter(object):
         assert report_writer.output_file.closed is False
 
     def test_report_writer_write_report_calls__write_result(
-        self, mocker, report_writer, table, columns,
+        self, mocker, report_writer, table, headers,
     ):
         mocker.patch.object(report_writer, '_write_result', return_value=None)
-        report_writer.write_report(table, columns)
+        report_writer.write_report(table, headers)
         assert report_writer._write_result.call_count == len(table)
 
     def test_report_writer_write_report_respects_row_limit(
-        self, mocker, report_writer, table, columns,
+        self, mocker, report_writer, table, headers,
     ):
         """Ensure that write_report respects the row_limit."""
         row_limit = 3
         report_writer.row_limit = row_limit
         mocker.patch.object(report_writer, '_write_result', return_value=None)
-        report_writer.write_report(table, columns)
+        report_writer.write_report(table, headers)
         assert report_writer._write_result.call_count == row_limit
 
     def test_report_writer_write_report_fails_to__close(
-        self, report_writer, table, columns,
+        self, report_writer, table, headers,
     ):
         assert report_writer.output_file.closed is False
         # Because we do not mock _write_result, it raises.
         with pytest.raises(NotImplementedError):
-            report_writer.write_report(table, columns)
+            report_writer.write_report(table, headers)
         assert report_writer.output_file.closed is False
 
     def test_report_writer__close(self, report_writer, path):

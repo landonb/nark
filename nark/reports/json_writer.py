@@ -61,13 +61,13 @@ class JSONWriter(ReportWriter):
         kvals = self.fact_as_dict(fact)
         self.result_list.append(kvals)
 
-    def write_report_table(self, table, columns, max_widths=None):
+    def write_report_table(self, table, headers, tabulation=None):
         self.init_result_list()
-        super(JSONWriter, self).write_report_table(table, columns, max_widths)
+        super(JSONWriter, self).write_report_table(table, headers, tabulation)
         n_written = self.write_result_list()
         return n_written
 
-    def _write_result(self, row, columns, max_widths=None):
-        kvals = {key: value for key, value in zip(columns, row)}
+    def _write_result(self, row, headers, tabulation=None):
+        kvals = {header: value for header, value in zip(headers, row)}
         self.result_list.append(kvals)
 

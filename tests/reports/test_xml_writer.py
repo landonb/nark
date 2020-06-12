@@ -54,12 +54,12 @@ class TestXMLWriter(object):
         assert result.getAttribute('category') == fact.category_name
         assert result.getAttribute('description') == fact.description_or_empty
 
-    def test_xml_writer_write_report(self, xml_writer, mocker, columns, row):
+    def test_xml_writer_write_report(self, xml_writer, mocker, headers, row):
         xml_writer.start_document('results')
         mocker.patch.object(xml_writer.fact_list, 'appendChild')
-        xml_writer._write_result(row, columns)
+        xml_writer._write_result(row, headers)
         result = xml_writer.fact_list.appendChild.call_args[0][0]
-        for idx, col in enumerate(columns):
+        for idx, col in enumerate(headers):
             assert result.getAttribute(col) == row[idx]
 
     def test_xml_writer_write_facts__close(self, xml_writer, fact, path):
@@ -69,10 +69,10 @@ class TestXMLWriter(object):
             result = xml.dom.minidom.parse(fobj)
             assert result.toxml()
 
-    def test_xml_writer_write_report__close(self, xml_writer, table, columns):
+    def test_xml_writer_write_report__close(self, xml_writer, table, headers):
         """Make sure the calendar is actually written do disk before file is closed."""
         output_path = xml_writer.output_file.name
-        xml_writer.write_report(table, columns)
+        xml_writer.write_report(table, headers)
         with open(output_path, 'r') as fobj:
             result = xml.dom.minidom.parse(fobj)
             assert result.toxml()
