@@ -377,7 +377,7 @@ class GatherBaseAlchemyManager(object):
                 # NOTE: Strict name matching. Case and exactness count.
                 criterion = (AlchemyCategory.name == category_name)
         else:
-            # (lb): I tried to avoid delinting using is_, e.g.,
+            # (lb): I tried to avoid delinting (the noqa) using is_, e.g.,
             #   criterion = (AlchemyActivity.category.is_(None))
             # but didn't happen:
             #   *** NotImplementedError: <function is_ at 0x7f75030f0280>

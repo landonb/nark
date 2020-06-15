@@ -323,10 +323,11 @@ class NarkConfigurableTime(object):
     )
     def fact_min_delta(self):
         # (lb): Disable this by default; I've never liked this logic!
-        #   In Legacy Hamster: 60, i.e., facts must be 1 minute apart!
+        #   In Legacy Hamster: defaults to 60, i.e., facts must be 1 minute apart!
         #   In Modern Hamster (nark), you can make facts every seconds,
         #     or every millisecond, we don't care, so long as they do
         #     not overlap!
+        # MAYBE: Though perhaps this should be 1, to avoid momentaneous Facts.
         return 0
 
     # ***
