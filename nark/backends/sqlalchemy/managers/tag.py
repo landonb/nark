@@ -304,7 +304,7 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
             TagManager, self,
         ).query_criteria_filter_by_categories(query, qt)
         if criteria:
-            if qt.joined_activity:
+            if not qt.joined_activity:
                 query = query.join(AlchemyActivity)
             query = query.join(AlchemyCategory)
         return query, criteria
