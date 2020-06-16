@@ -643,16 +643,27 @@ class FactManager(GatherFactManager):
 
         ref_time = query_prepare_datetime(ref_time)
 
-        if fact is None or fact.pk is None:
-            condition = and_(func.datetime(AlchemyFact.start) >= ref_time)
-        else:
-            condition = or_(
-                func.datetime(AlchemyFact.start) > ref_time,
-                and_(
-                    func.datetime(AlchemyFact.start) == ref_time,
-                    AlchemyFact.pk != fact.pk,
-                ),
-            )
+        # See comments in antecedent that explain the logic here (albeit
+        # the complementary logic, for searching backwards, not forward).
+        or_criteria = []
+        or_criteria.append(func.datetime(AlchemyFact.start) > ref_time)
+        or_criteria.append(and_(
+            func.datetime(AlchemyFact.start) == ref_time,
+            func.datetime(AlchemyFact.end) > ref_time,
+        ))
+        if fact is not None and fact.pk is not None:
+            or_criteria.append(and_(
+                func.datetime(AlchemyFact.start) == ref_time,
+                func.datetime(AlchemyFact.end) == ref_time,
+                AlchemyFact.pk > fact.pk,
+            ))
+        # Note that, by design, AlchemyFact.start should always be not None,
+        # but we'll check anyway, for completeness and comparability to the
+        # antecedent method (where AlchemyFact.end is not always not None).
+        condition = and_(
+            AlchemyFact.start != None,  # noqa: E711
+            or_(*or_criteria),
+        )
 
         # Excluded 'deleted' Facts.
         condition = and_(condition, AlchemyFact.deleted == False)  # noqa: E712
