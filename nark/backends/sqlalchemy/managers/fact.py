@@ -526,7 +526,7 @@ class FactManager(GatherFactManager):
         )
 
         or_criteria = []
-        if not (fact and fact.start and isinstance(fact.start, datetime)):
+        if fact is None:
             # (lb): I not quite sure the use case for this branch. If you
             # call this method and pass a datetime, but not a Fact, the
             # antecedent Fact could be one ending at the passed time, which
@@ -553,7 +553,7 @@ class FactManager(GatherFactManager):
             # Fact at 12:00:00, this will find the earlier Fact from 11a to 12p.
             or_criteria.append(and_(
                 func.datetime(AlchemyFact.end) == ref_time,
-                func.datetime(AlchemyFact.start) < fact.start,
+                func.datetime(AlchemyFact.start) < ref_time,
             ))
             # Finally, include any momentaneous Fact that occupies the moment at
             # ref_time, but take into consideration the PK so that calling this
@@ -567,7 +567,7 @@ class FactManager(GatherFactManager):
                 # we call query_order_by_start to ensure the order is correct.)
                 or_criteria.append(and_(
                     func.datetime(AlchemyFact.end) == ref_time,
-                    func.datetime(AlchemyFact.start) == fact.start,
+                    func.datetime(AlchemyFact.start) == ref_time,
                     AlchemyFact.pk < fact.pk,
                 ))
         before_closed_fact_end = and_(
