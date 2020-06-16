@@ -414,7 +414,7 @@ class FactManager(GatherFactManager):
         query = query.filter(condition)
         # Exclude fact.pk from results.
         query = self.query_exclude_fact(query, fact)
-        # Order by start time (end time, fact ID), ascending.
+        # Order by (start time, end time, fact ID), ascending.
         query = self.query_order_by_start(query, asc)
 
         self.store.logger.debug('fact: {} / query: {}'.format(fact, str(query)))
@@ -459,7 +459,7 @@ class FactManager(GatherFactManager):
         query = query.filter(condition)
         # Exclude fact.pk from results.
         query = self.query_exclude_fact(query, fact)
-        # Order by start time (end time, fact ID), descending.
+        # Order by (start time, end time, fact ID), descending.
         query = self.query_order_by_start(query, desc)
 
         self.store.logger.debug('fact: {} / query: {}'.format(fact, str(query)))
@@ -498,8 +498,10 @@ class FactManager(GatherFactManager):
 
         if fact is not None:
             if fact.end and isinstance(fact.end, datetime):
+                # A Closed Fact.
                 ref_time = fact.end
             elif fact.start and isinstance(fact.start, datetime):
+                # The Active Fact.
                 ref_time = fact.start
         if not isinstance(ref_time, datetime):
             raise ValueError(_('No reference time for antecedent(fact).'))
@@ -552,7 +554,7 @@ class FactManager(GatherFactManager):
         query = query.filter(condition)
         # Exclude fact.pk from results.
         query = self.query_exclude_fact(query, fact)
-        # Order by start time (end time, fact ID), descending.
+        # Order by (start time, end time, fact ID), descending.
         query = self.query_order_by_start(query, desc)
 
         query = query.limit(1)
@@ -617,7 +619,7 @@ class FactManager(GatherFactManager):
         query = query.filter(condition)
         # Exclude fact.pk from results.
         query = self.query_exclude_fact(query, fact)
-        # Order by start time (end time, fact ID), ascending.
+        # Order by (start time, end time, fact ID), ascending.
         query = self.query_order_by_start(query, asc)
 
         query = query.limit(1)
