@@ -508,7 +508,7 @@ class FactManager(GatherFactManager):
 
         ref_time = query_prepare_datetime(ref_time)
 
-        before_ongoing_fact_start = and_(
+        before_active_fact_start = and_(
             AlchemyFact.end == None,  # noqa: E711
             # Except rather than <=, use less than, otherwise
             # penultimate_fact.antecedent might find the ultimate
@@ -525,27 +525,58 @@ class FactManager(GatherFactManager):
             func.datetime(AlchemyFact.start) < ref_time,
         )
 
-        if fact is None or fact.pk is None:
-            before_closed_fact_end = and_(
-                AlchemyFact.end != None,  # noqa: E711
-                # Special case for ongoing fact (check its start).
-                # Be most inclusive and compare against facts' ends.
-                func.datetime(AlchemyFact.end) <= ref_time,
-            )
+        or_criteria = []
+        if not (fact and fact.start and isinstance(fact.start, datetime)):
+            # (lb): I not quite sure the use case for this branch. If you
+            # call this method and pass a datetime, but not a Fact, the
+            # antecedent Fact could be one ending at the passed time, which
+            # doesn't quite seem right, except that if you then pass the start
+            # time of the fact returned from the first query, this method
+            # returns the Fact ending at that start time, which is correct.
+            # So maybe think of ref_time as being a start time, and we want
+            # to find the Fact the ends at that time. (And note that this
+            # won't handle momentaneous Facts; for those, we need the Fact
+            # object, so we can use the PK to distinguish between two
+            # momentaneous Facts that occupy the same moment in time.)
+            or_criteria.append(func.datetime(AlchemyFact.end) <= ref_time)
         else:
-            before_closed_fact_end = and_(
-                AlchemyFact.end != None,  # noqa: E711
-                or_(
-                    func.datetime(AlchemyFact.end) < ref_time,
-                    and_(
-                        func.datetime(AlchemyFact.end) == ref_time,
-                        AlchemyFact.pk != fact.pk,
-                    ),
-                ),
-            )
+            # Get complicated, so we handle momentaneous Facts appropriately.
+            # E.g., suppose one Fact's time range is 11a to noon, and another
+            # Fact is momentaneous from 12:00:00 to 12:00:00. If user is viewing
+            # a third Fact that spans from 12:00:00 to 13:00:00, antecedent
+            # should return the momentaneous Fact. If antecedent is called
+            # again on the momentaneous Fact, return the one that starts at 11a.
+            # Start by including any Fact that ends *before*, but not at, ref_time.
+            or_criteria.append(func.datetime(AlchemyFact.end) < ref_time)
+            # Next, include any Fact that ends at ref_time but is not momentaneous.
+            # Given the previous example of three Facts, given the momentaneous
+            # Fact at 12:00:00, this will find the earlier Fact from 11a to 12p.
+            or_criteria.append(and_(
+                func.datetime(AlchemyFact.end) == ref_time,
+                func.datetime(AlchemyFact.start) < fact.start,
+            ))
+            # Finally, include any momentaneous Fact that occupies the moment at
+            # ref_time, but take into consideration the PK so that calling this
+            # method, antecedent, with each momentaneous Fact will return them in
+            # a predictable order, and will eventually walk out of the moment.
+            if fact.pk is not None:
+                # From example, assume there are 2 momentaneous Facts at 12:00:00,
+                # this would ensure that, after finding the first one, passing the
+                # first one to this method finds the second on, and then passing the
+                # second one does not return the first one again. (Note that later
+                # we call query_order_by_start to ensure the order is correct.)
+                or_criteria.append(and_(
+                    func.datetime(AlchemyFact.end) == ref_time,
+                    func.datetime(AlchemyFact.start) == fact.start,
+                    AlchemyFact.pk < fact.pk,
+                ))
+        before_closed_fact_end = and_(
+            AlchemyFact.end != None,  # noqa: E711
+            or_(*or_criteria),
+        )
 
         condition = or_(
-            before_ongoing_fact_start,
+            before_active_fact_start,
             before_closed_fact_end,
         )
 
