@@ -525,51 +525,60 @@ class FactManager(GatherFactManager):
             func.datetime(AlchemyFact.start) < ref_time,
         )
 
+        # (lb): This intricate query is meant to handle momentaneous Facts. If
+        # there were no such Facts, we could check AlchemyFact.end <= ref_time
+        # and exclude AlchemyFact.pk == fact.pk, and we'd be fine. But we want
+        # to handle momentaneous Facts, so we have 3 ref_time comparisons, not 1.
+        # - Note that I originally had an if-else block here: if fact is None,
+        #   the code would simply check AlchemyFact.end <= ref_time. The use
+        #   case here would be passing a datetime to this method, antecedent,
+        #   and not a Fact. For example, if you had a Fact from 11a to 12p,
+        #   and a Fact from 12p to 12p, passing a datetime set to 12p would
+        #   return whichever of those two Facts has the greater PK (because
+        #   of the query_order_by_start later in this method). If that Fact
+        #   was the momentaneous Fact, you wouldn't be able to call antecedent
+        #   again to get the earlier Fact given the datetime alone -- each time
+        #   you pass 12p to this method, you'd get the same Fact. But that's not
+        #   how this method would be used -- to handle momentaneous Facts, we
+        #   need the Fact object, because we need to compare PKs. So rather
+        #   than return a momentaneous Fact when a datetime is passed, skip
+        #   them. That is, in the example just given, if given a datetime at
+        #   12p, always return the Fact from 11a to 12p. We do this by not
+        #   just searching AlchemyFact.end <= ref_time, but instead by using
+        #   two search criteria, and checking both AlchemyFact.end < ref_time,
+        #   or AlchemyFact.end == ref_time and AlchemyFact.start < ref_time.
+
         or_criteria = []
-        if fact is None:
-            # (lb): I not quite sure the use case for this branch. If you
-            # call this method and pass a datetime, but not a Fact, the
-            # antecedent Fact could be one ending at the passed time, which
-            # doesn't quite seem right, except that if you then pass the start
-            # time of the fact returned from the first query, this method
-            # returns the Fact ending at that start time, which is correct.
-            # So maybe think of ref_time as being a start time, and we want
-            # to find the Fact the ends at that time. (And note that this
-            # won't handle momentaneous Facts; for those, we need the Fact
-            # object, so we can use the PK to distinguish between two
-            # momentaneous Facts that occupy the same moment in time.)
-            or_criteria.append(func.datetime(AlchemyFact.end) <= ref_time)
-        else:
-            # Get complicated, so we handle momentaneous Facts appropriately.
-            # E.g., suppose one Fact's time range is 11a to noon, and another
-            # Fact is momentaneous from 12:00:00 to 12:00:00. If user is viewing
-            # a third Fact that spans from 12:00:00 to 13:00:00, antecedent
-            # should return the momentaneous Fact. If antecedent is called
-            # again on the momentaneous Fact, return the one that starts at 11a.
-            # Start by including any Fact that ends *before*, but not at, ref_time.
-            or_criteria.append(func.datetime(AlchemyFact.end) < ref_time)
-            # Next, include any Fact that ends at ref_time but is not momentaneous.
-            # Given the previous example of three Facts, given the momentaneous
-            # Fact at 12:00:00, this will find the earlier Fact from 11a to 12p.
+        # Get complicated, so we handle momentaneous Facts appropriately.
+        # E.g., suppose one Fact's time range is 11a to noon, and another
+        # Fact is momentaneous from 12:00:00 to 12:00:00. If user is viewing
+        # a third Fact that spans from 12:00:00 to 13:00:00, antecedent
+        # should return the momentaneous Fact. If antecedent is called
+        # again on the momentaneous Fact, return the one that starts at 11a.
+        # Start by including any Fact that ends *before*, but not at, ref_time.
+        or_criteria.append(func.datetime(AlchemyFact.end) < ref_time)
+        # Next, include any Fact that ends at ref_time but is not momentaneous.
+        # Given the previous example of three Facts, given the momentaneous
+        # Fact at 12:00:00, this will find the earlier Fact from 11a to 12p.
+        or_criteria.append(and_(
+            func.datetime(AlchemyFact.end) == ref_time,
+            func.datetime(AlchemyFact.start) < ref_time,
+        ))
+        # Finally, include any momentaneous Fact that occupies the moment at
+        # ref_time, but take into consideration the PK so that calling this
+        # method, antecedent, with each momentaneous Fact will return them in
+        # a predictable order, and will eventually walk out of the moment.
+        if fact is not None and fact.pk is not None:
+            # From example, assume there are 2 momentaneous Facts at 12:00:00,
+            # this would ensure that, after finding the first one, passing the
+            # first one to this method finds the second on, and then passing the
+            # second one does not return the first one again. (Note that later
+            # we call query_order_by_start to ensure the order is correct.)
             or_criteria.append(and_(
                 func.datetime(AlchemyFact.end) == ref_time,
-                func.datetime(AlchemyFact.start) < ref_time,
+                func.datetime(AlchemyFact.start) == ref_time,
+                AlchemyFact.pk < fact.pk,
             ))
-            # Finally, include any momentaneous Fact that occupies the moment at
-            # ref_time, but take into consideration the PK so that calling this
-            # method, antecedent, with each momentaneous Fact will return them in
-            # a predictable order, and will eventually walk out of the moment.
-            if fact.pk is not None:
-                # From example, assume there are 2 momentaneous Facts at 12:00:00,
-                # this would ensure that, after finding the first one, passing the
-                # first one to this method finds the second on, and then passing the
-                # second one does not return the first one again. (Note that later
-                # we call query_order_by_start to ensure the order is correct.)
-                or_criteria.append(and_(
-                    func.datetime(AlchemyFact.end) == ref_time,
-                    func.datetime(AlchemyFact.start) == ref_time,
-                    AlchemyFact.pk < fact.pk,
-                ))
         before_closed_fact_end = and_(
             AlchemyFact.end != None,  # noqa: E711
             or_(*or_criteria),
