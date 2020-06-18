@@ -2,11 +2,11 @@
 nark
 @@@@
 
-.. image:: https://api.travis-ci.com/hotoffthehamster/nark.svg?branch=develop
+.. image:: https://api.travis-ci.com/hotoffthehamster/nark.svg?branch=proving
   :target: https://travis-ci.com/hotoffthehamster/nark
   :alt: Build Status
 
-.. image:: https://codecov.io/gh/hotoffthehamster/nark/branch/develop/graph/badge.svg
+.. image:: https://codecov.io/gh/hotoffthehamster/nark/branch/proving/graph/badge.svg
   :target: https://codecov.io/gh/hotoffthehamster/nark
   :alt: Coverage Status
 
