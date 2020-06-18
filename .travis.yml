@@ -48,3 +48,9 @@ script: tox
 notifications:
   email: false
 
+# Automatic build safelist.
+branches:
+  only:
+    - proving
+    - release
+
