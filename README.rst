@@ -23,7 +23,7 @@ nark
   :alt: PyPI Release Status
 
 .. image:: https://img.shields.io/github/license/hotoffthehamster/nark.svg?style=flat
-  :target: https://github.com/hotoffthehamster/nark/blob/master/LICENSE
+  :target: https://github.com/hotoffthehamster/nark/blob/release/LICENSE
   :alt: License Status
 
 .. |dob| replace:: ``dob``
@@ -145,7 +145,7 @@ showing how to create a *Fact* instance from a *Factoid* string:
     #   )],
     # )
 
-.. image:: https://raw.githubusercontent.com/hotoffthehamster/nark/develop/docs/_static/images/information-cat.png
+.. image:: https://raw.githubusercontent.com/hotoffthehamster/nark/release/docs/_static/images/information-cat.png
    :target: https://nark.readthedocs.io/en/latest/authors.html#information-cat
    :align: center
    :alt: "Information Cat"
