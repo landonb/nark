@@ -24,50 +24,50 @@ factoid_fixture = (
     [
         # Use clock-to-clock format, the date inferred from now; with actegory.
         ('13:00 to 16:30: foo@bar', 'verify_both', {
-            'activity': 'foo',
-            'category': 'bar',
             'start': datetime.datetime(2015, 12, 25, 13, 0, 0),
             'end': datetime.datetime(2015, 12, 25, 16, 30, 0),
+            'activity': 'foo',
+            'category': 'bar',
             'tags': [],
         }),
         # Use datetime-to-datetime format, with actegory.
         ('2015-12-12 13:00 to 2015-12-12 16:30: foo@bar', 'verify_both', {
-            'activity': 'foo',
-            'category': 'bar',
             'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
             'end': datetime.datetime(2015, 12, 12, 16, 30, 0),
+            'activity': 'foo',
+            'category': 'bar',
             'tags': [],
         }),
         # The end date is inferred from start date.
         ('2015-12-12 13:00 - 18:00 foo@bar', 'verify_both', {
-            'activity': 'foo',
-            'category': 'bar',
             'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
             'end': datetime.datetime(2015, 12, 12, 18, 00, 0),
+            'activity': 'foo',
+            'category': 'bar',
             'tags': [],
         }),
         # actegory spanning day (straddles) midnight) and spanning multiple days.
         ('2015-12-12 13:00 - 2015-12-25 18:00 foo@bar', 'verify_both', {
-            'activity': 'foo',
-            'category': 'bar',
             'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
             'end': datetime.datetime(2015, 12, 25, 18, 00, 0),
+            'activity': 'foo',
+            'category': 'bar',
             'tags': [],
         }),
         # Create open/ongoing/un-ended fact.
         ('2015-12-12 13:00 foo@bar', 'verify_start', {
-            'activity': 'foo',
-            'category': 'bar',
             'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
             'end': None,
+            'activity': 'foo',
+            'category': 'bar',
             'tags': [],
         }),
         # Create ongoing fact starting at right now.
         ('foo@bar', 'verify_none', {
-            'activity': 'foo',
-            'category': 'bar',
             'start': datetime.datetime(2015, 12, 25, 18, 0, 0),
             'end': None,
+            'activity': 'foo',
+            'category': 'bar',
             'tags': [],
         }),
         # Tags.
@@ -75,10 +75,10 @@ factoid_fixture = (
             '2015-12-12 13:00 foo@bar: #precious #hashish, i like ike',
             'verify_start',
             {
-                'activity': 'foo',
-                'category': 'bar',
                 'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
                 'end': None,
+                'activity': 'foo',
+                'category': 'bar',
                 'tags': ['precious', 'hashish'],
                 'description': 'i like ike',
             },
@@ -88,10 +88,10 @@ factoid_fixture = (
             '2015-12-12 13:00 foo@bar, #just walk away "#not a tag", blah',
             'verify_start',
             {
-                'activity': 'foo',
-                'category': 'bar',
                 'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
                 'end': None,
+                'activity': 'foo',
+                'category': 'bar',
                 'tags': ['just walk away "#not a tag"'],
                 'description': 'blah',
             },
@@ -101,10 +101,10 @@ factoid_fixture = (
             '2015-12-12 13:00 foo@bar, #just walk away @"totes a tag", blah',
             'verify_start',
             {
-                'activity': 'foo',
-                'category': 'bar',
                 'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
                 'end': None,
+                'activity': 'foo',
+                'category': 'bar',
                 'tags': ['just walk away', '"totes a tag"'],
                 'description': 'blah',
             },
@@ -116,10 +116,10 @@ factoid_fixture = (
             ' Time is also ignored at end: 12:59',
             'verify_start',
             {
-                'activity': 'baz',
-                'category': 'bat"',
                 'start': datetime.datetime(2015, 12, 12, 13, 0, 0),
                 'end': None,
+                'activity': 'baz',
+                'category': 'bat"',
                 'tags': ['tag1'],
                 'description': '#tag2 tags cannot come #too late, aha!'
                                ' Time is also ignored at end: 12:59',
