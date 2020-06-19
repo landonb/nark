@@ -30,6 +30,14 @@ factoid_fixture = (
             'category': 'bar',
             'tags': [],
         }),
+        # Test wrap-around relative clock times specified.
+        ('12:00:11 - 11:01:59', 'verify_both', {
+            'start': datetime.datetime(2015, 12, 25, 12, 0, 11),
+            'end': datetime.datetime(2015, 12, 26, 11, 1, 59),
+            'activity': '',
+            'category': '',
+            'tags': [],
+        }),
         # Use datetime-to-datetime format, with actegory.
         ('2015-12-12 13:00 to 2015-12-12 16:30: foo@bar', 'verify_both', {
             'start': datetime.datetime(2015, 12, 12, 13, 0, 0),

@@ -107,18 +107,7 @@ def string_delta_style_parametrized(request):
     return request.param
 
 
-@pytest.fixture(params=[
-    '',
-    '14:00 - 12:00 foo@bar',
-    '12:00 - 14:00 @bar',
-    '12:00:11 - 11:00:59 foo@bar',
-])
-def invalid_raw_fact_parametrized(request):
-    """Return various invalid ``raw fact`` strings."""
-    return request.param
-
-
-# +++
+# ***
 
 # (lb): Unused.
 
