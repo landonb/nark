@@ -182,3 +182,10 @@ class TestCategoryManager():
         assert alchemy_store.session.query(AlchemyCategory).count() == 1
         assert result.equal_fields(category)
 
+    def test_get_deleted_factory(self, alchemy_store, alchemy_category_factory):
+        """Make sure method retrieves deleted object."""
+        category = alchemy_category_factory()
+        category.deleted = True
+        result = alchemy_store.categories.get(category.pk, deleted=True)
+        assert result == category
+
