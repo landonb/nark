@@ -123,39 +123,18 @@ class TestFact(object):
         assert fact
         assert str(err) == str(should_err)
 
-# FIXME: The invalid_raw_fact_parametrized fixture won't fail anymore,
-#        because clock time is considered relative until explicitly closed --
-#
-# FIXME: We need to add fix_times to these nark tests!
-#
-#
-#    def test_create_from_factoid_invalid(self, invalid_raw_fact_parametrized):
-#        """Make sure invalid string raises an exception."""
-#        with pytest.raises(ValueError):
-#            fact, err = Fact.create_from_factoid(invalid_raw_fact_parametrized)
-
     @pytest.mark.parametrize(
         ('raw_fact', 'expectations'),
         [
             (
+                # Note that without a time_hint, no time expected, so
+                # start and end are None, and prefix (before colon) is
+                # just part of the activity name.
                 '-7 foo@bar, palimpalum',
                 {
                     'start': None,
                     'end': None,
                     'activity': '-7 foo',
-                    'category': 'bar',
-                    'description': 'palimpalum',
-                },
-            ),
-            (
-                # FIXME: (lb): This is not parsing correctly!
-                #   The Activity name is being set to '-7: foo'
-                #   Though maybe that's because no `time_hint`!
-                '-7: foo@bar, palimpalum',
-                {
-                    'start': None,
-                    'end': None,
-                    'activity': '-7: foo',
                     'category': 'bar',
                     'description': 'palimpalum',
                 },
