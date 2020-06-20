@@ -324,7 +324,7 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             result = query.one()
         except NoResultFound:
             message = _(
-                "No activity named ‘{name}’ of category ‘{category}’ was found."
+                "No Activity named ‘{name}’ of category ‘{category}’ was found."
             ).format(name=name, category=category)
             self.store.logger.debug(message)
             raise KeyError(message)
