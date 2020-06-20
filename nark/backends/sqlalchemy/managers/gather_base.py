@@ -397,6 +397,7 @@ class GatherBaseAlchemyManager(object):
     # ***
 
     def query_filter_by_tags(self, query, qt):
+        # Note this method call only for Facts.get_all, but not other items' get_all.
         criteria = self.query_criteria_filter_by_tags(qt)
         query = query.filter(or_(*criteria))
         return query
