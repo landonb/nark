@@ -173,7 +173,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
 
             query = _get_all_filter_by_ongoing(query)
 
-            query = query_group_by_aggregate(query)
+            query = query_group_by_aggregate(query, tags_subquery)
 
             has_facts = True
             query = self.query_order_by_sort_cols(
@@ -660,12 +660,12 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
 
         # ***
 
-        def query_group_by_aggregate(query):
+        def query_group_by_aggregate(query, tags_subquery):
             if not qt.is_grouped:
                 # Need to group by Fact.pk because some aggregates, e.g.,
                 # COUNT(), will want to collapse all rows.
                 return query_group_by_pk(query)
-            return query_group_by_meta(query)
+            return query_group_by_meta(query, tags_subquery)
 
         def query_group_by_pk(query):
             # Group by Fact.pk, as there might be "duplicate" Facts because
@@ -673,9 +673,9 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             query = query.group_by(AlchemyFact.pk)
             return query
 
-        def query_group_by_meta(query):
+        def query_group_by_meta(query, tags_subquery):
             query = query_group_by_activity_and_category(query)
-            query = query_group_by_tags(query)
+            query = query_group_by_tags(query, tags_subquery)
             return query
 
         def query_group_by_activity_and_category(query):
@@ -709,10 +709,12 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
                 query = query.group_by(AlchemyCategory.pk)
             return query
 
-        def query_group_by_tags(query):
-            if qt.group_tags:
-                query = query.group_by(AlchemyTag.pk)
-            return query
+        def query_group_by_tags(query, tags_subquery):
+            if not qt.group_tags:
+                return query
+
+            assert not lazy_tags
+            return query.group_by(tags_subquery.c.facts_tags)
 
         # ***
 
