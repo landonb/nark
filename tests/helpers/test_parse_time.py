@@ -21,8 +21,13 @@ import datetime
 
 import pytest
 from freezegun import freeze_time
-from nark.helpers import fact_time, parse_time
+from nark.helpers import fact_time
 from nark.helpers.parse_errors import ParserInvalidDatetimeException
+from nark.helpers.parse_time import (
+    HamsterTimeSpec,
+    parse_dated,
+    parse_datetime_human
+)
 
 
 class TestGetDayEnd(object):
@@ -56,30 +61,83 @@ class TestEndDayToDatetime(object):
         assert fact_time.day_end_datetime(end_day, day_start) == expectation
 
 
+# ***
+
+class TestParseTimeHamsterTimeSpec(object):
+    """Tests the parse_time module's HamsterTimeSpec class."""
+
+    # Note that much of HamsterTimeSpec indirectly tested via test_parsing.py.
+
+    def test_cannot_instantiate(self):
+        with pytest.raises(NotImplementedError):
+            HamsterTimeSpec()
+
+    def test_has_time_of_day_false(self):
+        has_tod = HamsterTimeSpec.has_time_of_day('2015-12-12')
+        assert not has_tod
+
+    def test_has_time_of_day_true(self):
+        has_tod = HamsterTimeSpec.has_time_of_day('2015-12-12 18:55')
+        assert has_tod
+
+
 @freeze_time('2015-12-10 12:30')
-class TestParseTime(object):
+class TestParseTimeFunctions(object):
+    """Tests the parse_time module."""
+
+    # Note that much of parse_time.py indirectly tested via test_parsing.py.
+
     @pytest.mark.parametrize(('time', 'expectation'), [
         ('18:55', datetime.datetime(2015, 12, 9, 18, 55)),
         ('18:55:34', datetime.datetime(2015, 12, 9, 18, 55, 34)),
         ('2014-12-10', datetime.datetime(2014, 12, 10, 0, 0)),
         ('2015-10-02 18:12', datetime.datetime(2015, 10, 2, 18, 12)),
         ('2015-10-02 18:12:33', datetime.datetime(2015, 10, 2, 18, 12, 33)),
+        # Relative time.
+        ('-60', datetime.datetime(2015, 12, 10, 11, 30)),
+        ('+2h', datetime.datetime(2015, 12, 10, 14, 30)),
+        # Friendly time.
+        ('Monday', datetime.datetime(2015, 12, 7, 0, 0)),
     ])
     def test_parse_dated_valid_times(self, time, expectation):
         """Make sure that given times are parsed as expected."""
-        parsed = parse_time.parse_dated(time, time_now=datetime.datetime.now())
+        parsed = parse_dated(time, time_now=datetime.datetime.now())
         assert parsed == expectation
 
-    @pytest.mark.parametrize('time', ['18 55', '18:555', '2014 01 04 12:30'])
+    @pytest.mark.parametrize('time', [
+        '18 55',
+        '18:555',
+        '18:66',
+        '2014 01 04 12:30',
+        '2014-13-13 12:30',
+    ])
     def test_parse_dated_invalid_times(self, time):
         """Ensure that invalid times throw an exception."""
         with pytest.raises(ParserInvalidDatetimeException):
             # F841 local variable 'parsed_' is assigned to but never used
-            parsed_ = parse_time.parse_dated(  # noqa: F841
+            parsed_ = parse_dated(  # noqa: F841
                 time, time_now=datetime.datetime.now(), cruftless=True,
             )
             assert False  # Unreachable.
 
+    def test_parse_dated_not_a_str(self):
+        not_a_str = object()
+        parsed = parse_dated(not_a_str, time_now=datetime.datetime.now())
+        assert parsed is not_a_str
+
+    def test_parse_datetime_human_local_tz_True(self):
+        # FIXME: (lb): There's a timezone feature coming. I swear. One of these years.
+        #        For now, can at least test those 2 lines that production does not use.
+        # Acceptable time zones, e.g.: '+0500', 'US/Eastern', datetime.timezone.utc.
+        # You can also specify tzinfo in datetime.
+        parsed = parse_datetime_human(
+            'Monday', time_now=datetime.datetime.now(), local_tz='UTC',
+        )
+        expected = datetime.datetime(2015, 12, 7, 0, 0, tzinfo=datetime.timezone.utc)
+        assert parsed == expected
+
+
+# ***
 
 class TestValidateStartEndRange(object):
     """Unittests for validation function."""
