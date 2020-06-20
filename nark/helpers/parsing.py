@@ -202,11 +202,15 @@ class Parser(object):
 
     def dissect_raw_fact(self, *args, **kwargs):
         """
-        FIXME: Document
-        """
-        # The raw_fact is a tuple. The user can use quotes or not, and it's
-        # up to us to figure things out.
+        Parses raw Factoid. May or may not raise, depending on ``lenient``.
 
+        Args:
+            See ``setup_rules()`` for list of arguments.
+
+        Returns:
+            err (ParserException): None if Factoid parser without problem, or an
+            Exception explaining what went wrong; but raises instead unless lenient.
+        """
         self.prepare_parser(*args, **kwargs)
 
         err = None
@@ -261,6 +265,37 @@ class Parser(object):
         # FIXME/2018-05-22 20:42: (lb): Implement: tz_local
         local_tz=None,  # Default to None, i.e., naive
     ):
+        """
+        Setup the Parser to parse a Factoid.
+
+        Args:
+            factoid (str or list):
+                The Factoid string to parse, or a list of strings representing
+                parts of the Factoid, say, accumulated from the command line
+                that will be joined together with spaces.
+
+            time_hint (str):
+                Specifies whether the Factoid includes the start, and/or end,
+                or neither.
+
+            separators (list of str):
+                Specifies what separator characters or strings are used to
+                separate Factoid parts.
+
+            hash_stamps (str):
+                String of individual characters, where any single character
+                can be used to indicate the start of a tag.
+
+            lenient (bool):
+                If True, Parser.dissect_raw_fact raises an Exception if the
+                Factoid failed to parse; otherwise, the Exception is returned.
+
+            local_tz (str):
+                Reserved for future use.
+        """
+        # The raw_fact is a tuple. The user can use quotes or not, and it's
+        # up to us to figure things out.
+
         if isinstance(factoid, str):
             # Path from tests/nark/test_objects.py, but not from dob.
             factoid = (factoid,)
@@ -283,7 +318,7 @@ class Parser(object):
         assert len(separators) > 0
         sep_group = '|'.join(separators)
         # Gobble whitespace as part of separator, to make it easier to pull
-        # data apart and then part it back together if we need. E.g., if user
+        # data apart and then put it back together if we need. E.g., if user
         # puts description on same line as meta data, and if description contains
         # separators, we'll split the line first to parse out the meta data, and
         # then we'll put it back together, so if a separator is part of the
@@ -415,8 +450,9 @@ class Parser(object):
             return part.index(Parser.ACTEGORY_SEP)
         except ValueError:
             if must:
-                # It's only mandatory that we find an activity if the
-                # datetimes are not ISO 8601 (otherwise we cannot tell
+                # It's only mandatory that we find an activity if the datetimes
+                # are not ISO 8601 (because that's how we delimit non-ISO dates
+                # from other parts of the Factoid).
                 self.raise_missing_separator_activity()
             return -1
 
@@ -503,6 +539,7 @@ class Parser(object):
             assert datetime_attr == 'datetime2'
             self.raise_missing_datetime_two()
         else:
+            # This one's obscure. parse_factoid('+10m to @', 'verify_start') lands here.
             rest = None
         return rest, sep
 
@@ -637,6 +674,9 @@ class Parser(object):
             if the_datetime:
                 # 2018-07-02: (lb): Is this path possible?
                 #   Or would we have processed ISO dates already?
+                # 2020-06-20: (lb): On verify_both where only one date is
+                # given, e.g., '2015-12-12 13:00', earlier it'll get split
+                # into '2015' and '12-12 13:00', and here we'll process '2015'.
                 logger.warning('hydrate_datetime_either: found ISO datetime?')
         if not the_datetime:
             the_datetime = self.hydrate_datetime_friendly(
