@@ -27,7 +27,6 @@ import re
 
 from .parse_errors import (
     ParserException,
-    ParserInvalidDatetimeException,
     ParserMissingActivityException,
     ParserMissingDatetimeOneException,
     ParserMissingDatetimeTwoException,
