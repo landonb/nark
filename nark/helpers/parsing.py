@@ -680,17 +680,11 @@ class Parser(object):
             )
         return the_datetime
 
-    def hydrate_datetime_friendly(self, datepart, must=False):
-        # MAYBE/2020-05-09: (lb): Add time_now to human parse?
+    def hydrate_datetime_friendly(self, datepart):
         parsed = parse_datetime_human(datepart, local_tz=self.local_tz)
 
         if not parsed:
             parsed = None
-            if must:
-                raise ParserInvalidDatetimeException(_(
-                    'Unable to parse datetime: {}.'
-                    .format(datepart)
-                ))
         return parsed
 
     def ensure_hydrated_datetimes(self):
