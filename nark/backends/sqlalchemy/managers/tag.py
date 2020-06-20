@@ -264,6 +264,21 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
     def _gather_query_order_by_name_col(self):
         return 'tag'
 
+    def _gather_query_requires_fact(self, qt, compute_usage):
+        requires_fact_table = super(
+            TagManager, self
+        )._gather_query_requires_fact(qt, compute_usage)
+
+        # (lb): I'm not sure the utility of querying Tag and sorting by
+        # Activity, but we can easily support it.
+        requires_fact_table = (
+            requires_fact_table
+            or qt.sort_cols_has_any('activity')
+            or qt.sort_cols_has_any('category')
+        )
+
+        return requires_fact_table
+
     def _gather_query_start_aggregate(self, qt, agg_cols):
         # NOTE: We do not need a subquery here, unlike in gather_fact.py.
         #       - In _get_all_prepare_tags_subquery, which adds tags to the Fact
@@ -290,20 +305,26 @@ class TagManager(BaseAlchemyManager, BaseTagManager):
         query, criteria = super(
             TagManager, self,
         ).query_criteria_filter_by_activities(query, qt)
-        if criteria:
+        # (lb): I'm not sure the utility of querying Tag and sorting by
+        # Activity, but we can easily support it.
+        join_activity = bool(criteria) or qt.sort_cols_has_any('activity')
+        if join_activity:
             query = query.join(AlchemyActivity)
         # (lb): I'm not sure if there's a way to check the query to see
         #       if it contains a table already; or whether the query is
         #       smart enough to discard multiple joins of the same table.
         #       So make a note to self that we joined the Activity table.
-        qt.joined_activity = bool(criteria)
+        qt.joined_activity = join_activity
         return query, criteria
 
     def query_criteria_filter_by_categories(self, query, qt):
         query, criteria = super(
             TagManager, self,
         ).query_criteria_filter_by_categories(query, qt)
-        if criteria:
+        # (lb): I'm not sure the utility of querying Tag and sorting by
+        # Category, but we can easily support it.
+        join_category = bool(criteria) or qt.sort_cols_has_any('category')
+        if join_category:
             if not qt.joined_activity:
                 query = query.join(AlchemyActivity)
             query = query.join(AlchemyCategory)
