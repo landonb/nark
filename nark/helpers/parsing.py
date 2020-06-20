@@ -656,6 +656,7 @@ class Parser(object):
         self.datetime2 = self.hydrate_datetime_either(
             self.datetime2, self.raw_datetime2,
         )
+        self.ensure_hydrated_datetimes()
 
     def hydrate_datetime_either(self, the_datetime, raw_datetime):
         if the_datetime or not raw_datetime:
@@ -691,6 +692,12 @@ class Parser(object):
                     .format(datepart)
                 ))
         return parsed
+
+    def ensure_hydrated_datetimes(self):
+        minmax = TIME_HINT_CLUE[self.time_hint]
+        strictly_two = (minmax[0] == 2)
+        if strictly_two and not (self.datetime1 and self.datetime2):
+            self.raise_missing_datetime_two()
 
     # ***
 
