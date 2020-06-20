@@ -822,7 +822,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             # name. Except if grouping by activity or category, then the
             # sort won't stick, so skip it in that case.
             if not qt.group_activity and not qt.group_category:
-                query = query.order_by(direction(AlchemyTag.name))
+                query = query.order_by(direction(tags_subquery.c.facts_tags))
         elif sort_col == 'usage' and span_cols is not None:
             i_group_count = GatherFactManager.RESULT_GRP_INDEX['group_count']
             query = query.order_by(direction(span_cols[i_group_count]))
