@@ -230,12 +230,14 @@ class Parser(object):
         try:
             # If the date(s) are ISO 8601, find 'em fast.
             after_datetimes = self.parse_datetimes_easy()
+        except ParserException:
+            self.reset_result()
+            rest_after_act = self.parse_datetimes_hard()
+            expect_category = True
+        else:
             # Datetime(s) were 8601 (code did not raise),
             # so now look for the '@' and set the activity.
             rest_after_act, expect_category = self.lstrip_activity(after_datetimes)
-        except ParserException:
-            self.reset_result()
-            rest_after_act, expect_category = self.parse_datetimes_hard()
         if expect_category:
             self.parse_cat_and_remainder(rest_after_act)
         else:
@@ -391,14 +393,10 @@ class Parser(object):
         return rest
 
     def parse_datetimes_hard(self):
-        expect_category = True
-        if self.time_hint == 'verify_none':
-            # There is no datetime(s). Just the act@cat.
-            rest_after_act, expect_category = self.lstrip_activity(self.flat)
-        else:
-            minmax = TIME_HINT_CLUE[self.time_hint]
-            rest_after_act = self.lstrip_datetimes(minmax)
-        return (rest_after_act, expect_category)
+        assert self.time_hint != 'verify_none'
+        minmax = TIME_HINT_CLUE[self.time_hint]
+        rest_after_act = self.lstrip_datetimes(minmax)
+        return rest_after_act
 
     def lstrip_datetimes(self, minmax):
         two_is_okay = (minmax[1] == 2)
