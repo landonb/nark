@@ -168,3 +168,9 @@ class TestTagManager():
         assert alchemy_store.session.query(AlchemyTag).count() == 1
         assert result.equal_fields(tag)
 
+    def test_get_deleted_item(self, alchemy_store, alchemy_tag):
+        """Make sure method retrieves deleted object."""
+        alchemy_tag.deleted = True
+        result = alchemy_store.tags.get(alchemy_tag.pk, deleted=True)
+        assert result == alchemy_tag
+
