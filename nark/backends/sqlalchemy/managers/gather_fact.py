@@ -130,6 +130,15 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             or qt.is_grouped
             or qt.sorts_cols_has_stat
         )
+        # Cannot request lazy_tags when grouping, just not how it works.
+        # (If we did, then, say, if group_tags, we'd need to outerjoin
+        # fact_tags and AlchemyFact, or we'd need to add the tags_subquery
+        # anyway. But lazy_tags is meant for lazy-loading an individual
+        # Fact's tags, which has no meaning on aggregate results, so nip
+        # that now.)
+        if add_aggregates and lazy_tags:
+            errmsg = _('Cannot request lazy_tags when grouping results.')
+            raise Exception(errmsg)
 
         def _get_all_facts():
             self.store.logger.debug(qt)
