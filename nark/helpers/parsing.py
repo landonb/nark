@@ -95,7 +95,6 @@ class Parser(object):
         self.hash_stamps = None
         self.lenient = None
         self.local_tz = None
-        self.skip_dateparser = False
 
     def reset_result(self):
         self.datetime1 = None
@@ -121,7 +120,6 @@ class Parser(object):
             ' / hash_stamps: {}'
             ' / lenient: {}'
             ' / local_tz: {}'
-            ' / skip_dateparser: {}'
 
             ' / datetime1: {}'
             ' / datetime2: {}'
@@ -144,7 +142,6 @@ class Parser(object):
                 self.hash_stamps,
                 self.lenient,
                 self.local_tz,
-                self.skip_dateparser,
 
                 self.datetime1,
                 self.datetime2,
@@ -695,15 +692,6 @@ class Parser(object):
                     'Unable to parse datetime: {}.'
                     .format(datepart)
                 ))
-        elif self.skip_dateparser:
-            # FIXME: Implement use of this in import routine.
-            #        Caller can use RELATIVE_BASE to resolve time correctly.
-
-            # The caller is telling us that the date is not actually
-            # relative to "now". It'll call dateparser later with the
-            # correct context.
-            parsed = datepart
-
         return parsed
 
     # ***
