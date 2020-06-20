@@ -37,6 +37,8 @@ faker = faker_.Faker()
 
 
 class TestFact(object):
+    """items.fact.Fact class tests."""
+
     def test_fact_init_valid(
         self,
         activity,
@@ -65,11 +67,13 @@ class TestFact(object):
         tags = sorted(list(tags), key=attrgetter('name'))
         assert fact.tags_sorted == tags
 
+    # ***
+
     @pytest.mark.parametrize(
         ('factoid', 'time_hint', 'lenient', 'should_err'),
         [
             (
-                '12:00 - 14:00 foo@bar, rumpelratz',
+                '12:00 - 14:00 foo@bar, bazbat',
                 'verify_both',
                 False,
                 None,
@@ -130,13 +134,13 @@ class TestFact(object):
                 # Note that without a time_hint, no time expected, so
                 # start and end are None, and prefix (before colon) is
                 # just part of the activity name.
-                '-7 foo@bar, palimpalum',
+                '-7 foo@bar, bazbat',
                 {
                     'start': None,
                     'end': None,
                     'activity': '-7 foo',
                     'category': 'bar',
-                    'description': 'palimpalum',
+                    'description': 'bazbat',
                 },
             ),
         ]
@@ -155,16 +159,20 @@ class TestFact(object):
         ('factoid', 'expectations'),
         [
             (
-                '-7 foo@bar, palimpalum',
+                '-7 foo@bar, bazbat',
                 {
-                    # FIXME/MAYBE: Should we make an intermediate time parser
-                    # that resolves relative times? Then we could expect:
+                    # Note that time parsing does not occur until later, so that
+                    # multiple Factoids can be parsed, and then relative times can
+                    # be determined with reference to surrounding Facts. Although in
+                    # this example, because start is relative to end, we could add code
+                    # to resolve time relative to the Fact itself, but there's not a good
+                    # reason to do so, e.g., here, after resolution, you'd see:
                     #   'start': datetime.datetime(2015, 5, 2, 18, 0, 0),
                     'start': '-7',
                     'end': None,
                     'activity': 'foo',
                     'category': 'bar',
-                    'description': 'palimpalum',
+                    'description': 'bazbat',
                 },
             ),
         ],
@@ -178,6 +186,8 @@ class TestFact(object):
         assert fact.activity.category.name == expectations['category']
         assert fact.description == expectations['description']
         assert not err
+
+    # ***
 
     @pytest.mark.parametrize(
         'start',
