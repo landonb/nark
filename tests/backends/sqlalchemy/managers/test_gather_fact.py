@@ -23,6 +23,7 @@ import pytest
 
 from nark.backends.sqlalchemy.objects import AlchemyFact
 from nark.backends.sqlalchemy.managers.fact import FactManager
+from nark.items.tag import Tag
 
 
 class TestGatherFactManager():
@@ -277,4 +278,26 @@ class TestGatherFactManager():
         # See: must_support_db_engine_funcs.
         expect = 'This feature does not work with the current DBMS engine'
         assert str(excinfo.value).startswith(expect)
+
+    # ***
+
+    def test_get_all_match_tags(
+        self, alchemy_store, set_of_alchemy_facts_active, alchemy_tag_factory,
+    ):
+        """Test get_all argument: QueryTerms.match_activities."""
+        tag_0_0 = set_of_alchemy_facts_active[0].tags[0]
+        tag_2_2 = set_of_alchemy_facts_active[2].tags[2].name
+        # This Tag will not be found because not associated with any Fact.
+        any_tag = alchemy_tag_factory(pk=None)
+        Tag_with_pk_None = Tag(name=any_tag.name)
+        results = alchemy_store.facts.get_all(
+            match_tags=[
+                tag_0_0,
+                tag_2_2,
+                Tag_with_pk_None,
+                None,
+            ],
+        )
+        # Given tag_0_0 and tag_2_2, expect 2 matching Facts.
+        assert len(results) == 2
 

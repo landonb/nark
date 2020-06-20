@@ -20,6 +20,7 @@
 import pytest
 
 from nark.backends.sqlalchemy.objects import AlchemyActivity, AlchemyCategory
+from nark.items.activity import Activity
 
 
 class TestActivityManager():
@@ -420,4 +421,28 @@ class TestActivityManager():
         alchemy_activity.deleted = True
         result = alchemy_store.activities.get(alchemy_activity.pk, deleted=True)
         assert result == alchemy_activity
+
+    def test_get_all_match_activities(
+        self, alchemy_store, set_of_alchemy_facts_active, alchemy_activity_factory,
+    ):
+        """Test get_all argument: QueryTerms.match_activities."""
+        # Cover as many branches as possible within query_filter_by_activity
+        # and query_filter_by_activity_name.
+        activity_0 = set_of_alchemy_facts_active[0].activity
+        activity_2 = set_of_alchemy_facts_active[2].activity.name
+        # Rather than use alchemy_activity or alchemy_activity_factory,
+        # which will insist that PK by non-None (though possibly 0 is okay,
+        # and we could test the same path...), use a normal Activity.
+        # This will assign a new PK:
+        any_activity = alchemy_activity_factory(pk=None)
+        activity_with_pk_None = Activity(name=any_activity.name)
+        results = alchemy_store.activities.get_all(
+            match_activities=[
+                activity_0,
+                activity_2,
+                activity_with_pk_None,
+                None,
+            ],
+        )
+        assert len(results) == 3
 

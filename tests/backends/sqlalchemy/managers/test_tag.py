@@ -174,3 +174,16 @@ class TestTagManager():
         result = alchemy_store.tags.get(alchemy_tag.pk, deleted=True)
         assert result == alchemy_tag
 
+    def test_get_all_match_tags(self, alchemy_store, set_of_alchemy_facts_active):
+        """Test get_all argument: QueryTerms.match_tags."""
+        # Note that non-Fact query does not actually implement the
+        # QueryTerms.query_filter_by_tags option (because no obvious
+        # use case). But QueryTerms still accepts it.
+        results = alchemy_store.tags.get_all(
+            match_tags=['foo'],
+        )
+        expect_all_tags = 0
+        for fact in set_of_alchemy_facts_active:
+            expect_all_tags += len(fact.tags)
+        assert len(results) == expect_all_tags
+

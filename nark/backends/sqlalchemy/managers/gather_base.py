@@ -318,6 +318,7 @@ class GatherBaseAlchemyManager(object):
         if activity is not None:
             activity_name = self.query_filter_by_activity_name(activity)
             if activity_name is None:
+                # "Activity name must not be None."
                 # (lb): This seems like a tedious branch to test and support. Same
                 # goes for `activity is None` (the last else branch of this method).
                 # Furthermore, the CLI does not let the user query for Activity

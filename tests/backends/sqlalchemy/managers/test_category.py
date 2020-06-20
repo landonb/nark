@@ -20,6 +20,7 @@
 import pytest
 
 from nark.backends.sqlalchemy.objects import AlchemyCategory
+from nark.items.category import Category
 
 
 class TestCategoryManager():
@@ -187,4 +188,22 @@ class TestCategoryManager():
         alchemy_category.deleted = True
         result = alchemy_store.categories.get(alchemy_category.pk, deleted=True)
         assert result == alchemy_category
+
+    def test_get_all_match_categories(
+        self, alchemy_store, set_of_alchemy_facts_active, alchemy_category_factory,
+    ):
+        """Test get_all argument: QueryTerms.match_activities."""
+        category_0 = set_of_alchemy_facts_active[0].activity.category
+        category_2 = set_of_alchemy_facts_active[2].activity.category.name
+        any_category = alchemy_category_factory(pk=None)
+        category_with_pk_None = Category(name=any_category.name)
+        results = alchemy_store.categories.get_all(
+            match_categories=[
+                category_0,
+                category_2,
+                category_with_pk_None,
+                None,
+            ],
+        )
+        assert len(results) == 3
 
