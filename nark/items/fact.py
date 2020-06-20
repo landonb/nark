@@ -35,7 +35,7 @@ from .tag import Tag
 
 try:
     from math import inf
-except ImportError:
+except ImportError:  # pragma: no cover: Do not support < 3.5.
     # < Python 3.5.
     inf = float('inf')
 
