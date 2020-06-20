@@ -83,7 +83,6 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
         try:
             self.get_by_composite(activity.name, activity.category)
-            # FIXME/2018-06-08: (lb): DRY: See "Our database already" elsewhere.
             message = _(
                 "The database already contains that name/category.name combination."
             )
@@ -151,13 +150,13 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
 
         try:
             self.get_by_composite(activity.name, activity.category)
-            # FIXME/2018-06-08: (lb): DRY: See "Our database already" elsewhere.
             message = _(
                 "The database already contains that Activity and Category combination."
             )
             self.store.logger.error(message)
             raise ValueError(message)
         except KeyError:
+            # I.e., 'No activity named ‘<>’ of category ‘<>’ was found.'
             pass
 
         alchemy_activity = self.store.session.query(AlchemyActivity).get(activity.pk)
@@ -173,6 +172,8 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
         try:
             self.store.session.commit()
         except IntegrityError as err:
+            # (lb): I think this path unreachable, because get_by_composite should
+            # find it first. Or is it something else?
             message = _(
                 'There seems to already be an activity like this for the given category.'
                 " Cannot change this activity's values. Original exception: {}"
@@ -215,6 +216,11 @@ class ActivityManager(BaseAlchemyManager, BaseActivityManager):
             raise KeyError(message)
 
         if alchemy_activity.facts:
+            # FIXME: Untested. (lb): Also, this is how deleted is meant to be used...
+            #        Not quite sure I see how it'd work... better workflow should
+            #        involve reassigning all Facts that had one Activity to another,
+            #        otherwise you end up with weird orphan Activities that the UX
+            #        doesn't really process well.
             alchemy_activity.deleted = True
             self.store.activities._update(alchemy_activity)
         else:

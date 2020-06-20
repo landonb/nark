@@ -145,27 +145,81 @@ class TestActivityManager():
         with pytest.raises(ValueError):
             alchemy_store.activities._add(activity)
 
+    # *** ._update() method tests.
+
     def test_update_without_pk(self, alchemy_store, activity):
         """Make sure that calling update without a PK raises exception."""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as excinfo:
             alchemy_store.activities._update(activity)
+        assert str(excinfo.value).startswith('The Activity passed')
 
-    def test_update_with_existing_name_and_existing_category_name(
+    def test_update_with_existing_name_and_new_category_name(
         self, alchemy_store, activity, alchemy_activity, alchemy_category_factory,
     ):
         """
-        Make sure that calling update with a taken composite key raises
-        exception.
+        Make sure that calling update on existing composite key raises exception.
         """
         assert alchemy_store.session.query(AlchemyActivity).count() == 1
         assert alchemy_store.session.query(AlchemyCategory).count() == 1
+
+        assert activity.pk is None
+        activity.pk = alchemy_activity.pk
+        activity.name = alchemy_activity.name
+
         category = alchemy_category_factory()
         assert alchemy_activity.category != category
-        activity.name = alchemy_activity.name
         assert activity.category.pk is None
+        # And now for something completely different.
         activity.category.name = category.name
-        with pytest.raises(ValueError):
+
+        result = alchemy_store.activities._update(activity)
+        # The result is almost the same as what we gave it -- except now
+        # the category PK will have been assigned, check it:
+        activity.category.pk = result.category.pk
+        assert result == activity
+
+    def test_update_fails_on_existing_activity_category_conflict(
+        self, alchemy_store, activity, alchemy_activity, alchemy_category,
+    ):
+        """
+        Make sure that calling update on existing composite key raises exception.
+        """
+        assert alchemy_store.session.query(AlchemyActivity).count() == 1
+        assert alchemy_store.session.query(AlchemyCategory).count() == 1
+        # (lb): Interesting. Or maybe not? Did not expect fixture item object to be
+        # same as the one in the fixture store, especially because both the activity
+        # and the category exist in store whether or not also specified as a fixture.
+        stored_activity = alchemy_store.session.query(AlchemyActivity).one()
+        assert id(stored_activity) == id(alchemy_activity)
+        assert id(stored_activity.category) == id(alchemy_category)
+
+        assert activity.pk is None
+        activity.pk = alchemy_activity.pk
+        activity.name = alchemy_activity.name
+        activity.category.name = alchemy_category.name
+
+        with pytest.raises(ValueError) as excinfo:
             alchemy_store.activities._update(activity)
+        assert str(excinfo.value).startswith('The database already contains that')
+
+    def test_update_with_existing_category_name_conflict_again(
+        self, alchemy_store, alchemy_activity, alchemy_category_factory,
+    ):
+        activity = alchemy_activity.as_hamster(alchemy_store)
+        category = alchemy_category_factory().as_hamster(alchemy_store)
+        activity.category = category
+        alchemy_store.activities._update(activity)
+        with pytest.raises(ValueError) as excinfo:
+            # 2nd time's a no-go.
+            alchemy_store.activities._update(activity)
+        assert excinfo.value.args[0].startswith('The database already contains that')
+
+    def test_update_with_invalid_pk(self, alchemy_store, activity, alchemy_activity):
+        """Make sure that calling update without a PK raises exception."""
+        activity.pk = alchemy_activity.pk + 1
+        with pytest.raises(KeyError) as excinfo:
+            alchemy_store.activities._update(activity)
+        assert excinfo.value.args[0].startswith('No Activity with PK')
 
     def test_update_with_existing_category(
         self, alchemy_store, alchemy_activity, alchemy_category_factory,
@@ -195,6 +249,8 @@ class TestActivityManager():
         result = alchemy_store.activities._update(activity)
         db_instance = alchemy_store.session.query(AlchemyActivity).get(result.pk)
         assert db_instance.as_hamster(alchemy_store).equal_fields(activity)
+
+    # ***
 
     def test_remove_existing(self, alchemy_store, alchemy_activity):
         """Make sure removing an existsing alchemy_activity works as intended."""
@@ -358,4 +414,10 @@ class TestActivityManager():
         results = alchemy_store.activities.get_all(match_categories=['miss'])
         assert len(results) == 0
         assert alchemy_activity == alchemy_store.activities.get_all()[0]
+
+    def test_get_deleted_item(self, alchemy_store, alchemy_activity):
+        """Make sure method retrieves deleted object."""
+        alchemy_activity.deleted = True
+        result = alchemy_store.activities.get(alchemy_activity.pk, deleted=True)
+        assert result == alchemy_activity
 
