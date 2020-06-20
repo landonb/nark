@@ -446,3 +446,30 @@ class TestActivityManager():
         )
         assert len(results) == 3
 
+    # ***
+
+    @pytest.mark.parametrize(
+        ('sort_cols'),
+        (
+            (['start']),
+            ([None]),
+            (['usage']),
+            (['time']),
+            (['activity']),
+            (['category']),
+        )
+    )
+    def test_get_all_sort_cols(self, alchemy_store, sort_cols):
+        alchemy_store.activities.get_all(sort_cols=sort_cols)
+
+    def test_get_all_sort_cols_tag_fails(self, alchemy_store, mocker):
+        # The tag table is not joined for Activity query.
+        mocker.patch.object(alchemy_store.logger, 'warning')
+        alchemy_store.activities.get_all(sort_cols=['tag'])
+        assert alchemy_store.logger.warning.called
+
+    def test_get_all_sort_cols_unknown(self, alchemy_store, mocker):
+        mocker.patch.object(alchemy_store.logger, 'warning')
+        alchemy_store.activities.get_all(sort_cols=['foo'])
+        assert alchemy_store.logger.warning.called
+

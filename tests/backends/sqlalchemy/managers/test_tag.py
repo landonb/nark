@@ -187,3 +187,25 @@ class TestTagManager():
             expect_all_tags += len(fact.tags)
         assert len(results) == expect_all_tags
 
+    # ***
+
+    @pytest.mark.parametrize(
+        ('sort_cols'),
+        (
+            (['start']),
+            ([None]),
+            (['usage']),
+            (['time']),
+            (['activity']),
+            (['category']),
+            (['tag']),
+        )
+    )
+    def test_get_all_sort_cols(self, alchemy_store, sort_cols):
+        alchemy_store.tags.get_all(sort_cols=sort_cols)
+
+    def test_get_all_sort_cols_unknown(self, alchemy_store, mocker):
+        mocker.patch.object(alchemy_store.logger, 'warning')
+        alchemy_store.tags.get_all(sort_cols=['foo'])
+        assert alchemy_store.logger.warning.called
+
