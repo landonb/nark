@@ -507,7 +507,12 @@ class GatherBaseAlchemyManager(object):
             sort_col == 'tag'
             or (name_col == 'tag' and (sort_col == 'name' or not sort_col))
         ):
-            order_cols = [AlchemyTag.name]
+            if self._gather_query_order_by_name_col == 'tag':
+                order_cols = [AlchemyTag.name]
+            else:
+                # Print a warning if called on Activity.get_all or Category.get_all,
+                # because we don't join the Tag table for either of those.
+                check_agg = True
 
         if not order_cols and check_agg:
             self.store.logger.warning("Invalid sort_col: {}".format(sort_col))
