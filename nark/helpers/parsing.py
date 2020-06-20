@@ -675,9 +675,18 @@ class Parser(object):
                 # into '2015' and '12-12 13:00', and here we'll process '2015'.
                 logger.warning('hydrate_datetime_either: found ISO datetime?')
         if not the_datetime:
-            the_datetime = self.hydrate_datetime_friendly(
-                raw_datetime, must=False,
-            )
+            # The earlier HamsterTimeSpec.discern will not have worked if the
+            # separator was not surrounded by spaces, e.g., "12:00-1:00".
+            # (lb): Not sure we need ot support this, but support is claimed
+            # elsewhere.
+            dt, type_dt, sep, rest = HamsterTimeSpec.discern(raw_datetime)
+            if dt is not None:
+                assert type_dt
+                # MAYBE:
+                #   assert type_dt == 'clock_time'
+                the_datetime = dt
+        if not the_datetime:
+            the_datetime = self.hydrate_datetime_friendly(raw_datetime)
         return the_datetime
 
     def hydrate_datetime_friendly(self, datepart):
