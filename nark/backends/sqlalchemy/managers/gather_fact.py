@@ -851,7 +851,7 @@ class GatherFactManager(BaseAlchemyManager, BaseFactManager):
             # ideological, that we cannot at least wire it to the PK. So here ya go:
             query = query.order_by(direction(AlchemyFact.pk))
         else:
-            self.store.logger.warn("Unknown sort_col: {}".format(sort_col))
+            self.store.logger.warning("Unknown sort_col: {}".format(sort_col))
         return query
 
     # ***
