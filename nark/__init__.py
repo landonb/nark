@@ -27,6 +27,8 @@ __all__ = (
     '__package_name__',
     '__time_0__',
     '__PROFILING__',
+    # Private:
+    #  '_version_from_tags',
 )
 
 __PROFILING__ = True
@@ -71,7 +73,7 @@ def get_version(package_name=None, reference_file=None, include_head=False):
 
     def version_from_repo():
         try:
-            return version_from_tags()
+            return _version_from_tags(reference_file)
         # Note: ModuleNotFoundError in Py3.6+, so using less specific ImportError.
         except ImportError:
             # No setuptools_scm package installed.
@@ -80,25 +82,26 @@ def get_version(package_name=None, reference_file=None, include_head=False):
             # Path containing .git/ not a repo after all.
             return '<none?!>'
 
-    def version_from_tags():
-        # Try to get the version from SCM. Obvi, this is intended for devs,
-        # as normal users will likely not have setuptools_scm installed.
-        import setuptools_scm
-        # For whatever reason, relative_to does not work, (lb) thought it would.
-        #   return setuptools_scm.get_version(relative_to=__file__)
-        # So figure out the root path of the repo. In lieu of something robust,
-        # like `git rev-parse --show-toplevel`, look for '.git/' ourselves.
-        cur_path = reference_file or __file__
-        while cur_path and cur_path != os.path.dirname(cur_path):
-            cur_path = os.path.dirname(cur_path)
-            proj_git = os.path.join(cur_path, '.git')
-            if os.path.exists(proj_git):
-                # Get version from setuptools_scm, and git tags.
-                # This is similar to a developer running, e.g.,
-                #   python setup.py --version
-                return setuptools_scm.get_version(root=cur_path)
-        # Not .git/ found. Package probably installed to site-packages/.
-        return ''
-
     return resolve_vers()
+
+
+def _version_from_tags(reference_file):
+    # Try to get the version from SCM. Obvi, this is intended for devs,
+    # as normal users will likely not have setuptools_scm installed.
+    import setuptools_scm
+    # For whatever reason, relative_to does not work, (lb) thought it would.
+    #   return setuptools_scm.get_version(relative_to=__file__)
+    # So figure out the root path of the repo. In lieu of something robust,
+    # like `git rev-parse --show-toplevel`, look for '.git/' ourselves.
+    cur_path = reference_file or __file__
+    while cur_path and cur_path != os.path.dirname(cur_path):
+        cur_path = os.path.dirname(cur_path)
+        proj_git = os.path.join(cur_path, '.git')
+        if os.path.exists(proj_git):
+            # Get version from setuptools_scm, and git tags.
+            # This is similar to a developer running, e.g.,
+            #   python setup.py --version
+            return setuptools_scm.get_version(root=cur_path)
+    # No .git/ found. Package probably installed to site-packages/.
+    return ''
 
