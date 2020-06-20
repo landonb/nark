@@ -485,11 +485,8 @@ class GatherBaseAlchemyManager(object):
         order_cols = []
         check_agg = False
         if sort_col == 'start':
-            if has_facts:
-                order_cols = self.cols_order_by_start(query)
-            else:
-                # Print a warning.
-                check_agg = True
+            assert has_facts
+            order_cols = self.cols_order_by_start(query)
         elif sort_col == 'usage':
             order_cols = [count_col]
             check_agg = True
