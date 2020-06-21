@@ -46,7 +46,7 @@ def configobj_instance(request):
     config['db'] = {}
     config['db']['orm'] = 'sqlalchemy'
     config['db']['engine'] = 'sqlite'
-    config['db']['path'] = '/tmp/hamster.db'
+    config['db']['path'] = '/tmp/nark-tests-config.db'
     config['db']['host'] = 'www.example.com'
     config['db']['port'] = 22
     config['db']['name'] = 'hamster'
@@ -65,7 +65,7 @@ def configobj_instance(request):
         'db': {
             'orm': 'sqlalchemy',
             'engine': 'sqlite',
-            'path': '/tmp/hamster.db',
+            'path': '/tmp/nark-tests-config.db',
             'host': 'www.example.com',
             'port': '22',
             'name': 'hamster',
