@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    nark.tests.backends
+   nark.tests.helpers
 
 Submodules
 ----------
