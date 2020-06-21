@@ -170,8 +170,14 @@ class Fact(BaseItem):
         parts = []
         for key in sorted(self.__dict__.keys()):
             if key == 'name':
-                assert self.name is None
-                continue  # Part of BaseItem, and not used by Fact.
+                # The 'name' attribute is part of BaseItem but not used by Fact.
+                # - (lb): Weird: Including this assert causes the coverage to indicate
+                #   that the `continue` is not covered. But with the assert commented,
+                #   the `continue` is marked correctly as covered. Huh. I even tried
+                #   throwing a `pass` after the assert, but same issue. So no assert.
+                #     assert self.name is None
+                #     pass
+                continue
             elif key == 'tags':
                 val = repr(self.tags_sorted)
             else:
