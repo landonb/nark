@@ -24,7 +24,11 @@ import pytest
 
 from unittest.mock import patch
 
-from nark.config.log_levels import get_log_level_safe, must_verify_log_level
+from nark.config.log_levels import (
+    get_log_level_safe,
+    get_log_name_safe,
+    must_verify_log_level
+)
 
 
 class TestConfigLogLevels:
@@ -52,4 +56,7 @@ class TestConfigLogLevels:
         with patch.object(sys, 'argv', testargs):
             _log_level = get_log_level_safe(logging.DEBUG)
             assert _log_level == (logging.CRITICAL + 1)
+
+    def test_get_log_name_safe(self):
+        assert get_log_name_safe(logging.ERROR) == 'ERROR'
 
