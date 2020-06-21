@@ -246,11 +246,12 @@ def _strptime_day_start(day_start_text):
 
     return _parse_day_start()
 
-
-def _validate_day_start(day_start_text):
-    """Returns True if the day_start_text is valid, or raises ValueError."""
-    _strptime_day_start(day_start_text)
-    return True
+# See comment below: this function not needed. But kept for posterity.
+#
+#   def _validate_day_start(day_start_text):
+#       """Returns True if the day_start_text is valid, or raises ValueError."""
+#       _strptime_day_start(day_start_text)
+#       return True
 
 
 # ***
