@@ -245,7 +245,7 @@ def parse_dated(dated, time_now, cruftless=False):
             parsed_dt = datetime_from_discerned(dated, dt, type_dt)
         if parsed_dt is None:
             # FIXME/2020-05-09: Time zone awareness. Use local_tz.
-            parsed_dt = parse_datetime_human(dated, time_now, local_tz=False)
+            parsed_dt = parse_datetime_human(dated, time_now, local_tz=None)
         if parsed_dt is None:
             raise ParserInvalidDatetimeException(
                 '{}: “{}”'.format(_('Unparseable datetime'), dated)
@@ -297,7 +297,7 @@ def parse_dated(dated, time_now, cruftless=False):
 RE_ONLY_09_WH_AND_PUNCT = re.compile(r'^[0-9\s{}]+$'.format(re.escape(punctuation)))
 
 
-def parse_datetime_get_settings(time_now=None, local_tz=False):
+def parse_datetime_get_settings(time_now=None, local_tz=None):
     # For settings def, see:
     #
     #   https://github.com/scrapinghub/dateparser/blob/master/docs/usage.rst#settings
@@ -365,7 +365,7 @@ def parse_datetime_get_settings(time_now=None, local_tz=False):
     return settings
 
 
-def parse_datetime_human(datepart, time_now=None, local_tz=False):
+def parse_datetime_human(datepart, time_now=None, local_tz=None):
     if RE_ONLY_09_WH_AND_PUNCT.match(datepart) is not None:
         return
 
