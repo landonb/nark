@@ -276,9 +276,10 @@ class Fact(BaseItem):
 
     @classmethod
     def localize(cls, localize=None):
+        was_localize = cls.LOCALIZE
         if localize is not None:
             cls.LOCALIZE = localize
-        return cls.LOCALIZE
+        return was_localize
 
     # ***
 
@@ -389,7 +390,7 @@ class Fact(BaseItem):
 
     @property
     def time_now(self):
-        return datetime.now() if self.localize else datetime.utcnow()
+        return datetime.now() if Fact.localize() else datetime.utcnow()
 
     @property
     def times(self):
@@ -650,7 +651,7 @@ class Fact(BaseItem):
         shellify=False,
         description_sep=': ',
         tags_sep=': ',
-        localize=False,
+        localize=True,
         include_id=False,
         cut_width_complete=None,
         cut_width_description=None,
@@ -661,10 +662,12 @@ class Fact(BaseItem):
         Flexible Fact serializer.
         """
         def _friendly_str():
+            was_localize = Fact.localize(localize)
             meta = assemble_parts()
             result = append_description(meta)
             if cut_width_complete is not None and cut_width_complete > 0:
                 result = format_value_truncate(result, cut_width_complete)
+            Fact.localize(was_localize)
             return result
 
         def assemble_parts():
@@ -713,7 +716,7 @@ class Fact(BaseItem):
             prefix = ''
             if not self.end:
                 prefix = self.oid_stylize('at', '{} '.format(_('at')))
-            if not self.localize:
+            if not Fact.localize():
                 start_time = self.start_fmt_utc
             else:
                 start_time = self.start_fmt_local
@@ -729,7 +732,7 @@ class Fact(BaseItem):
             else:
                 # NOTE: The CLI's DATE_TO_DATE_SEPARATORS[0] is 'to'.
                 prefix = self.oid_stylize('to', ' {} '.format(_('to'))) if times else ''
-                if not self.localize:
+                if not Fact.localize():
                     end_time = self.end_fmt_utc
                 else:
                     end_time = self.end_fmt_local
