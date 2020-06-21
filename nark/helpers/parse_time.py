@@ -349,6 +349,15 @@ def parse_datetime_get_settings(time_now=None, local_tz=None):
         # today of Datetime(2015, 12, 10, 12, 30). But we
         # use RE_ONLY_09_WH_AND_PUNCT to avoid that.
         'STRICT_PARSING': False,
+        # 2020-06-21: (lb): Code does not currently know time zone, and dateparser
+        # says 'TIMEZONE' defaults to 'UTC', but I find I have to still specify
+        # this value here, otherwise, when testing locally (but does not affect
+        # Travic CI, apparently), the get_date_data() return is being adjusted
+        # for my timezone. E.g., with a @freeze_time('2015-12-25 18:00'), calling
+        # get_date_data('yesterday') returns '2015-12-24 12:00', which is 1 day
+        # ago, but adjusted another 6 hours for 'America/Chicago'. IDGI, but
+        # apparently being explicit here fixes the issue.
+        'TIMEZONE': 'UTC',
     }
 
     if time_now:

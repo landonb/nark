@@ -367,17 +367,15 @@ factoid_fixture = (
 
         # ***
 
-        # Note that dateparser uses Noon for clock time of 'yesterday',
-        # '1 day ago', etc. But for some reason, Midnight used in other
-        # instances, e.g., 'Monday'. (Also notice that these time are
-        # being resolved -- friendly times relative to now are resolved
-        # by dateparser, but other times relative to another start or end
-        # will not be resolved by the Factoid parser).
+        # Note that dateparser uses current clock time for time relative to
+        # now, e.g., 'yesterday', '1 day ago', etc, but it uses midnight for
+        # absolute references, e.g., 'Monday', 'January', etc.
+        # - The 18:00:00 is in reference to: @freeze_time('2015-12-25 18:00').
         ('Monday until 2 days ago: act @', 'verify_both', {
             'start_raw': datetime.datetime(2015, 12, 21, 0, 0, 0),
-            'end_raw': datetime.datetime(2015, 12, 23, 12, 0, 0),
+            'end_raw': datetime.datetime(2015, 12, 23, 18, 0, 0),
             'start': datetime.datetime(2015, 12, 21, 0, 0, 0),
-            'end': datetime.datetime(2015, 12, 23, 12, 0, 0),
+            'end': datetime.datetime(2015, 12, 23, 18, 0, 0),
             'activity': 'act',
             'category': '',
             'tags': [],
