@@ -1,7 +1,7 @@
 :orphan:
 
 .. |nark| replace:: ``nark``
-.. _nark: https://github.com/hotoffthehamster/nark
+.. _nark: https://github.com/tallybark/nark
 
 .. |hamster-lib| replace:: ``hamster-lib``
 .. _hamster-lib: https://github.com/projecthamster/hamster-lib

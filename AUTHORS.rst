@@ -3,7 +3,7 @@ Credits
 @@@@@@@
 
 .. |nark| replace:: ``nark``
-.. _nark: https://github.com/hotoffthehamster/nark
+.. _nark: https://github.com/tallybark/nark
 
 .. |hamster-lib| replace:: ``hamster-lib``
 .. _hamster-lib: https://github.com/projecthamster/hamster-lib
@@ -27,7 +27,7 @@ Information Cat
 ---------------
 
 .. |infocat| replace:: *Information Cat*
-.. _infocat: https://github.com/hotoffthehamster/nark/blob/release/docs/_static/images/information-cat.png
+.. _infocat: https://github.com/tallybark/nark/blob/release/docs/_static/images/information-cat.png
 
 .. |readme-example| replace:: ``README``
 .. _readme-example: index.html#example

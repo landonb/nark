@@ -2,28 +2,28 @@
 nark
 @@@@
 
-.. image:: https://api.travis-ci.com/hotoffthehamster/nark.svg?branch=proving
-  :target: https://travis-ci.com/hotoffthehamster/nark
+.. image:: https://api.travis-ci.com/tallybark/nark.svg?branch=proving
+  :target: https://travis-ci.com/tallybark/nark
   :alt: Build Status
 
-.. image:: https://codecov.io/gh/hotoffthehamster/nark/branch/proving/graph/badge.svg
-  :target: https://codecov.io/gh/hotoffthehamster/nark
+.. image:: https://codecov.io/gh/tallybark/nark/branch/proving/graph/badge.svg
+  :target: https://codecov.io/gh/tallybark/nark
   :alt: Coverage Status
 
 .. image:: https://readthedocs.org/projects/nark/badge/?version=latest
   :target: https://nark.readthedocs.io/en/latest/
   :alt: Documentation Status
 
-.. image:: https://img.shields.io/github/v/release/hotoffthehamster/nark.svg?style=flat
-  :target: https://github.com/hotoffthehamster/nark/releases
+.. image:: https://img.shields.io/github/v/release/tallybark/nark.svg?style=flat
+  :target: https://github.com/tallybark/nark/releases
   :alt: GitHub Release Status
 
 .. image:: https://img.shields.io/pypi/v/nark.svg
   :target: https://pypi.org/project/nark/
   :alt: PyPI Release Status
 
-.. image:: https://img.shields.io/github/license/hotoffthehamster/nark.svg?style=flat
-  :target: https://github.com/hotoffthehamster/nark/blob/release/LICENSE
+.. image:: https://img.shields.io/github/license/tallybark/nark.svg?style=flat
+  :target: https://github.com/tallybark/nark/blob/release/LICENSE
   :alt: License Status
 
 .. |dob| replace:: ``dob``
@@ -36,7 +36,7 @@ nark
 .. _dobbing: https://dob.readthedocs.io/en/latest/usage.html
 
 .. |nark| replace:: ``nark``
-.. _nark: https://github.com/hotoffthehamster/nark
+.. _nark: https://github.com/tallybark/nark
 
 .. |hamster-lib| replace:: ``hamster-lib``
 .. _hamster-lib: https://github.com/projecthamster/hamster-lib
@@ -145,7 +145,7 @@ showing how to create a *Fact* instance from a *Factoid* string:
     #   )],
     # )
 
-.. image:: https://raw.githubusercontent.com/hotoffthehamster/nark/release/docs/_static/images/information-cat.png
+.. image:: https://raw.githubusercontent.com/tallybark/nark/release/docs/_static/images/information-cat.png
    :target: https://nark.readthedocs.io/en/latest/authors.html#information-cat
    :align: center
    :alt: "Information Cat"

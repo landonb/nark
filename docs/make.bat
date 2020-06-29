@@ -2,7 +2,7 @@
 
 REM This file exists within 'nark':
 REM
-REM   https://github.com/hotoffthehamster/nark
+REM   https://github.com/tallybark/nark
 
 set PROJECTNAME=nark
 

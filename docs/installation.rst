@@ -25,7 +25,7 @@ To develop on the project, link to the source files instead::
 
     (nark) $ deactivate
     $ rmvirtualenv nark
-    $ git clone git@github.com:hotoffthehamster/nark.git
+    $ git clone git@github.com:tallybark/nark.git
     $ cd nark
     $ mkvirtualenv -a $(pwd) --python=/usr/bin/python3.7 nark
     (nark) $ make develop

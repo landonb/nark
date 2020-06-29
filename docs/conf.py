@@ -2,7 +2,7 @@
 
 # This file exists within 'nark':
 #
-#   https://github.com/hotoffthehamster/nark
+#   https://github.com/tallybark/nark
 
 # Boilerplate documentation build configuration file,
 # (Originally) created by sphinx-quickstart on Tue Jul 9 22:26:36 2013

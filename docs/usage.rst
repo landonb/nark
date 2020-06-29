@@ -3,7 +3,7 @@ Basic Usage
 ###########
 
 .. |nark| replace:: ``nark``
-.. _nark: https://github.com/hotoffthehamster/nark
+.. _nark: https://github.com/tallybark/nark
 
 .. |dob| replace:: ``dob``
 .. _dob: https://github.com/hotoffthehamster/dob
@@ -53,7 +53,7 @@ refer to the docstrings documentation in the source for more information.
 .. _class-Controller: https://github.com/hotoffthehamster/dob-bright/blob/release/dob_bright/controller.py
 
 .. |class-NarkControl| replace:: ``nark.NarkControl``
-.. _class-NarkControl: https://github.com/hotoffthehamster/nark/blob/release/nark/control.py
+.. _class-NarkControl: https://github.com/tallybark/nark/blob/release/nark/control.py
 
 Or, better yet, look at the code for the reference client, |dob|_,
 to see how best to work with |nark|_. Start by reading the |class-Controller|_,
