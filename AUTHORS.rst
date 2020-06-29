@@ -2,8 +2,11 @@
 Credits
 @@@@@@@
 
-.. |nark| replace:: ``nark``
-.. _nark: https://github.com/tallybark/nark
+.. |Landon Bouma| replace:: Landon Bouma
+.. _Landon Bouma: https://github.com/landonb
+
+.. |Tally Bark LLC| replace:: Tally Bark LLC
+.. _Tally Bark LLC: https://www.tallybark.com/
 
 .. |hamster-lib| replace:: ``hamster-lib``
 .. _hamster-lib: https://github.com/projecthamster/hamster-lib
@@ -15,10 +18,7 @@ Credits
 Project Lead
 ============
 
-..  (`Landon Bouma <https://github.com/landonb>`_)
-
-* `HotOffThe Hamster <https://github.com/hotoffthehamster>`_
-  (aka Landon Bouma ``<hotoffthehamster+landonb -at- gmail.com>``)
+* |Landon Bouma|_ for |Tally Bark LLC|_ ``<landonb.nark@tallybark[.]com>``
 
 Others Credits
 ==============
