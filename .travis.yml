@@ -51,6 +51,7 @@ notifications:
 # Automatic build safelist.
 branches:
   only:
+    - liminal
     - proving
     - release
 
