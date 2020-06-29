@@ -13,6 +13,19 @@ History
 
 .. :changelog:
 
+3.2.3 (2020-06-29)
+==================
+
+- Change ownership to ``github.com/tallybark``.
+
+- Bugfix: Correct problems with Tags query.
+
+  - Cannot sort by Activity or Category on Tags query.
+
+  - Issues ordering by and grouping by Tags.
+
+- Tests: Improve coverage (to > 90%).
+
 3.2.2 (2020-06-18)
 ==================
 
