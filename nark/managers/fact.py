@@ -30,7 +30,7 @@ class BaseFactManager(BaseManager):
     """Base class defining the minimal API for a FactManager implementation."""
     def __init__(self, *args, localize=False, **kwargs):
         super(BaseFactManager, self).__init__(*args, **kwargs)
-        # (lb): Setting a class variable makes me feel somewhat dirty. Somewhat.
+        # All for one, and one for all, set class-wide behavior.
         Fact.localize(localize)
 
     # ***
