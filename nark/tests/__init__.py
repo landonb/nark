@@ -1,6 +1,6 @@
 # This file exists within 'nark':
 #
-#   https://github.com/hotoffthehamster/nark
+#   https://github.com/tallybark/nark
 #
 # Copyright © 2020 Landon Bouma. All rights reserved.
 #

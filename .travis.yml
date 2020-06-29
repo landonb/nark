@@ -1,10 +1,10 @@
 # This file exists within 'nark':
 #
-#   https://github.com/hotoffthehamster/nark
+#   https://github.com/tallybark/nark
 
 # Travis CI config.
 #
-#   https://travis-ci.org/hotoffthehamster/nark
+#   https://travis-ci.com/github/tallybark/nark
 
 language: python
 
