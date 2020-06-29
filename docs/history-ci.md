@@ -127,7 +127,7 @@
 
 - Docs: Some improvements.
 
-- Bugfixes and enhancements to support [dob](https://github.com/hotoffthehamster/dob) development.
+- Bugfixes and enhancements to support [dob](https://github.com/tallybark/dob) development.
 
 - Refactor: (Re)moved user settings modules to new project, [config-decorator](https://github.com/hotoffthehamster/config-decorator).
 
@@ -139,7 +139,7 @@
     (ideally one class per module).
 
   - Bugfixes and features to support
-    [dob](https://github.com/hotoffthehamster/dob)
+    [dob](https://github.com/tallybark/dob)
     development.
 
 ## 3.0.0a1 (2018-06-09)

@@ -6,7 +6,7 @@ Basic Usage
 .. _nark: https://github.com/tallybark/nark
 
 .. |dob| replace:: ``dob``
-.. _dob: https://github.com/hotoffthehamster/dob
+.. _dob: https://github.com/tallybark/dob
 
 To use nark in a project, import it, e.g.,::
 
@@ -50,7 +50,7 @@ Because code will naturally outpace any effort to document it, please
 refer to the docstrings documentation in the source for more information.
 
 .. |class-Controller| replace:: ``class Controller``
-.. _class-Controller: https://github.com/hotoffthehamster/dob-bright/blob/release/dob_bright/controller.py
+.. _class-Controller: https://github.com/tallybark/dob-bright/blob/release/dob_bright/controller.py
 
 .. |class-NarkControl| replace:: ``nark.NarkControl``
 .. _class-NarkControl: https://github.com/tallybark/nark/blob/release/nark/control.py

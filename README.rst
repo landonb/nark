@@ -27,7 +27,7 @@ nark
   :alt: License Status
 
 .. |dob| replace:: ``dob``
-.. _dob: https://github.com/hotoffthehamster/dob
+.. _dob: https://github.com/tallybark/dob
 
 .. |dob-rtd| replace:: dob
 .. _dob-rtd: https://dob.readthedocs.io/en/latest/
