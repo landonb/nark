@@ -61,7 +61,7 @@ requirements = [
     'ansi-escape-room == 1.4.2',
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
-    'config-decorator >= 2.0.12, <= 2.0.13',
+    'config-decorator == 2.0.13',
     # Elapsed timedelta formatter, e.g., "1.25 days".
     # - Imports as `pedantic_timedelta`.
     #  https://github.com/hotoffthehamster/human-friendly_pedantic-timedelta
