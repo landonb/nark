@@ -265,7 +265,7 @@ class SQLAlchemyStore(BaseStore):
         self.categories = CategoryManager(self)
         self.activities = ActivityManager(self)
         self.tags = TagManager(self)
-        localize = self.config['time.tz_aware']
+        localize = not self.config['time.tz_aware']
         self.facts = FactManager(self, localize=localize)
         self.fact_cls = None
 
