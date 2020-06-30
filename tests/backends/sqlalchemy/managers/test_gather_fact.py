@@ -20,7 +20,6 @@
 import datetime
 
 import pytest
-from freezegun import freeze_time
 
 from nark.backends.sqlalchemy.objects import AlchemyFact
 from nark.backends.sqlalchemy.managers.fact import FactManager
@@ -326,8 +325,6 @@ class TestGatherFactManager():
 
     # ***
 
-    # Freeze time early so five facts are on the same day.
-    @freeze_time('2015-12-12 2:00')
     @pytest.mark.parametrize(
         ('group_activity', 'group_category', 'group_tags', 'group_days'),
         (

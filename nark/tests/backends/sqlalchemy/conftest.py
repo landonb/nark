@@ -398,9 +398,10 @@ def set_of_alchemy_facts_active(start_datetime, alchemy_fact_factory):
 
 
 @pytest.fixture
-def set_of_alchemy_facts_contiguous(start_datetime, alchemy_fact_factory):
+def set_of_alchemy_facts_contiguous(start_datetime_early_2am, alchemy_fact_factory):
+    # Freeze time early via start_datetime_early_2am so five facts are on the same day.
     return _set_of_alchemy_facts(
-        start_datetime, alchemy_fact_factory, endless=False, contiguous=True,
+        start_datetime_early_2am, alchemy_fact_factory, endless=False, contiguous=True,
     )
 
 

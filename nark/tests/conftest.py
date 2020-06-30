@@ -23,6 +23,7 @@ import datetime
 
 import fauxfactory
 import pytest
+from freezegun import freeze_time
 
 from nark.config import decorate_config
 
@@ -138,13 +139,25 @@ def start_end_datetimes(start_end_datetimes_from_offset_now):
 
 @pytest.fixture
 def start_datetime():
-    """Provide an arbitrary datetime."""
-    # (lb): Because Freezegun, datetime.now() is datetime.utcnow().
+    """Provide a datetime at time test is run."""
+    # (lb): Note that datetime.datetime is not influenced by freeze_time
+    # around whatever test or fixture includes this fixture; only this
+    # fixture decorated by freeze_time has an effect.
     return datetime.datetime.utcnow().replace(microsecond=0)
 
 
 @pytest.fixture(scope="session")
 def start_datetime_ro():
+    """Provide a datetime at time test is run."""
+    # (lb): Note that datetime.datetime is not influenced by freeze_time
+    # around whatever test or fixture includes this fixture; only this
+    # fixture decorated by freeze_time has an effect.
+    return datetime.datetime.utcnow().replace(microsecond=0)
+
+
+@pytest.fixture
+@freeze_time('2015-12-12 2:00')
+def start_datetime_early_2am():
     """Provide an arbitrary datetime."""
     # (lb): Because Freezegun, datetime.now() is datetime.utcnow().
     return datetime.datetime.utcnow().replace(microsecond=0)
