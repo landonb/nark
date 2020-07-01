@@ -65,7 +65,7 @@ requirements = [
     # Elapsed timedelta formatter, e.g., "1.25 days".
     # - Imports as `pedantic_timedelta`.
     #  https://github.com/hotoffthehamster/human-friendly_pedantic-timedelta
-    'human-friendly_pedantic-timedelta >= 2.0.0, <= 2.0.10',
+    'human-friendly_pedantic-timedelta >= 2.0.0, <= 2.0.11',
     # Database gooser/versioner.
     #  https://pypi.org/project/sqlalchemy-migrate/
     #  https://sqlalchemy-migrate.readthedocs.io/en/latest/
