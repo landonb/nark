@@ -2,7 +2,7 @@
 
 [comment]: # DEV: release-ghub-pypi scrapes Markdown from the first section below for the GitHub release.
 
-## 3.2.3 (2020-06-29)
+## 3.2.3 (2020-07-02)
 
 - Change ownership to `github.com/tallybark`.
 
