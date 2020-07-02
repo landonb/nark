@@ -676,7 +676,7 @@ class Parser(object):
         if not the_datetime:
             # The earlier HamsterTimeSpec.discern will not have worked if the
             # separator was not surrounded by spaces, e.g., "12:00-1:00".
-            # (lb): Not sure we need ot support this, but support is claimed
+            # (lb): Not sure we need to support this, but support is claimed
             # elsewhere.
             dt, type_dt, sep, rest = HamsterTimeSpec.discern(raw_datetime)
             if dt is not None:
