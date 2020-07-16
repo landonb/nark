@@ -66,6 +66,10 @@ factoid_fixture = (
             'warnings': [],
         }),
 
+        # MAYBE/2020-07-03: Note that "clock-clock" works (no spaces around dash)
+        # but that "friendly-clock", "clock-friendly", etc., does not.
+        # - For consistency, perhaps this should be fixed... or at least documented
+        #   that it doesn't.
         ('Monday-13:00: foo@bar', 'verify_both', {
             'err': 'Expected to find the two datetimes separated by one of: ',
         }),
