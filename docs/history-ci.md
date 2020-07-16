@@ -4,7 +4,7 @@
 
 ## 3.2.3 (2020-07-02)
 
-- Change ownership to `github.com/tallybark`.
+- Change ownership to https://github.com/tallybark.
 
 - Bugfix: Correct problems with Tags query.
 
