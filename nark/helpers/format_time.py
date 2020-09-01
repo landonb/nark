@@ -133,9 +133,9 @@ def format_delta(delta, style='%M', **kwargs):
         style (str): Specifies the output format.
 
           Valid choices are:
-            * ``'%S'``: As seconds, to the second.
-            * ``'%M'``: As minutes, rounded down.
-            * ``'%H:%M'``: As 'hours:minutes'. rounded down.
+            * ``%S``: As seconds, to the second.
+            * ``%M``: As minutes, rounded down.
+            * ``%H:%M``: As 'hours:minutes'. rounded down.
             * ``HHhMMm``: As '{hours} hour(s) {minutes} minute(s)'.
             * ````: As human friendly time.
 
