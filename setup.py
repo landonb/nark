@@ -61,11 +61,11 @@ requirements = [
     'ansi-escape-room == 1.4.2',
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
-    'config-decorator == 2.0.14',
+    'config-decorator > 2.0.14, < 2.0.16',  # I.e., release 2.0.15, or whatever dev's running.
     # Elapsed timedelta formatter, e.g., "1.25 days".
     # - Imports as `pedantic_timedelta`.
     #  https://github.com/hotoffthehamster/human-friendly_pedantic-timedelta
-    'human-friendly_pedantic-timedelta == 2.0.11',
+    'human-friendly_pedantic-timedelta > 2.0.11, < 2.0.13',
     # Database gooser/versioner.
     #  https://pypi.org/project/sqlalchemy-migrate/
     #  https://sqlalchemy-migrate.readthedocs.io/en/latest/
