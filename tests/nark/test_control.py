@@ -18,11 +18,8 @@
 # or visit <http://www.gnu.org/licenses/>.
 
 import logging
-import os
-from pkg_resources import DistributionNotFound
 
 import pytest
-from unittest import mock
 
 import nark
 from nark import get_version
@@ -89,41 +86,4 @@ class TestNarkLib:
         # this test is meant to provide coverage of _version_from_tags, but we
         # won't know what the local repo version is, or even if it's different
         # from the tagged version.
-
-    def test_get_version_include_head_known_postfix(self, mocker):
-        mocker.patch.object(nark, '_version_from_tags', return_value='foo')
-        result = get_version(include_head=True)
-        # (lb): I'd rather not encode the version number anywhere in code
-        # (that's why we use setuptools_scm!), but also don't expect to
-        # upgrade to v.4 anytime soon.
-        assert result.startswith('3.')
-        # The repo version is appended in (parentheses).
-        assert result.endswith(' (foo)')
-
-    def test_get_version_without_setuptools_scm(self):
-        with mock.patch('nark._version_from_tags') as import_scm_mock:
-            import_scm_mock.side_effect = ImportError()
-            result = get_version(include_head=True)
-            # The result is still a version, but the user's repo version
-            # will not be postfixed in (parentheses).
-            assert result.startswith('3.')
-            assert not result.endswith(')')
-
-    def test_get_version_from_not_a_repo(self):
-        with mock.patch('nark._version_from_tags') as import_scm_mock:
-            import_scm_mock.side_effect = LookupError()
-            result = get_version(include_head=True)
-            assert result.startswith('3.')
-            assert result.endswith(' (<none?!>)')
-
-    def test_get_version_get_distribution_fails(self):
-        with mock.patch('pkg_resources.get_distribution') as get_distribution_mock:
-            get_distribution_mock.side_effect = DistributionNotFound()
-            result = get_version()
-            assert result == '<none!?>'
-
-    def test_get_version_include_head_no_git_found(self, mocker):
-        mocker.patch.object(os.path, 'exists', return_value=False)
-        result = get_version(include_head=True)
-        assert result.startswith('3.')
 

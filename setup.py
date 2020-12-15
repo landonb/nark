@@ -62,6 +62,9 @@ requirements = [
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
     'config-decorator > 2.0.14, < 2.0.16',  # I.e., release 2.0.15, or whatever dev's running.
+    # Get-package-or-Git-version helper.
+    #  https://github.com/hotoffthehamster/easy-as-pypi-getver
+    'easy-as-pypi-getver',
     # Elapsed timedelta formatter, e.g., "1.25 days".
     # - Imports as `pedantic_timedelta`.
     #  https://github.com/hotoffthehamster/human-friendly_pedantic-timedelta
