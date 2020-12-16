@@ -27,7 +27,7 @@ from gettext import gettext as _
 
 from config_decorator import section, ConfigDecorator
 
-from ..helpers.app_dirs import NarkAppDirs
+from easy_as_pypi_apppth import AppDirs
 
 from .log_levels import get_log_level_safe, get_log_name_safe, must_verify_log_level
 
@@ -123,16 +123,18 @@ class NarkConfigurableDb(object):
         # config, so they more easily understand how to change DBMS settings.
     )
     def path(self):
-        if NarkAppDirs.APP_DIRS is None:
-            # Happens when code is sourced, before NarkAppDirs() created.
+        if not AppDirs.is_ready:
+            # Just in case called before AppDirsWithMkdir() created.
             return ''
-        return os.path.join(
-            NarkAppDirs.APP_DIRS.user_data_dir,
+
+        db_path = os.path.join(
+            AppDirs().user_data_dir,
             # MAYBE: Rename? 'nark.sqlite'?? or 'hamster.sqlite'??
             # FIXME: Make this a package const rather than inline literal.
             #        (Maybe on Config refactor how to do so will be evident.)
             'dob.sqlite',
         )
+        return db_path
 
     # ***
 

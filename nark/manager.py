@@ -20,9 +20,10 @@
 import os
 from datetime import datetime
 
+from easy_as_pypi_apppth import AppDirs
+
 from .config import decorate_config
 from .helpers import logging as logging_helpers
-from .helpers.app_dirs import NarkAppDirs
 from .managers.activity import BaseActivityManager
 from .managers.category import BaseCategoryManager
 from .managers.fact import BaseFactManager
@@ -88,10 +89,10 @@ class BaseStore(object):
 
     @property
     def default_db_path(self):
-        if NarkAppDirs.APP_DIRS is None:
+        if not AppDirs.is_ready:
             return ''
         db_path = os.path.join(
-            NarkAppDirs.APP_DIRS.user_data_dir,
+            AppDirs().user_data_dir,
             # (lb): Whatever client is using the nark library
             # will generally setup db_path specially; this is
             # just a default filename for completeness.

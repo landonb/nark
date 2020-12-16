@@ -22,9 +22,6 @@ requirements = [
     # "textwrap, but savvy to ANSI colors"
     #  https://github.com/jonathaneunice/ansiwrap
     'ansiwrap >= 0.8.4, < 1',
-    # Platform-specific directory magic.
-    #  https://github.com/ActiveState/appdirs
-    'appdirs >= 1.4.3, < 2',
     # Better INI/conf parser (preserves order, comments) than ConfigParser.
     #  https://github.com/DiffSK/configobj
     #  https://configobj.readthedocs.io/en/latest/
@@ -62,6 +59,9 @@ requirements = [
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
     'config-decorator > 2.0.14, < 2.0.16',  # I.e., release 2.0.15, or whatever dev's running.
+    # ActiveState/appdirs + Singleton (app-wide access w/out appname) + `mkdir -p`.
+    #  https://github.com/tallybark/easy-as-pypi-apppth#🛣
+    'easy-as-pypi-apppth',
     # Get-package-or-Git-version helper.
     #  https://github.com/hotoffthehamster/easy-as-pypi-getver
     'easy-as-pypi-getver',
