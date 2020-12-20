@@ -38,7 +38,8 @@ from nark.manager import BaseStore
 from nark.tests.conftest import *  # noqa: F401, F403
 
 
-@pytest.yield_fixture
+
+@pytest.fixture
 def controller(base_config):
     """Provide a basic controller."""
     # From hamster-lib: "[TODO] Parametrize over all available stores."
