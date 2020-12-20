@@ -19,9 +19,6 @@ from setuptools import find_packages, setup
 # *** Package requirements.
 
 requirements = [
-    # "textwrap, but savvy to ANSI colors"
-    #  https://github.com/jonathaneunice/ansiwrap
-    'ansiwrap >= 0.8.4, < 1',
     # Better INI/conf parser (preserves order, comments) than ConfigParser.
     #  https://github.com/DiffSK/configobj
     #  https://configobj.readthedocs.io/en/latest/
@@ -56,6 +53,11 @@ requirements = [
     # Used in nark to format log messages, but also installed by dob(-bright),
     #  so not really adding any overhead.
     'ansi-escape-room == 1.4.2',
+    # "textwrap, but savvy to ANSI colors"
+    #  https://github.com/jonathaneunice/ansiwrap
+    # Forked to update to latest Pythons
+    #  https://github.com/hotoffthehamster/ansiwrap
+    'ansiwrap-hotoffthehamster == 0.8.4',
     # Pythonic config @decorator.
     #  https://github.com/hotoffthehamster/config-decorator
     'config-decorator > 2.0.14, < 2.0.16',  # I.e., release 2.0.15, or whatever dev's running.

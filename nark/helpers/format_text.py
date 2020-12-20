@@ -17,7 +17,7 @@
 
 """Provides string-related functional methods."""
 
-from ansiwrap import shorten
+from ansiwrap_hotoffthehamster import shorten
 
 __all__ = (
     'format_value_truncate',
