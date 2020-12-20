@@ -46,6 +46,9 @@ from nark.manager import BaseStore
 #   - F403 'from nark.tests.conftest import *' used; unable to detect undefined names
 from nark.tests.conftest import *  # noqa: F401, F403
 
+pytest_plugins = (
+    "tests.config.init_app_dirs",
+)
 
 
 @pytest.fixture
