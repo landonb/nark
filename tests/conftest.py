@@ -24,17 +24,26 @@ import pytest
 from nark.control import NarkControl
 from nark.manager import BaseStore
 
-# (lb): I moved lots of conftest functions to nark.tests so that downstream
-#   packages can reuse the same fixtures. However, it's uncouth to `import *`,
-#   so the linter lets us have it. But conftest.py is already magic -- pytest
-#   loads conftest for every test_xxx.py file -- so it's already akin to being
-#   *-glob imported. Which is what we do here, linter and best practices be
-#   damned. Furthermore, the pytest-factoryboy register() functions also
-#   magically injects fixtures into the namespace (that themselves are mutated
-#   from a corresponding classname, e.g., FactFactory becomes a fixture named
-#   fact_factory). So I don't know what all the fuss is about, just import *.
-# F401 'nark.tests.conftest.*' imported but unused
-# F403 'from nark.tests.conftest import *' used; unable to detect undefined names
+# (lb): I might be doing this wrong, but works: So that downstream packages can
+# reuse (DRY) nark fixtures, such fixtures are defined in the public package.
+# - Note that I tried pytest_plugins, but didn't work, e.g.,
+#     pytest_plugins = ("nark.tests", "nark.tests.conftest", ...)
+#   then:
+#     $ py.test
+#     ...
+#     fixture 'base_config' not found
+# - So we *-glob import the fixtures instead.
+#   - This isn't the cleanest solution, but it's also not uncommon:
+#     - conftest.py itself is already magic: py.test loads this module for
+#       every test_{}.py file, and everything herein is exported.
+#     - The pytest-factoryboy register() functions also magically inject
+#       fixtures into the namespace (that themselves are mutated from a
+#       corresponding classname, e.g., FactFactory becomes a fixture named
+#       fact_factory).
+#     - So don't bark too loudly about the opaque import-all.
+# - Linter ref:
+#   - F401 'nark.tests.conftest.*' imported but unused
+#   - F403 'from nark.tests.conftest import *' used; unable to detect undefined names
 from nark.tests.conftest import *  # noqa: F401, F403
 
 
