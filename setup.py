@@ -34,10 +34,6 @@ requirements = [
     # Daylight saving time-aware timezone library.
     #  https://pythonhosted.org/pytz/
     'pytz >= 2019.3',
-    # For testing with dateparser,
-    #   https://bitbucket.org/mrabarnett/mrab-regex
-    #   https://pypi.org/project/regex/
-    'regex >= 2020.2.20',
     # https://www.sqlalchemy.org/
     'sqlalchemy >= 1.3.16, < 1.4',
     # https://github.com/regebro/tzlocal

@@ -66,3 +66,11 @@ pytest-faker >= 2.0.0
 #   https://github.com/omaciel/fauxfactory
 fauxfactory >= 3.0.6
 
+# ***
+
+# For testing with dateparser <https://github.com/scrapinghub/dateparser>:
+#   https://bitbucket.org/mrabarnett/mrab-regex
+#   https://pypi.org/project/regex/
+# 2020-12-21: Latest: 2020.11.13
+regex >= 2020.2.20
+
